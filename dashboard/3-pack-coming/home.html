@@ -1,0 +1,193 @@
+<title>Home · Codemarca</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../dashboard.css">
+<link rel="stylesheet" href="../../home.css">
+
+<!-- ==========================================================================
+     CODEMARCA — HOME  ·  flow 3, pack bought, no page
+     Someone bought their free pack and never built a page.
+
+     THE FREE PACK IS ALWAYS FOR YOU — Garry, 2026-09-18. Checkout no longer
+     asks "for me or a gift", so this screen has one story: there is a clock.
+     Stickers with this person's code on them are in a van, and if they land
+     before the page is filled in, a scan shows a name and nothing else. The
+     link was claimed at checkout (Garry, 2026-09-29), so the page is live
+     but bare. So: a countdown, the code, and the parcel underneath as
+     context.
+
+     Gifts are a separate, paid thing now, on the Gift & Refer tab — they
+     never show up on this screen.
+
+     NOT A DIFFERENT CODE. The code was minted when the order was placed and
+     printed on the stickers. Building a page fills it in; nobody re-sticks
+     anything, ever.
+     ========================================================================== -->
+
+<style>
+/* the countdown — the only loud object on the "for me" screen */
+.race{gap:var(--s-5)}
+.race__say{display:flex; flex-direction:column; gap:var(--s-5)}
+.race__art{position:relative; display:grid; place-items:center}
+@media (min-width:720px){
+  .race{display:grid; grid-template-columns:minmax(0,3fr) minmax(0,2fr); align-items:center}
+  .race__art{order:2}
+}
+.race__h{font-size:clamp(1.5rem,5vw,2rem); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display); line-height:1.1; text-wrap:balance}
+.race__p{font-size:var(--fs-sm); color:rgba(255,255,255,.72); max-width:46ch}
+.race__p b{color:var(--ink-invert)}
+.race__clock{display:flex; align-items:baseline; gap:var(--s-2)}
+.race__n{font-size:clamp(2.5rem,9vw,3.5rem); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display); line-height:1}
+.race__u{font-size:1.125rem; font-weight:var(--fw-bold); color:rgba(255,255,255,.5)}
+
+/* the code as it stands: real, printed, and pointing at nothing */
+.blank{display:flex; gap:var(--s-4); align-items:center}
+.blank__qr{flex-shrink:0; width:92px; padding:var(--s-2); background:#fff;
+  border-radius:var(--r-md); box-shadow:inset 0 0 0 1px var(--line), var(--shadow-sm)}
+.blank__qr svg{display:block; width:100%; height:auto}
+.blank__txt{flex:1; min-width:0; display:flex; flex-direction:column; gap:var(--s-1)}
+.blank__t{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+
+
+.blank__s{letter-spacing:var(--ls-soft)}
+</style>
+
+<div class="app">
+  <div class="app__main">
+    <main class="view">
+
+      <!-- ══ WHERE THINGS STAND ══════════════════════════════════════════ -->
+
+      <header class="head" data-when="placed">
+        <h1>Your pack is being printed.</h1>
+        <p>Your code is already on it, and your link is live — with just your
+           name on it for now.</p>
+      </header>
+
+      <header class="head" data-when="shipped">
+        <h1>Your pack is on the way.</h1>
+        <p>Your code is on both stickers. Right now a scan shows just your
+           name — and the parcel is nearly at your door.</p>
+      </header>
+
+      <header class="head" data-when="delivered">
+        <h1>Your stickers are here.</h1>
+        <p>A scan shows just your name so far. Two minutes adds your number
+           and links, and you will never have to re-stick anything.</p>
+      </header>
+
+
+
+
+
+      <section class="card card--dark card--close card--act race">
+
+        <!-- the drawing 1-empty opens with: sticker, scan, page. Seeded on
+             their REAL code, so the square in it is the one already printed
+             on the stickers in the van. -->
+        <div class="race__art" data-scene></div>
+
+        <div class="race__say">
+        <div>
+          <span class="card__title">Before they land</span>
+          <p class="race__h" style="margin-top:var(--s-2)" data-when="placed shipped">
+            Finish your page first.</p>
+          <p class="race__h" style="margin-top:var(--s-2)" data-when="delivered">
+            Finish your page now.</p>
+        </div>
+
+        <div class="race__clock" data-when="placed shipped">
+          <span class="race__n" data-fill="daysLeft">6</span>
+          <span class="race__u">days until they arrive</span>
+        </div>
+
+        <p class="race__p" data-when="placed shipped">
+          Your photo, and the things you actually hand out — phone, WhatsApp,
+          Instagram. It takes about <b>two minutes</b>, and the stickers are
+          worth scanning the day they land.
+        </p>
+        <p class="race__p" data-when="delivered">
+          Anyone who scans one right now sees your name and nothing to tap.
+          Fill it in and every sticker you are holding shows it at once — the
+          code printed on them never changes, so nothing has to be reprinted.
+        </p>
+
+        <a class="btn btn--go btn--wide" href="../../onboarding.html?ordered=1">Build my page</a>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card__head">
+          <span class="card__title">Your code</span>
+          <span class="chip chip--warn">Name only, for now</span>
+        </div>
+        <div class="blank">
+          <span class="blank__qr" data-qr></span>
+          <span class="blank__txt">
+            <span class="blank__t">This exact square is on your stickers</span>
+            <span class="blank__s">It is yours for good. Finishing your page fills
+              it in — it never gets swapped for a different one.</span>
+          </span>
+        </div>
+        <div class="card__foot">
+          <a class="btn btn--ghost btn--sm btn--grow" href="qr.html">See it bigger</a>
+        </div>
+      </section>
+
+      <!-- the parcel — context, not the subject; the timeline lives on Orders -->
+      <section class="card">
+        <div class="card__head">
+          <span class="card__title">Order <span class="mono" data-fill="order.id">CM-5190</span></span>
+          <span class="chip chip--flat" data-when="placed">Placed</span>
+          <span class="chip chip--warn" data-when="shipped">On the way</span>
+          <span class="chip chip--ok"   data-when="delivered">Delivered</span>
+        </div>
+
+        <div class="item">
+          <span class="item__ic" data-ic="box"></span>
+          <span class="item__txt">
+            <span class="item__t" data-fill="order.items">Codemarca pack — 2 stickers</span>
+            <span class="item__s" data-when="placed shipped">Expected
+              <span data-fill="order.eta">18 Sep 2026</span></span>
+            <span class="item__s" data-when="delivered">Delivered
+              <span data-fill="order.eta">17 Sep 2026</span></span>
+          </span>
+        </div>
+
+        <div class="card__foot">
+          <a class="btn btn--ghost btn--sm btn--grow" href="orders.html">Order details</a>
+        </div>
+      </section>
+
+
+    </main>
+  </div>
+</div>
+
+<script src="state.js"></script>
+<script src="../../dashboard.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var a = CM.shell({ page: "home", title: "Home" });
+
+  /* sticker → scan → page, seeded on their real code */
+  document.querySelector("[data-scene]").innerHTML = CM.scanScene(a);
+
+  /* the square exactly as it is printed on their stickers */
+  if (a.code) {
+    Array.prototype.forEach.call(document.querySelectorAll("[data-qr]"), function (el) {
+      el.innerHTML = CM.qr(a.code.id);
+    });
+  }
+
+
+  CM.draw(a, CM.derived(a));
+})();
+</script>

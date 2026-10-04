@@ -1,0 +1,2586 @@
+<title>Codemarca Onboarding</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* ==========================================================================
+   CODEMARCA — ONBOARDING / PROFILE BUILDER
+   Three panes in one screen, switched by <div class="ob" data-step>:
+     1  About you        — photo, name, handle, bio
+     2  Contact & links  — contact fields, link grid, order, theme
+     3  Done             — page is live, QR, get your pack
+
+   This is ONE builder, not an onboarding flow plus a separate editor. First
+   run wears the progress bar; afterwards the same panes are the edit screen.
+
+   MOBILE-FIRST, deliberately: real activation happens when the sticker
+   arrives and someone scans it on a phone. Desktop is the larger version.
+   Base CSS is the phone; min-width queries add the desktop.
+
+   Three routes land here — claim-profile signup, post-order dashboard, and
+   a first scan of a fresh code. Only the claim route is wired for now; the
+   others land on the same pane with the same state.
+   ========================================================================== */
+
+/* ── 0. TOKENS — same set as signup.html, plus builder-only additions ──── */
+:root {
+  /* Brand — locked 2026-09-01 */
+  --brand-violet:#6E27E6; --brand-violet-lift:#A171F4; --brand-violet-press:#5A1DC4;
+  --brand-violet-tint:#F1E9FE; --brand-violet-edge:#DCC9FB;
+
+  /* Ink */
+  --ink:#101215; --ink-mid:#5B5D68; --ink-soft:#8C8E9C; --ink-faint:#B6B8C4;
+  --ink-invert:#FFFFFF;
+
+  /* Ground */
+  --ground:#FFFFFF; --ground-soft:#F4F3F7; --ground-sunk:#EDEBF2;
+
+  /* Line */
+  --line:rgba(16,18,21,.09); --line-strong:rgba(16,18,21,.16);
+
+  /* State */
+  --ok:#17914F; --bad:#C4342B;
+
+  /* Type */
+  --font-sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+
+  --fs-body:1rem; --fs-sm:.875rem; --fs-xs:.8125rem; --fs-label:.6875rem;
+  --lh-body:1.55;
+  --ls-display:-.038em; --ls-body:-.011em; --ls-label:.13em; --ls-soft:.14px;
+  --fw-medium:500; --fw-semibold:600; --fw-bold:700; --fw-black:800;
+
+  /* Space */
+  --s-1:.25rem; --s-2:.5rem; --s-3:.75rem; --s-4:1rem; --s-5:1.25rem;
+  --s-6:1.5rem; --s-8:2rem; --s-10:2.5rem; --s-12:3rem;
+
+  /* Layout */
+  --gutter:1.25rem;
+  --logo-h:20px;
+  --bar-h:56px;
+  --col:600px;              /* the form column */
+
+  /* Radius */
+  --r-xs:6px; --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px; --r-pill:999px;
+
+  /* Elevation */
+  --shadow-sm:0 2px 8px rgba(16,18,21,.06);
+  --shadow-md:0 6px 20px rgba(16,18,21,.07);
+  --shadow-lg:0 20px 56px rgba(16,18,21,.11);
+
+  /* Controls */
+  --control-h:52px;
+  --btn-h:52px;
+  --focus-ring:0 0 0 3px var(--ground-sunk),0 0 0 5px var(--ink);
+  --focus-glow:0 0 0 4px rgba(16,18,21,.08);
+
+  /* Motion */
+  --dur-fast:140ms; --dur:240ms;
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+@media (min-width:960px){
+  :root{ --gutter:2.5rem; --bar-h:68px; --control-h:56px; --btn-h:56px; }
+}
+
+/* ── 1. BASE ───────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground-soft); color:var(--ink);
+  font-family:var(--font-sans); font-size:var(--fs-body); font-weight:var(--fw-medium);
+  line-height:var(--lh-body); letter-spacing:var(--ls-body);
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,p,ul,li{margin:0; padding:0}
+ul{list-style:none}
+a{color:inherit; text-decoration:none}
+button,input,textarea,select{font:inherit; color:inherit}
+img,svg{display:block; max-width:100%}
+[hidden]{display:none !important}
+:focus-visible{outline:none; box-shadow:var(--focus-ring); border-radius:var(--r-xs)}
+.defs{position:absolute; width:0; height:0; overflow:hidden}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+/* ── 2. SHELL ──────────────────────────────────────────────────────────── */
+.ob{display:flex; flex-direction:column; min-height:100svh}
+
+.ob__bar{
+  position:sticky; top:0; z-index:40;
+  display:flex; align-items:center; gap:var(--s-4);
+  height:var(--bar-h); padding-inline:var(--gutter);
+  background:var(--ground); box-shadow:0 1px 0 var(--line);
+}
+.ob__logo svg{height:var(--logo-h); width:auto}
+.ob__logo .wm{display:none}
+.ob__exit{
+  margin-left:auto; font-size:var(--fs-sm); font-weight:var(--fw-bold);
+  color:var(--ink-soft); padding:var(--s-2); border-radius:var(--r-sm);
+}
+.ob__exit:hover{color:var(--ink)}
+@media (min-width:520px){ .ob__logo .wm{display:block} .ob__logo .mk{display:none} }
+
+/* the progress bar — three segments, no "Step 1 of 3" eyebrow anywhere */
+.steps{display:flex; align-items:center; gap:6px; flex:1; max-width:260px}
+.steps__seg{flex:1; height:4px; border-radius:var(--r-pill); background:var(--ground-sunk); overflow:hidden}
+.steps__seg i{display:block; height:100%; width:0; background:var(--brand-violet);
+  border-radius:inherit; transition:width var(--dur) var(--ease)}
+.ob[data-step="1"] .steps__seg:nth-child(1) i{width:100%}
+.ob[data-step="2"] .steps__seg:nth-child(-n+2) i{width:100%}
+.ob[data-step="3"] .steps__seg i{width:100%}
+
+/* Once the page is live there is no run of steps left to be in, so the
+   progress bar and the way out of an unfinished setup both go with it. The
+   dashboard takes that right-hand slot instead (Garry, 2026-09-23): logo
+   left, way out right, on a phone and on a laptop alike. */
+.ob[data-step="3"] .steps,
+.ob[data-step="3"] #exit{display:none}
+/* Not a button and not a tinted block on hover: a line of text and an
+   arrow. On hover the text underlines and the arrow steps to the right. */
+.ob__dash{display:inline-flex; align-items:center; gap:var(--s-2); color:var(--ink)}
+.ob__dash > span{text-underline-offset:3px}
+.ob__dash:hover > span{text-decoration:underline}
+.ob__dash:hover{background:none}
+.arw{width:17px; height:17px; flex-shrink:0; transition:transform var(--dur) var(--ease)}
+.ob__dash:hover .arw,
+.ob__dash:focus-visible .arw{transform:translateX(3px)}
+
+.ob__wrap{flex:1; display:flex; justify-content:center; padding-inline:var(--gutter)}
+.ob__col{
+  width:100%; max-width:var(--col); display:flex; flex-direction:column;
+  padding-block:var(--s-6) 0;
+}
+
+/* ── 3. PANES ──────────────────────────────────────────────────────────── */
+.pane{display:none; flex-direction:column; gap:var(--s-6); flex:1; padding-bottom:var(--s-8)}
+.ob[data-step="1"] [data-pane="1"],
+.ob[data-step="2"] [data-pane="2"],
+.ob[data-step="3"] [data-pane="3"]{display:flex}
+
+.head h1{
+  font-size:clamp(1.625rem,5.5vw,2.125rem); font-weight:var(--fw-black);
+  line-height:1.06; letter-spacing:var(--ls-display); text-wrap:balance;
+}
+.head p{margin-top:var(--s-3); color:var(--ink-mid); font-size:var(--fs-sm)}
+
+/* card — every group of fields sits in one */
+.card{
+  background:var(--ground); border-radius:var(--r-lg); padding:var(--s-5);
+  box-shadow:var(--shadow-sm), inset 0 0 0 1px var(--line);
+  display:flex; flex-direction:column; gap:var(--s-5);
+}
+.card__title{
+  font-size:var(--fs-label); font-weight:var(--fw-bold); letter-spacing:var(--ls-label);
+  text-transform:uppercase; color:var(--ink-soft);
+}
+.card__note{font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.45}
+
+/* ── 4. FIELDS ─────────────────────────────────────────────────────────── */
+.fld{display:flex; flex-direction:column; gap:var(--s-2)}
+.fld__top{display:flex; align-items:baseline; justify-content:space-between; gap:var(--s-3)}
+.fld__lbl{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.fld__count{font-size:var(--fs-xs); color:var(--ink-faint); font-variant-numeric:tabular-nums}
+.fld__count[data-over="true"]{color:var(--bad)}
+
+.inp,.box{
+  display:flex; align-items:center; gap:var(--s-2);
+  min-height:var(--control-h); padding-inline:var(--s-4);
+  background:var(--ground); border-radius:var(--r-md);
+  box-shadow:inset 0 0 0 1.5px var(--line-strong);
+  transition:box-shadow var(--dur) var(--ease);
+}
+.inp:focus-within,.box:focus-within{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.inp input,.inp textarea{
+  flex:1; min-width:0; border:0; background:none; outline:none; padding:0;
+  font-weight:var(--fw-semibold); letter-spacing:var(--ls-body);
+}
+.inp input:focus-visible,.inp textarea:focus-visible{box-shadow:none}
+.inp input::placeholder,.inp textarea::placeholder{color:var(--ink-faint); font-weight:var(--fw-medium)}
+
+/* Chrome paints its own pale-blue block behind anything it autofills, which
+   overrides the field's own ground. Parking the transition indefinitely keeps
+   our background and ink; it is the one fix that does not need to know the
+   field's colour. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+  -webkit-text-fill-color:var(--ink);
+  caret-color:var(--ink);
+  transition:background-color 600000s 0s, color 600000s 0s;
+}
+
+.inp--area{align-items:stretch; padding-block:var(--s-3)}
+.inp--area textarea{resize:none; line-height:1.5; min-height:66px; font-family:inherit}
+.inp--mono input{font-family:var(--font-mono); font-size:var(--fs-sm); letter-spacing:-.02em;
+  font-weight:var(--fw-semibold); color:var(--brand-violet); caret-color:var(--brand-violet)}
+#handleWrap:has(input[readonly]){background:var(--ground-soft)}
+#handleWrap input[readonly]{cursor:default}
+.inp__pre{font-family:var(--font-mono); font-size:var(--fs-sm); color:var(--ink-soft);
+  letter-spacing:-.02em; white-space:nowrap; user-select:none}
+.inp[data-state="bad"]{box-shadow:inset 0 0 0 1.5px var(--bad)}
+
+.note{min-height:18px; font-size:var(--fs-xs); font-weight:var(--fw-semibold); color:var(--ink-soft)}
+.note[data-state="ok"]{color:var(--ok)}
+.note[data-state="bad"]{color:var(--bad)}
+.note b{font-family:var(--font-mono); font-weight:var(--fw-semibold)}
+
+/* the eye — off must OMIT the field from the API response, never CSS-hide it */
+.eye{
+  flex-shrink:0; width:34px; height:34px; display:grid; place-items:center;
+  border:0; border-radius:var(--r-sm); background:none; cursor:pointer; color:var(--ink-faint);
+  transition:color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.eye:hover{background:var(--ground-soft); color:var(--ink-mid)}
+.eye[aria-pressed="true"]{color:var(--ink-mid)}
+.eye svg{width:19px; height:19px}
+.eye .off{display:none}
+.eye[aria-pressed="false"] .on{display:none}
+.eye[aria-pressed="false"] .off{display:block}
+.eye[aria-pressed="false"]{color:var(--ink-faint)}
+
+/* checkbox — "same as phone", on by default */
+.chk{display:flex; align-items:center; gap:var(--s-3); cursor:pointer;
+  font-size:var(--fs-sm); font-weight:var(--fw-semibold); color:var(--ink-mid)}
+.chk input{position:absolute; opacity:0; width:0; height:0}
+.chk__box{
+  width:20px; height:20px; flex-shrink:0; border-radius:var(--r-xs);
+  box-shadow:inset 0 0 0 1.5px var(--line-strong); display:grid; place-items:center;
+  transition:background var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.chk__box svg{width:12px; height:12px; opacity:0; color:#fff}
+.chk input:checked + .chk__box{background:var(--ink); box-shadow:inset 0 0 0 1.5px var(--ink)}
+.chk input:checked + .chk__box svg{opacity:1}
+.chk input:focus-visible + .chk__box{box-shadow:var(--focus-ring)}
+
+/* ── 5. PHOTO ──────────────────────────────────────────────────────────── */
+.photo{display:flex; align-items:center; gap:var(--s-4)}
+.photo__disc{
+  position:relative; width:88px; height:88px; flex-shrink:0; border-radius:50%;
+  background:var(--brand-violet); color:#fff; display:grid; place-items:center;
+  font-size:2.125rem; font-weight:var(--fw-black); letter-spacing:-.03em;
+  overflow:hidden; user-select:none;
+}
+.photo__disc img{width:100%; height:100%; object-fit:cover}
+/* Remove sits BESIDE the button, not under it (Garry, 2026-09-24) — stacked,
+   it appeared the moment a photo landed and shunted the button upwards. The
+   8px gap plus the link's own padding reads as the 16px he asked for. */
+.photo__acts{display:flex; flex-direction:column; align-items:flex-start; gap:var(--s-1)}
+.photo__row{display:flex; align-items:center; gap:var(--s-2)}
+.photo__btn{
+  border:0; background:var(--ground-soft); cursor:pointer; border-radius:var(--r-pill);
+  padding:10px var(--s-4); font-size:var(--fs-sm); font-weight:var(--fw-bold);
+}
+.photo__btn:hover{background:var(--ground-sunk)}
+.photo__clear{border:0; background:none; cursor:pointer; padding:6px var(--s-2);
+  font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-soft); border-radius:var(--r-sm)}
+.photo__clear:hover{color:var(--bad)}
+.photo__hint{font-size:var(--fs-xs); color:var(--ink-soft)}
+
+/* ── 6. LINK GRID + ADDED LINKS ────────────────────────────────────────── */
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:var(--s-2)}
+.chip{
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  padding:var(--s-3) var(--s-2); border:0; cursor:pointer; border-radius:var(--r-md);
+  background:var(--ground-soft); font-size:var(--fs-xs); font-weight:var(--fw-bold);
+  color:var(--ink-mid); text-align:center; line-height:1.2;
+  transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.chip:hover{background:var(--ground-sunk); color:var(--ink)}
+.chip[data-on="true"]{background:var(--brand-violet-tint); color:var(--brand-violet)}
+.chip .ic{width:30px; height:30px}
+.chip__add{width:16px; height:16px; margin-top:-2px}
+
+.added{display:flex; flex-direction:column; gap:var(--s-3)}
+/* The arrows sit BEFORE the icon (Garry, 2026-09-24) — they belong to the
+   row of circles the page draws, and nothing else on step 2 is ordered, so
+   they only appear on socials. */
+.lrow{display:flex; align-items:center; gap:var(--s-2)}
+.lrow__move{display:flex; flex-direction:column; gap:2px; flex-shrink:0}
+.lrow__move button{
+  width:24px; height:18px; display:grid; place-items:center; border:0; cursor:pointer;
+  border-radius:var(--r-xs); background:var(--ground-soft); color:var(--ink-mid);
+}
+.lrow__move button:hover{background:var(--ground-sunk); color:var(--ink)}
+.lrow__move button:disabled{opacity:.3; cursor:default}
+.lrow__move svg{width:12px; height:12px}
+.lrow .ic{width:30px; height:30px; flex-shrink:0}
+.lrow .inp{flex:1; min-width:0}
+.lrow .inp input{font-size:var(--fs-sm)}
+.kill{
+  flex-shrink:0; width:34px; height:34px; display:grid; place-items:center;
+  border:0; border-radius:var(--r-sm); background:none; cursor:pointer; color:var(--ink-faint);
+}
+.kill:hover{background:#FCEFEE; color:var(--bad)}
+.kill svg{width:16px; height:16px}
+
+.addcustom{
+  align-self:flex-start; display:flex; align-items:center; gap:var(--s-2);
+  border:0; cursor:pointer; background:none; padding:var(--s-2) var(--s-3);
+  border-radius:var(--r-sm); font-size:var(--fs-sm); font-weight:var(--fw-bold);
+  color:var(--brand-violet);
+}
+.addcustom:hover{background:var(--ground-sunk, #EDEBF2)}
+.addcustom svg{width:16px; height:16px}
+
+.custom{display:flex; flex-direction:column; gap:var(--s-2)}
+.custom .inp input{font-size:var(--fs-sm)}
+
+/* ── 7. ORDER LIST — all buttons the same size, order alone is hierarchy ── */
+.order{display:flex; flex-direction:column; gap:var(--s-2)}
+.ord{
+  display:flex; align-items:center; gap:var(--s-3);
+  padding:var(--s-3); border-radius:var(--r-md); background:var(--ground-soft);
+  transition:background var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
+}
+.ord[draggable="true"]{cursor:grab}
+.ord[data-drag="true"]{opacity:.45}
+.ord[data-over="true"]{background:var(--brand-violet-tint)}
+.ord__grip{color:var(--ink-faint); flex-shrink:0}
+.ord__grip svg{width:16px; height:16px}
+.ord__name{flex:1; min-width:0; font-size:var(--fs-sm); font-weight:var(--fw-bold);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ord__move{display:flex; gap:2px; flex-shrink:0}
+.ord__move button{
+  width:30px; height:30px; display:grid; place-items:center; border:0; cursor:pointer;
+  border-radius:var(--r-xs); background:var(--ground); color:var(--ink-mid); box-shadow:var(--shadow-sm);
+}
+.ord__move button:hover{color:var(--ink)}
+.ord__move button:disabled{opacity:.3; cursor:default; color:var(--ink-faint)}
+.ord__move svg{width:14px; height:14px}
+.order__empty{font-size:var(--fs-sm); color:var(--ink-soft)}
+
+/* ── 8. FOOTER ACTIONS ─────────────────────────────────────────────────── */
+.ob__foot{
+  position:sticky; bottom:0; z-index:30; margin-top:auto;
+  display:flex; align-items:center; gap:var(--s-3);
+  padding-block:var(--s-3) var(--s-4);
+  background:linear-gradient(to top,var(--ground-soft) 68%,rgba(244,243,247,0));
+}
+.btn{
+  display:flex; align-items:center; justify-content:center; gap:var(--s-2);
+  height:var(--btn-h); padding-inline:var(--s-6); border:0; border-radius:var(--r-pill);
+  cursor:pointer; font-weight:var(--fw-bold); letter-spacing:-.01em;
+  transition:transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.btn:active{transform:scale(.985)}
+.btn--go{flex:1; background:var(--ink); color:var(--ink-invert)}
+.btn--go:hover{background:var(--ink-strong, #33353D)}
+.btn--go:disabled{background:var(--ground-sunk); color:var(--ink-faint); cursor:not-allowed; transform:none}
+.btn--ghost{background:var(--ground); color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+.btn--ghost:hover{color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--ink)}
+.btn--icon{padding-inline:0; width:var(--btn-h); flex-shrink:0}
+.btn svg{width:19px; height:19px}
+.gate{font-size:var(--fs-xs); color:var(--ink-soft); text-align:center; padding-bottom:var(--s-2)}
+
+/* ── 9. PREVIEW ────────────────────────────────────────────────────────────
+   Below 960 there is no side preview, matching signup.html; it opens as a
+   sheet from the footer instead. The theme strip travels with the phone so a
+   swatch tap is seen on the phone in the same breath. */
+.ob__aside{
+  position:fixed; inset:0; z-index:60; display:flex; flex-direction:column;
+  background:var(--ground); transform:translateY(100%); visibility:hidden;
+  transition:transform var(--dur) var(--ease), visibility var(--dur) var(--ease);
+}
+.ob__aside[data-open="true"]{transform:none; visibility:visible}
+.aside__inner{
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:var(--s-5);
+  padding:var(--s-6) var(--gutter); overflow:auto;
+}
+.aside__label{
+  font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-soft);
+  text-align:center; line-height:1.4;
+}
+.aside__close{
+  border:0; background:var(--ground); box-shadow:0 -1px 0 var(--line); cursor:pointer;
+  padding:var(--s-4); font-size:var(--fs-sm); font-weight:var(--fw-bold); color:var(--ink-mid);
+}
+
+.themes{display:flex; gap:var(--s-2); flex-wrap:wrap; justify-content:center}
+.sw{
+  width:44px; height:44px; border:0; cursor:pointer; border-radius:var(--r-md);
+  display:grid; place-items:center;
+  box-shadow:inset 0 0 0 1.5px var(--line-strong);
+  transition:box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.sw:hover{transform:translateY(-1px)}
+.sw[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--brand-violet), 0 0 0 3px var(--brand-violet-tint)}
+.sw svg{
+  width:20px; height:20px; opacity:0; transform:scale(.5);
+  transition:opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.sw[aria-pressed="true"] svg{opacity:1; transform:none}
+.sw[data-t="light"]{background:#fff}
+.sw[data-t="dark"]{background:#101215}
+.sw[data-t="violet"]{background:#6E27E6}
+.sw[data-t="cream"]{background:#F6EFE4}
+.sw[data-t="gradient"]{background:linear-gradient(150deg,#6E27E6,#B32E6E 55%,#C2452E)}
+
+@media (min-width:960px){
+  .ob__wrap{gap:var(--s-12)}
+  .ob__col{max-width:var(--col); padding-bottom:var(--s-6)}
+  .ob__aside{
+    inset:auto; position:sticky; top:var(--bar-h); align-self:flex-start;
+    width:380px; flex-shrink:0; height:calc(100svh - var(--bar-h));
+    transform:none; visibility:visible; background:none;
+  }
+  .aside__inner{justify-content:center; padding-inline:0}
+  .aside__close{display:none}
+  .ob[data-step="3"] .ob__aside{display:none}
+  /* "View my page" on the done screen — the preview comes back as a full
+     overlay, since by then the sticky column has done its job */
+  .ob .ob__aside[data-open="true"]{
+    display:flex; position:fixed; inset:0; z-index:60;
+    width:auto; height:100svh; background:var(--ground);
+  }
+  .ob .ob__aside[data-open="true"] .aside__close{display:block}
+  .ob__foot{background:none; position:static}
+  .btn--preview{display:none}
+}
+
+/* ── 10. THE PHONE ─────────────────────────────────────────────────────────
+   The core must fit one 375px screen with no scroll: photo, name, bio, top
+   actions and the socials row come to about 420px. Extra links go below. */
+.phone{
+  width:296px; flex-shrink:0; border-radius:34px; padding:9px;
+  height:clamp(360px,calc(100svh - 230px),604px);
+  background:#101215; box-shadow:var(--shadow-lg);
+  display:flex; flex-direction:column;
+}
+.phone__scr{
+  flex:1; min-height:0; border-radius:26px; overflow:auto; overscroll-behavior:contain;
+  padding:26px 20px 22px; display:flex; flex-direction:column; align-items:center;
+  gap:12px; text-align:center;
+  background:var(--p-bg); color:var(--p-ink);
+  transition:background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.phone__scr::-webkit-scrollbar{width:0}
+
+.phone[data-theme="light"]   {--p-av-bg:#6E27E6; --p-av-fg:#FFFFFF; --p-bg:#FFFFFF; --p-ink:#101215; --p-mid:#5B5D68; --p-btn:#F4F3F7; --p-btn-ink:#101215; --p-line:rgba(16,18,21,.10); --p-r:12px; --p-sk:rgba(16,18,21,.08)}
+.phone[data-theme="dark"]    {--p-av-bg:#6E27E6; --p-av-fg:#FFFFFF; --p-bg:#101215; --p-ink:#FFFFFF; --p-mid:#9A9CA8; --p-btn:#1D2026; --p-btn-ink:#FFFFFF; --p-line:rgba(255,255,255,.12); --p-r:12px; --p-sk:rgba(255,255,255,.11)}
+.phone[data-theme="violet"]  {--p-av-bg:#FFFFFF; --p-av-fg:#6E27E6; --p-bg:#6E27E6; --p-ink:#FFFFFF; --p-mid:#EDE3FE; --p-btn:rgba(255,255,255,.17); --p-btn-ink:#FFFFFF; --p-line:rgba(255,255,255,.24); --p-r:999px; --p-sk:rgba(255,255,255,.20)}
+.phone[data-theme="cream"]   {--p-av-bg:#6E27E6; --p-av-fg:#FFFFFF; --p-bg:#F6EFE4; --p-ink:#2A2118; --p-mid:#6B5B47; --p-btn:#FFFFFF; --p-btn-ink:#2A2118; --p-line:rgba(42,33,24,.13); --p-r:999px; --p-sk:rgba(42,33,24,.10)}
+.phone[data-theme="gradient"]{--p-av-bg:#FFFFFF; --p-av-fg:#6E27E6; --p-bg:linear-gradient(165deg,#6E27E6,#B32E6E 55%,#C2452E); --p-ink:#FFFFFF; --p-mid:#FFF0E6; --p-btn:rgba(255,255,255,.19); --p-btn-ink:#FFFFFF; --p-line:rgba(255,255,255,.26); --p-r:999px; --p-sk:rgba(255,255,255,.22)}
+
+.p-photo{width:68px; height:68px; border-radius:50%; overflow:hidden; flex-shrink:0;
+  background:var(--p-av-bg); color:var(--p-av-fg); display:grid; place-items:center;
+  font-size:1.5rem; font-weight:var(--fw-black); letter-spacing:-.03em}
+.p-photo img{width:100%; height:100%; object-fit:cover}
+.p-name{font-size:1.25rem; font-weight:var(--fw-black); letter-spacing:-.03em; line-height:1.15}
+.p-handle{font-family:var(--font-mono); font-size:.6875rem; color:var(--p-mid); letter-spacing:-.02em}
+.p-bio{font-size:.75rem; color:var(--p-mid); line-height:1.45; max-width:26ch}
+
+.p-list{width:100%; display:flex; flex-direction:column; gap:8px; margin-top:4px}
+.p-btn{
+  display:flex; align-items:center; gap:9px; width:100%;
+  padding:11px 13px; border-radius:var(--p-r);
+  background:var(--p-btn); color:var(--p-btn-ink);
+  font-size:.75rem; font-weight:var(--fw-bold); text-align:left;
+  box-shadow:inset 0 0 0 1px var(--p-line);
+}
+.p-btn svg{width:15px; height:15px; flex-shrink:0; opacity:.85}
+/* Save contact takes the page's ink as its ground: the one row that hands
+   you a file rather than opening an app, so it cannot look like the rest. */
+.p-btn--save{background:var(--p-ink); color:var(--p-bg); box-shadow:none}
+.p-btn--save svg{opacity:1}
+.p-btn span{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+.p-socials{display:flex; flex-wrap:wrap; justify-content:center; gap:9px; width:100%; padding-block:2px}
+.p-socials .ic{width:34px; height:34px}
+
+/* ── 10b. DESKTOP VIEW ─────────────────────────────────────────────────────
+   The page is designed for a phone, but people also open it on a laptop —
+   there it is the same column (420px, matching profile.html) floating on the
+   theme background. Worth seeing, because that field of colour is most of
+   what a desktop visitor looks at. */
+.win{display:none; align-items:center; gap:6px; height:34px; padding:0 12px; flex-shrink:0}
+.win i{width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,.26)}
+.win__u{
+  margin-left:8px; padding:3px 12px; border-radius:var(--r-pill);
+  background:rgba(255,255,255,.10); color:rgba(255,255,255,.62);
+  font-family:var(--font-mono); font-size:.625rem; letter-spacing:-.02em;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:60%;
+}
+.phone[data-device="desktop"]{
+  width:min(880px,92vw); height:min(560px,calc(100svh - 240px));
+  border-radius:16px; padding:0 0 0; overflow:hidden;
+}
+.phone[data-device="desktop"] .win{display:flex}
+.phone[data-device="desktop"] .phone__scr{border-radius:0; padding:40px 24px 26px; gap:14px}
+.phone[data-device="desktop"] .p-list{max-width:420px}
+.phone[data-device="desktop"] .p-photo{width:88px; height:88px; font-size:2.125rem}
+.phone[data-device="desktop"] .p-name{font-size:1.625rem}
+.phone[data-device="desktop"] .p-handle{font-size:.8125rem}
+.phone[data-device="desktop"] .p-bio{font-size:.9375rem; max-width:30ch}
+.phone[data-device="desktop"] .p-btn{font-size:.9375rem; padding:12px 16px}
+.phone[data-device="desktop"] .p-btn svg{width:19px; height:19px}
+.phone[data-device="desktop"] .p-socials .ic{width:40px; height:40px}
+.phone[data-device="desktop"] .p-foot{font-size:.6875rem}
+@media (max-width:899px){
+  .aside__inner{overflow-x:hidden}
+  .phone[data-device="desktop"]{
+    width:880px; height:560px; flex-shrink:0;
+    transform:scale(var(--dscale,.4)); transform-origin:top center;
+    /* the scale frees vertical space the layout box still reserves */
+    margin-bottom:calc(560px * (var(--dscale,.4) - 1));
+  }
+}
+
+/* only on the done screen, where "View my page" opens the preview full-bleed */
+.devs{display:none; gap:4px; padding:4px; border-radius:var(--r-pill); background:var(--ground-sunk)}
+.ob[data-step="3"] .ob__aside[data-open="true"] .devs{display:flex}
+.devs button{
+  border:0; background:none; cursor:pointer; padding:7px 16px; border-radius:var(--r-pill);
+  font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-mid);
+}
+.devs button[aria-pressed="true"]{background:var(--ground); color:var(--ink); box-shadow:var(--shadow-md)}
+
+.p-foot{margin-top:auto; padding-top:16px; font-size:.5625rem; font-weight:var(--fw-bold);
+  color:var(--p-mid); letter-spacing:.06em; text-transform:uppercase}
+
+/* skeleton rows — the preview is never empty, it lights up as fields fill */
+.sk{background:var(--p-sk); border-radius:var(--p-r); animation:sk 1.9s var(--ease) infinite}
+.sk--name{width:120px; height:19px; border-radius:7px}
+.sk--handle{width:82px; height:10px; border-radius:5px}
+.sk--bio{width:150px; height:9px; border-radius:5px}
+.sk--btn{width:100%; height:39px}
+@keyframes sk{0%,100%{opacity:.65}50%{opacity:1}}
+
+/* ── 11. DONE ──────────────────────────────────────────────────────────── */
+.done{align-items:center; text-align:center}
+.done .head{display:flex; flex-direction:column; align-items:center}
+/* everything on the done screen shares one width, so the share card and the
+   sell card line up as a pair instead of two floating boxes */
+.done{--done-w:440px}
+.done .head p{max-width:40ch}
+
+/* On a phone the pack sits second, straight under the card, and the
+   checklist follows it (Garry, 2026-09-23) — what is missing can wait
+   until after the thing being sold. Above 900 the grid below places
+   everything itself, so this only applies while it is a column. */
+@media (max-width:899.98px){
+  .done > .sell  {order:1}
+  .done > .todo  {order:2}
+  .done > .status{order:3}
+}
+
+/* From 900px the column stops stacking: the page you just made on the left,
+   the pack you might want on the right (Garry, 2026-09-23). One 440px column
+   ran the length of two screens on a laptop, which buried the pack CTA. */
+@media (min-width:900px){
+  .ob[data-step="3"] .ob__col{max-width:960px}
+  /* the pane's own display:flex is set by .ob[data-step="3"] [data-pane="3"],
+     so this has to match that weight to win */
+  .ob[data-step="3"] .done{
+    --done-w:none;
+    display:grid; align-items:start; text-align:left;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    /* Spelled out, because the pack block spans rows 2-3: left to `auto`
+       the browser shares its height between them, which pushed the
+       headline and the checklist away from the card they belong to
+       (Garry, 2026-09-24). Rows 1-2 take their content; row 3 absorbs
+       whatever the pack block has left over. */
+    grid-template-rows:auto auto 1fr auto;
+    column-gap:var(--s-12); row-gap:var(--s-6);
+  }
+  .done .head{grid-area:1 / 1 / 2 / -1; align-items:flex-start}
+  .done .head p{max-width:52ch}
+  .done > .me  {grid-area:2 / 1 / 3 / 2}
+  .done > .todo{grid-area:3 / 1 / 4 / 2}
+  /* spans both rows on the left, so it stays level with the card whether or
+     not there is a checklist under it */
+  .done > .sell{grid-area:2 / 2 / 4 / 3; align-self:start}
+  .done > .status{grid-area:4 / 1 / 5 / -1; text-align:center}
+}
+
+/* ── READY TO SHARE — the 4-active home's .me card, ported ──────────────── */
+.me{
+  width:100%; max-width:var(--done-w); display:flex; flex-direction:column; gap:var(--s-4);
+  padding:var(--s-5); text-align:left; background:var(--ground); border-radius:var(--r-xl);
+  box-shadow:var(--shadow-md), inset 0 0 0 1px var(--line);
+}
+.me__top{display:flex; align-items:center; gap:var(--s-4)}
+/* black, not violet — brand purple is for the few things that must pop */
+.me__av{flex-shrink:0; display:grid; place-items:center; width:56px; height:56px; border-radius:50%;
+  overflow:hidden; background:var(--ink); color:var(--ink-invert); font-size:1.375rem; font-weight:var(--fw-black)}
+.me__av img{width:100%; height:100%; object-fit:cover}
+.me__who{flex:1; min-width:0; display:flex; flex-direction:column; align-items:flex-start; gap:var(--s-2)}
+.me__name{font-size:1.25rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display);
+  line-height:1.1; overflow-wrap:anywhere}
+.me__live{display:inline-flex; align-items:center; gap:var(--s-2); padding:4px 10px 4px 8px;
+  border-radius:var(--r-pill); background:rgba(23,145,79,.10); color:var(--ok);
+  font-family:var(--font-mono); font-size:var(--fs-label); font-weight:var(--fw-bold);
+  letter-spacing:var(--ls-label); text-transform:uppercase}
+.me__live i{width:6px; height:6px; border-radius:50%; background:currentColor}
+.me__qr{flex-shrink:0; width:76px; padding:6px; border:0; border-radius:var(--r-md); background:#fff;
+  cursor:pointer; box-shadow:var(--shadow-sm);
+  transition:transform var(--dur-fast) var(--ease)}
+.me__qr:hover{transform:scale(1.04)}
+.me__qr svg{display:block; width:100%; height:auto}
+
+/* The link IS the share button. Grey with a hairline round it read as a
+   disabled input, so it takes the same green wash as the LIVE chip above
+   it and drops the border — the card is a live page, and the link is the
+   live part of it (Garry, 2026-09-23). */
+.me__link{
+  display:flex; align-items:center; gap:var(--s-3); width:100%;
+  padding:var(--s-2) var(--s-2) var(--s-2) var(--s-4); border:0; border-radius:var(--r-pill);
+  background:rgba(23,145,79,.10); box-shadow:none;
+  color:var(--ink); cursor:pointer; text-align:left;
+  transition:background var(--dur-fast) var(--ease);
+}
+.me__link:hover{background:rgba(23,145,79,.16)}
+.me__url{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  font-family:var(--font-mono); font-size:var(--fs-sm); font-weight:var(--fw-semibold)}
+.me__share{flex-shrink:0; display:inline-flex; align-items:center; gap:var(--s-2);
+  height:36px; padding-inline:var(--s-4); border-radius:var(--r-pill);
+  background:var(--ink); color:var(--ink-invert); font-size:var(--fs-xs); font-weight:var(--fw-bold)}
+.me__share svg{width:16px; height:16px}
+
+.me__acts{display:grid; grid-template-columns:repeat(3,1fr); gap:var(--s-2)}
+.me__btn{display:flex; align-items:center; justify-content:center; gap:6px;
+  min-height:44px; padding:var(--s-2); border:0; border-radius:var(--r-md); cursor:pointer;
+  background:var(--ground); box-shadow:inset 0 0 0 1.5px var(--line-strong); color:var(--ink);
+  font-size:var(--fs-xs); font-weight:var(--fw-bold); line-height:1.2; text-align:center;
+  transition:background var(--dur-fast) var(--ease)}
+.me__btn:hover{background:var(--ground-soft)}
+.me__btn svg{width:16px; height:16px; flex-shrink:0}
+.me__btn[data-done]{color:var(--ok)}
+.me .scanline{max-width:none; font-size:var(--fs-xs); color:var(--ink-soft); text-align:center;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+
+/* a phone gives the link the room: share drops to its icon, and the three
+   actions stack their icon over the label so none of them wraps mid-word */
+@media (max-width:479px){
+  .me__share{width:40px; height:40px; padding:0; justify-content:center}
+  .me__share span{display:none}
+  .me__btn{flex-direction:column; gap:4px; min-height:58px}
+}
+
+/* ── PUT IT ON SOMETHING ────────────────────────────────────────────────── */
+.sell{
+  width:100%; max-width:var(--done-w); display:flex; flex-direction:column; gap:var(--s-4);
+  text-align:left;
+}
+.sell__head{display:flex; flex-direction:column; gap:var(--s-1); min-width:0}
+.sell__eyebrow{font-family:var(--font-mono); font-size:var(--fs-label); font-weight:var(--fw-semibold);
+  letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--ink-soft)}
+/* one line, always — it is a caption for the photos, not a second headline */
+.sell__h{font-size:clamp(.9375rem,4.2vw,1.125rem); font-weight:var(--fw-black);
+  letter-spacing:-.02em; line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+
+/* the row: one frame and a peek of the next, snapping frame to frame */
+.places{
+  display:flex; gap:var(--s-3);
+  overflow-x:auto; overscroll-behavior-x:contain; scroll-snap-type:x mandatory;
+  scrollbar-width:none; border-radius:var(--r-lg); outline-offset:4px;
+}
+.places::-webkit-scrollbar{display:none}
+.places[data-drag]{scroll-snap-type:none}
+.place{flex:0 0 78%; margin:0; scroll-snap-align:start; position:relative; aspect-ratio:4/5; border-radius:var(--r-lg);
+  overflow:hidden; background:var(--ground-soft)}
+.place img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+/* the brief, until the photo lands — a dashed frame that says what goes in it */
+/* the stand-in until the photo lands: a plain frame, no words on it —
+   the brief for each shot lives in PACK.PLACES and in the image's alt */
+.place__ph{position:absolute; inset:0; border-radius:inherit;
+  background:repeating-linear-gradient(135deg, var(--ground-soft) 0 14px, var(--ground-sunk) 14px 15px);
+  box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+.place[data-has] .place__ph{display:none}
+
+/* Under the row: arrows for a mouse, a drawn scrollbar for a thumb — the
+   same bar select-pack uses, black thumb, 24px of hit area round a 4px track. */
+.places__nav{display:flex; align-items:center; gap:var(--s-3)}
+.places__arw{flex-shrink:0; display:grid; place-items:center; width:36px; height:36px; padding:0;
+  border:0; border-radius:50%; cursor:pointer; background:var(--ground-soft); color:var(--ink);
+  transition:background var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease)}
+.places__arw:hover{background:var(--ground-sunk)}
+.places__arw:disabled{opacity:.35; cursor:default}
+.places__arw svg{width:16px; height:16px}
+.places__bar{flex:1; position:relative; padding-block:10px; cursor:pointer; touch-action:none}
+.places__track{position:relative; display:block; height:4px; border-radius:var(--r-pill);
+  background:rgba(16,18,21,.08)}
+.places__thumb{position:absolute; top:0; bottom:0; left:0; width:30%; border-radius:var(--r-pill);
+  background:var(--ink);
+  transition:top var(--dur-fast) var(--ease), bottom var(--dur-fast) var(--ease)}
+.places__bar:active .places__thumb,
+.places[data-drag] ~ .places__nav .places__thumb{top:-1px; bottom:-1px}
+/* On a phone the row runs off both edges of the screen, the way an app does
+   it rather than a page you scroll past (Garry, 2026-09-23). The button was
+   sticky here too, and it was wrong: it floated over the photos it was
+   selling. The pack block sits second on a phone now, so the button is
+   already high up the screen and does not need pinning. */
+@media (max-width:759.98px){
+  .places{
+    margin-inline:calc(var(--gutter) * -1);
+    padding-inline:var(--gutter);
+    scroll-padding-inline:var(--gutter);
+  }
+  .places__nav{margin-top:calc(var(--s-2) * -1)}
+}
+
+/* a phone swipes, so it gets the bar alone; a desktop gets the arrows too,
+   and two frames at a time with the third peeking — one 343px-wide frame at
+   4:5 would be the tallest thing on the screen */
+@media (max-width:759.98px){ .places__arw{display:none} }
+@media (min-width:760px){ .place{flex-basis:46%} }
+
+/* ── WHAT IS STILL MISSING ─────────────────────────────────────────────── */
+.todo{
+  width:100%; max-width:var(--done-w); display:flex; flex-direction:column; gap:var(--s-3);
+  padding:var(--s-4) var(--s-5); text-align:left; background:var(--ground);
+  border-radius:var(--r-xl); box-shadow:var(--shadow-md), inset 0 0 0 1px var(--line);
+}
+.todo__head{display:flex; align-items:baseline; gap:var(--s-3)}
+.todo__t{font-size:var(--fs-sm); font-weight:var(--fw-black); letter-spacing:-.02em}
+.todo__n{margin-left:auto; font-size:var(--fs-xs); color:var(--ink-soft)}
+.todo__rows{display:flex; flex-direction:column; margin-inline:calc(var(--s-5) * -1)}
+.todo__row{
+  display:flex; align-items:center; gap:var(--s-3); width:100%; padding:var(--s-3) var(--s-5);
+  border:0; background:none; cursor:pointer; text-align:left; color:inherit;
+  transition:background var(--dur-fast) var(--ease);
+}
+.todo__row:hover{background:var(--ground-soft)}
+.todo__row + .todo__row{box-shadow:inset 0 1px 0 var(--line)}
+/* every row is something worth doing, so none of them is greyed out */
+.todo__ic{flex-shrink:0; display:grid; place-items:center; width:34px; height:34px;
+  border-radius:var(--r-sm); background:var(--brand-violet-tint); color:var(--brand-violet)}
+.todo__ic svg{width:17px; height:17px}
+.todo__txt{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
+.todo__l{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.todo__s{font-size:var(--fs-xs); color:var(--ink-soft)}
+.todo__go{flex-shrink:0; width:16px; height:16px; color:var(--ink-faint)}
+/* the last row sits against the card's rounded bottom, so its hover has to
+   round off too or the tint squares off the corner */
+.todo__row:last-child{border-radius:0 0 calc(var(--r-xl) - 5px) calc(var(--r-xl) - 5px)}
+
+
+.sell__price{font-size:var(--fs-sm); color:var(--ink-mid); line-height:1.5}
+.sell__price b{color:var(--ink); font-weight:var(--fw-bold)}
+/* .btn--go is flex:1 for the footer's row; in this column that basis-0 would
+   squeeze it to its text, so it takes its own height here */
+.sell .btn{width:100%; flex:none}
+
+
+/* Same shape as the checkout's line: a spoken confirmation for a screen
+   reader, which sighted users read as the receipt for what just happened. */
+.status{
+  min-height:20px; font-size:var(--fs-xs); font-weight:var(--fw-semibold);
+  color:var(--ink-soft); text-align:center;
+}
+.status:empty{display:none}
+
+/* the one screen in the flow that gets to celebrate. The QR is the hero here,
+   so no big tick competing with it — just the burst and a staggered arrival. */
+@keyframes rise{from{opacity:0; transform:translateY(16px)} to{opacity:1; transform:none}}
+.ob[data-step="3"] .done > *{animation:rise .5s var(--ease) backwards}
+.ob[data-step="3"] .done > *:nth-child(2){animation-delay:.14s}
+.ob[data-step="3"] .done > *:nth-child(3){animation-delay:.26s}
+.ob[data-step="3"] .done > *:nth-child(4){animation-delay:.38s}
+.ob[data-step="3"] .done > *:nth-child(5){animation-delay:.48s}
+.ob[data-step="3"] .done > *:nth-child(6){animation-delay:.56s}
+
+/* The card that IS the page arrives lit and stays lit: a green edge that
+   breathes, on and on, for as long as this screen is open (Garry,
+   2026-09-23). Slow and shallow on purpose — a heartbeat, not a strobe; the
+   reduced-motion rule at the end of this file stops it at the first frame,
+   which is the thin green line. Listed after the stagger so it wins; the
+   rise keeps its own .14s. */
+.ob[data-step="3"] .done > .me{
+  box-shadow:var(--shadow-md), inset 0 0 0 1.5px rgba(23,145,79,.55);
+  animation:rise .5s var(--ease) .14s backwards, meGlow 3.4s var(--ease) .65s infinite;
+}
+@keyframes meGlow{
+  0%,100%{box-shadow:var(--shadow-md), inset 0 0 0 1.5px rgba(23,145,79,.5), 0 0 0 0 rgba(23,145,79,.10), 0 0 12px 0 rgba(23,145,79,.10)}
+  50%    {box-shadow:var(--shadow-md), inset 0 0 0 2px rgba(23,145,79,.95), 0 0 0 5px rgba(23,145,79,.13), 0 0 30px 5px rgba(23,145,79,.26)}
+}
+
+/* ── THE CODE, FULL SCREEN — dashboard.css's .show, ported ─────────────── */
+.show{
+  position:fixed; inset:0; z-index:90;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:var(--s-6); padding:var(--s-6) var(--gutter); background:#FFFFFF;
+  opacity:0; pointer-events:none; transition:opacity var(--dur) var(--ease);
+}
+.show[data-on]{opacity:1; pointer-events:auto}
+.show__close{
+  position:absolute; top:var(--s-4); right:var(--s-4);
+  display:grid; place-items:center; width:44px; height:44px;
+  border:0; border-radius:50%; background:var(--ground-soft); color:var(--ink-mid);
+  cursor:pointer; transition:background var(--dur-fast) var(--ease);
+}
+.show__close:hover{background:var(--ground-sunk); color:var(--ink)}
+.show__close svg{width:20px; height:20px}
+.show__hint{font-family:var(--font-mono); font-size:var(--fs-label); font-weight:var(--fw-bold);
+  letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--ink-faint); text-align:center}
+/* sized off the shorter side, so a short landscape screen keeps the name */
+.show__qr{width:min(78vw, 56vh, 420px); transform:scale(.94); transition:transform .38s var(--ease)}
+.show[data-on] .show__qr{transform:none}
+.show__qr svg{display:block; width:100%; height:auto; border-radius:var(--r-sm)}
+.show__id{display:flex; flex-direction:column; align-items:center; gap:var(--s-2); text-align:center}
+.show__name{font-size:clamp(1.375rem,5vw,1.75rem); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display); line-height:1.1}
+.show__sub{font-family:var(--font-mono); font-size:var(--fs-sm); color:var(--ink-soft); overflow-wrap:anywhere}
+.show__acts{display:flex; flex-wrap:wrap; justify-content:center; gap:var(--s-2); margin-top:var(--s-2)}
+.show__btn{display:inline-flex; align-items:center; gap:var(--s-2); height:40px; padding:0 var(--s-3);
+  border:0; border-radius:var(--r-md); cursor:pointer; background:var(--ground);
+  box-shadow:inset 0 0 0 1.5px var(--line-strong); color:var(--ink);
+  font-size:var(--fs-xs); font-weight:var(--fw-bold); transition:background var(--dur-fast) var(--ease)}
+.show__btn:hover{background:var(--ground-soft)}
+.show__btn svg{width:16px; height:16px}
+.show__btn[data-done]{color:var(--ok)}
+body[data-showing]{overflow:hidden}
+
+/* ── THE SHARE SHEET — dashboard.css's .shs, ported ─────────────────────
+   The same sheet the dashboard opens from the link pill on Home, so a page
+   five seconds old already shares the way it will forever. */
+.shs{position:fixed; inset:0; z-index:95; display:flex; align-items:flex-end; justify-content:center}
+.shs__scrim{position:absolute; inset:0; background:rgba(16,18,21,.52); animation:shsFade var(--dur) var(--ease)}
+.shs__panel{
+  position:relative; width:100%; max-width:440px; max-height:90svh; overflow:auto;
+  background:var(--ground); color:var(--ink);
+  border-radius:var(--r-xl) var(--r-xl) 0 0;
+  padding:var(--s-3) var(--s-5) calc(var(--s-6) + env(safe-area-inset-bottom));
+  display:flex; flex-direction:column; align-items:center; text-align:center; gap:var(--s-4);
+  animation:shsRise var(--dur) var(--ease);
+}
+@keyframes shsFade{from{opacity:0}}
+@keyframes shsRise{from{transform:translateY(24px)}}
+@keyframes shsPop{from{transform:scale(.965); opacity:0}}
+.shs__grip{width:38px; height:4px; border-radius:var(--r-pill); background:var(--line-strong); flex-shrink:0}
+.shs__x{
+  position:absolute; top:var(--s-4); right:var(--s-4);
+  width:32px; height:32px; display:grid; place-items:center; border:0; border-radius:50%;
+  background:var(--ground-soft); color:var(--ink-mid); cursor:pointer;
+}
+.shs__x:hover{background:var(--line); color:var(--ink)}
+.shs__x svg{width:15px; height:15px}
+.shs__t{font-size:1.25rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display)}
+.shs__row{
+  display:flex; align-items:center; gap:var(--s-3); width:100%;
+  padding:var(--s-3) var(--s-4); border-radius:var(--r-md); background:var(--ground-soft);
+}
+.shs__url{flex:1; min-width:0; text-align:left; font-family:var(--font-mono);
+  font-size:.8125rem; font-weight:var(--fw-semibold); letter-spacing:-.02em;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.shs__row button{
+  flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  min-width:94px; min-height:28px; padding:6px var(--s-3); border:0; border-radius:var(--r-sm);
+  background:none; cursor:pointer; transition:min-width .2s var(--ease);
+  font-size:.8125rem; font-weight:var(--fw-bold); color:var(--brand-violet);
+}
+.shs__row button:hover{background:var(--ground-sunk)}
+.shs__row button[data-state="busy"]{color:var(--ink-soft); cursor:default; background:none}
+.shs__row button[data-state="done"]{color:var(--ok); background:none; min-width:128px}
+.shs__row button svg{width:14px; height:14px}
+.dots{display:inline-flex; align-items:center; justify-content:center; gap:4px; height:14px}
+.dots i{width:5px; height:5px; border-radius:50%; background:currentColor; opacity:.28;
+  animation:shsDot 1s var(--ease) infinite}
+.dots i:nth-child(2){animation-delay:.16s}
+.dots i:nth-child(3){animation-delay:.32s}
+@keyframes shsDot{0%,62%,100%{opacity:.28; transform:translateY(0)} 31%{opacity:1; transform:translateY(-3px)}}
+.shs__targets{display:flex; flex-wrap:nowrap; gap:6px; width:100%;
+  overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch}
+.shs__targets::-webkit-scrollbar{display:none}
+.shs__targets a,.shs__targets button{
+  flex:0 0 auto; width:64px; border:0; background:none; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  padding:var(--s-2) 2px; border-radius:var(--r-md);
+  font-size:.625rem; font-weight:var(--fw-bold); color:var(--ink-mid); line-height:1.2;
+  text-decoration:none;
+}
+.shs__targets a:hover,.shs__targets button:hover{background:var(--ground-soft); color:var(--ink)}
+.shs__targets svg{width:38px; height:38px}
+@media (min-width:640px){
+  .shs{align-items:center}
+  .shs__panel{max-width:420px; border-radius:var(--r-xl); padding:var(--s-6); animation:shsPop var(--dur) var(--ease)}
+  .shs__grip{display:none}
+}
+
+/* Share, on the preview overlay — the page is right there, so the way to
+   send it should be too (Garry, 2026-09-23). */
+.aside__share{
+  display:inline-flex; align-items:center; gap:var(--s-2); height:40px; padding:0 var(--s-4);
+  border:0; border-radius:var(--r-pill); cursor:pointer;
+  background:var(--ink); color:var(--ink-invert);
+  font-size:var(--fs-xs); font-weight:var(--fw-bold);
+  transition:opacity var(--dur-fast) var(--ease);
+}
+.aside__share:hover{opacity:.88}
+.aside__share svg{width:16px; height:16px}
+
+.confetti{position:fixed; inset:0; z-index:70; pointer-events:none; overflow:hidden;
+  transition:opacity .7s linear}
+.confetti[data-out]{opacity:0}
+
+/* `infinite`, not `forwards`: the bits keep looping their own paths for the
+   five seconds the burst lasts (Garry, 2026-09-23), and because every one of
+   them has its own duration the field never visibly repeats. The layer fades
+   itself out at the end rather than blinking off mid-fall.
+
+   Nothing in JS drives this — no interval, no rebuilding of nodes. It is
+   26 elements animating transform and opacity, which the compositor runs
+   off the main thread and the browser pauses outright when the tab is not
+   visible. A continuous effect had to cost nothing to be worth having. */
+.confetti i{
+  position:absolute; top:-16px; width:8px; height:14px; border-radius:2px; opacity:0;
+  animation:fall linear infinite;
+}
+@keyframes fall{
+  0%{opacity:1; transform:translate3d(0,0,0) rotate(0deg)}
+  100%{opacity:0; transform:translate3d(var(--dx),104svh,0) rotate(var(--rot))}
+}
+
+/* ── 12. REVIEW TOOL — delete this block, its CSS and its script loop ──── */
+.preview{
+  position:fixed; right:var(--s-4); bottom:96px; z-index:50;
+  display:flex; align-items:center; gap:var(--s-1); padding:5px; border-radius:var(--r-pill);
+  background:var(--ground); box-shadow:var(--shadow-lg), inset 0 0 0 1px var(--line);
+}
+.preview button{
+  border:0; cursor:pointer; background:none; color:var(--ink-soft);
+  font-size:var(--fs-xs); font-weight:var(--fw-bold); padding:6px var(--s-3);
+  border-radius:var(--r-pill); white-space:nowrap;
+}
+.preview button:hover{color:var(--ink)}
+.preview button[aria-pressed="true"]{background:var(--brand-violet); color:#fff}
+@media (min-width:960px){ .preview{bottom:var(--s-5)} }
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; transition-duration:.001ms !important}
+}
+
+/* ── SUPPORTING TEXT ───────────────────────────────────────────────────
+   Headings and body copy run on negative tracking. The small grey lines
+   under them — subtitles, help, notes, values — do not: at 13–14px the
+   letters need the air back instead. Any new small line on this page
+   belongs in this list. */
+.head p,
+.card__note,
+.fld__lbl,
+.fld__count,
+.note,
+.chk,
+.photo__hint,
+.aside__label,
+.scanline,
+.sell__price,
+.todo__s,
+.todo__n,
+.order__empty,
+.gate,
+.status{ letter-spacing:var(--ls-soft) }
+</style>
+
+<svg class="defs" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="igGrad" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#FEDA75"/><stop offset=".35" stop-color="#FA7E1E"/>
+      <stop offset=".62" stop-color="#D62976"/><stop offset="1" stop-color="#962FBF"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="ob" data-step="1">
+
+  <!-- ══ BAR ═══════════════════════════════════════════════════════════ -->
+  <header class="ob__bar">
+    <a class="ob__logo" href="homepage.html" aria-label="Codemarca home">
+      <svg class="wm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 257 40" fill="none" role="img" aria-label="Codemarca"><g fill="#6E27E6"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></g><g fill="#101215"><path d="M245.956 14.0999H252.172V34.82H245.956V32.8723C244.589 34.447 242.558 35.4002 239.782 35.4002C234.353 35.4002 229.877 30.6345 229.877 24.46C229.877 18.2854 234.353 13.5198 239.782 13.5198C242.558 13.5198 244.589 14.4729 245.956 16.0476V14.0999ZM241.025 29.5157C243.884 29.5157 245.956 27.568 245.956 24.46C245.956 21.352 243.884 19.4043 241.025 19.4043C238.165 19.4043 236.093 21.352 236.093 24.46C236.093 27.568 238.165 29.5157 241.025 29.5157Z"/><path d="M220.695 35.4002C214.396 35.4002 209.713 30.6345 209.713 24.46C209.713 18.2854 214.396 13.5198 220.695 13.5198C224.714 13.5198 228.278 15.6332 230.06 18.8241L224.631 21.9736C223.927 20.5232 222.435 19.6529 220.612 19.6529C217.918 19.6529 215.929 21.6006 215.929 24.46C215.929 27.3193 217.918 29.267 220.612 29.267C222.435 29.267 223.968 28.3968 224.631 26.9464L230.06 30.0544C228.278 33.2867 224.756 35.4002 220.695 35.4002Z"/><path d="M203.477 17.7881C204.306 15.0116 207.083 13.6855 209.693 13.6855V20.7304C207.124 20.316 203.477 21.352 203.477 25.4545V34.82H197.261V14.1H203.477V17.7881Z"/><path d="M187.728 14.0999H193.944V34.82H187.728V32.8723C186.361 34.447 184.33 35.4002 181.554 35.4002C176.125 35.4002 171.649 30.6345 171.649 24.46C171.649 18.2854 176.125 13.5198 181.554 13.5198C184.33 13.5198 186.361 14.4729 187.728 16.0476V14.0999ZM182.797 29.5157C185.656 29.5157 187.728 27.568 187.728 24.46C187.728 21.352 185.656 19.4043 182.797 19.4043C179.937 19.4043 177.865 21.352 177.865 24.46C177.865 27.568 179.937 29.5157 182.797 29.5157Z"/><path d="M161.806 13.5198C166.571 13.5198 169.679 16.9179 169.679 22.0979V34.82H163.463V22.6366C163.463 20.5646 162.469 19.2385 160.479 19.2385C158.407 19.2385 157.247 20.6889 157.247 23.1339V34.82H151.031V22.6366C151.031 20.5646 150.037 19.2385 148.047 19.2385C145.975 19.2385 144.815 20.6889 144.815 23.1339V34.82H138.599V14.0999H144.815V16.0062C145.768 14.5972 147.592 13.5198 150.368 13.5198C152.813 13.5198 154.636 14.5143 155.797 16.2548C156.957 14.5972 158.863 13.5198 161.806 13.5198Z"/><path d="M121.357 26.9464C122.144 29.1013 124.051 29.8472 126.33 29.8472C128.029 29.8472 129.479 29.1841 130.308 28.2725L135.281 31.1318C133.25 33.9497 130.184 35.4002 126.247 35.4002C119.161 35.4002 114.768 30.6345 114.768 24.46C114.768 18.2854 119.244 13.5198 125.791 13.5198C131.841 13.5198 136.317 18.2025 136.317 24.46C136.317 25.3302 136.234 26.159 136.068 26.9464H121.357ZM121.233 22.3051H130.142C129.479 19.9016 127.614 19.0313 125.75 19.0313C123.388 19.0313 121.813 20.1916 121.233 22.3051Z"/><path d="M106.271 5.81201H112.487V34.8201H106.271V32.8724C104.903 34.4471 102.873 35.4002 100.096 35.4002C94.6674 35.4002 90.1919 30.6346 90.1919 24.4601C90.1919 18.2855 94.6674 13.5199 100.096 13.5199C102.873 13.5199 104.903 14.473 106.271 16.0477V5.81201ZM101.339 29.5158C104.199 29.5158 106.271 27.5681 106.271 24.4601C106.271 21.3521 104.199 19.4044 101.339 19.4044C98.4799 19.4044 96.4079 21.3521 96.4079 24.4601C96.4079 27.5681 98.4799 29.5158 101.339 29.5158Z"/><path d="M77.9738 35.4002C71.8821 35.4002 66.9922 30.6345 66.9922 24.46C66.9922 18.2854 71.8821 13.5198 77.9738 13.5198C84.0655 13.5198 88.9554 18.2854 88.9554 24.46C88.9554 30.6345 84.0655 35.4002 77.9738 35.4002ZM77.9738 29.3499C80.6674 29.3499 82.7394 27.4022 82.7394 24.46C82.7394 21.5177 80.6674 19.57 77.9738 19.57C75.2802 19.57 73.2082 21.5177 73.2082 24.46C73.2082 27.4022 75.2802 29.3499 77.9738 29.3499Z"/><path d="M57.8088 35.4002C51.5099 35.4002 46.8271 30.6345 46.8271 24.46C46.8271 18.2854 51.5099 13.5198 57.8088 13.5198C61.8285 13.5198 65.3923 15.6332 67.1742 18.8241L61.7456 21.9736C61.0411 20.5232 59.5493 19.6529 57.7259 19.6529C55.0323 19.6529 53.0432 21.6006 53.0432 24.46C53.0432 27.3193 55.0323 29.267 57.7259 29.267C59.5493 29.267 61.0825 28.3968 61.7456 26.9464L67.1742 30.0544C65.3923 33.2867 61.8699 35.4002 57.8088 35.4002Z"/></g></svg>
+      <svg class="mk" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="#6E27E6" role="img" aria-label="Codemarca"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></svg>
+    </a>
+
+    <div class="steps" role="progressbar" aria-label="Setup progress" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1" id="steps">
+      <span class="steps__seg"><i></i></span>
+      <span class="steps__seg"><i></i></span>
+      <span class="steps__seg"><i></i></span>
+    </div>
+
+    <a class="ob__exit" href="homepage.html" id="exit">Save &amp; exit</a>
+    <a class="ob__exit ob__dash" href="dashboard/2-page-live/home.html" id="toDash" hidden>
+      <span>Go to dashboard</span>
+      <svg class="arw" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h11m0 0-4.3-4.3M15 10l-4.3 4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </header>
+
+  <main class="ob__wrap">
+    <div class="ob__col">
+
+      <!-- ══ 1 — ABOUT YOU ═════════════════════════════════════════════ -->
+      <section class="pane" data-pane="1" aria-labelledby="h1a">
+        <div class="head">
+          <h1 id="h1a">About you</h1>
+          <p>This is the top of your page — the first thing a scan shows.</p>
+        </div>
+
+        <div class="card">
+          <div class="photo">
+            <div class="photo__disc" id="photoDisc" aria-hidden="true">?</div>
+            <div class="photo__acts">
+              <div class="photo__row">
+                <button class="photo__btn" type="button" id="photoBtn">Add photo</button>
+                <button class="photo__clear" type="button" id="photoClear" hidden>Remove</button>
+              </div>
+              <p class="photo__hint">Square works best. JPG or PNG.</p>
+            </div>
+            <input class="sr" type="file" id="photoInput" accept="image/*">
+          </div>
+
+          <div class="fld">
+            <div class="fld__top"><label class="fld__lbl" for="name">Your name</label></div>
+            <div class="inp"><input id="name" type="text" maxlength="40" autocomplete="name" placeholder="Gurdeep Singh"></div>
+          </div>
+
+          <div class="fld">
+            <div class="fld__top"><label class="fld__lbl" for="handle">Your link</label></div>
+            <div class="inp inp--mono" id="handleWrap">
+              <span class="inp__pre">codemarca.com/</span>
+              <!-- shown, not asked (Garry, 2026-09-29): the link was claimed on
+                   signup, so it is read-only here. It changes from the dashboard. -->
+              <input id="handle" type="text" maxlength="24" spellcheck="false" readonly
+                     autocapitalize="off" autocomplete="off" aria-describedby="handleNote">
+            </div>
+            <p class="note" id="handleNote" role="status" aria-live="polite"></p>
+          </div>
+
+          <div class="fld">
+            <div class="fld__top">
+              <label class="fld__lbl" for="bio">Bio <span style="font-weight:500;color:var(--ink-soft)">— optional</span></label>
+              <span class="fld__count" id="bioCount">0/100</span>
+            </div>
+            <div class="inp inp--area"><textarea id="bio" maxlength="100" rows="2" placeholder="One line about what you do."></textarea></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ 2 — CONTACT & LINKS ═══════════════════════════════════════ -->
+      <section class="pane" data-pane="2" aria-labelledby="h1b">
+        <div class="head">
+          <h1 id="h1b">Contact &amp; links</h1>
+          <p>Everything here becomes a button on your page. Hide any of it with the eye.</p>
+        </div>
+
+        <div class="card">
+          <h2 class="card__title">Contact</h2>
+
+          <div class="fld">
+            <div class="fld__top"><label class="fld__lbl" for="phone">Phone</label></div>
+            <div class="inp">
+              <span class="inp__pre">+91</span>
+              <input id="phone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="98765 43210">
+              <button class="eye" type="button" id="phoneEye" aria-pressed="true" aria-label="Show phone on your page"></button>
+            </div>
+          </div>
+
+          <div class="fld">
+            <div class="fld__top"><label class="fld__lbl" for="wa">WhatsApp</label></div>
+            <label class="chk">
+              <input type="checkbox" id="waSame" checked>
+              <span class="chk__box"><svg viewBox="0 0 12 12" fill="none"><path d="M1.8 6.2 4.5 9l5.7-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              Same as phone
+            </label>
+            <div class="inp" id="waWrap" hidden>
+              <span class="inp__pre">+91</span>
+              <input id="wa" type="tel" inputmode="numeric" maxlength="10" placeholder="Business number">
+              <button class="eye" type="button" id="waEye" aria-pressed="true" aria-label="Show WhatsApp on your page"></button>
+            </div>
+          </div>
+
+          <div class="fld">
+            <div class="fld__top"><label class="fld__lbl" for="email">Email</label></div>
+            <div class="inp">
+              <input id="email" type="email" autocomplete="email" placeholder="you@example.com">
+              <button class="eye" type="button" id="emailEye" aria-pressed="true" aria-label="Show email on your page"></button>
+            </div>
+          </div>
+
+          <p class="card__note">Save contact is on every page — one tap and you are in their phonebook.</p>
+        </div>
+
+        <div class="card" id="linksCard">
+          <h2 class="card__title">Add links</h2>
+          <div class="grid" id="grid"></div>
+          <div class="added" id="added"></div>
+          <button class="addcustom" type="button" id="addCustom">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Custom link
+          </button>
+          <div class="custom" id="customs"></div>
+        </div>
+
+        <div class="card" id="orderCard">
+          <h2 class="card__title">Order on your page</h2>
+          <p class="card__note">Every button is the same size — the order is the only hierarchy. Drag, or use the arrows.</p>
+          <ul class="order" id="order"></ul>
+        </div>
+      </section>
+
+      <!-- ══ 3 — DONE ══════════════════════════════════════════════════ -->
+      <section class="pane done" data-pane="3" data-phase="full" aria-labelledby="h1c">
+        <div class="head">
+          <h1 id="h1c">Your page is live</h1>
+        </div>
+
+        <!-- ══ READY TO SHARE — the 4-active home's .me card, cut down ════
+             Who you are, your link and your code. The link IS the share
+             button (the pill); the three small actions under it are the
+             only other things worth doing with a page this new. -->
+        <div class="me">
+          <div class="me__top">
+            <span class="me__av" id="meAv">G</span>
+            <span class="me__who">
+              <span class="me__name" id="meName">Your name</span>
+              <span class="me__live"><i></i>Live</span>
+            </span>
+            <button class="me__qr" type="button" id="qrBig" aria-label="Show my QR full screen">
+              <svg id="qr" viewBox="0 0 29 29" shape-rendering="crispEdges" role="img" aria-label="Placeholder QR code"></svg>
+            </button>
+          </div>
+
+          <button class="me__link" type="button" id="shareQR" aria-label="Share my page">
+            <span class="me__url" id="liveUrl">codemarca.com/gurdeep</span>
+            <span class="me__share">
+              <svg viewBox="0 0 20 20" fill="none"><path d="M10 13V3m0 0L6.6 6.4M10 3l3.4 3.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 11.5v4.2c0 .7.6 1.3 1.3 1.3h8.4c.7 0 1.3-.6 1.3-1.3v-4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <span id="shareT">Share</span>
+            </span>
+          </button>
+
+          <div class="me__acts">
+            <button class="me__btn" type="button" id="copyUrl">
+              <svg viewBox="0 0 20 20" fill="none"><rect x="7" y="7" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M4 13V5a2 2 0 0 1 2-2h7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+              <span>Copy link</span>
+            </button>
+            <button class="me__btn" type="button" id="dlQR">
+              <svg viewBox="0 0 20 20" fill="none"><path d="M10 3v10m0 0 3.4-3.4M10 13 6.6 9.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15.5h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <span>Save QR</span>
+            </button>
+            <button class="me__btn" type="button" id="viewPage">
+              <svg viewBox="0 0 20 20" fill="none"><path d="M2 10s3-5.4 8-5.4S18 10 18 10s-3 5.4-8 5.4S2 10 2 10Z" stroke="currentColor" stroke-width="1.7"/><circle cx="10" cy="10" r="2.3" stroke="currentColor" stroke-width="1.7"/></svg>
+              <span>View page</span>
+            </button>
+          </div>
+          <p class="scanline">Scan it — that's what a stranger sees.</p>
+        </div>
+
+        <!-- ══ WHAT IS STILL MISSING ═════════════════════════════════════
+             Save & exit is on every step, so people land here with half a
+             page on purpose — "baaki baad mein" (Garry, 2026-09-23). The
+             screen never scolds: the page IS live. It just lists what is not
+             filled in yet, each row going back to the step that fills it.
+             With nothing missing the card is not rendered at all. -->
+        <div class="todo" id="todo" hidden>
+          <div class="todo__head">
+            <span class="todo__t" id="todoT">Finish your page</span>
+            <span class="todo__n" id="todoN"></span>
+          </div>
+          <div class="todo__rows" id="todoRows"></div>
+        </div>
+
+        <!-- ══ PUT IT ON SOMETHING — the reason this screen exists ════════
+             Sold with pictures, not paragraphs (Garry, 2026-09-21): real
+             surfaces from PACK.PLACES, the price in one line, one button.
+             On a phone the row swipes, with a drawn scrollbar under it —
+             iOS hides its own the moment you let go. -->
+        <div class="sell" id="sell">
+          <div class="sell__head">
+            <span class="sell__eyebrow" id="sellEye">Your free pack</span>
+            <p class="sell__h" id="sellH">Two stickers. Your code. Anywhere.</p>
+          </div>
+
+          <div class="places" id="places" tabindex="0" aria-label="Where people put their stickers"></div>
+
+          <div class="places__nav">
+            <button class="places__arw" type="button" id="placePrev" aria-label="Previous photo">
+              <svg viewBox="0 0 20 20" fill="none"><path d="M12 4 6 10l6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="places__bar" id="placeBar" aria-hidden="true">
+              <span class="places__track"><span class="places__thumb" id="placeThumb"></span></span>
+            </div>
+            <button class="places__arw" type="button" id="placeNext" aria-label="Next photo">
+              <svg viewBox="0 0 20 20" fill="none"><path d="M8 4l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+
+          <p class="sell__price" id="sellPrice"><b>Free</b> — you only pay delivery. 4″ and 1.5″, one code on both.</p>
+          <a class="btn btn--go" href="select-pack.html?built=1" id="getPack">Get your FREE pack</a>
+        </div>
+
+        <p class="status" id="doneStatus" role="status" aria-live="polite"></p>
+      </section>
+
+      <!-- ══ FOOTER ACTIONS ════════════════════════════════════════════ -->
+      <footer class="ob__foot" id="foot">
+        <button class="btn btn--ghost btn--icon" type="button" id="back" aria-label="Back" hidden>
+          <svg viewBox="0 0 20 20" fill="none"><path d="M12 4 6 10l6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="btn btn--ghost btn--preview btn--icon" type="button" id="peek" aria-label="Preview your page">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M2 10s3-5.4 8-5.4S18 10 18 10s-3 5.4-8 5.4S2 10 2 10Z" stroke="currentColor" stroke-width="1.9"/><circle cx="10" cy="10" r="2.3" stroke="currentColor" stroke-width="1.9"/></svg>
+        </button>
+        <button class="btn btn--go" type="button" id="next">Continue</button>
+      </footer>
+    </div>
+
+    <!-- ══ PREVIEW — sheet on a phone, sticky column on a desktop ══════ -->
+    <aside class="ob__aside" id="aside" aria-label="Preview">
+      <div class="aside__inner">
+        <p class="aside__label" id="asideLabel">What a person sees when they scan your code</p>
+        <div class="devs" id="devs" role="group" aria-label="Preview size">
+          <button type="button" data-d="mobile" aria-pressed="true">Mobile</button>
+          <button type="button" data-d="desktop" aria-pressed="false">Desktop</button>
+        </div>
+        <div class="phone" data-theme="light" data-device="mobile" id="phoneFrame">
+          <div class="win" aria-hidden="true"><i></i><i></i><i></i><span class="win__u" id="winUrl">codemarca.com</span></div>
+          <div class="phone__scr" id="scr"></div>
+        </div>
+        <button class="aside__share" type="button" id="asideShare" hidden>
+          <svg viewBox="0 0 20 20" fill="none"><path d="M10 13V3m0 0L6.6 6.4M10 3l3.4 3.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 11.5v4.2c0 .7.6 1.3 1.3 1.3h8.4c.7 0 1.3-.6 1.3-1.3v-4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Share my page
+        </button>
+        <div class="themes" id="themes" role="group" aria-label="Page theme"></div>
+      </div>
+      <button class="aside__close" type="button" id="asideClose">Close preview</button>
+    </aside>
+  </main>
+</div>
+
+<!-- Share — the dashboard's sheet (CM.shareSheet), ported. -->
+<div class="shs" id="shs" role="dialog" aria-modal="true" aria-label="Share this page" hidden>
+  <div class="shs__scrim" data-shs-close></div>
+  <div class="shs__panel">
+    <button class="shs__x" type="button" data-shs-close aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div class="shs__grip" aria-hidden="true"></div>
+    <h2 class="shs__t">Share your page</h2>
+    <div class="shs__row"><span class="shs__url" id="shsUrl"></span>
+      <button type="button" id="shsCopy">Copy</button></div>
+    <div class="shs__targets" id="shsTargets"></div>
+  </div>
+</div>
+
+<!-- The code, full screen — the dashboard's view (CM.showCode), ported so a
+     page this new already behaves like it will on the dashboard. -->
+<div class="show" id="show" role="dialog" aria-modal="true" aria-label="Your code, full screen" hidden>
+  <button class="show__close" type="button" id="showClose" aria-label="Close">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+  <p class="show__hint">Point a camera here</p>
+  <div class="show__qr" id="showQr"></div>
+  <div class="show__id">
+    <span class="show__name" id="showName"></span>
+    <span class="show__sub" id="showSub"></span>
+  </div>
+  <div class="show__acts">
+    <button class="show__btn" type="button" id="showDl">
+      <svg viewBox="0 0 20 20" fill="none"><path d="M10 3v10m0 0 3.4-3.4M10 13 6.6 9.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15.5h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span>Download</span>
+    </button>
+    <button class="show__btn" type="button" id="showShare">
+      <svg viewBox="0 0 20 20" fill="none"><path d="M10 13V3m0 0L6.6 6.4M10 3l3.4 3.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 11.5v4.2c0 .7.6 1.3 1.3 1.3h8.4c.7 0 1.3-.6 1.3-1.3v-4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span>Share</span>
+    </button>
+    <button class="show__btn" type="button" id="showCopy">
+      <svg viewBox="0 0 20 20" fill="none"><rect x="7" y="7" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M4 13V5a2 2 0 0 1 2-2h7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      <span>Copy link</span>
+    </button>
+  </div>
+</div>
+
+<!-- Review tool only — delete this block, its CSS section and its script loop. -->
+<div class="preview" role="group" aria-label="Jump to step">
+  <button type="button" data-go="1" aria-pressed="true">About</button>
+  <button type="button" data-go="2" aria-pressed="false">Links</button>
+  <button type="button" data-go="3" aria-pressed="false">Done</button>
+</div>
+
+<script src="pack.js"></script>
+<script src="lightbox.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ══ 0. HELPERS ══════════════════════════════════════════════════════ */
+  var $  = function (id) { return document.getElementById(id); };
+  var esc = function (s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  };
+
+  /* ══ 1. ICONS ════════════════════════════════════════════════════════
+     Brand-coloured discs for the builder and for the socials row on the
+     page — socials keep their own colours in every theme. Swap these
+     simplified glyphs for the official brand marks before launch.
+     Row icons inside the phone are monochrome on purpose: they take the
+     theme's ink, so a theme change never leaves a stray colour behind. */
+
+  var G_PATHS =
+    '<path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.79 2.72v2.26h2.9c1.7-1.57 2.69-3.88 2.69-6.62z"/>' +
+    '<path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.95-2.18l-2.9-2.26c-.81.54-1.84.86-3.05.86-2.34 0-4.33-1.58-5.04-3.71H.96v2.33A9 9 0 0 0 9 18z"/>' +
+    '<path fill="#FBBC05" d="M3.96 10.71a5.41 5.41 0 0 1 0-3.42V4.96H.96a9 9 0 0 0 0 8.08l3-2.33z"/>' +
+    '<path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.96l3 2.33C4.67 5.16 6.66 3.58 9 3.58z"/>';
+
+  var GLYPH = {
+    instagram : '<rect x="5" y="5" width="14" height="14" rx="4.2" fill="none" stroke="#fff" stroke-width="1.9"/><circle cx="12" cy="12" r="3.3" fill="none" stroke="#fff" stroke-width="1.9"/><circle cx="16.5" cy="7.6" r="1.15" fill="#fff"/>',
+    youtube   : '<path d="M9.9 8.4 16.2 12l-6.3 3.6z" fill="#fff"/>',
+    facebook  : '<path d="M13.4 20v-7.1h2.4l.36-2.78H13.4V8.34c0-.8.23-1.35 1.39-1.35h1.48V4.5a19.7 19.7 0 0 0-2.16-.11c-2.13 0-3.59 1.3-3.59 3.69v2.04H8.1v2.78h2.42V20z" fill="#fff"/>',
+    snapchat  : '<path d="M12 4.7c2.16 0 3.83 1.68 3.83 3.83 0 .6-.05 1.27-.1 1.77.2.1.5.15.79.05.3-.1.6-.05.74.2.15.3 0 .64-.34.79-.3.15-.99.34-1.19.74-.15.3.15.89.69 1.53.5.6 1.19 1.04 1.83 1.19.25.05.35.25.3.5-.1.44-.99.74-1.83.89-.15.25-.2.6-.3.89-.05.2-.2.3-.44.25-.35-.05-.79-.15-1.34-.05-.5.1-.99.54-1.68.89-.44.2-.94.3-1.39.3s-.94-.1-1.39-.3c-.69-.35-1.19-.79-1.68-.89-.54-.1-.99 0-1.34.05-.25.05-.4-.05-.44-.25-.1-.3-.15-.64-.3-.89-.84-.15-1.73-.45-1.83-.89-.05-.25.05-.45.3-.5.64-.15 1.34-.6 1.83-1.19.54-.64.84-1.24.69-1.53-.2-.4-.89-.6-1.19-.74-.35-.15-.5-.5-.34-.79.15-.25.44-.3.74-.2.3.1.6.05.79-.05-.05-.5-.1-1.17-.1-1.77C8.17 6.38 9.84 4.7 12 4.7z" fill="#101215"/>',
+    telegram  : '<path d="M19.2 6.2 5.5 11.5c-.7.28-.7.78.02.98l3.44 1.07 7.98-5.03c.38-.23.72-.11.44.14l-6.46 5.84-.25 3.5c.29 0 .42-.13.58-.29l1.4-1.35 2.9 2.14c.53.3.92.14 1.05-.5l1.9-8.94c.19-.86-.31-1.25-.9-1.02z" fill="#fff"/>',
+    linkedin  : '<rect x="6" y="9.9" width="2.6" height="8.1" rx=".5" fill="#fff"/><circle cx="7.3" cy="7" r="1.55" fill="#fff"/><path d="M10.7 18v-8.1h2.5v1.1c.42-.72 1.24-1.3 2.44-1.3 2 0 3.06 1.24 3.06 3.5V18h-2.6v-4.2c0-1.1-.42-1.76-1.4-1.76-1 0-1.5.68-1.5 1.76V18z" fill="#fff"/>',
+    x         : '<path d="M6 5.4h3.3l3 4.1 3.5-4.1h2.9l-5 5.8 5.4 7.4h-3.3l-3.3-4.5-3.8 4.5H5.8l5.3-6.2z" fill="#fff"/>',
+    threads   : '<path d="M15.9 11.4c-.13-2-1.36-3.16-3.42-3.16-1.4 0-2.5.5-3.16 1.5l1.2.83c.44-.64 1.08-.93 1.96-.93 1.13 0 1.78.58 1.94 1.72-.5-.1-1.05-.13-1.64-.08-1.98.15-3.22 1.24-3.08 2.82.13 1.4 1.35 2.28 2.93 2.18 1.44-.1 2.42-.85 2.92-2.13.5.5.7 1.14.55 1.83-.3 1.34-1.68 2.18-3.8 2.18-3.03 0-4.66-1.93-4.66-5.55 0-3.62 1.63-5.55 4.66-5.55 2.08 0 3.52.84 4.3 2.48l1.54-.74C16.98 6.5 15.06 5.2 12.2 5.2 7.94 5.2 5.7 7.78 5.7 12.54s2.24 7.34 6.5 7.34c2.97 0 4.95-1.39 5.45-3.47.4-1.73-.4-3.31-1.75-4.02zm-3.27 3.32c-.74.05-1.24-.3-1.29-.84-.05-.6.5-1.04 1.49-1.11.5-.04.99 0 1.44.1-.2 1.09-.85 1.78-1.64 1.85z" fill="#fff"/>',
+    spotify   : '<path d="M7.9 15.4c2.4-.7 4.9-.5 7 .6" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><path d="M7.3 12.5c3-1 6.3-.7 8.9.9" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><path d="M6.8 9.5c3.6-1.2 7.7-.8 10.7 1.1" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/>',
+    pinterest : '<path d="M12.3 5.4c-3.7 0-5.7 2.4-5.7 5 0 1.2.45 2.28 1.44 2.68.16.07.3 0 .35-.18l.14-.55c.05-.18.03-.25-.1-.4-.3-.36-.5-.83-.5-1.5 0-1.9 1.44-3.6 3.78-3.6 2.06 0 3.19 1.25 3.19 2.9 0 2.2-.97 4.05-2.42 4.05-.8 0-1.4-.66-1.2-1.47.23-.97.68-2 .68-2.7 0-.62-.34-1.14-1.03-1.14-.82 0-1.47.84-1.47 1.97 0 .72.24 1.2.24 1.2l-.97 4.1c-.29 1.2-.04 2.7-.02 2.85.01.09.13.11.18.04.08-.1 1.1-1.36 1.45-2.6.1-.36.57-2.2.57-2.2.28.53 1.1.99 1.97.99 2.6 0 4.36-2.37 4.36-5.54 0-2.4-2.03-4.64-5.12-4.64z" fill="#fff"/>',
+    soundcloud: '<rect x="5" y="12.2" width="1.4" height="4.6" rx=".7" fill="#fff"/><rect x="7.4" y="10.8" width="1.4" height="6" rx=".7" fill="#fff"/><rect x="9.8" y="9.7" width="1.4" height="7.1" rx=".7" fill="#fff"/><path d="M12.7 16.8V9.4c.5-.45 1.16-.72 1.9-.72 1.63 0 2.97 1.24 3.15 2.85.95.2 1.65.98 1.65 1.93 0 1.13-.98 2.04-2.15 2.04z" fill="#fff"/>',
+    website   : '<circle cx="12" cy="12" r="6.2" fill="none" stroke="#fff" stroke-width="1.7"/><ellipse cx="12" cy="12" rx="2.6" ry="6.2" fill="none" stroke="#fff" stroke-width="1.7"/><path d="M6.1 10h11.8M6.1 14h11.8" stroke="#fff" stroke-width="1.7"/>',
+    directions: '<path d="M12 4.9c-2.65 0-4.8 2.15-4.8 4.8 0 3.55 4.8 9.3 4.8 9.3s4.8-5.75 4.8-9.3c0-2.65-2.15-4.8-4.8-4.8z" fill="#fff"/><circle cx="12" cy="9.6" r="1.85" fill="#EA4335"/>'
+  };
+
+  var DISC = {
+    instagram:"url(#igGrad)", youtube:"#FF0000", facebook:"#1877F2", snapchat:"#FFFC00",
+    telegram:"#229ED9", linkedin:"#0A66C2", x:"#101215", threads:"#101215",
+    spotify:"#1DB954", pinterest:"#E60023", soundcloud:"#FF5500",
+    website:"#6E27E6", directions:"#EA4335"
+  };
+
+  /* one round icon, brand colour, any size the CSS asks for */
+  function ic(key) {
+    if (key === "review") {
+      return '<svg class="ic" viewBox="0 0 24 24" role="img" aria-hidden="true">' +
+             '<circle cx="12" cy="12" r="12" fill="#fff"/><circle cx="12" cy="12" r="11.2" fill="none" stroke="rgba(16,18,21,.14)" stroke-width="1.2"/>' +
+             '<g transform="translate(7.5 7.5) scale(.5)">' + G_PATHS + '</g></svg>';
+    }
+    if (key === "custom") {
+      return '<svg class="ic" viewBox="0 0 24 24" role="img" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#6E27E6"/>' +
+             '<path d="M10.4 13.6a2.9 2.9 0 0 0 4.3.3l2-2a2.9 2.9 0 1 0-4.1-4.1l-1 1" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/>' +
+             '<path d="M13.6 10.4a2.9 2.9 0 0 0-4.3-.3l-2 2a2.9 2.9 0 1 0 4.1 4.1l1-1" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>';
+    }
+    return '<svg class="ic" viewBox="0 0 24 24" role="img" aria-hidden="true">' +
+           '<circle cx="12" cy="12" r="12" fill="' + DISC[key] + '"/>' + GLYPH[key] + '</svg>';
+  }
+
+  /* monochrome glyphs for the rows inside the phone */
+  var ROWIC = {
+    call      : '<path d="M4.4 3.6h3l1.2 3-1.7 1.3a9.5 9.5 0 0 0 4.2 4.2l1.3-1.7 3 1.2v3c0 .7-.6 1.3-1.3 1.2A13.4 13.4 0 0 1 3.2 4.9c-.1-.7.5-1.3 1.2-1.3z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+    wa        : '<path d="M3.4 16.6 4.5 13a6.6 6.6 0 1 1 2.5 2.4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+    email     : '<rect x="2.6" y="4.4" width="14.8" height="11.2" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m3.4 6 6.6 4.6L16.6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+    vcard     : '<rect x="2.4" y="3.6" width="15.2" height="12.8" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="7.6" cy="8.8" r="1.9" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4.6 13.6c.5-1.4 1.7-2.1 3-2.1s2.5.7 3 2.1M12.4 8.4h3.2M12.4 11.4h3.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+    website   : '<circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.6"/><ellipse cx="10" cy="10" rx="2.8" ry="6.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.7 8h12.6M3.7 12h12.6" stroke="currentColor" stroke-width="1.6"/>',
+    directions: '<path d="M10 2.6a5.1 5.1 0 0 0-5.1 5.1c0 3.8 5.1 9.7 5.1 9.7s5.1-5.9 5.1-9.7A5.1 5.1 0 0 0 10 2.6z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="10" cy="7.6" r="1.9" fill="none" stroke="currentColor" stroke-width="1.5"/>',
+    review    : '<path d="m10 2.6 2.3 4.7 5.2.75-3.75 3.65.9 5.15L10 14.4l-4.65 2.45.9-5.15L2.5 8.05l5.2-.75z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+    custom    : '<path d="M8.6 11.4a2.9 2.9 0 0 0 4.3.3l2-2a2.9 2.9 0 1 0-4.1-4.1l-1 1M11.4 8.6a2.9 2.9 0 0 0-4.3-.3l-2 2a2.9 2.9 0 1 0 4.1 4.1l1-1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'
+  };
+  function rowIc(k) { return '<svg viewBox="0 0 20 20" aria-hidden="true">' + (ROWIC[k] || ROWIC.custom) + "</svg>"; }
+
+  var EYE =
+    '<svg class="on" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M1.8 10S4.9 4.8 10 4.8 18.2 10 18.2 10 15.1 15.2 10 15.2 1.8 10 1.8 10Z" stroke="currentColor" stroke-width="1.7"/><circle cx="10" cy="10" r="2.4" stroke="currentColor" stroke-width="1.7"/></svg>' +
+    '<svg class="off" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.2 5.6C2.6 7.1 1.8 10 1.8 10S4.9 15.2 10 15.2c1.5 0 2.8-.45 3.9-1.1M16.4 12.4c1.2-1.3 1.8-2.4 1.8-2.4S15.1 4.8 10 4.8c-.7 0-1.35.1-1.95.27M3 3l14 14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+
+  /* ══ 2. THE LINK GRID ════════════════════════════════════════════════
+     Ordered for India. Socials render as a round icon row on the page;
+     website / review / directions render as full-width buttons.
+     Telegram added 2026-09-06 — it was suggested and left unanswered when
+     the field list was first written down. */
+  var LINKS = [
+    { k:"instagram",  n:"Instagram",  ph:"@username",             kind:"social" },
+    { k:"youtube",    n:"YouTube",    ph:"@channel",              kind:"social" },
+    { k:"facebook",   n:"Facebook",   ph:"facebook.com/you",      kind:"social" },
+    { k:"snapchat",   n:"Snapchat",   ph:"@username",             kind:"social" },
+    { k:"telegram",   n:"Telegram",   ph:"@username",             kind:"social" },
+    { k:"linkedin",   n:"LinkedIn",   ph:"linkedin.com/in/you",   kind:"social" },
+    { k:"x",          n:"X",          ph:"@username",             kind:"social" },
+    { k:"threads",    n:"Threads",    ph:"@username",             kind:"social" },
+    { k:"website",    n:"Website",    ph:"yoursite.com",          kind:"row", label:"Website" },
+    { k:"review",     n:"Google",     ph:"Google Business link",  kind:"row", label:"Review on Google" },
+    { k:"directions", n:"Directions", ph:"Google Maps link",      kind:"row", label:"Directions" },
+    { k:"spotify",    n:"Spotify",    ph:"Profile link",          kind:"social" },
+    { k:"pinterest",  n:"Pinterest",  ph:"@username",             kind:"social" },
+    { k:"soundcloud", n:"SoundCloud", ph:"@username",             kind:"social" }
+  ];
+  var BY = {}; LINKS.forEach(function (l) { BY[l.k] = l; });
+
+  /* THE ICON ROW'S OWN ORDER — Garry, 2026-09-24.
+     The socials render as one row of circles, and until now that row was
+     stuck in the order this list happens to be written in. It is the one
+     part of the page somebody actually wants to arrange (Instagram first,
+     say), so it gets its own array and its own up/down controls on step 2.
+     The full-width rows — website, review, directions — are NOT in here:
+     they are arranged in "Order on your page" below, and mixing them into
+     the circles is what made that row look wrong. */
+  var SOCIAL_KEYS = LINKS.filter(function (l) { return l.kind === "social"; })
+                         .map(function (l) { return l.k; });
+
+  var THEMES = [
+    { t:"light",    n:"Light" },   { t:"dark",  n:"Dark" }, { t:"violet", n:"Brand violet" },
+    { t:"cream",    n:"Warm cream" }, { t:"gradient", n:"Gradient" }
+  ];
+
+  /* ══ 3. STATE ════════════════════════════════════════════════════════
+     order[] is the whole layout model. Rows only render when their field
+     is filled, so the array can safely hold keys that are not live yet. */
+  var S = {
+    step:1, photo:null, name:"", handle:"gurdeep", bio:"",
+    phone:"", phoneOn:true, waSame:true, wa:"", waOn:true, email:"", emailOn:true,
+    links:{},                 /* k -> { v:"", on:true } */
+    customs:[],               /* { id, title, url, on } */
+    theme:"light",
+    order:["call","wa","email","vcard","socials","website","directions","review"],
+    socialOrder:null,          /* filled from SOCIAL_KEYS once LINKS exists */
+    handleOk:true
+  };
+
+  S.socialOrder = SOCIAL_KEYS.slice();
+
+  var RESERVED = ["admin","codemarca","hello","support","help","api","about","login","signup","app","www","shop","blog"];
+  var TAKEN    = ["garry","nikk","nancy","amit","gill"];
+  var cid = 0;
+
+  /* ══ 4. READ THE QUERY STRING ════════════════════════════════════════
+     Three routes land here — claim signup, post-order dashboard, first
+     scan of a fresh code. All three arrive with a handle. */
+  var q = new URLSearchParams(location.search);
+  if (q.get("handle")) S.handle = cleanHandle(q.get("handle"));
+  if (q.get("name"))   S.name   = q.get("name").slice(0, 40);
+
+  /* WHERE "DONE" GOES — added 2026-09-16 with the flow folders.
+     Most people arrive here with no pack, so finishing lands them on the
+     page-live dashboard and the loud button is still "get your pack".
+
+     ?ordered=1 is the other way round: they bought the pack FIRST and are
+     only now building the page — the flow-3 screens send them here with
+     it. For them the pack is already paid for and in a van, so offering
+     to sell them one would be the product not paying attention. They get
+     the photos only — no price, no button — and "Done" goes to flow 2's
+     pack-on-the-way state. */
+  if (q.get("ordered")) {
+    var dash = document.getElementById("toDash");
+    var pack = document.getElementById("getPack");
+    /* page live + pack in the van = flow 2's `coming` state (2026-09-29) */
+    if (dash) { dash.href = "dashboard/2-page-live/home.html?state=coming"; }
+    /* same photos, but no price and no button (Garry, 2026-09-29) — the pack
+       is already paid for; the photos only show where it can go */
+    if (pack) { pack.hidden = true; }
+    document.getElementById("sellEye").textContent = "Your pack is on the way";
+    document.getElementById("sellH").textContent = "Here is where people put theirs.";
+    document.getElementById("sellPrice").hidden = true;
+  }
+
+  function cleanHandle(v) { return String(v).toLowerCase().replace(/[^a-z0-9._-]/g, "").slice(0, 24); }
+
+  /* ══ 5. STEP NAVIGATION ══════════════════════════════════════════════ */
+  var ob = document.querySelector(".ob");
+  var gate = document.createElement("p");
+  gate.className = "gate";
+  gate.setAttribute("role", "status");
+  $("foot").parentNode.insertBefore(gate, $("foot"));
+
+  /* One burst, on arrival, and never twice — the layer takes itself out.
+     Anyone who has asked for less motion gets the screen without it. */
+  var REDUCE = window.matchMedia && window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+  /* a mouse or a trackpad — not a finger */
+  var FINE_POINTER = !window.matchMedia || window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+  /* Built once and left running for as long as step 3 is on screen. Held in
+     a variable rather than behind a "has it fired yet" flag, because the
+     thing that needs answering on the way out is which layer to remove. */
+  var confetti = null, partyTimer = null;
+
+  function celebrate() {
+    if (confetti || REDUCE) return;
+
+    var layer = document.createElement("div");
+    layer.className = "confetti";
+    layer.setAttribute("aria-hidden", "true");
+    var colors = ["#6E27E6", "#A171F4", "#DCC9FB", "#101215"];
+
+    for (var i = 0; i < 26; i++) {
+      var bit = document.createElement("i");
+      var secs = 1.5 + Math.random() * 1.1;
+      bit.style.left = (Math.random() * 100) + "vw";
+      bit.style.width = (6 + Math.random() * 5) + "px";
+      bit.style.height = (10 + Math.random() * 8) + "px";
+      bit.style.background = colors[i % colors.length];
+      bit.style.animationDuration = secs + "s";
+
+      /* A NEGATIVE delay starts each bit part-way through its own fall, so
+         the screen is already full of confetti on the first frame and the
+         bits are spread down it rather than arriving as one clump at the
+         top. A positive delay would give an empty opening beat instead. */
+      bit.style.animationDelay = (-Math.random() * secs) + "s";
+
+      bit.style.setProperty("--dx", Math.round(Math.random() * 220 - 110) + "px");
+      bit.style.setProperty("--rot", Math.round(Math.random() * 900 - 450) + "deg");
+      layer.appendChild(bit);
+    }
+
+    document.body.appendChild(layer);
+    confetti = layer;
+
+    /* five seconds is a burst; longer and it stops reading as a moment and
+       starts reading as wallpaper (Garry, 2026-09-23) */
+    partyTimer = setTimeout(function () {
+      if (!confetti) return;
+      confetti.setAttribute("data-out", "");
+      partyTimer = setTimeout(stopCelebrating, 800);
+    }, 5000);
+  }
+
+  /* Leaving step 3 takes the layer with it — an endless effect belongs to
+     this one screen, not to a builder somebody stepped back into. */
+  function stopCelebrating() {
+    clearTimeout(partyTimer); partyTimer = null;
+    if (!confetti) return;
+    confetti.remove();
+    confetti = null;
+  }
+
+  /* ══ 5b. HOW FINISHED IS THIS PAGE ═══════════════════════════════════
+     Save & exit sits on steps 1 and 2, and people use it — "baaki links
+     baad mein daal dunga" (Garry, 2026-09-23). So step 3 is not one screen
+     but three, told apart by what the page can actually do:
+
+       bare  nothing opens behind the code — no contact and no links. The
+             page is live and the handle is theirs, but a scan lands on a
+             name. Finishing is the ask; the pack steps back and there is
+             nothing to celebrate yet.
+       thin  it works, and something optional is missing — a photo, a line
+             about them, some links. Celebrate, then list what is left.
+       full  nothing missing. The screen built on 2026-09-21, untouched.
+
+     Every row goes back to the step that fills it, so the checklist is a
+     way in, not a scolding. */
+  function linkCount() {
+    return Object.keys(S.links).length + S.customs.length;
+  }
+
+  function missing() {
+    var out = [];
+    if (!hasContact()) {
+      out.push({ k:"contact", must:true, step:2, focus:"phone", ic:"phone",
+                 l:"Add a way to reach you",
+                 s:"A phone, WhatsApp or email. Without one, a scan opens just your name." });
+    }
+    if (!linkCount()) {
+      out.push({ k:"links", step:2, focus:null, ic:"link",
+                 l:"Add your links",
+                 s:"Instagram, YouTube, your website — whichever ones you hand out." });
+    }
+    if (!S.photo) {
+      out.push({ k:"photo", step:1, focus:null, ic:"user",
+                 l:"Add a photo",
+                 s:"It is the first thing on the page, and the first thing people recognise." });
+    }
+    /* No bio row — the field says "optional" on step 1, and a checklist that
+       asks for it anyway makes a liar of the form (Garry, 2026-09-24). */
+    return out;
+  }
+
+  var TODO_IC = {
+    phone: '<path d="M6.5 3.5h3l1.5 4-2 1.5a12 12 0 0 0 6 6L16.5 13l4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2Z"/>',
+    link:  '<path d="M10.5 13.5a4 4 0 0 0 5.7 0l2.8-2.8a4 4 0 1 0-5.7-5.7l-1.4 1.4"/><path d="M13.5 10.5a4 4 0 0 0-5.7 0l-2.8 2.8a4 4 0 1 0 5.7 5.7l1.4-1.4"/>',
+    user:  '<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/>',
+    pen:   '<path d="M4 20h4L20 8l-4-4L4 16z"/>'
+  };
+  function todoIcon(k) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" ' +
+           'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + TODO_IC[k] + "</svg>";
+  }
+
+  function paintDone() {
+    var left = missing();
+    var bare = !hasContact() && !linkCount();
+    var phase = bare ? "bare" : (left.length ? "thin" : "full");
+    document.querySelector(".done").dataset.phase = phase;
+
+    $("todo").hidden = !left.length;
+    if (left.length) {
+      $("todoT").textContent = bare ? "Make it work" : "Finish your page";
+      $("todoN").textContent = left.length + (left.length === 1 ? " thing left" : " things left");
+      $("todoRows").innerHTML = left.map(function (m) {
+        return '<button class="todo__row" type="button" data-todo="' + m.k + '"' +
+          (m.must ? " data-must" : "") + ">" +
+          '<span class="todo__ic">' + todoIcon(m.ic) + "</span>" +
+          '<span class="todo__txt"><span class="todo__l">' + esc(m.l) + "</span>" +
+          '<span class="todo__s">' + esc(m.s) + "</span></span>" +
+          '<svg class="todo__go" viewBox="0 0 20 20" fill="none"><path d="M8 4l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+        "</button>";
+      }).join("");
+    }
+    return phase;
+  }
+
+  /* a page with nothing behind it has not achieved anything yet */
+  $("todoRows").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-todo]"); if (!b) return;
+    var m = missing().filter(function (x) { return x.k === b.dataset.todo; })[0];
+    if (!m) return;
+    setStep(m.step);
+    if (m.focus && $(m.focus)) $(m.focus).focus();
+  });
+
+  function setStep(n) {
+    S.step = n;
+    ob.dataset.step = String(n);
+    $("steps").setAttribute("aria-valuenow", String(n));
+    document.title = n === 3 ? "Codemarca — Your page is live" : "Codemarca — Set up your page";
+    $("back").hidden = n === 1;
+    $("foot").hidden = n === 3;
+    $("exit").hidden = n === 3;   /* published already — nothing left to save */
+    $("toDash").hidden = n !== 3; /* …and the way out takes its place */
+    gate.hidden = n === 3;
+    $("aside").dataset.open = "false";
+    $("next").textContent = n === 2 ? "Publish my page" : "Continue";
+    if (n === 3) {
+      $("liveUrl").textContent = "codemarca.com/" + S.handle;
+      $("meName").textContent = S.name.trim() || S.handle;
+      $("meAv").innerHTML = S.photo ? '<img src="' + S.photo + '" alt="">' : esc(initial());
+      $("winUrl").textContent = "codemarca.com/" + S.handle;
+      drawQR(S.handle);
+      if (paintDone() !== "bare") celebrate();
+      paintPlaces();                         /* the row has a width now */
+      requestAnimationFrame(paintPlaces);    /* …and again once fonts settle */
+    } else {
+      closeShow();
+      stopCelebrating();
+      setDevice("mobile");   /* the desktop frame belongs to the done overlay only */
+    }
+    Array.prototype.forEach.call(document.querySelectorAll(".preview button"), function (b) {
+      b.setAttribute("aria-pressed", String(b.dataset.go === String(n)));
+    });
+    window.scrollTo(0, 0);
+    refresh();
+  }
+
+  /* SAVE & EXIT — Garry, 2026-09-23.
+     A page cannot exist without its link: the handle IS the URL. So this
+     control has two states, and which one it is in depends only on whether
+     there is anything to save yet.
+
+       nothing yet   "Exit" → the dashboard. Not the website: they signed up
+                     a minute ago, and a signed-in person does not belong on
+                     the marketing page. This is the "Get pack" route, where
+                     nobody ever typed a handle.
+       name + link   "Save & exit" → step 3, in whichever phase the page has
+                     reached. This is the "Claim profile" route, where both
+                     are filled in on arrival — the handle came with them and
+                     the name came from Google — so it is live from the first
+                     second, and the rest really can wait.
+
+     Sign-up is Google-only, so the name is never the thing holding this up;
+     signup.html sends it through as ?name=. */
+  function canSave() {
+    return S.name.trim().length >= 2 && S.handleOk && S.handle.length >= 3;
+  }
+  function paintExit() {
+    var ok = canSave();
+    $("exit").textContent = ok ? "Save & exit" : "Exit";
+    $("exit").href = ok ? "#" : "dashboard/1-empty/home.html";
+  }
+  $("exit").addEventListener("click", function (e) {
+    if (!canSave()) return;          /* nothing saved — let the link leave */
+    e.preventDefault();
+    setStep(3);
+  });
+
+  $("next").addEventListener("click", function () { if (S.step < 3) setStep(S.step + 1); });
+  $("back").addEventListener("click", function () { if (S.step > 1) setStep(S.step - 1); });
+
+  /* ══ 6. THE GATE ═════════════════════════════════════════════════════
+     Step 1 needs a name and a free link. Step 2 needs at least one contact
+     — a sticker leading to an empty page is a dead product, and this is
+     the one place friction is correct. */
+  function hasContact() { return !!(S.phone || (!S.waSame && S.wa) || S.email); }
+
+  function refreshGate() {
+    var ok = true, why = "";
+    if (S.step === 1) {
+      ok = S.name.trim().length >= 2 && S.handleOk && S.handle.length >= 3;
+      if (!S.name.trim()) why = "Add your name to continue.";
+      else if (!ok) why = "Pick a link that is free to continue.";
+    } else if (S.step === 2) {
+      ok = hasContact();
+      if (!ok) why = "Add a phone, WhatsApp or email — a code that leads nowhere is no use.";
+    }
+    $("next").disabled = !ok;
+    gate.textContent = ok ? "" : why;
+    paintExit();
+  }
+
+  /* ══ 7. STEP 1 FIELDS ════════════════════════════════════════════════ */
+  function initial() { return (S.name.trim()[0] || S.handle[0] || "?").toUpperCase(); }
+
+  function paintPhoto() {
+    var d = $("photoDisc");
+    d.innerHTML = S.photo ? '<img src="' + S.photo + '" alt="">' : esc(initial());
+    $("photoClear").hidden = !S.photo;
+    $("photoBtn").textContent = S.photo ? "Change photo" : "Add photo";
+  }
+
+  $("photoBtn").addEventListener("click", function () { $("photoInput").click(); });
+  $("photoInput").addEventListener("change", function (e) {
+    var f = e.target.files && e.target.files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function () { S.photo = r.result; paintPhoto(); refresh(); };
+    r.readAsDataURL(f);
+  });
+  $("photoClear").addEventListener("click", function () {
+    S.photo = null; $("photoInput").value = ""; paintPhoto(); refresh();
+  });
+
+  $("name").value = S.name;
+  $("name").addEventListener("input", function () { S.name = this.value; paintPhoto(); refresh(); });
+
+  $("bio").addEventListener("input", function () {
+    S.bio = this.value.slice(0, 100);
+    $("bioCount").textContent = S.bio.length + "/100";
+    $("bioCount").dataset.over = String(S.bio.length >= 100);
+    refresh();
+  });
+
+  /* handle — re-checked on submit rather than soft-reserved, same rule as
+     signup.html: whoever publishes first gets it */
+  var hInput = $("handle"), hNote = $("handleNote"), hWrap = $("handleWrap"), hTimer = null;
+  hInput.value = S.handle;
+
+  function checkHandle(v) {
+    if (v.length < 3) return { ok:false, why:"Pick a link with at least 3 characters." };
+    if (RESERVED.indexOf(v) > -1) return { ok:false, why:"<b>" + esc(v) + "</b> is reserved. Try another." };
+    if (TAKEN.indexOf(v) > -1) return { ok:false, why:"<b>" + esc(v) + "</b> went to someone else. <b>" + esc(v) + "01</b> is free." };
+    return { ok:true };
+  }
+  function sayHandle(state, html) { hNote.dataset.state = state; hNote.innerHTML = html; }
+
+  hInput.addEventListener("input", function () {
+    var v = cleanHandle(this.value);
+    if (v !== this.value) this.value = v;
+    S.handle = v;
+    S.handleOk = false;
+    clearTimeout(hTimer);
+    refresh();
+    if (!v) { sayHandle("idle", ""); hWrap.dataset.state = ""; return; }
+    sayHandle("idle", "Checking…");
+    hTimer = setTimeout(function () {
+      var r = checkHandle(v);
+      S.handleOk = r.ok;
+      hWrap.dataset.state = r.ok ? "" : "bad";
+      sayHandle(r.ok ? "ok" : "bad", r.ok ? "<b>codemarca.com/" + esc(v) + "</b> is free." : r.why);
+      refresh();
+    }, 380);
+  });
+
+  /* ══ 8. STEP 2 — CONTACT ═════════════════════════════════════════════ */
+  Array.prototype.forEach.call(document.querySelectorAll(".eye"), function (b) { b.innerHTML = EYE; });
+
+  function eye(btn, key, label) {
+    btn.addEventListener("click", function () {
+      S[key] = !S[key];
+      btn.setAttribute("aria-pressed", String(S[key]));
+      btn.setAttribute("aria-label", (S[key] ? "Hide " : "Show ") + label + " on your page");
+      refresh();
+    });
+  }
+  eye($("phoneEye"), "phoneOn", "phone");
+  eye($("waEye"),    "waOn",    "WhatsApp");
+  eye($("emailEye"), "emailOn", "email");
+
+  function digits(v) { return v.replace(/[^0-9]/g, "").slice(0, 10); }
+  $("phone").addEventListener("input", function () { this.value = digits(this.value); S.phone = this.value; refresh(); });
+  $("wa").addEventListener("input",    function () { this.value = digits(this.value); S.wa = this.value; refresh(); });
+  $("email").addEventListener("input", function () { S.email = this.value.trim(); refresh(); });
+
+  /* business WhatsApp numbers are often different — so the box is a
+     checkbox, on by default, not an assumption */
+  $("waSame").addEventListener("change", function () {
+    S.waSame = this.checked;
+    $("waWrap").hidden = this.checked;
+    refresh();
+  });
+
+  /* ══ 9. STEP 2 — LINK GRID ═══════════════════════════════════════════ */
+  function paintGrid() {
+    $("grid").innerHTML = LINKS.map(function (l) {
+      var on = !!S.links[l.k];
+      return '<button class="chip" type="button" data-k="' + l.k + '" data-on="' + on + '" aria-pressed="' + on + '">' +
+             ic(l.k) + "<span>" + esc(l.n) + "</span></button>";
+    }).join("");
+  }
+
+  $("grid").addEventListener("click", function (e) {
+    var b = e.target.closest(".chip"); if (!b) return;
+    var k = b.dataset.k;
+    if (S.links[k]) { delete S.links[k]; }
+    else {
+      S.links[k] = { v:"", on:true };
+      if (BY[k].kind === "row" && S.order.indexOf(k) < 0) S.order.push(k);
+    }
+    var added = !!S.links[k];
+    paintGrid(); paintAdded(); refresh();
+
+    /* The row a chip opens takes the cursor straight away on a laptop —
+       Garry, 2026-09-23: tap the icon, start typing, no second tap on the
+       field. On a phone it does NOT: focus there opens the keyboard between
+       taps and pushes the grid away, which is the thing Garry objected to on
+       09-17. The browser's own jump is taken away with preventScroll so the
+       move stays ours, smooth, and only happens when the row is out of sight. */
+    if (added) {
+      var row = $("added").querySelector('[data-k="' + k + '"]');
+      if (row) {
+        var field = row.querySelector("input");
+        if (field && FINE_POINTER) field.focus({ preventScroll: true });
+        if (!inSafeBand(row)) {
+          row.scrollIntoView({ behavior: REDUCE ? "auto" : "smooth", block: "center" });
+        }
+      }
+    }
+  });
+
+  /* The band neither sticky edge can cover — the bar on top, the CTA below.
+     The floor is the viewport first and the CTA only if the CTA is actually
+     stuck over it: above 960 the footer goes position:static and sits far
+     below the fold, so reading its top as the floor called a row that was
+     off-screen "visible" and the page never moved. */
+  function inSafeBand(el) {
+    var r = el.getBoundingClientRect();
+    var top = chromeH(".ob__bar");
+    var bottom = window.innerHeight;
+    var foot = document.querySelector(".ob__foot");
+    if (foot && !foot.hidden) {
+      var pos = getComputedStyle(foot).position;
+      if (pos === "sticky" || pos === "fixed") {
+        var ft = foot.getBoundingClientRect().top;
+        if (ft < bottom) bottom = ft;
+      }
+    }
+    return r.top >= top && r.bottom <= bottom;
+  }
+
+  var MV_UP   = '<svg viewBox="0 0 14 14" fill="none"><path d="M3 9l4-4 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var MV_DOWN = '<svg viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function paintAdded() {
+    /* the icon row first, in its own order and with the controls that set
+       it, then the full-width rows — which are arranged further down */
+    var socialKeys = socialsAdded();
+    var rowKeys = LINKS.filter(function (l) { return l.kind !== "social"; })
+                       .map(function (l) { return l.k; })
+                       .filter(function (k) { return !!S.links[k]; });
+    var keys = socialKeys.concat(rowKeys);
+
+    $("added").innerHTML = keys.map(function (k, n) {
+      var l = BY[k], s = S.links[k];
+      var isSocial = l.kind === "social";
+      var mv = isSocial
+        ? '<span class="lrow__move">' +
+            '<button type="button" data-smv="up" aria-label="Move ' + esc(l.n) + ' left"' +
+              (n === 0 ? " disabled" : "") + ">" + MV_UP + "</button>" +
+            '<button type="button" data-smv="down" aria-label="Move ' + esc(l.n) + ' right"' +
+              (n === socialKeys.length - 1 ? " disabled" : "") + ">" + MV_DOWN + "</button>" +
+          "</span>"
+        : "";
+      return '<div class="lrow" data-k="' + k + '">' + mv + ic(k) +
+        '<div class="inp"><input type="text" value="' + esc(s.v) + '" placeholder="' + esc(l.ph) + '" aria-label="' + esc(l.n) + '">' +
+        '<button class="eye" type="button" aria-pressed="' + s.on + '" aria-label="' + (s.on ? "Hide " : "Show ") + esc(l.n) + ' on your page">' + EYE + "</button></div>" +
+        '<button class="kill" type="button" aria-label="Remove ' + esc(l.n) + '">' +
+        '<svg viewBox="0 0 16 16" fill="none"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>';
+    }).join("");
+  }
+
+  $("added").addEventListener("input", function (e) {
+    var row = e.target.closest(".lrow"); if (!row) return;
+    S.links[row.dataset.k].v = e.target.value.trim();
+    refresh();
+  });
+  $("added").addEventListener("click", function (e) {
+    var row = e.target.closest(".lrow"); if (!row) return;
+    var k = row.dataset.k;
+    var mv = e.target.closest("[data-smv]");
+    if (mv) { moveSocial(k, mv.dataset.smv === "up" ? -1 : 1); return; }
+    if (e.target.closest(".kill")) { delete S.links[k]; paintGrid(); paintAdded(); refresh(); return; }
+    var b = e.target.closest(".eye");
+    if (b) {
+      S.links[k].on = !S.links[k].on;
+      b.setAttribute("aria-pressed", String(S.links[k].on));
+      refresh();
+    }
+  });
+
+  /* custom links — capped at five so the page stays a page, not a list */
+  $("addCustom").addEventListener("click", function () {
+    if (S.customs.length >= 5) return;
+    var id = "c" + (++cid);
+    S.customs.push({ id:id, title:"", url:"", on:true });
+    S.order.push(id);
+    paintCustoms(); refresh();
+
+    /* focus() on its own makes the browser jump the row into view with no
+       easing — that snap was the jolt. Take the jump away from the browser
+       and do the move ourselves, smoothly. */
+    var row = document.querySelector('[data-c="' + id + '"]');
+    var f = row && row.querySelector("input");
+    if (f) f.focus({ preventScroll: true });
+    /* centre the new row: the page has a sticky bar on top and a sticky CTA
+       at the bottom, and the middle is the one band neither can cover. */
+    if (row) row.scrollIntoView({ behavior: REDUCE ? "auto" : "smooth", block: "center" });
+    $("addCustom").hidden = S.customs.length >= 5;
+  });
+
+  function paintCustoms() {
+    $("customs").innerHTML = S.customs.map(function (c) {
+      return '<div class="lrow" data-c="' + c.id + '">' + ic("custom") +
+        '<div class="inp"><input type="text" data-f="title" value="' + esc(c.title) + '" placeholder="Button text" aria-label="Custom link text"></div>' +
+        '<button class="kill" type="button" aria-label="Remove custom link">' +
+        '<svg viewBox="0 0 16 16" fill="none"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>' +
+        '<div class="lrow" data-c="' + c.id + '" style="padding-left:38px">' +
+        '<div class="inp"><input type="url" data-f="url" value="' + esc(c.url) + '" placeholder="https://" aria-label="Custom link address">' +
+        '<button class="eye" type="button" aria-pressed="' + c.on + '" aria-label="Show link on your page">' + EYE + "</button></div></div>";
+    }).join("");
+  }
+
+  function findCustom(id) {
+    for (var i = 0; i < S.customs.length; i++) if (S.customs[i].id === id) return S.customs[i];
+    return null;
+  }
+  $("customs").addEventListener("input", function (e) {
+    var row = e.target.closest("[data-c]"); if (!row) return;
+    var c = findCustom(row.dataset.c); if (!c) return;
+    c[e.target.dataset.f] = e.target.value;
+    refresh();
+  });
+  $("customs").addEventListener("click", function (e) {
+    var row = e.target.closest("[data-c]"); if (!row) return;
+    var id = row.dataset.c, c = findCustom(id); if (!c) return;
+    if (e.target.closest(".kill")) {
+      S.customs = S.customs.filter(function (x) { return x.id !== id; });
+      S.order = S.order.filter(function (x) { return x !== id; });
+      $("addCustom").hidden = false;
+      paintCustoms(); refresh(); return;
+    }
+    var b = e.target.closest(".eye");
+    if (b) { c.on = !c.on; b.setAttribute("aria-pressed", String(c.on)); refresh(); }
+  });
+
+  /* ══ 10. WHAT IS LIVE ON THE PAGE ════════════════════════════════════
+     One place decides whether a row exists. The eye being off must OMIT
+     the field from the response — on the real page, never CSS-hide it or
+     the number is readable in the page source. */
+  function waNumber() { return S.waSame ? S.phone : S.wa; }
+
+  function rowLive(k) {
+    if (k === "call")       return !!(S.phone && S.phoneOn);
+    if (k === "wa")         return !!(waNumber() && S.waOn);
+    if (k === "email")      return !!(S.email && S.emailOn);
+    if (k === "vcard")      return !!(S.name.trim() && hasContact());
+    if (k === "socials")    return socials().length > 0;
+    if (BY[k])              return !!(S.links[k] && S.links[k].v && S.links[k].on);
+    var c = findCustom(k);
+    return !!(c && c.title && c.on);
+  }
+  function rowName(k) {
+    if (k === "call")    return "Call";
+    if (k === "wa")      return "WhatsApp";
+    if (k === "email")   return "Email";
+    if (k === "vcard")   return "Save contact";
+    if (k === "socials") return "Socials";
+    if (BY[k])           return BY[k].label || BY[k].n;
+    var c = findCustom(k);
+    return c ? (c.title || "Custom link") : "";
+  }
+  function socials() {
+    return S.socialOrder.filter(function (k) {
+      return S.links[k] && S.links[k].v && S.links[k].on;
+    }).map(function (k) { return BY[k]; });
+  }
+  /* the socials that have been added, in the row's order */
+  function socialsAdded() {
+    return S.socialOrder.filter(function (k) { return !!S.links[k]; });
+  }
+  function moveSocial(k, dir) {
+    var live = socialsAdded();
+    var i = live.indexOf(k), j = i + dir;
+    if (i < 0 || j < 0 || j >= live.length) return;
+    live.splice(j, 0, live.splice(i, 1)[0]);
+    /* write back into the full list so a social that is not added yet keeps
+       its place relative to the ones that are */
+    var rest = S.socialOrder.filter(function (x) { return live.indexOf(x) < 0; });
+    S.socialOrder = live.concat(rest);
+    paintAdded(); refresh();
+    var again = document.querySelector('.lrow[data-k="' + k + '"] [data-smv="' + (dir < 0 ? "up" : "down") + '"]');
+    if (again && !again.disabled) again.focus();
+  }
+
+  /* ══ 11. ORDER LIST ══════════════════════════════════════════════════ */
+  function paintOrder() {
+    var live = S.order.filter(rowLive);
+    if (!live.length) {
+      $("order").innerHTML = '<li class="order__empty">Fill something in above and it shows up here.</li>';
+      return;
+    }
+    $("order").innerHTML = live.map(function (k, i) {
+      return '<li class="ord" draggable="true" data-k="' + k + '">' +
+        '<span class="ord__grip" aria-hidden="true"><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="6" cy="4" r="1.3"/><circle cx="10" cy="4" r="1.3"/><circle cx="6" cy="8" r="1.3"/><circle cx="10" cy="8" r="1.3"/><circle cx="6" cy="12" r="1.3"/><circle cx="10" cy="12" r="1.3"/></svg></span>' +
+        '<span class="ord__name">' + esc(rowName(k)) + "</span>" +
+        '<span class="ord__move">' +
+        '<button type="button" data-mv="up" aria-label="Move ' + esc(rowName(k)) + ' up"' + (i === 0 ? " disabled" : "") + '><svg viewBox="0 0 14 14" fill="none"><path d="M3 9l4-4 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+        '<button type="button" data-mv="down" aria-label="Move ' + esc(rowName(k)) + ' down"' + (i === live.length - 1 ? " disabled" : "") + '><svg viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+        "</span></li>";
+    }).join("");
+  }
+
+  /* moves operate on the visible list, then write back into the full
+     order array so hidden keys keep their relative place */
+  function move(k, dir) {
+    var live = S.order.filter(rowLive);
+    var i = live.indexOf(k), j = i + dir;
+    if (i < 0 || j < 0 || j >= live.length) return;
+    live.splice(j, 0, live.splice(i, 1)[0]);
+    writeBack(live);
+  }
+  function writeBack(live) {
+    var rest = S.order.filter(function (x) { return live.indexOf(x) < 0; });
+    S.order = live.concat(rest);
+    paintOrder(); paintPreview();
+  }
+
+  $("order").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-mv]"); if (!b) return;
+    var k = b.closest(".ord").dataset.k, dir = b.dataset.mv;
+    move(k, dir === "up" ? -1 : 1);
+
+    /* The move rebuilds the list, so the button that was just pressed no
+       longer exists. Hand focus to its replacement, or a second press needs
+       the mouse all over again. */
+    var again = document.querySelector('.ord[data-k="' + k + '"] [data-mv="' + dir + '"]');
+    if (again && !again.disabled) {
+      try { again.focus({ preventScroll:true }); } catch (err) { again.focus(); }
+    }
+    bringIntoView($("orderCard"));
+  });
+
+  var dragKey = null;
+  $("order").addEventListener("dragstart", function (e) {
+    var li = e.target.closest(".ord"); if (!li) return;
+    dragKey = li.dataset.k; li.dataset.drag = "true";
+    e.dataTransfer.effectAllowed = "move";
+    try { e.dataTransfer.setData("text/plain", dragKey); } catch (err) {}
+  });
+  $("order").addEventListener("dragover", function (e) {
+    var li = e.target.closest(".ord"); if (!li || !dragKey) return;
+    e.preventDefault(); li.dataset.over = "true";
+  });
+  $("order").addEventListener("dragleave", function (e) {
+    var li = e.target.closest(".ord"); if (li) li.dataset.over = "false";
+  });
+  $("order").addEventListener("drop", function (e) {
+    var li = e.target.closest(".ord"); if (!li || !dragKey) return;
+    e.preventDefault();
+    var live = S.order.filter(rowLive);
+    var from = live.indexOf(dragKey), to = live.indexOf(li.dataset.k);
+    if (from > -1 && to > -1 && from !== to) {
+      live.splice(to, 0, live.splice(from, 1)[0]);
+      writeBack(live);
+      bringIntoView($("orderCard"));
+    }
+    dragKey = null;
+  });
+  $("order").addEventListener("dragend", function () { dragKey = null; paintOrder(); });
+
+  /* ══ 12. THEME STRIP ═════════════════════════════════════════════════
+     Under the phone, not on a page of its own — sixteen themes on a
+     separate screen is the paralysis we are avoiding. */
+  $("themes").innerHTML = THEMES.map(function (t) {
+    return '<button class="sw" type="button" data-t="' + t.t + '" aria-pressed="' + (t.t === S.theme) + '" aria-label="' + t.n + ' theme">' +
+      '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="#fff"/>' +
+      '<path d="m5.8 10.2 2.7 2.7 5.7-5.7" fill="none" stroke="#101215" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
+  }).join("");
+  $("themes").addEventListener("click", function (e) {
+    var b = e.target.closest(".sw"); if (!b) return;
+    S.theme = b.dataset.t;
+    $("phoneFrame").dataset.theme = S.theme;
+    Array.prototype.forEach.call($("themes").children, function (x) {
+      x.setAttribute("aria-pressed", String(x.dataset.t === S.theme));
+    });
+  });
+
+  /* ══ 13. THE PHONE ═══════════════════════════════════════════════════
+     Skeleton rows first so it is never empty, and every keystroke shows
+     up here — the framing is what a scanner sees, never "your page". */
+  function paintPreview() {
+    var h = "";
+
+    h += '<div class="p-photo">' + (S.photo ? '<img src="' + S.photo + '" alt="">' : esc(initial())) + "</div>";
+    h += S.name.trim()
+      ? '<div class="p-name">' + esc(S.name.trim()) + "</div>"
+      : '<div class="sk sk--name"></div>';
+    h += S.handle
+      ? '<div class="p-handle">codemarca.com/' + esc(S.handle) + "</div>"
+      : '<div class="sk sk--handle"></div>';
+    h += S.bio.trim()
+      ? '<div class="p-bio">' + esc(S.bio.trim()) + "</div>"
+      : '<div class="sk sk--bio"></div>';
+
+    var live = S.order.filter(rowLive);
+    h += '<div class="p-list">';
+    if (!live.length) {
+      h += '<div class="sk sk--btn"></div><div class="sk sk--btn"></div><div class="sk sk--btn"></div>';
+    } else {
+      live.forEach(function (k) {
+        if (k === "socials") {
+          h += '<div class="p-socials">' + socials().map(function (l) { return ic(l.k); }).join("") + "</div>";
+        } else {
+          /* vCard is a download, not a way of reaching them — it must not
+             read as a third Call/Email row (Garry, 2026-09-24) */
+          h += '<div class="p-btn' + (k === "vcard" ? " p-btn--save" : "") + '">' +
+               rowIc(BY[k] ? k : (findCustom(k) ? "custom" : k)) +
+               "<span>" + esc(rowName(k)) + "</span></div>";
+        }
+      });
+    }
+    h += "</div>";
+
+    /* The growth footer ("Get your own Codemarca") is NOT drawn here at all
+       (Garry, 2026-09-24). It is aimed at a stranger who has just scanned a
+       code, and it lives on the real page for exactly that person — showing
+       it to the owner mid-build is showing them an ad for the thing they are
+       already making. */
+    $("scr").innerHTML = h;
+  }
+
+  /* "visitor" — what a scan lands on, the growth footer included.
+     "owner"   — the same page as the person who owns it, which is what
+                 "View my page" on the live screen is asking for. */
+  var PREVIEW_AS = "visitor";
+
+  function openPreview(as) {
+    PREVIEW_AS = as;
+    $("asideShare").hidden = as !== "owner";
+    /* the visitor preview needs saying what it is; your own page does not */
+    $("asideLabel").hidden = as === "owner";
+    $("asideLabel").textContent = "What a person sees when they scan your code";
+    paintPreview();
+    $("aside").dataset.open = "true";
+  }
+
+  $("peek").addEventListener("click", function () { openPreview("visitor"); });
+  $("asideClose").addEventListener("click", function () { $("aside").dataset.open = "false"; });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && $("aside").dataset.open === "true") $("aside").dataset.open = "false";
+  });
+
+  /* ══ 13b. BRINGING A CARD INTO VIEW ══════════════════════════════════
+     Two places on step 2 open something underneath themselves — tapping a
+     social chip grows an input row under the grid, and an arrow in the
+     order list reshuffles it. On a phone both of those happen off the
+     bottom of the screen, so the tap looks like it did nothing.
+
+     Both now pull their own card up under the bar. The gap is measured
+     from the bar rather than from the top of the window: the bar is sticky,
+     so a card scrolled to 24px from the viewport top would sit half
+     underneath it, which is the problem this is meant to fix, not cause. */
+  var VIEW_GAP = 24;
+
+  function chromeH(sel) {
+    var el = document.querySelector(sel);
+    return el ? el.getBoundingClientRect().height : 0;
+  }
+
+  /* Pull `card` up to sit VIEW_GAP below the bar. The gap is measured from
+     the bar, not from the top of the window, because the bar is sticky — a
+     card scrolled to 24px from the viewport top sits half underneath it,
+     which is the problem this is for, not a new one.
+
+     `mustSee` is the part that actually has to be looked at: the input row a
+     chip just opened. The links card is taller than a phone, so parking its
+     heading under the bar leaves that row behind the sticky CTA at the
+     bottom — the card moves, and the thing you tapped is still invisible.
+     So when the two disagree, the row wins and the card slides further up.
+     Cards that fit on screen never hit this and simply go to the top. */
+  function bringIntoView(card, mustSee) {
+    if (!card) return;
+
+    var line = chromeH(".ob__bar") + VIEW_GAP;
+    var box  = card.getBoundingClientRect();
+    var top  = window.scrollY + box.top - line;
+
+    if (mustSee) {
+      var floor = window.innerHeight - chromeH(".ob__foot") - 12;
+      var seen  = mustSee.getBoundingClientRect();
+      var over  = (seen.bottom - box.top + line) - floor;   /* overshoot at `top` */
+      if (over > 0) top += over;
+    }
+
+    top = Math.max(0, top);
+
+    /* Within a couple of pixels of where it belongs? Then a second arrow
+       press must not yank the page again. */
+    if (Math.abs(top - window.scrollY) < 4) return;
+
+    window.scrollTo({ top: top, behavior: REDUCE ? "auto" : "smooth" });
+  }
+
+  /* ══ 14. DONE — placeholder code ═════════════════════════════════════
+     Drawn, not encoded: it reads as a QR at review size and is marked as
+     a sample. The real code comes from the backend with the pack. */
+  var QRM = null;            /* the live matrix, shared with the JPG export */
+
+  function drawQR(seedStr) {
+    var N = 29, i, x, y, seed = 2166136261;
+    for (i = 0; i < seedStr.length; i++) { seed ^= seedStr.charCodeAt(i); seed = (seed * 16777619) >>> 0; }
+    function rnd() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+
+    var on = [];
+    for (y = 0; y < N; y++) { on[y] = []; for (x = 0; x < N; x++) on[y][x] = false; }
+
+    function block(ox, oy) {
+      for (y = 0; y < 7; y++) for (x = 0; x < 7; x++) {
+        var edge = (x === 0 || x === 6 || y === 0 || y === 6);
+        var core = (x >= 2 && x <= 4 && y >= 2 && y <= 4);
+        on[oy + y][ox + x] = edge || core;
+      }
+    }
+    function reserved(px, py) {
+      return (px < 8 && py < 8) || (px > N - 9 && py < 8) || (px < 8 && py > N - 9) ||
+             (px >= N - 9 && px <= N - 5 && py >= N - 9 && py <= N - 5);
+    }
+
+    for (y = 0; y < N; y++) for (x = 0; x < N; x++) if (!reserved(x, y)) on[y][x] = rnd() > .52;
+    for (x = 8; x < N - 8; x++) { on[6][x] = x % 2 === 0; on[x] && (on[x][6] = x % 2 === 0); }
+    block(0, 0); block(N - 7, 0); block(0, N - 7);
+    for (y = 0; y < 5; y++) for (x = 0; x < 5; x++) {
+      var e = (x === 0 || x === 4 || y === 0 || y === 4);
+      on[N - 9 + y][N - 9 + x] = e || (x === 2 && y === 2);
+    }
+
+    var out = "";
+    for (y = 0; y < N; y++) for (x = 0; x < N; x++) if (on[y][x]) out += '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>';
+    $("qr").innerHTML = '<rect width="29" height="29" fill="#fff"/><g fill="#101215">' + out + "</g>";
+    QRM = on;
+  }
+
+  /* ══ 14b. SHARE THE LINK, SAVE THE IMAGE ═════════════════════════════
+     The JPG is painted from the same matrix the SVG uses rather than traced
+     off the SVG itself: serialising an <svg> through an Image is the one
+     path here that can taint the canvas, and toDataURL on a tainted canvas
+     throws. Painting rectangles cannot fail. JPEG carries no alpha, so the
+     quiet zone is filled white — which a scanner wants in any case. */
+  function qrJPEG() {
+    var N = 29, QUIET = 4, MOD = 28, side = (N + QUIET * 2) * MOD, x, y;
+    var c = document.createElement("canvas");
+    c.width = c.height = side;
+    var g = c.getContext("2d");
+    g.fillStyle = "#fff";
+    g.fillRect(0, 0, side, side);
+    if (QRM) {
+      g.fillStyle = "#101215";
+      for (y = 0; y < N; y++) for (x = 0; x < N; x++) {
+        if (QRM[y][x]) g.fillRect((x + QUIET) * MOD, (y + QUIET) * MOD, MOD, MOD);
+      }
+    }
+    return c.toDataURL("image/jpeg", .92);
+  }
+
+  function say(m) { var el = $("doneStatus"); if (el) el.textContent = m; }
+
+  /* Each button reports its own result in its own label for 1.6s — no toast,
+     no new furniture — and the status line says it again for a screen reader. */
+  function flash(label, msg, btn) {
+    var keep = label.textContent;
+    label.textContent = msg;
+    if (btn) btn.setAttribute("data-done", "");
+    setTimeout(function () {
+      label.textContent = keep;
+      if (btn) btn.removeAttribute("data-done");
+    }, 1600);
+  }
+
+  /* the pill opens the sheet, not the system share — same as the dashboard,
+     so the targets and the copied link are the same everywhere */
+  $("shareQR").addEventListener("click", shareSheet);
+
+  $("dlQR").addEventListener("click", function () {
+    var a = document.createElement("a");
+    a.href = qrJPEG();
+    a.download = "codemarca-" + (S.handle || "code") + "-qr.jpg";
+    document.body.appendChild(a);   /* Firefox ignores a click on a detached <a> */
+    a.click();
+    a.remove();
+    flash(this.querySelector("span"), "Saved", this);
+    say("QR code saved as a JPG.");
+  });
+
+  $("copyUrl").addEventListener("click", function () {
+    if (navigator.clipboard) navigator.clipboard.writeText("codemarca.com/" + S.handle);
+    flash(this.querySelector("span"), "Copied", this);
+    say("Page link copied.");
+  });
+
+  /* ══ 14. THE SHARE SHEET ═════════════════════════════════════════════
+     dashboard.js's CM.shareSheet, ported: the same five targets, the same
+     copy-on-open, so the first share and the thousandth look identical. */
+  var SHARE = [
+    { n:"WhatsApp", c:"#25D366",
+      g:'<path d="M6.2 18 7.3 14.6a6.7 6.7 0 1 1 2.5 2.4z" fill="none" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.9 9.4c.35 1.7 1.7 3 3.4 3.4l.7-1.1 1.6.75-.25 1.4c-2.8.4-6-2.8-5.6-5.6l1.4-.25.75 1.6z" fill="#fff"/>',
+      u:function (v) { return "https://wa.me/?text=" + encodeURIComponent(v); } },
+    { n:"X", c:"#101215",
+      g:'<path d="M6 5.4h3.3l3 4.1 3.5-4.1h2.9l-5 5.8 5.4 7.4h-3.3l-3.3-4.5-3.8 4.5H5.8l5.3-6.2z" fill="#fff"/>',
+      u:function (v) { return "https://x.com/intent/tweet?url=" + encodeURIComponent(v); } },
+    { n:"Facebook", c:"#1877F2",
+      g:'<path d="M13.4 20v-7.1h2.4l.36-2.78H13.4V8.34c0-.8.23-1.35 1.39-1.35h1.48V4.5a19.7 19.7 0 0 0-2.16-.11c-2.13 0-3.59 1.3-3.59 3.69v2.04H8.1v2.78h2.42V20z" fill="#fff"/>',
+      u:function (v) { return "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(v); } },
+    { n:"Telegram", c:"#229ED9",
+      g:'<path d="M19.2 6.2 5.5 11.5c-.7.28-.7.78.02.98l3.44 1.07 7.98-5.03c.38-.23.72-.11.44.14l-6.46 5.84-.25 3.5c.29 0 .42-.13.58-.29l1.4-1.35 2.9 2.14c.53.3.92.14 1.05-.5l1.9-8.94c.19-.86-.31-1.25-.9-1.02z" fill="#fff"/>',
+      u:function (v) { return "https://t.me/share/url?url=" + encodeURIComponent(v); } },
+    { n:"Email", c:"#5B5D68",
+      g:'<rect x="5" y="7.4" width="14" height="9.2" rx="2" fill="none" stroke="#fff" stroke-width="1.6"/><path d="m5.8 8.6 6.2 4.3 6.2-4.3" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>',
+      u:function (v) { return "mailto:?subject=" + encodeURIComponent(shsName() + " on Codemarca") + "&body=" + encodeURIComponent(v); } }
+  ];
+  var SHS_SPIN = '<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>';
+  var SHS_TICK = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.4 6.5 12 13 4.6" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var shsEl = $("shs"), shsSeq = null;
+
+  function shsName() { return S.name.trim() || S.handle; }
+  function pageUrl() { return "https://codemarca.com/" + S.handle; }
+
+  /* copied the moment it opens — the link is what most people came for, and
+     the sheet says so instead of waiting to be asked */
+  function shsCopy() {
+    var b = $("shsCopy");
+    if (navigator.clipboard) navigator.clipboard.writeText(pageUrl()).catch(function () {});
+    clearTimeout(shsSeq);
+    b.dataset.state = "busy";
+    b.innerHTML = SHS_SPIN;
+    b.setAttribute("aria-label", "Copying link");
+    shsSeq = setTimeout(function () {
+      b.dataset.state = "done";
+      b.innerHTML = SHS_TICK + "<span>Link copied</span>";
+      b.setAttribute("aria-label", "Link copied");
+      shsSeq = setTimeout(function () {
+        b.dataset.state = "";
+        b.textContent = "Copy";
+        b.setAttribute("aria-label", "Copy link");
+      }, 2000);
+    }, 1000);
+  }
+  function shsClose() {
+    if (shsEl.hidden) return;
+    clearTimeout(shsSeq);
+    shsEl.hidden = true;
+    document.body.removeAttribute("data-showing");
+    document.removeEventListener("keydown", shsKey);
+  }
+  function shsKey(e) { if (e.key === "Escape") shsClose(); }
+
+  function shareSheet() {
+    var url = pageUrl();
+    $("shsUrl").textContent = url.replace(/^https?:\/\//i, "");
+    var html = SHARE.map(function (t) {
+      return '<a href="' + t.u(url).replace(/"/g, "&quot;") + '" target="_blank" rel="noopener">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="' + t.c + '"/>' +
+        t.g + "</svg><span>" + t.n + "</span></a>";
+    }).join("");
+    if (navigator.share) {
+      html += '<button type="button" data-shs-more>' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#6E27E6"/>' +
+        '<circle cx="8.4" cy="12" r="1.6" fill="#fff"/><circle cx="15.6" cy="12" r="1.6" fill="#fff"/><circle cx="12" cy="12" r="1.6" fill="#fff"/></svg>' +
+        "<span>More</span></button>";
+    }
+    $("shsTargets").innerHTML = html;
+    shsEl.hidden = false;
+    document.body.setAttribute("data-showing", "");
+    document.addEventListener("keydown", shsKey);
+    shsCopy();
+  }
+
+  shsEl.addEventListener("click", function (e) {
+    if (e.target.closest("[data-shs-close]")) { shsClose(); return; }
+    if (e.target.closest("#shsCopy")) {
+      if ($("shsCopy").dataset.state !== "busy") shsCopy();
+      return;
+    }
+    if (e.target.closest("[data-shs-more]") && navigator.share) {
+      navigator.share({ title: shsName() + " on Codemarca", url: pageUrl() }).catch(function () {});
+    }
+  });
+  $("asideShare").addEventListener("click", shareSheet);
+
+  /* ══ 14a. THE CODE, FULL SCREEN ══════════════════════════════════════
+     Tap the QR → the same view the dashboard gives (CM.showCode): the
+     square as large as the screen allows, the name, the link, and three
+     actions. The screen is kept awake while it is up, because it is being
+     held out for someone else's camera. */
+  var showEl = $("show"), showPrev = null, showLock = null;
+
+  function jpegBlob(done) {
+    try {
+      var bin = atob(qrJPEG().split(",")[1]), buf = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+      done(new Blob([buf], { type: "image/jpeg" }));
+    } catch (e) { done(null); }
+  }
+  function showKey(e) { if (e.key === "Escape") closeShow(); }
+
+  function openShow() {
+    var url = "codemarca.com/" + S.handle;
+    $("showQr").innerHTML = $("qr").outerHTML.replace('id="qr"', "");
+    $("showName").textContent = S.name.trim() || S.handle;
+    $("showSub").textContent = url;
+    showPrev = document.activeElement;
+    showEl.hidden = false;
+    document.body.setAttribute("data-showing", "");
+    void showEl.offsetWidth;                 /* so the fade plays on a repeat open */
+    showEl.setAttribute("data-on", "");
+    $("showClose").focus();
+    document.addEventListener("keydown", showKey);
+    if ("wakeLock" in navigator) {
+      navigator.wakeLock.request("screen").then(function (l) { showLock = l; }).catch(function () {});
+    }
+  }
+  function closeShow() {
+    if (showEl.hidden) return;
+    showEl.removeAttribute("data-on");
+    document.body.removeAttribute("data-showing");
+    document.removeEventListener("keydown", showKey);
+    if (showLock) { showLock.release().catch(function () {}); showLock = null; }
+    if (showPrev && showPrev.focus) showPrev.focus();
+    setTimeout(function () { if (!showEl.hasAttribute("data-on")) showEl.hidden = true; }, 260);
+  }
+
+  $("qrBig").addEventListener("click", openShow);
+  $("showClose").addEventListener("click", closeShow);
+  /* the empty space closes it; the square does not — people point at it */
+  showEl.addEventListener("click", function (e) { if (e.target === showEl) closeShow(); });
+
+  $("showDl").addEventListener("click", function () {
+    var a = document.createElement("a");
+    a.href = qrJPEG();
+    a.download = "codemarca-" + (S.handle || "code") + "-qr.jpg";
+    document.body.appendChild(a); a.click(); a.remove();
+    flash(this.querySelector("span"), "Saved", this);
+    say("QR code saved as a JPG.");
+  });
+  $("showCopy").addEventListener("click", function () {
+    if (navigator.clipboard) navigator.clipboard.writeText("codemarca.com/" + S.handle);
+    flash(this.querySelector("span"), "Copied", this);
+    say("Page link copied.");
+  });
+  /* the share sheet with the image attached where the browser allows it;
+     a desktop gets the link on the clipboard instead */
+  $("showShare").addEventListener("click", function () {
+    var btn = this, url = "https://codemarca.com/" + S.handle;
+    jpegBlob(function (blob) {
+      var data = { title: S.name.trim() || "My Codemarca page", url: url };
+      if (blob && window.File && navigator.canShare) {
+        var f = new File([blob], "codemarca-" + (S.handle || "code") + "-qr.jpg", { type: "image/jpeg" });
+        if (navigator.canShare({ files: [f] })) data.files = [f];
+      }
+      if (navigator.share) { navigator.share(data).catch(function () {}); return; }
+      if (navigator.clipboard) navigator.clipboard.writeText(url);
+      flash(btn.querySelector("span"), "Link copied", btn);
+      say("Page link copied.");
+    });
+  });
+
+  /* ══ 14b. WHERE IT GOES — the sticker sell ═══════════════════════════
+     Frames come from PACK.PLACES. A photo that exists covers its brief; one
+     that 404s is removed, so the dashed frame underneath is what shows —
+     the layout on screen is already the final layout. */
+  var places = $("places");
+  places.innerHTML = window.PACK.PLACES.map(function (p, n) {
+    return '<figure class="place">' +
+      '<img alt="' + esc(p.cap) + '" loading="lazy">' +
+      '<span class="place__ph" aria-hidden="true"></span>' +
+    '</figure>';
+  }).join("");
+  Array.prototype.forEach.call(places.querySelectorAll(".place"), function (fig, n) {
+    var img = fig.querySelector("img");
+    img.addEventListener("load", function () { fig.dataset.has = "1"; });
+    img.addEventListener("error", function () { img.remove(); });
+    img.src = window.PACK.PLACES[n].src;
+  });
+  if (window.Lightbox) window.Lightbox.bind(places, "img");
+
+  var pBar = $("placeBar"), pThumb = $("placeThumb");
+  function pRoom() { return places.scrollWidth - places.clientWidth; }
+  function pStep() {
+    var f = places.querySelector(".place");
+    return f ? f.getBoundingClientRect().width + (parseFloat(getComputedStyle(places).columnGap) || 0) : places.clientWidth;
+  }
+  function paintPlaces() {
+    var room = pRoom();
+    var size = room > 1 ? places.clientWidth / places.scrollWidth * 100 : 100;
+    var at   = room > 1 ? Math.min(1, Math.max(0, places.scrollLeft / room)) : 0;
+    pThumb.style.width = size + "%";
+    pThumb.style.left  = at * (100 - size) + "%";
+    $("placePrev").disabled = places.scrollLeft <= 2;
+    $("placeNext").disabled = places.scrollLeft >= room - 2;
+  }
+  places.addEventListener("scroll", paintPlaces, { passive: true });
+  window.addEventListener("resize", paintPlaces);
+
+  function nudge(dir) {
+    places.scrollBy({ left: dir * pStep(), behavior: REDUCE ? "auto" : "smooth" });
+  }
+  $("placePrev").addEventListener("click", function () { nudge(-1); });
+  $("placeNext").addEventListener("click", function () { nudge(1); });
+  places.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowLeft")  { nudge(-1); e.preventDefault(); }
+    if (e.key === "ArrowRight") { nudge(1);  e.preventDefault(); }
+  });
+
+  /* drag the thumb, or press anywhere on the track to jump there; snapping
+     is off while the finger is down, then lands on the nearest frame */
+  function barTo(x) {
+    var r = pBar.getBoundingClientRect(), t = pThumb.getBoundingClientRect().width;
+    places.scrollLeft = Math.min(1, Math.max(0, (x - r.left - t / 2) / (r.width - t))) * pRoom();
+  }
+  pBar.addEventListener("pointerdown", function (e) {
+    if (pRoom() <= 1) return;
+    pBar.setPointerCapture(e.pointerId);
+    places.dataset.drag = "1";
+    barTo(e.clientX);
+  });
+  pBar.addEventListener("pointermove", function (e) { if (places.dataset.drag) barTo(e.clientX); });
+  function barUp() {
+    if (!places.dataset.drag) return;
+    delete places.dataset.drag;
+    places.scrollTo({ left: Math.round(places.scrollLeft / pStep()) * pStep(), behavior: REDUCE ? "auto" : "smooth" });
+  }
+  pBar.addEventListener("pointerup", barUp);
+  pBar.addEventListener("pointercancel", barUp);
+
+  function setDevice(d) {
+    $("phoneFrame").dataset.device = d;
+    Array.prototype.forEach.call($("devs").children, function (b) {
+      b.setAttribute("aria-pressed", String(b.dataset.d === d));
+    });
+    fitDesktop();
+  }
+  /* the desktop frame is 880 wide whatever the screen is; on a phone it gets
+     scaled down rather than squeezed, so a desktop page still reads as one */
+  function fitDesktop() {
+    var f = $("phoneFrame");
+    if (f.dataset.device !== "desktop") { f.style.removeProperty("--dscale"); return; }
+    f.style.setProperty("--dscale", String(Math.min(1, ($("aside").clientWidth - 32) / 880)));
+  }
+  window.addEventListener("resize", fitDesktop);
+  Array.prototype.forEach.call($("devs").children, function (b) {
+    b.addEventListener("click", function () { setDevice(b.dataset.d); });
+  });
+
+  $("viewPage").addEventListener("click", function () { openPreview("owner"); });
+
+  /* ══ 15. ONE REFRESH ═════════════════════════════════════════════════ */
+  function refresh() { paintOrder(); paintPreview(); refreshGate(); }
+
+  /* ══ 16. BOOT ════════════════════════════════════════════════════════ */
+  paintPhoto(); paintGrid(); paintAdded(); paintCustoms();
+  sayHandle("ok", "<b>codemarca.com/" + esc(S.handle) + "</b> is yours. You can change it later from your dashboard.");
+  setStep(1);
+
+  /* Review tool — delete this loop and the .preview block before launch. */
+  Array.prototype.forEach.call(document.querySelectorAll(".preview button"), function (b) {
+    b.addEventListener("click", function () { setStep(Number(b.dataset.go)); });
+  });
+})();
+</script>

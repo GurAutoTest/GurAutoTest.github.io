@@ -1,0 +1,207 @@
+/* CODEMARCA — HOME SCREENS. Shared by the flow folders whose home is
+   built from the same parts: the setup checklist, the dark "me" card (.me),
+   the pack CTA and the order timeline. 4-active/home.html has its own
+   look and carries its styles inline. */
+/* ── HOME-ONLY COMPONENTS ───────────────────────────────────────────────
+   Anything reused by another dashboard page lives in dashboard.css.
+   These two are only ever seen here, so they stay local. */
+
+/* the three-step setup list — shown until the pack is bought, then gone */
+.setup{gap:var(--s-2)}
+.step{display:flex; align-items:center; gap:var(--s-4); padding:var(--s-3) 0}
+.step + .step{box-shadow:inset 0 1px 0 var(--line)}
+.step__n{
+  display:grid; place-items:center; flex-shrink:0;
+  width:26px; height:26px; border-radius:50%;
+  background:var(--ground-sunk); color:var(--ink-soft);
+  font-size:var(--fs-xs); font-weight:var(--fw-black);
+}
+.step__n svg{width:14px; height:14px}
+.step[data-done] .step__n{background:var(--ok); color:#fff}
+.step[data-now] .step__n{background:var(--brand-violet); color:#fff;
+  box-shadow:0 0 0 4px var(--brand-violet-tint)}
+.step__txt{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
+.step__t{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.step__s{font-size:var(--fs-xs); color:var(--ink-soft)}
+.step[data-done] .step__t{color:var(--ink-soft); text-decoration:line-through;
+  text-decoration-color:var(--ink-faint)}
+.step:not([data-done]):not([data-now]) .step__t{color:var(--ink-faint)}
+.step:not([data-done]):not([data-now]) .step__s{color:var(--ink-faint)}
+.step__go{flex-shrink:0}
+
+/* the order CTA — same black-to-violet band as the homepage close, so on
+   this screen the one dark object is the one asking to be clicked. It keeps
+   card--dark for the inverted title, note and buttons; only the ground
+   changes. */
+.card--close{
+  background:linear-gradient(180deg,
+    var(--close-head) 0%,
+    var(--close-head) 16%,
+    var(--close-body) 58%,
+    var(--close-foot) 100%);
+}
+.card--close{padding:var(--s-10)}
+@media (min-width:1024px){ .card--close{padding:var(--s-12)} }
+/* On the narrowest phones the doubled padding leaves the photos and the
+   button nothing to sit in, so the card gives up its corners and runs to
+   both edges of the screen instead — the same band the homepage closes
+   with. It cancels the .view gutter to get there. */
+@media (max-width:399px){
+  .card--close{
+    margin-inline:calc(var(--gutter) * -1);
+    border-radius:0;
+    padding:var(--s-8) var(--gutter);
+  }
+}
+.card--close .card__note{font-size:var(--fs-sm); color:rgba(255,255,255,.72)}
+
+/* 60 / 40 — the words carry the ask, the photos show what turns up in the
+   post. Under 720px the two columns become three stacked rows, and the
+   photos slide in between the words and the button. */
+.pack2{display:grid; gap:var(--s-5)}
+.pack2__say{display:flex; flex-direction:column; gap:var(--s-2)}
+@media (min-width:720px){
+  .pack2{grid-template-columns:minmax(0,3fr) minmax(0,2fr);
+         gap:var(--s-5) var(--s-8); align-items:center}
+  .pack2__say {grid-area:1 / 1}
+  .pack2__cta {grid-area:2 / 1}
+  .pack2__show{grid-area:1 / 2 / span 2 / 3}
+}
+
+/* THE PRODUCT SLIDER — placeholders, in the same dashed-and-gridded idiom
+   the homepage uses. Each .shot__ph becomes an <img> when the photos
+   exist; the track, the dots and the script do not change. */
+.shot{display:flex; flex-direction:column; gap:var(--s-3)}
+.shot__track{
+  display:flex; overflow-x:auto; scroll-snap-type:x mandatory;
+  scrollbar-width:none; -ms-overflow-style:none;
+}
+.shot__track::-webkit-scrollbar{display:none}
+.shot__slide{flex:0 0 100%; scroll-snap-align:start}
+.shot__ph{
+  position:relative; overflow:hidden; aspect-ratio:4/3; padding:var(--s-4);
+  display:flex; flex-direction:column; justify-content:flex-end; gap:var(--s-2);
+  background:rgba(255,255,255,.05); border:1.5px dashed var(--line-invert);
+  border-radius:var(--r-lg);
+}
+.shot__ph::before{
+  content:""; position:absolute; inset:0; opacity:.5; pointer-events:none;
+  background-image:linear-gradient(var(--line-invert) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--line-invert) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+/* the real photo in the same frame — no padding, no dashed edge */
+img.shot__ph{display:block; width:100%; height:auto; padding:0; border:0; object-fit:cover; cursor:pointer}
+.shot__tag{
+  position:relative; align-self:flex-start;
+  font-family:var(--font-mono); font-size:.625rem; font-weight:var(--fw-semibold);
+  letter-spacing:var(--ls-label); text-transform:uppercase;
+  color:var(--brand-violet-lift); background:rgba(255,255,255,.06);
+  padding:4px 9px; border-radius:var(--r-xs); box-shadow:inset 0 0 0 1px var(--line-invert);
+}
+.shot__desc{
+  position:relative; font-size:var(--fs-xs); line-height:1.4;
+  letter-spacing:var(--ls-soft); color:rgba(255,255,255,.68);
+}
+.shot__dots{display:flex; justify-content:center; gap:var(--s-2)}
+.shot__dot{
+  width:7px; height:7px; padding:0; border:0; border-radius:var(--r-pill);
+  background:rgba(255,255,255,.28); cursor:pointer;
+  transition:width var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.shot__dot:hover{background:rgba(255,255,255,.5)}
+.shot__dot[data-on]{width:20px; background:var(--ink-invert)}
+
+/* the "me" card (.me) lives in dashboard.css — the Profile tab uses it too */
+
+/* round icon buttons inside a light linkbox (the tee card's invite link) */
+.linkbox button{
+  flex-shrink:0; display:grid; place-items:center; width:34px; height:34px;
+  border:0; border-radius:50%; background:var(--ground); color:var(--ink-mid);
+  cursor:pointer; box-shadow:var(--shadow-sm);
+}
+.linkbox button:hover{color:var(--ink)}
+.linkbox button svg{width:16px; height:16px}
+
+/* product photos on paper — the light take on .shot, for cards that are
+   not dark. Each .shot__ph becomes an <img> when the photos exist. */
+.shot--light .shot__ph{background:var(--ground-soft); border-color:var(--line-strong)}
+.shot--light .shot__ph::before{background-image:linear-gradient(var(--line) 1px,transparent 1px),
+  linear-gradient(90deg,var(--line) 1px,transparent 1px)}
+.shot--light .shot__tag{color:var(--ink-mid); background:#fff; box-shadow:inset 0 0 0 1px var(--line)}
+.shot--light .shot__desc{color:var(--ink-mid)}
+.shot--light .shot__dot{background:var(--line-strong)}
+.shot--light .shot__dot[data-on]{background:var(--ink)}
+
+/* ── FREE TEE ─────────────────────────────────────────────────────────
+   The same content as 4-active's referral card, on paper. Used by
+   2-page-live and by 3-pack-coming once a gift is claimed; drawn by
+   CM.referCard in dashboard.js. The meter fill
+   is ink, not violet — the brand colour stays rare. */
+.rf{gap:var(--s-5)}
+.rf__say{display:flex; flex-direction:column; gap:var(--s-2)}
+.rf__h{font-size:clamp(1.25rem,4.4vw,1.5rem); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display); line-height:1.12; text-wrap:balance}
+.rf__p{font-size:var(--fs-sm); color:var(--ink-mid); max-width:48ch}
+.rf__p b{color:var(--ink)}
+
+.rf__meter{display:flex; flex-direction:column; gap:var(--s-2)}
+.rf__count{display:flex; align-items:baseline; gap:var(--s-2)}
+.rf__n{font-size:2.25rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display); line-height:1}
+.rf__of{font-size:1rem; font-weight:var(--fw-bold); color:var(--ink-faint)}
+.rf__bar{height:8px; border-radius:var(--r-pill); background:var(--ground-sunk); overflow:hidden}
+.rf__fill{height:100%; width:0; border-radius:inherit; background:var(--ink)}
+.rf__sub{font-size:var(--fs-xs); color:var(--ink-soft)}
+.rf__sub b{color:var(--ink)}
+
+.rf__share{display:flex; gap:var(--s-2); flex-direction:column}
+@media (min-width:560px){ .rf__share{flex-direction:row; align-items:center} }
+.rf__share .linkbox{flex:1; min-width:0}
+
+/* no page yet: the invite link is locked behind it */
+.rf__lock{display:flex; align-items:center; gap:var(--s-3); flex-wrap:wrap;
+  padding:var(--s-4); border-radius:var(--r-md); background:var(--ground-soft);
+  box-shadow:inset 0 0 0 1px var(--line)}
+.rf__lock-ic{flex-shrink:0; display:grid; place-items:center; width:36px; height:36px;
+  border-radius:50%; background:var(--ground); color:var(--ink); box-shadow:var(--shadow-sm)}
+.rf__lock-ic svg{width:16px; height:16px}
+.rf__lock-txt{flex:1; min-width:12rem; display:flex; flex-direction:column; gap:2px}
+.rf__lock-t{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.rf__lock-s{font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:var(--ls-soft)}
+@media (max-width:519px){ .rf__lock .btn{width:100%} }
+
+/* the five tees — a swipe row on phones, five across on desktop */
+.rf__head{display:flex; align-items:baseline; gap:var(--s-3); margin-bottom:var(--s-3)}
+.rf__head .card__title{flex:1}
+.rf__hint{font-size:var(--fs-xs); color:var(--ink-soft)}
+.rf__tees{
+  display:grid; grid-auto-flow:column; grid-auto-columns:minmax(132px,1fr); gap:var(--s-3);
+  overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none;
+  margin-inline:calc(var(--s-5) * -1); padding-inline:var(--s-5); scroll-padding-inline:var(--s-5);
+}
+.rf__tees::-webkit-scrollbar{display:none}
+@media (min-width:1024px){
+  .rf__tees{margin-inline:calc(var(--s-6) * -1); padding-inline:var(--s-6); scroll-padding-inline:var(--s-6)}
+}
+@media (min-width:1280px){
+  .rf__tees{grid-auto-flow:row; grid-template-columns:repeat(5,1fr); overflow:visible;
+    margin-inline:0; padding-inline:0}
+}
+.rf__tee{scroll-snap-align:start; display:flex; flex-direction:column; gap:var(--s-2)}
+.rf__fig{position:relative; aspect-ratio:1; border-radius:var(--r-md);
+  background:linear-gradient(180deg,#2A2C33,#1E2026); display:grid; place-items:center}
+.rf__fig svg{width:96%; height:auto}
+.rf__side{
+  position:absolute; top:6px; left:6px; padding:2px 6px; border-radius:var(--r-xs);
+  font-family:var(--font-mono); font-size:.5625rem; font-weight:var(--fw-bold);
+  letter-spacing:var(--ls-label); text-transform:uppercase;
+  background:rgba(0,0,0,.45); color:rgba(255,255,255,.7);
+}
+.rf__t{font-size:var(--fs-sm); font-weight:var(--fw-bold); line-height:1.2}
+.rf__s{font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.35}
+
+.rf__p, .rf__sub, .rf__hint, .rf__s{letter-spacing:var(--ls-soft)}
+
+/* the two small grey lines this page owns — the rest are in section 26
+   of dashboard.css */
+.step__s{letter-spacing:var(--ls-soft)}

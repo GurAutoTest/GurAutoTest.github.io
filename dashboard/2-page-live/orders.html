@@ -1,0 +1,69 @@
+<title>Orders · Codemarca</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../dashboard.css">
+<link rel="stylesheet" href="../../tab-orders.css">
+
+<!-- ==========================================================================
+     CODEMARCA — ORDERS  ·  flow 2, page live, no pack
+     The page is live and the code already exists — it just is not printed
+     on anything. So this screen is a sales screen and nothing else, and the
+     argument it makes is the specific one: you have been sending the link.
+     A sticker is the link, already stuck to the thing you were holding.
+     ========================================================================== -->
+
+<div class="app">
+  <div class="app__main">
+    <main class="view">
+
+      <!-- No orders yet: the pack sold with photos rather than a paragraph
+           (Garry, 2026-09-24). The section keeps its title and one line —
+           it is the photos that carry no captions. -->
+
+      <header class="head" data-when="coming">
+        <h1>Orders</h1>
+        <p>Your pack and where it has got to.</p>
+      </header>
+
+      <section class="card" data-when="fresh settled">
+        <span class="card__title">No orders yet</span>
+        <p class="card__h" style="margin-top:var(--s-2)">Get your two stickers.</p>
+        <p class="card__note" style="margin-top:var(--s-2); font-size:var(--fs-sm); color:var(--ink-mid)">
+          A 4″ and a 1.5″, both printed with the code you already have. The
+          pack is free — you only pay delivery.
+        </p>
+        <div class="ps" data-strip>
+          <div class="ps__row">
+            <img class="ps__ph" src="../../assets/photos/codemarca-qr-sticker-motorcycle-fuel-tank.jpg" alt="Codemarca QR sticker on a motorcycle fuel tank" width="2400" height="1792" loading="lazy">
+            <img class="ps__ph" src="../../assets/photos/codemarca-qr-sticker-suitcase-airport.jpg" alt="Codemarca QR sticker on a suitcase at the airport" width="2400" height="1792" loading="lazy">
+            <img class="ps__ph" src="../../assets/photos/codemarca-qr-sticker-backpack-office-campus.jpg" alt="Codemarca QR sticker on a backpack outside an office" width="2400" height="1792" loading="lazy">
+            <img class="ps__ph" src="../../assets/photos/codemarca-qr-sticker-salon-mirror.jpg" alt="Codemarca QR sticker on a salon mirror" width="2400" height="1792" loading="lazy">
+          </div>
+          <span class="ps__bar" aria-hidden="true"><i></i></span>
+        </div>
+        <a class="btn btn--go btn--wide" href="../../select-pack.html?built=1">Get my pack</a>
+      </section>
+
+
+      <section class="card" data-when="settled">
+        <span class="card__title">Why bother</span>
+        <p class="card__note" data-fold style="margin-top:var(--s-2); font-size:var(--fs-sm); color:var(--ink-mid)">
+          You have sent your link <b data-fill="shares">31</b> times since your
+          page went live. A sticker is that link, already on the thing you were
+          holding when they asked.
+        </p>
+      </section>
+
+      <div data-orders></div>
+
+    </main>
+  </div>
+</div>
+
+<script src="state.js"></script>
+<script src="../../dashboard.js"></script>
+<script src="../../tab-orders.js"></script>
+<script>CM.strip(document.querySelector("[data-strip]"));</script>

@@ -1,0 +1,130 @@
+<title>My QR · Codemarca</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../dashboard.css">
+<link rel="stylesheet" href="../../tab-qr.css">
+
+<!-- ==========================================================================
+     CODEMARCA — MY QR  ·  flow 1, empty account
+     Two different nothings, and they are not the same nothing:
+
+       fresh / returning  no page, so no code has been made yet. The code
+                          is minted WITH the page, not with an order — so
+                          this screen's answer is "build the page".
+
+       scanned            they are holding a sticker somebody gifted them.
+                          The code is real, printed, and already theirs
+                          because they signed in with their own email. It
+                          simply has nothing behind it. Showing them the
+                          square they are holding is the point: it makes
+                          the missing half obvious.
+     ========================================================================== -->
+
+<div class="app">
+  <div class="app__main">
+    <main class="view">
+
+      <!-- ── no page, so no code ───────────────────────────────────────── -->
+
+      <section class="card" data-when="fresh returning">
+        <div class="empty">
+          <span class="empty__ic" data-ic="qr"></span>
+          <span class="empty__t">Your QR is made with your page</span>
+          <p class="empty__p">Not with an order — with the page. Build it and
+             you get one code, yours for good, that you can download and put
+             on a bio, a card, a poster or a shop board the same day. Stickers
+             are just a way of putting that same code on things.</p>
+          <a class="btn btn--go" href="../../onboarding.html" style="margin-top:var(--s-2)">Build my page</a>
+        </div>
+      </section>
+
+
+      <!-- ── a claimed gift sticker: code live, page bare ───────────────
+           Rewritten 2026-09-27 (Garry). The old copy said the code "does not
+           open anything yet", which is no longer true and undersold what
+           they have. Signing in claimed it, so it is ACTIVE — and Google's
+           name already gave them a handle, so a scan opens a real page with
+           nothing on it but a name. That is the thing worth saying, because
+           the missing half is now embarrassing rather than broken. -->
+
+      <header class="head" data-when="scanned">
+        <h1>Your code is live</h1>
+        <p><span data-fill="giftedBy.name">Arjun M.</span> paid for the stickers.
+           You signed in, so the code is yours now — for good.</p>
+      </header>
+
+
+      <!-- ══ PREVIEW ═════════════════════════════════════════════════════
+           What a scan opens, right now, in an iframe — the page itself when
+           there is one, and the "not set up yet" landing when there is not.
+           On this screen that second case is the whole argument. -->
+
+      <section class="card pv" data-pv data-view="phone" hidden>
+        <div class="card__head">
+          <span class="card__title">What a scan opens</span>
+          <span class="pv__acts">
+            <a class="btn btn--quiet btn--sm" href="#" data-view target="_blank" rel="noopener">
+              <span data-ic-in="share"></span>Open
+            </a>
+            <!-- the action belongs beside the thing it changes: Edit when
+                 there is a page, Build when there is not (Garry, 2026-09-28) -->
+            <a class="btn btn--ghost btn--sm" href="profile.html" data-pv-do>
+              <span data-ic-in="pen"></span>Edit page
+            </a>
+          </span>
+        </div>
+        <p class="card__note" data-pv-sub></p>
+
+        <div class="seg seg--sm" role="tablist" aria-label="Preview size">
+          <button class="seg__b" type="button" role="tab" aria-selected="true" data-pv-tab="phone">
+            <span data-ic-in="phone"></span>Phone
+          </button>
+          <button class="seg__b" type="button" role="tab" aria-selected="false" data-pv-tab="web">
+            <span data-ic-in="card"></span>Web
+          </button>
+        </div>
+
+        <div class="pv__stage">
+          <div class="pv__frame"><iframe data-pv-frame title="What a scan opens" loading="lazy"></iframe></div>
+        </div>
+
+        <div class="onoff" data-live-row hidden>
+          <span class="onoff__txt">
+            <span class="onoff__t" data-live-t>Your page is live</span>
+            <span class="onoff__s" data-live-s>Sticker scans and your link both open it</span>
+          </span>
+          <label class="sw"><input type="checkbox" checked data-live aria-label="Page live or hidden"><span class="sw__track"></span></label>
+        </div>
+      </section>
+
+      <section class="card big" data-when="scanned">
+        <span class="big__qr" data-qr aria-label="Your code"></span>
+
+        <span class="chip chip--ok">Active</span>
+
+        <span class="big__url">
+          <span>codemarca.com/<b data-fill="handle">simran-kaur</b></span>
+          <button type="button" data-copy-url="handle" aria-label="Copy my link"></button>
+        </span>
+
+        <p class="note">
+          <span data-ic-in="help"></span>
+          <span>Right now a scan opens your page with <b>just your name on it</b>
+            — that is all we got from Google. Add your number, WhatsApp and
+            links and it becomes worth scanning. Two minutes, and the sticker
+            never has to change.</span>
+        </p>
+
+        <a class="btn btn--go btn--wide" href="../../onboarding.html">Build my page</a>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="state.js"></script>
+<script src="../../dashboard.js"></script>
+<script src="../../tab-qr.js"></script>

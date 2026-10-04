@@ -1,0 +1,59 @@
+/* CODEMARCA — ORDERS TAB. Shared by every flow folder. */
+/* ── PAGE-ONLY COMPONENTS ───────────────────────────────────────────── */
+
+/* the money summary — label left, figure right, total in bold */
+.sum{display:flex; flex-direction:column; gap:var(--s-3)}
+.sum__row{display:flex; align-items:baseline; gap:var(--s-4); font-size:var(--fs-sm)}
+.sum__row dt{flex:1; min-width:0; color:var(--ink-mid)}
+.sum__row dd{font-weight:var(--fw-bold); font-variant-numeric:tabular-nums}
+.sum__row--free dd{color:var(--ok)}
+.sum__row--total{padding-top:var(--s-3); box-shadow:inset 0 1px 0 var(--line)}
+.sum__row--total dt{color:var(--ink); font-weight:var(--fw-bold)}
+.sum__row--total dd{font-size:1.125rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display)}
+
+/* .item and .addr live in dashboard.css — two tabs draw them. */
+
+/* ── ONE ORDER, FOLDED ─────────────────────────────────────────────────
+   The header is the whole summary; the body opens on tap. */
+.oc{gap:0}
+.oc + .oc{margin-top:var(--s-3)}
+.oc__head{
+  display:flex; align-items:center; gap:var(--s-4); width:100%;
+  padding:0; border:0; background:none; color:inherit; text-align:left; cursor:pointer;
+}
+.oc__txt{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px}
+.oc__chips{display:flex; flex-wrap:wrap; gap:var(--s-2); margin-top:var(--s-2)}
+.oc__chev{flex-shrink:0; display:grid; place-items:center; width:32px; height:32px;
+  border-radius:50%; color:var(--ink-soft); transition:transform var(--dur-fast) var(--ease)}
+.oc__chev svg{width:18px; height:18px; transform:rotate(90deg)}
+.oc__head:hover .oc__chev{background:var(--ground-sunk); color:var(--ink)}
+.oc__head[aria-expanded="true"] .oc__chev{transform:rotate(180deg)}
+/* on a narrow phone the icon costs the chips their row */
+@media (max-width:419px){ .oc__head .item__ic{display:none} }
+.oc__body{display:flex; flex-direction:column; gap:var(--s-4);
+  margin-top:var(--s-4); padding-top:var(--s-4); box-shadow:inset 0 1px 0 var(--line)}
+
+/* a claimed gift — who has it now, visible without opening anything */
+.oc__claim{display:flex; align-items:flex-start; gap:var(--s-3);
+  margin-top:var(--s-4); padding:var(--s-3); border-radius:var(--r-md); background:var(--ground-soft)}
+.oc__claim-ic{flex-shrink:0; display:grid; place-items:center; width:28px; height:28px;
+  border-radius:50%; background:var(--ok-tint); color:var(--ok)}
+.oc__claim-ic svg{width:14px; height:14px}
+.oc__claim-txt{flex:1; min-width:10rem; display:flex; flex-direction:column; gap:2px}
+.oc__claim-t{font-size:var(--fs-xs); font-weight:var(--fw-bold)}
+.oc__claim-url{display:inline-flex; align-items:center; gap:2px; align-self:flex-start;
+  font-family:var(--font-mono); font-size:var(--fs-xs); color:var(--ink-mid);
+  text-decoration:underline; text-underline-offset:2px}
+.oc__claim-url:hover{color:var(--ink)}
+.oc__claim-s{font-size:var(--fs-xs); color:var(--ink-soft)}
+.oc__claim-url svg{width:12px; height:12px}
+
+/* ── SUPPORTING TEXT ───────────────────────────────────────────────────
+   Headings and body copy run on negative tracking. The small grey lines
+   under them — subtitles, help, notes, values — do not: at 13–14px the
+   letters need the air back instead. Any new small line on this page
+   belongs in this list. */
+.sum__row dt,
+.oc__claim-t,
+.oc__claim-url,
+.oc__claim-s{ letter-spacing:var(--ls-soft) }

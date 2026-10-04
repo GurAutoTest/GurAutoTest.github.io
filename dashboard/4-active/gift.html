@@ -1,0 +1,186 @@
+<title>Refer &amp; Gift · Codemarca</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../dashboard.css">
+<link rel="stylesheet" href="../../home.css">
+<link rel="stylesheet" href="../../tab-gift.css">
+
+<!-- ==========================================================================
+     CODEMARCA — REFER & GIFT
+     The same screen in every flow folder. Reworked 2026-09-27 (Garry): the
+     tab used to be all gift, with the referral demoted to a link back to
+     Home. That had it backwards — referring earns a black tee printed with
+     your own code, gifting is a paid favour. So the screen is two tabs and
+     REFER OPENS FIRST, each with its own list, and the copy is cut to the
+     line each part actually needs.
+
+     The tee card also stays on 4-active's Home (Garry: leave it, that IS
+     the job left for a finished account) — this is the second place, not a
+     replacement, and the two are painted by the same CM.referCard().
+
+     CLAIMING IS ONE STEP. Pick a design and a size, tap Claim, confirm the
+     address — prefilled from the last order when there is one — and it
+     ships. No extra screen.
+     ========================================================================== -->
+
+<div class="app">
+  <div class="app__main">
+    <main class="view">
+
+      <header class="head">
+        <h1>Refer &amp; Gift</h1>
+        <p>Bring friends and earn a tee with your own code on it. Or send
+           someone a code of their own.</p>
+      </header>
+
+      <div class="seg" role="tablist" aria-label="Refer or gift">
+        <button class="seg__b" type="button" role="tab" id="tabRefer"
+                aria-selected="true" aria-controls="paneRefer" data-tab="refer">
+          <span data-ic-in="spark"></span>Refer<span class="seg__n" data-ref-n>0</span>
+        </button>
+        <button class="seg__b" type="button" role="tab" id="tabGift"
+                aria-selected="false" aria-controls="paneGift" data-tab="gift">
+          <span data-ic-in="gift"></span>Gift<span class="seg__n" data-gift-n>0</span>
+        </button>
+      </div>
+
+
+      <!-- ══ REFER — the bigger prize, so it opens first ═════════════════ -->
+
+      <div class="pane" id="paneRefer" role="tabpanel" aria-labelledby="tabRefer" data-pane="refer">
+
+        <section class="card card--dark card--close rf rf--dark">
+          <div class="rf__say">
+            <span class="card__title">Free tee at 50</span>
+            <h2 class="rf__h">Bring 50 friends. Wear your code.</h2>
+            <p class="rf__p">A friend counts once they sign up with your link
+               <b>and finish their page</b>. Nobody buys anything.</p>
+          </div>
+
+          <div class="rf__meter">
+            <div class="rf__count">
+              <b class="rf__n" data-fill="referrals.counted">0</b><span class="rf__of">/ <span data-fill="referrals.goal">50</span></span>
+            </div>
+            <div class="rf__bar" role="progressbar" aria-valuemin="0" aria-valuemax="50" id="rfBar">
+              <div class="rf__fill" id="rfFill"></div>
+            </div>
+            <span class="rf__sub" id="rfSub"></span>
+          </div>
+
+          <div class="rf__share" data-share-row>
+            <div class="linkbox">
+              <span class="linkbox__url"><span>codemarca.com/r/</span><b data-fill="profile.handle">garry</b></span>
+              <button type="button" data-ic-btn="copy" aria-label="Copy my invite link" data-copy-ref></button>
+            </div>
+            <button class="btn btn--go" type="button" data-share-ref>
+              <span data-ic-in="share"></span>Invite friends
+            </button>
+          </div>
+
+          <!-- no page means no handle, and no handle means no link yet -->
+          <div class="rf__lock" data-lock hidden>
+            <span class="rf__lock-ic" data-ic="lock"></span>
+            <span class="rf__lock-txt">
+              <span class="rf__lock-t">Your invite link comes with your page</span>
+              <span class="rf__lock-s">It is your handle — build the page and it is live.</span>
+            </span>
+            <a class="btn btn--go btn--sm" href="../../onboarding.html">Build my page</a>
+          </div>
+
+          <div>
+            <div class="rf__head">
+              <span class="card__title" id="teesTitle">The five designs</span>
+              <span class="rf__hint" data-hint>You pick one at 50</span>
+            </div>
+            <div class="rf__tees" id="tees" role="radiogroup" aria-labelledby="teesTitle"></div>
+          </div>
+
+          <!-- unlocked at 50: a size, then one tap. The address is asked in
+               the sheet, prefilled from the last order if there is one. -->
+          <div class="pick" data-pick hidden>
+            <div class="sizes" role="radiogroup" aria-label="T-shirt size" data-sizes></div>
+            <button class="btn btn--go btn--wide" type="button" data-claim disabled>Pick a design and a size</button>
+          </div>
+
+          <p class="note" data-claimed hidden>
+            <span data-ic-in="check"></span>
+            <span>Your tee is on its way. We will mail you the tracking.</span>
+          </p>
+        </section>
+
+        <section class="card who">
+          <div class="card__head">
+            <span class="card__title">Who joined</span>
+            <span class="sent__sum" data-ref-sum></span>
+          </div>
+          <div class="rows" data-people></div>
+          <div class="empty" data-people-empty hidden>
+            <span class="empty__ic" data-ic="spark"></span>
+            <span class="empty__t">Nobody yet</span>
+            <p class="empty__p">Share your link. Whoever signs up through it shows
+               up here, and counts once their page is up.</p>
+          </div>
+        </section>
+      </div>
+
+
+      <!-- ══ GIFT — the second tab ═══════════════════════════════════════ -->
+
+      <div class="pane" id="paneGift" role="tabpanel" aria-labelledby="tabGift" data-pane="gift" hidden>
+
+        <section class="card card--dark card--close send">
+          <div>
+            <span class="card__title">Send a gift</span>
+            <p class="send__h">Their own code, on as many stickers as you like.</p>
+          </div>
+          <div class="send__foot">
+            <a class="btn btn--go" href="../../select-pack.html?pack=custom&amp;gift=1" data-send>
+              <span data-ic-in="gift"></span>Send a gift
+            </a>
+            <span class="send__price" data-price>Paid, per sticker, plus delivery</span>
+          </div>
+        </section>
+
+        <section class="card sent">
+          <div class="card__head">
+            <span class="card__title">Gifts you sent</span>
+            <span class="sent__sum" data-sum></span>
+          </div>
+          <div class="rows" data-gifts></div>
+          <div class="empty" data-gifts-empty hidden>
+            <span class="empty__ic" data-ic="gift"></span>
+            <span class="empty__t">Nothing sent yet</span>
+            <p class="empty__p">One code, any number of stickers, for one person.
+               When their page goes up it counts as a referral too.</p>
+          </div>
+        </section>
+      </div>
+
+
+      <!-- the address ask — claim, address, shipped. Nothing else. -->
+      <div class="csheet" data-csheet hidden role="dialog" aria-modal="true" aria-labelledby="csheetT">
+        <div class="csheet__scrim" data-csheet-close></div>
+        <form class="csheet__box">
+          <div>
+            <h2 class="csheet__t" id="csheetT">Where should it go?</h2>
+            <p class="csheet__s" data-csheet-s>We ship your tee here.</p>
+          </div>
+          <label class="fld"><textarea rows="3" data-addr placeholder="House / flat, area, city, PIN"></textarea></label>
+          <div class="csheet__acts">
+            <button class="btn btn--quiet" type="button" data-csheet-close>Cancel</button>
+            <button class="btn btn--go" type="submit">Ship my tee</button>
+          </div>
+        </form>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="state.js"></script>
+<script src="../../pack.js"></script>
+<script src="../../dashboard.js"></script>
+<script src="../../tab-gift.js"></script>

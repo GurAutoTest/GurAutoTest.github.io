@@ -1,0 +1,622 @@
+<title>Codemarca — Contact</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="site-menu.css">
+
+<style>
+/* ==========================================================================
+   CODEMARCA — CONTACT
+   Same token layer as homepage.html (section 0 there). WhatsApp leads —
+   it is how most people here would rather reach us — then email, then
+   where we are. Bulk and outside-India orders get their own band, because
+   those are priced per order and need a conversation, not a checkout.
+   ========================================================================== */
+
+/* ── 0. TOKENS ─────────────────────────────────────────────────────────── */
+:root {
+  --brand-violet:#6E27E6; --brand-violet-lift:#A171F4; --brand-violet-press:#5A1DC4;
+  --brand-violet-tint:#F1E9FE; --brand-violet-edge:#DCC9FB;
+
+  --ink:#101215; --ink-mid:#5B5D68; --ink-soft:#8C8E9C; --ink-faint:#B6B8C4;
+  --ink-invert:#FFFFFF;
+
+  --ground:#FFFFFF; --ground-soft:#F4F3F7; --ground-sunk:#EDEBF2;
+  --ground-dark:#101215; --ground-dark-2:#1B1D24;
+
+  --line:rgba(16,18,21,.09); --line-strong:rgba(16,18,21,.16);
+  --line-invert:rgba(255,255,255,.14);
+
+  --bad:#C4342B; --ok:#17914F; --ok-press:#12783F; --ok-tint:#E7F6ED; --ok-deep:#0C7A41; --ok-lift:#4FD98C;
+
+  --font-sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+
+  /* Page title = the "Get your pack" headline on signup.html, on purpose. */
+  --fs-title:clamp(2.125rem,3.6vw,2.875rem);
+  --fs-h3:clamp(1.375rem,2.3vw,1.875rem);
+  --fs-lead:clamp(1.0625rem,1.5vw,1.3125rem);
+  --fs-body:1.0625rem; --fs-sm:.9375rem; --fs-xs:.8125rem; --fs-label:.75rem;
+
+  --ls-display:-.042em; --ls-heading:-.032em; --ls-body:-.011em; --ls-label:.14em; --ls-soft:.14px;
+  --fw-medium:500; --fw-semibold:600; --fw-bold:700; --fw-black:800;
+
+  --s-1:.25rem; --s-2:.5rem; --s-3:.75rem; --s-4:1rem; --s-5:1.25rem;
+  --s-6:1.5rem; --s-8:2rem; --s-10:2.5rem; --s-12:3rem; --s-16:4rem; --s-20:5rem;
+  --section-y:clamp(4rem,8vw,7rem);
+
+  --shell:1200px; --shell-wide:1360px;
+  --gutter:clamp(1.25rem,4vw,2.5rem); --nav-h:72px;
+  --logo-h:24px; --logo-h-footer:20px;
+
+  --r-xs:6px; --r-sm:10px; --r-md:16px; --r-lg:24px; --r-xl:32px; --r-pill:999px;
+
+  --shadow-sm:0 1px 2px rgba(16,18,21,.05);
+  --shadow-md:0 6px 20px rgba(16,18,21,.07);
+
+  --btn-h:52px;
+  --focus-ring:0 0 0 3px var(--ground-sunk),0 0 0 5px var(--ink);
+
+  --dur-fast:140ms; --dur:260ms; --dur-slow:620ms;
+  --ease:cubic-bezier(.22,.61,.36,1); --ease-out:cubic-bezier(.16,1,.3,1);
+}
+
+/* ── 1. BASE ───────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--font-sans); font-size:var(--fs-body); font-weight:var(--fw-medium);
+  line-height:1.62; letter-spacing:var(--ls-body);
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+h1,h2,h3,h4,p,ul,ol,figure{margin:0}
+ul,ol{padding:0; list-style:none}
+a{color:inherit; text-decoration:none}
+button{font:inherit; color:inherit}
+img,svg{display:block; max-width:100%}
+:focus-visible{outline:none; box-shadow:var(--focus-ring); border-radius:var(--r-xs)}
+
+.shell{width:100%; max-width:var(--shell); margin-inline:auto; padding-inline:var(--gutter)}
+.shell--wide{max-width:var(--shell-wide)}
+
+.eyebrow{
+  font-family:var(--font-mono); font-size:var(--fs-label); font-weight:var(--fw-semibold);
+  letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--ink-soft);
+}
+
+/* ── 2. NAV (same bar as the homepage, minus the pack count) ───────────── */
+.nav{
+  position:sticky; top:0; z-index:50; height:var(--nav-h);
+  display:flex; align-items:center;
+  background:rgba(255,255,255,.72); backdrop-filter:blur(18px) saturate(180%);
+  -webkit-backdrop-filter:blur(18px) saturate(180%);
+  border-bottom:1px solid transparent; transition:border-color var(--dur) var(--ease);
+}
+.nav[data-scrolled="true"]{border-bottom-color:var(--line)}
+.nav__inner{display:flex; align-items:center; justify-content:space-between; width:100%}
+.nav__logo svg{height:var(--logo-h); width:auto}
+.nav__right{display:flex; align-items:center; gap:var(--s-6)}
+.nav__login{
+  font-weight:var(--fw-bold); font-size:var(--fs-sm); letter-spacing:.02em;
+  text-transform:uppercase; padding:var(--s-2) var(--s-1);
+}
+.nav__menu{
+  display:grid; gap:5px; width:44px; height:44px; padding:11px 8px;
+  place-content:center; background:none; border:0; cursor:pointer; border-radius:var(--r-sm);
+}
+.nav__menu span{display:block; width:26px; height:2.5px; background:var(--ink); border-radius:2px}
+@media (max-width:760px){ .nav__right{gap:var(--s-4)} }
+
+/* ── 3. BUTTONS ────────────────────────────────────────────────────────── */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s-2);
+  height:var(--btn-h); padding-inline:var(--s-8); border:0; border-radius:var(--r-pill);
+  font-weight:var(--fw-bold); font-size:var(--fs-body); letter-spacing:-.01em;
+  cursor:pointer; white-space:nowrap;
+  transition:transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease),
+             color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.btn:active{transform:scale(.975)}
+.btn svg{width:20px; height:20px; flex-shrink:0}
+.btn--primary{background:var(--ink); color:var(--ink-invert)}
+.btn--primary:hover{background:#33353D}
+.btn--ghost{background:transparent; color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+.btn--ghost:hover{box-shadow:inset 0 0 0 1.5px var(--ink); background:var(--ink); color:var(--ink-invert)}
+.btn--wa{background:var(--ok); color:#fff}
+.btn--wa:hover{background:var(--ok-press)}
+
+/* ── 4. HEAD ───────────────────────────────────────────────────────────── */
+.head{padding-block:clamp(var(--s-10),6vw,var(--s-16)) clamp(var(--s-8),4vw,var(--s-12))}
+.title{
+  font-size:var(--fs-title); font-weight:var(--fw-black);
+  line-height:1.04; letter-spacing:var(--ls-display); text-wrap:balance;
+  max-width:18ch;
+}
+.title span{color:var(--ink-soft)}
+.sub{
+  margin-top:var(--s-4); max-width:46ch;
+  font-size:var(--fs-lead); color:var(--ink-mid); line-height:1.45; text-wrap:pretty;
+}
+
+/* ── 5. THE WAYS TO REACH US ───────────────────────────────────────────── */
+/* Email and city stack on the left; the form — with WhatsApp and Call at
+   its head — takes the right. On phones the form comes first, since it
+   holds the quickest way in. */
+.ways{
+  display:grid; gap:var(--s-4); align-items:start;
+  grid-template-columns:1fr 1.5fr;
+}
+.ways__side{display:flex; flex-direction:column; gap:var(--s-4)}
+#write{scroll-margin-top:calc(var(--nav-h) + var(--s-6))}
+@media (max-width:860px){
+  .ways{grid-template-columns:1fr}
+  .ways__side{order:2}
+}
+.way{
+  border-radius:var(--r-lg); padding:clamp(var(--s-5),3vw,var(--s-8));
+  background:var(--ground-soft);
+  display:flex; flex-direction:column; gap:var(--s-2);
+}
+.way__ico{
+  width:44px; height:44px; border-radius:var(--r-sm); display:grid; place-items:center;
+  background:var(--ground); color:var(--ink); margin-bottom:var(--s-3);
+  box-shadow:var(--shadow-sm);
+}
+.way__ico svg{width:22px; height:22px}
+.way__label{
+  font-family:var(--font-mono); font-size:var(--fs-label); font-weight:var(--fw-semibold);
+  letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--ink-soft);
+}
+.way__value{
+  font-size:var(--fs-h3); font-weight:var(--fw-black); line-height:1.15;
+  letter-spacing:var(--ls-heading); overflow-wrap:anywhere;
+}
+a.way__value:hover{text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:4px}
+.way__note{font-size:var(--fs-sm); color:var(--ink-mid); line-height:1.5; letter-spacing:var(--ls-soft)}
+
+.way__acts{display:flex; flex-wrap:wrap; gap:var(--s-3)}
+@media (max-width:480px){ .way__acts .btn{flex:1 1 100%} }
+
+/* ── 5b. FORM ─────────────────────────────────────────────────────────────
+   WhatsApp and Call sit at the head of the card; the fields are for anyone
+   they don't suit — a laptop, a number abroad, or a bulk ask with details.
+   Picking Bulk or Outside India opens two more fields, so the first
+   message already holds what a quote needs. */
+.form{
+  border-radius:var(--r-xl); padding:clamp(var(--s-5),4vw,var(--s-10));
+  box-shadow:inset 0 0 0 1px var(--line), var(--shadow-md);
+  display:flex; flex-direction:column; gap:var(--s-5);
+}
+.fld{display:flex; flex-direction:column; gap:var(--s-2); min-width:0; border:0; margin:0; padding:0}
+.fld__label{font-size:var(--fs-sm); font-weight:var(--fw-bold); padding:0}
+.fld__label i{font-style:normal; font-weight:var(--fw-medium); color:var(--ink-soft)}
+.fld__input{
+  width:100%; height:56px; padding-inline:var(--s-4); border:0; border-radius:var(--r-md);
+  background:var(--ground); box-shadow:inset 0 0 0 1.5px var(--line-strong);
+  font:inherit; font-size:var(--fs-body); color:var(--ink); outline:none;
+  transition:box-shadow var(--dur-fast) var(--ease);
+}
+textarea.fld__input{height:auto; min-height:140px; padding-block:var(--s-4); resize:vertical; line-height:1.5}
+.fld__input::placeholder{color:var(--ink-faint)}
+.fld__input:hover{box-shadow:inset 0 0 0 1.5px var(--ink-faint)}
+.fld__input:focus{box-shadow:inset 0 0 0 2px var(--ink)}
+.fld[data-bad] .fld__input{box-shadow:inset 0 0 0 2px var(--bad)}
+.fld__err{display:none; font-size:var(--fs-xs); font-weight:var(--fw-semibold); color:var(--bad)}
+.fld[data-bad] .fld__err{display:block}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:var(--s-4)}
+@media (max-width:520px){ .row2{grid-template-columns:1fr} }
+
+/* Straight lines out, before any typing. */
+.direct{display:flex; flex-direction:column; gap:var(--s-2)}
+.direct__num{
+  font-size:clamp(1.5rem,3vw,2rem); font-weight:var(--fw-black); line-height:1.15;
+  letter-spacing:var(--ls-heading); width:fit-content;
+}
+a.direct__num:hover{text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:4px}
+.direct .way__acts{margin-top:var(--s-3)}
+.direct .way__acts .btn{flex:1 1 160px}
+
+.or{
+  display:flex; align-items:center; gap:var(--s-4);
+  font-size:var(--fs-xs); font-weight:var(--fw-semibold); color:var(--ink-soft);
+}
+.or::before,.or::after{content:""; flex:1; height:1px; background:var(--line-strong)}
+
+
+/* The two quote fields fold open for a bulk or abroad ask. */
+.extra{display:grid; grid-template-rows:0fr; margin-top:calc(-1 * var(--s-5)); transition:grid-template-rows var(--dur) var(--ease)}
+.extra > div{overflow:hidden; min-height:0}
+.extra[data-open]{grid-template-rows:1fr}
+/* the form's gap lives inside, so a closed .extra adds no space */
+.extra .row2{padding:calc(var(--s-5) + 2px) 2px 2px}
+
+.form__foot{display:flex; flex-wrap:wrap; align-items:center; gap:var(--s-3) var(--s-5)}
+.form__foot .btn{min-width:200px}
+.btn[aria-busy="true"]{opacity:.6; pointer-events:none}
+@media (max-width:520px){ .form__foot .btn{width:100%} }
+
+/* Sent: the card keeps its size and says so. */
+.sent{display:none; flex-direction:column; align-items:flex-start; gap:var(--s-3); padding-block:var(--s-6)}
+.form[data-sent] > :not(.sent){display:none}
+.form[data-sent] .sent{display:flex}
+.sent__ico{width:52px; height:52px; border-radius:50%; background:var(--ok); color:#fff; display:grid; place-items:center; margin-bottom:var(--s-2)}
+.sent__ico svg{width:24px; height:24px}
+.sent__t{font-size:var(--fs-h3); font-weight:var(--fw-black); letter-spacing:var(--ls-heading); line-height:1.15}
+.sent__s{font-size:var(--fs-sm); color:var(--ink-mid); max-width:40ch}
+.sent__again{margin-top:var(--s-2); background:none; border:0; padding:0; cursor:pointer; font-weight:var(--fw-bold); font-size:var(--fs-sm); text-decoration:underline; text-underline-offset:3px}
+
+/* ── 6. SOCIALS ────────────────────────────────────────────────────────── */
+.socials{padding-block:var(--s-12) 0}
+.socials__row{
+  margin-top:var(--s-4);
+  display:grid; gap:var(--s-3); grid-template-columns:repeat(5,1fr);
+}
+@media (max-width:900px){ .socials__row{grid-template-columns:repeat(3,1fr)} }
+@media (max-width:560px){ .socials__row{grid-template-columns:1fr 1fr} }
+.soc{
+  display:flex; align-items:center; gap:var(--s-3);
+  padding:var(--s-4); border-radius:var(--r-md);
+  box-shadow:inset 0 0 0 1px var(--line);
+  transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.soc svg{width:22px; height:22px; flex-shrink:0}
+.soc__t{display:flex; flex-direction:column; min-width:0; line-height:1.3}
+.soc__name{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.soc__handle{font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:var(--ls-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+a.soc:hover{background:var(--ink); color:var(--ink-invert); box-shadow:none}
+a.soc:hover .soc__handle{color:rgba(255,255,255,.6)}
+
+/* ── 7. BULK & OUTSIDE INDIA ───────────────────────────────────────────
+   One line now — the form above carries the details a quote needs. */
+.bulk{padding-block:var(--s-12) var(--section-y)}
+#bulk{scroll-margin-top:calc(var(--nav-h) + var(--s-6))}
+.bulk__card{
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--s-5) var(--s-8);
+  background:var(--ground-soft); border-radius:var(--r-xl);
+  padding:clamp(var(--s-6),4vw,var(--s-10));
+}
+.bulk__title{
+  margin-top:var(--s-3); font-size:var(--fs-h3); font-weight:var(--fw-black);
+  line-height:1.15; letter-spacing:var(--ls-heading); text-wrap:balance;
+}
+.bulk__lead{margin-top:var(--s-2); font-size:var(--fs-sm); color:var(--ink-mid); line-height:1.5; max-width:52ch}
+@media (max-width:520px){ .bulk__card .way__acts{width:100%} }
+
+/* ── 8. FOOTER (same as the homepage) ──────────────────────────────────── */
+.footer{background:var(--ground); border-top:1px solid var(--line); padding-block:var(--s-16) var(--s-8)}
+.footer__grid{display:grid; grid-template-columns:1.6fr repeat(3,1fr); gap:clamp(var(--s-8),4vw,var(--s-12))}
+@media (max-width:860px){.footer__grid{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.footer__grid{grid-template-columns:1fr}}
+.footer__logo svg{height:var(--logo-h-footer); width:auto; margin-bottom:var(--s-4)}
+.footer h4{
+  font-family:var(--font-mono); font-size:var(--fs-label); font-weight:var(--fw-semibold);
+  letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--ink-soft); margin-bottom:var(--s-4);
+}
+.footer__links{display:flex; flex-direction:column; gap:var(--s-3)}
+.footer__links a{font-size:var(--fs-sm); font-weight:var(--fw-semibold); color:var(--ink-mid); transition:color var(--dur-fast) var(--ease); width:fit-content}
+.footer__links a:hover{color:var(--ink)}
+.footer__base{
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--s-4);
+  margin-top:var(--s-16); padding-top:var(--s-6); border-top:1px solid var(--line);
+  font-size:var(--fs-sm); color:var(--ink-soft); font-weight:var(--fw-medium);
+}
+.footer__tag{max-width:30ch; font-size:var(--fs-sm); color:var(--ink-mid)}
+
+/* "Made in India, with love" — the heart is the only red on the page. */
+.love{display:inline-flex; flex-wrap:wrap; align-items:center; gap:0 .3em}
+.heart{display:inline-block; width:1em; height:1em; fill:#E0263A; flex-shrink:0; transform:translateY(.05em)}
+
+/* Small supporting lines get their air back (house rule). */
+.footer__base,.footer__links a,.footer__tag,.sub,
+.fld__label i,.fld__err,.or,.sent__s,.bulk__lead{letter-spacing:var(--ls-soft)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; transition-duration:.001ms !important}
+}
+</style>
+
+<!-- ══ NAV ══════════════════════════════════════════════════════════════ -->
+<header class="nav" id="nav">
+  <div class="shell shell--wide nav__inner">
+    <a class="nav__logo" href="homepage.html" aria-label="Codemarca home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 257 40" fill="none" role="img" aria-label="Codemarca"><g fill="#6E27E6"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></g><g fill="#101215"><path d="M245.956 14.0999H252.172V34.82H245.956V32.8723C244.589 34.447 242.558 35.4002 239.782 35.4002C234.353 35.4002 229.877 30.6345 229.877 24.46C229.877 18.2854 234.353 13.5198 239.782 13.5198C242.558 13.5198 244.589 14.4729 245.956 16.0476V14.0999ZM241.025 29.5157C243.884 29.5157 245.956 27.568 245.956 24.46C245.956 21.352 243.884 19.4043 241.025 19.4043C238.165 19.4043 236.093 21.352 236.093 24.46C236.093 27.568 238.165 29.5157 241.025 29.5157Z"/><path d="M220.695 35.4002C214.396 35.4002 209.713 30.6345 209.713 24.46C209.713 18.2854 214.396 13.5198 220.695 13.5198C224.714 13.5198 228.278 15.6332 230.06 18.8241L224.631 21.9736C223.927 20.5232 222.435 19.6529 220.612 19.6529C217.918 19.6529 215.929 21.6006 215.929 24.46C215.929 27.3193 217.918 29.267 220.612 29.267C222.435 29.267 223.968 28.3968 224.631 26.9464L230.06 30.0544C228.278 33.2867 224.756 35.4002 220.695 35.4002Z"/><path d="M203.477 17.7881C204.306 15.0116 207.083 13.6855 209.693 13.6855V20.7304C207.124 20.316 203.477 21.352 203.477 25.4545V34.82H197.261V14.1H203.477V17.7881Z"/><path d="M187.728 14.0999H193.944V34.82H187.728V32.8723C186.361 34.447 184.33 35.4002 181.554 35.4002C176.125 35.4002 171.649 30.6345 171.649 24.46C171.649 18.2854 176.125 13.5198 181.554 13.5198C184.33 13.5198 186.361 14.4729 187.728 16.0476V14.0999ZM182.797 29.5157C185.656 29.5157 187.728 27.568 187.728 24.46C187.728 21.352 185.656 19.4043 182.797 19.4043C179.937 19.4043 177.865 21.352 177.865 24.46C177.865 27.568 179.937 29.5157 182.797 29.5157Z"/><path d="M161.806 13.5198C166.571 13.5198 169.679 16.9179 169.679 22.0979V34.82H163.463V22.6366C163.463 20.5646 162.469 19.2385 160.479 19.2385C158.407 19.2385 157.247 20.6889 157.247 23.1339V34.82H151.031V22.6366C151.031 20.5646 150.037 19.2385 148.047 19.2385C145.975 19.2385 144.815 20.6889 144.815 23.1339V34.82H138.599V14.0999H144.815V16.0062C145.768 14.5972 147.592 13.5198 150.368 13.5198C152.813 13.5198 154.636 14.5143 155.797 16.2548C156.957 14.5972 158.863 13.5198 161.806 13.5198Z"/><path d="M121.357 26.9464C122.144 29.1013 124.051 29.8472 126.33 29.8472C128.029 29.8472 129.479 29.1841 130.308 28.2725L135.281 31.1318C133.25 33.9497 130.184 35.4002 126.247 35.4002C119.161 35.4002 114.768 30.6345 114.768 24.46C114.768 18.2854 119.244 13.5198 125.791 13.5198C131.841 13.5198 136.317 18.2025 136.317 24.46C136.317 25.3302 136.234 26.159 136.068 26.9464H121.357ZM121.233 22.3051H130.142C129.479 19.9016 127.614 19.0313 125.75 19.0313C123.388 19.0313 121.813 20.1916 121.233 22.3051Z"/><path d="M106.271 5.81201H112.487V34.8201H106.271V32.8724C104.903 34.4471 102.873 35.4002 100.096 35.4002C94.6674 35.4002 90.1919 30.6346 90.1919 24.4601C90.1919 18.2855 94.6674 13.5199 100.096 13.5199C102.873 13.5199 104.903 14.473 106.271 16.0477V5.81201ZM101.339 29.5158C104.199 29.5158 106.271 27.5681 106.271 24.4601C106.271 21.3521 104.199 19.4044 101.339 19.4044C98.4799 19.4044 96.4079 21.3521 96.4079 24.4601C96.4079 27.5681 98.4799 29.5158 101.339 29.5158Z"/><path d="M77.9738 35.4002C71.8821 35.4002 66.9922 30.6345 66.9922 24.46C66.9922 18.2854 71.8821 13.5198 77.9738 13.5198C84.0655 13.5198 88.9554 18.2854 88.9554 24.46C88.9554 30.6345 84.0655 35.4002 77.9738 35.4002ZM77.9738 29.3499C80.6674 29.3499 82.7394 27.4022 82.7394 24.46C82.7394 21.5177 80.6674 19.57 77.9738 19.57C75.2802 19.57 73.2082 21.5177 73.2082 24.46C73.2082 27.4022 75.2802 29.3499 77.9738 29.3499Z"/><path d="M57.8088 35.4002C51.5099 35.4002 46.8271 30.6345 46.8271 24.46C46.8271 18.2854 51.5099 13.5198 57.8088 13.5198C61.8285 13.5198 65.3923 15.6332 67.1742 18.8241L61.7456 21.9736C61.0411 20.5232 59.5493 19.6529 57.7259 19.6529C55.0323 19.6529 53.0432 21.6006 53.0432 24.46C53.0432 27.3193 55.0323 29.267 57.7259 29.267C59.5493 29.267 61.0825 28.3968 61.7456 26.9464L67.1742 30.0544C65.3923 33.2867 61.8699 35.4002 57.8088 35.4002Z"/></g></svg></a>
+    <div class="nav__right">
+      <a class="nav__login" href="signup.html?mode=login">Login</a>
+      <button class="nav__menu" type="button" aria-label="Open menu">
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ══ HEAD ═══════════════════════════════════════════════════════════ -->
+  <section class="shell head">
+    <span class="eyebrow">Contact</span>
+    <h1 class="title" style="margin-top:var(--s-4)">Talk to us. <span>WhatsApp is quickest.</span></h1>
+    <p class="sub">Questions about your pack, your page or an order — message us and a real person from the team replies.</p>
+  </section>
+
+  <!-- ══ WAYS ═══════════════════════════════════════════════════════════ -->
+  <section class="shell">
+    <div class="ways">
+
+      <div class="ways__side">
+        <div class="way way--mail">
+          <div class="way__ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4.5" width="19" height="15" rx="3"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>
+          </div>
+          <span class="way__label">Email</span>
+          <a class="way__value" href="mailto:hello@codemarca.com">hello@codemarca.com</a>
+          <p class="way__note">Better for anything long — invoices, order details, partnerships.</p>
+        </div>
+
+        <div class="way way--city">
+          <div class="way__ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+          </div>
+          <span class="way__label">Based in</span>
+          <span class="way__value">City Beautiful, Chandigarh, India</span>
+          <p class="way__note">Every sticker is designed and printed here. Made in India, stuck all over it.</p>
+        </div>
+      </div>
+
+      <!-- No backend yet: submit only shows the sent state. Wire it to
+           Formspree or our API in sendForm() at the bottom. -->
+      <form class="form" id="write" novalidate>
+        <div class="direct">
+          <span class="way__label">WhatsApp or call</span>
+          <a class="direct__num" href="https://wa.me/917719697117" target="_blank" rel="noopener">+91 77196 97117</a>
+          <div class="way__acts">
+            <a class="btn btn--wa" href="https://wa.me/917719697117?text=Hi%20Codemarca%2C%20" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>Chat on WhatsApp</a>
+            <a class="btn btn--ghost" href="tel:+917719697117">Call</a>
+          </div>
+        </div>
+
+        <p class="or">or leave a message</p>
+
+        <div class="row2">
+          <label class="fld" id="fName">
+            <span class="fld__label">Your name</span>
+            <input class="fld__input" name="name" type="text" autocomplete="name" placeholder="Gurdeep Singh">
+            <span class="fld__err">We need a name to reply to.</span>
+          </label>
+          <label class="fld" id="fReach">
+            <span class="fld__label">Phone or email <i>· one is enough</i></span>
+            <input class="fld__input" name="reach" type="text" autocomplete="email" placeholder="98xxxxxxxx or you@mail.com">
+            <span class="fld__err">Enter a phone number or an email we can reply to.</span>
+          </label>
+        </div>
+
+        <!-- No topic picker: "Use the form" in the bulk strip sets this to
+             bulk, which opens the quote fields. -->
+        <input type="hidden" name="topic" value="question">
+
+        <div class="extra" id="extra">
+          <div>
+            <div class="row2">
+              <label class="fld" id="fQty">
+                <span class="fld__label">How many?</span>
+                <input class="fld__input" name="qty" type="number" inputmode="numeric" min="1" placeholder="e.g. 50" tabindex="-1">
+                <span class="fld__err">Tell us roughly how many.</span>
+              </label>
+              <label class="fld" id="fWhere">
+                <span class="fld__label" id="whereLabel">City / country</span>
+                <input class="fld__input" name="where" type="text" placeholder="e.g. Mohali" tabindex="-1" autocomplete="country-name">
+                <span class="fld__err">Where should they go?</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <label class="fld" id="fMsg">
+          <span class="fld__label">Message</span>
+          <textarea class="fld__input" name="msg" rows="4" placeholder="Tell us what you need"></textarea>
+          <span class="fld__err">Add a line or two so we know how to help.</span>
+        </label>
+
+        <div class="form__foot">
+          <button class="btn btn--primary" type="submit" id="sendBtn">Send message</button>
+        </div>
+
+        <div class="sent" role="status" aria-live="polite">
+          <span class="sent__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>
+          <p class="sent__t" id="sentTitle">Got it.</p>
+          <p class="sent__s" id="sentSub">We'll reply on WhatsApp or email.</p>
+          <button class="sent__again" type="button" id="sendAgain">Send another message</button>
+        </div>
+      </form>
+
+    </div>
+  </section>
+
+  <!-- ══ SOCIALS ════════════════════════════════════════════════════════ -->
+  <section class="shell socials">
+    <span class="eyebrow">Follow along</span>
+    <div class="socials__row">
+      <a class="soc" href="https://www.instagram.com/codemarca/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.6" cy="6.4" r="1.1" fill="currentColor" stroke="none"/></svg>
+        <span class="soc__t"><span class="soc__name">Instagram</span><span class="soc__handle">@codemarca</span></span>
+      </a>
+      <a class="soc" href="https://www.youtube.com/@codemarca" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.8-.5-5.6a2.9 2.9 0 0 0-2-2C18.7 4 12 4 12 4s-6.7 0-8.5.4a2.9 2.9 0 0 0-2 2C1 8.2 1 12 1 12s0 3.8.5 5.6a2.9 2.9 0 0 0 2 2C5.3 20 12 20 12 20s6.7 0 8.5-.4a2.9 2.9 0 0 0 2-2C23 15.8 23 12 23 12zM9.8 15.4V8.6l5.9 3.4z"/></svg>
+        <span class="soc__t"><span class="soc__name">YouTube</span><span class="soc__handle">@codemarca</span></span>
+      </a>
+      <a class="soc" href="https://www.facebook.com/codemarca/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7h-2.5V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12z"/></svg>
+        <span class="soc__t"><span class="soc__name">Facebook</span><span class="soc__handle">codemarca</span></span>
+      </a>
+      <a class="soc" href="https://x.com/codemarca" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.2 2H21l-6.4 7.3L22.2 22h-5.9l-4.6-6-5.3 6H3.6l6.9-7.8L2.2 2h6l4.2 5.5zm-1 18h1.6L7.9 3.7H6.2z"/></svg>
+        <span class="soc__t"><span class="soc__name">X</span><span class="soc__handle">@codemarca</span></span>
+      </a>
+      <!-- LinkedIn page not created yet — swap the href in when it exists. -->
+      <a class="soc" href="#" aria-label="LinkedIn — page coming soon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM10 9h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V21h-4v-5.4c0-1.29-.02-2.95-1.8-2.95-1.8 0-2.08 1.4-2.08 2.85V21h-4z"/></svg>
+        <span class="soc__t"><span class="soc__name">LinkedIn</span><span class="soc__handle">Codemarca</span></span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ══ BULK & OUTSIDE INDIA ═══════════════════════════════════════════ -->
+  <section class="shell bulk" id="bulk">
+    <div class="bulk__card">
+      <div>
+        <span class="eyebrow">Bulk &amp; outside India</span>
+        <h2 class="bulk__title">Need a lot of them, or live outside India?</h2>
+        <p class="bulk__lead">Teams, shops, campuses and orders abroad are priced per order. Send how many and where — the quote comes back in one reply.</p>
+      </div>
+      <div class="way__acts">
+        <a class="btn btn--wa" href="https://wa.me/917719697117?text=Hi%20Codemarca%2C%20I%27d%20like%20a%20quote%20for%20a%20bulk%20order.%0AQuantity%3A%20%0ACity%20%2F%20country%3A%20" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>WhatsApp for a quote</a>
+        <a class="btn btn--ghost" href="#write" data-topic="bulk">Use the form</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ══ FOOTER ═══════════════════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="shell shell--wide">
+    <div class="footer__grid">
+      <div>
+        <div class="footer__logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 257 40" fill="none" role="img" aria-label="Codemarca"><g fill="#6E27E6"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></g><g fill="#101215"><path d="M245.956 14.0999H252.172V34.82H245.956V32.8723C244.589 34.447 242.558 35.4002 239.782 35.4002C234.353 35.4002 229.877 30.6345 229.877 24.46C229.877 18.2854 234.353 13.5198 239.782 13.5198C242.558 13.5198 244.589 14.4729 245.956 16.0476V14.0999ZM241.025 29.5157C243.884 29.5157 245.956 27.568 245.956 24.46C245.956 21.352 243.884 19.4043 241.025 19.4043C238.165 19.4043 236.093 21.352 236.093 24.46C236.093 27.568 238.165 29.5157 241.025 29.5157Z"/><path d="M220.695 35.4002C214.396 35.4002 209.713 30.6345 209.713 24.46C209.713 18.2854 214.396 13.5198 220.695 13.5198C224.714 13.5198 228.278 15.6332 230.06 18.8241L224.631 21.9736C223.927 20.5232 222.435 19.6529 220.612 19.6529C217.918 19.6529 215.929 21.6006 215.929 24.46C215.929 27.3193 217.918 29.267 220.612 29.267C222.435 29.267 223.968 28.3968 224.631 26.9464L230.06 30.0544C228.278 33.2867 224.756 35.4002 220.695 35.4002Z"/><path d="M203.477 17.7881C204.306 15.0116 207.083 13.6855 209.693 13.6855V20.7304C207.124 20.316 203.477 21.352 203.477 25.4545V34.82H197.261V14.1H203.477V17.7881Z"/><path d="M187.728 14.0999H193.944V34.82H187.728V32.8723C186.361 34.447 184.33 35.4002 181.554 35.4002C176.125 35.4002 171.649 30.6345 171.649 24.46C171.649 18.2854 176.125 13.5198 181.554 13.5198C184.33 13.5198 186.361 14.4729 187.728 16.0476V14.0999ZM182.797 29.5157C185.656 29.5157 187.728 27.568 187.728 24.46C187.728 21.352 185.656 19.4043 182.797 19.4043C179.937 19.4043 177.865 21.352 177.865 24.46C177.865 27.568 179.937 29.5157 182.797 29.5157Z"/><path d="M161.806 13.5198C166.571 13.5198 169.679 16.9179 169.679 22.0979V34.82H163.463V22.6366C163.463 20.5646 162.469 19.2385 160.479 19.2385C158.407 19.2385 157.247 20.6889 157.247 23.1339V34.82H151.031V22.6366C151.031 20.5646 150.037 19.2385 148.047 19.2385C145.975 19.2385 144.815 20.6889 144.815 23.1339V34.82H138.599V14.0999H144.815V16.0062C145.768 14.5972 147.592 13.5198 150.368 13.5198C152.813 13.5198 154.636 14.5143 155.797 16.2548C156.957 14.5972 158.863 13.5198 161.806 13.5198Z"/><path d="M121.357 26.9464C122.144 29.1013 124.051 29.8472 126.33 29.8472C128.029 29.8472 129.479 29.1841 130.308 28.2725L135.281 31.1318C133.25 33.9497 130.184 35.4002 126.247 35.4002C119.161 35.4002 114.768 30.6345 114.768 24.46C114.768 18.2854 119.244 13.5198 125.791 13.5198C131.841 13.5198 136.317 18.2025 136.317 24.46C136.317 25.3302 136.234 26.159 136.068 26.9464H121.357ZM121.233 22.3051H130.142C129.479 19.9016 127.614 19.0313 125.75 19.0313C123.388 19.0313 121.813 20.1916 121.233 22.3051Z"/><path d="M106.271 5.81201H112.487V34.8201H106.271V32.8724C104.903 34.4471 102.873 35.4002 100.096 35.4002C94.6674 35.4002 90.1919 30.6346 90.1919 24.4601C90.1919 18.2855 94.6674 13.5199 100.096 13.5199C102.873 13.5199 104.903 14.473 106.271 16.0477V5.81201ZM101.339 29.5158C104.199 29.5158 106.271 27.5681 106.271 24.4601C106.271 21.3521 104.199 19.4044 101.339 19.4044C98.4799 19.4044 96.4079 21.3521 96.4079 24.4601C96.4079 27.5681 98.4799 29.5158 101.339 29.5158Z"/><path d="M77.9738 35.4002C71.8821 35.4002 66.9922 30.6345 66.9922 24.46C66.9922 18.2854 71.8821 13.5198 77.9738 13.5198C84.0655 13.5198 88.9554 18.2854 88.9554 24.46C88.9554 30.6345 84.0655 35.4002 77.9738 35.4002ZM77.9738 29.3499C80.6674 29.3499 82.7394 27.4022 82.7394 24.46C82.7394 21.5177 80.6674 19.57 77.9738 19.57C75.2802 19.57 73.2082 21.5177 73.2082 24.46C73.2082 27.4022 75.2802 29.3499 77.9738 29.3499Z"/><path d="M57.8088 35.4002C51.5099 35.4002 46.8271 30.6345 46.8271 24.46C46.8271 18.2854 51.5099 13.5198 57.8088 13.5198C61.8285 13.5198 65.3923 15.6332 67.1742 18.8241L61.7456 21.9736C61.0411 20.5232 59.5493 19.6529 57.7259 19.6529C55.0323 19.6529 53.0432 21.6006 53.0432 24.46C53.0432 27.3193 55.0323 29.267 57.7259 29.267C59.5493 29.267 61.0825 28.3968 61.7456 26.9464L67.1742 30.0544C65.3923 33.2867 61.8699 35.4002 57.8088 35.4002Z"/></g></svg></div>
+        <p class="footer__tag">One page for everything you are — printed as a QR you can stick anywhere.</p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <div class="footer__links">
+          <a href="how-it-works.html">How it works</a>
+          <a href="homepage.html#pack">What's in the pack</a>
+          <a href="signup.html?next=order">Get a pack</a>
+          <a href="signup.html?mode=login">Login</a>
+        </div>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <div class="footer__links">
+          <a href="about.html">About</a>
+          <a href="contact.html">Contact</a>
+          <a href="contact.html#bulk">For campuses</a>
+          <a href="contact.html#bulk">Bulk &amp; business</a>
+        </div>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <div class="footer__links">
+          <a href="privacy.html">Privacy policy</a>
+          <a href="terms.html">Terms of use</a>
+          <a href="refund.html">Refund policy</a>
+          <a href="shipping.html">Shipping policy</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer__base">
+      <span>© 2026 Codemarca · hello@codemarca.com</span>
+      <span class="love">Made in India <svg class="heart" viewBox="0 0 24 24" aria-label="love" role="img"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.1 0 3.6 1.1 4.4 2.6h1.8c.8-1.5 2.3-2.6 4.4-2.6 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z"/></svg> stuck all over it</span>
+    </div>
+  </div>
+</footer>
+
+<script src="site-menu.js"></script>
+<script>
+(function () {
+  "use strict";
+  var nav = document.getElementById("nav");
+  function onScroll() { nav.dataset.scrolled = window.scrollY > 8 ? "true" : "false"; }
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  /* ── Contact form ───────────────────────────────────────────────── */
+  var form = document.getElementById("write");
+  var extra = document.getElementById("extra");
+  var whereLabel = document.getElementById("whereLabel");
+  var whereInput = form.elements.where;
+  var sendBtn = document.getElementById("sendBtn");
+
+  function topic() { return form.elements.topic.value; }
+  function quoting() { var t = topic(); return t === "bulk" || t === "abroad"; }
+
+  function syncTopic() {
+    var open = quoting();
+    if (open) extra.setAttribute("data-open", ""); else extra.removeAttribute("data-open");
+    extra.querySelectorAll("input").forEach(function (i) { i.tabIndex = open ? 0 : -1; });
+    var abroad = topic() === "abroad";
+    whereLabel.textContent = abroad ? "Country" : "City / country";
+    whereInput.placeholder = abroad ? "e.g. Canada" : "e.g. Mohali";
+    if (!open) ["fQty", "fWhere"].forEach(clear);
+  }
+
+  function bad(id) { document.getElementById(id).setAttribute("data-bad", ""); }
+  function clear(id) { document.getElementById(id).removeAttribute("data-bad"); }
+
+  /* A field stops showing its error the moment it is edited. */
+  form.addEventListener("input", function (e) {
+    var fld = e.target.closest(".fld"); if (fld) fld.removeAttribute("data-bad");
+  });
+
+  var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  function isPhone(v) { var d = v.replace(/[\s()+-]/g, ""); return /^\d{7,15}$/.test(d); }
+
+  function check() {
+    var f = form.elements, firstBad = null;
+    function need(ok, id, input) { if (!ok) { bad(id); firstBad = firstBad || input; } }
+    if (quoting()) {
+      need(parseInt(f.qty.value, 10) > 0, "fQty", f.qty);
+      need(f.where.value.trim().length > 1, "fWhere", f.where);
+    }
+    need(f.name.value.trim().length > 1, "fName", f.name);
+    var r = f.reach.value.trim();
+    need(EMAIL.test(r) || isPhone(r), "fReach", f.reach);
+    need(f.msg.value.trim().length > 3, "fMsg", f.msg);
+    if (firstBad) firstBad.focus();
+    return !firstBad;
+  }
+
+  /* Stand-in for the real request. Swap for a fetch() to the endpoint. */
+  function sendForm(data) {
+    return new Promise(function (res) { setTimeout(res, 700); });
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!check()) return;
+    var data = Object.fromEntries(new FormData(form));
+    sendBtn.setAttribute("aria-busy", "true");
+    sendBtn.textContent = "Sending…";
+    sendForm(data).then(function () {
+      var first = data.name.trim().split(/\s+/)[0];
+      var byMail = EMAIL.test(data.reach.trim());
+      document.getElementById("sentTitle").textContent = "Got it, " + first + ".";
+      document.getElementById("sentSub").textContent = byMail
+        ? "We'll reply to " + data.reach.trim() + "."
+        : "We'll reply on WhatsApp at " + data.reach.trim() + ".";
+      form.setAttribute("data-sent", "");
+      /* The card gets shorter, so bring the confirmation into view. */
+      form.scrollIntoView({ block: "center", behavior: "smooth" });
+      sendBtn.removeAttribute("aria-busy");
+      sendBtn.textContent = "Send message";
+    });
+  });
+
+  document.getElementById("sendAgain").addEventListener("click", function () {
+    form.reset();
+    form.elements.topic.value = "question";
+    form.removeAttribute("data-sent");
+    syncTopic();
+    form.elements.name.focus();
+  });
+
+  /* "Use the form" in the bulk strip lands on the form with Bulk picked. */
+  document.querySelectorAll("[data-topic]").forEach(function (a) {
+    a.addEventListener("click", function () {
+      form.elements.topic.value = a.dataset.topic;
+      syncTopic();
+    });
+  });
+
+  syncTopic();
+})();
+</script>

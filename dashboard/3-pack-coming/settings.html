@@ -1,0 +1,208 @@
+<title>Settings · Codemarca</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../dashboard.css">
+<link rel="stylesheet" href="../../tab-settings.css">
+
+<!-- ==========================================================================
+     CODEMARCA — SETTINGS
+     The account, not the page. Everything about how someone signs in and
+     what we are allowed to send them.
+
+     SIGNING IN — Google only, decided 2026-09-16 (Garry). No password and
+     no "disconnect Google": both need OTP confirmation, and OTP is paid.
+     They come back once the product is making money. "Signed-in devices"
+     moved down into the danger zone, just above Delete account.
+
+     THE LINE BETWEEN THIS SCREEN AND THE PROFILE SCREEN
+       profile.html   what the world sees   (name, links, theme, handle)
+       settings.html  how you get in        (email, password, notifications)
+
+     IDENTICAL IN EVERY FLOW FOLDER. Settings is the one screen that does
+     not change with what someone has or has not done — an account is an
+     account. It is copied into each folder anyway so that a folder is a
+     complete, openable dashboard on its own; the markup below is the same
+     five ways, and the behaviour lives once in ../../tab-settings.js.
+
+     SIGNING BACK IN — the same Google account, always. A different email
+     is a different account, which is exactly how a gifted sticker becomes
+     its new owner's.
+     ========================================================================== -->
+
+<div class="app">
+  <div class="app__main">
+    <main class="view">
+
+      <header class="head">
+        <h1>Settings</h1>
+        <p>Your account, emails and support.</p>
+      </header>
+
+
+      <!-- ── WHO YOU ARE ─────────────────────────────────────────────────── -->
+
+      <section class="card">
+        <span class="card__title">Account</span>
+
+        <!-- READ ONLY, 2026-09-27 (Garry). Name and phone were editable here
+             and on the profile tab — the same two fields in two places. They
+             belong to the page, so the page keeps them and this card just
+             says who is signed in and since when. -->
+
+        <div class="set" style="padding-top:0">
+          <span class="avatar" data-fill="user.initial">G</span>
+          <span class="set__txt">
+            <span class="set__t" data-fill="user.name">Garry Singh</span>
+            <span class="set__v">Joined <span data-fill="user.joined">12 Aug 2026</span></span>
+          </span>
+        </div>
+
+        <div class="set">
+          <span class="set__txt">
+            <span class="set__t">Email</span>
+            <span class="set__v" data-fill="user.email">garry@example.com</span>
+          </span>
+        </div>
+      </section>
+
+
+      <!-- ── WHAT WE SEND ────────────────────────────────────────────────
+           Order mail is transactional and stays on. Everything else is a
+           real choice, defaulted the way a person would pick it. -->
+
+      <section class="card">
+        <span class="card__title">Emails</span>
+
+        <div class="set" style="padding-top:0">
+          <span class="set__txt">
+            <span class="set__t">Order and delivery updates</span>
+            <span class="set__v">Always on — this is how you know where your pack is</span>
+          </span>
+          <span class="set__end">
+            <label class="sw"><input type="checkbox" checked disabled><span class="sw__track"></span></label>
+          </span>
+        </div>
+
+        <div class="set">
+          <span class="set__txt">
+            <span class="set__t">Product news</span>
+            <span class="set__v">Rare, and only when something actually ships</span>
+          </span>
+          <span class="set__end">
+            <label class="sw"><input type="checkbox"><span class="sw__track"></span></label>
+          </span>
+        </div>
+      </section>
+
+
+      <!-- ── POINTER BACK TO THE PAGE ────────────────────────────────────
+           People come to settings looking for these. Rather than let them
+           hunt, the screen sends them across. -->
+
+      <section class="card card--flat">
+        <p class="note note--quiet">
+          <span data-ic-in="help"></span>
+          <span>Your handle, links and theme are on <b>your page</b>. Taking the
+            page offline is there too — it hides the page without touching
+            your account or your stickers.</span>
+        </p>
+        <div style="display:flex; gap:var(--s-2); flex-wrap:wrap">
+          <a class="btn btn--ghost btn--sm" href="profile.html">Go to my page</a>
+          <a class="btn btn--quiet btn--sm" href="qr.html">Manage my code</a>
+        </div>
+      </section>
+
+
+      <!-- ── SUPPORT ─────────────────────────────────────────────────────
+           Real contacts (Garry, 2026-09-29): hello@codemarca.com and
+           +91 77196 97117, the same as the contact page. -->
+
+      <section class="card">
+        <span class="card__title">Support</span>
+
+        <a class="set sup" style="padding-top:0" href="https://wa.me/917719697117" target="_blank" rel="noopener">
+          <span class="sup__ic sup__ic--wa">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#25D366"/><path d="M6.2 18 7.3 14.6a6.7 6.7 0 1 1 2.5 2.4z" fill="none" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.9 9.4c.35 1.7 1.7 3 3.4 3.4l.7-1.1 1.6.75-.25 1.4c-2.8.4-6-2.8-5.6-5.6l1.4-.25.75 1.6z" fill="#fff"/></svg>
+          </span>
+          <span class="set__txt">
+            <span class="set__t">WhatsApp</span>
+            <span class="set__v">Chat with us</span>
+          </span>
+          <span class="set__end sup__go" data-ic="chev"></span>
+        </a>
+
+        <a class="set sup" href="mailto:hello@codemarca.com">
+          <span class="sup__ic" data-ic="mail"></span>
+          <span class="set__txt">
+            <span class="set__t">Email</span>
+            <span class="set__v">hello@codemarca.com</span>
+          </span>
+          <span class="set__end sup__go" data-ic="chev"></span>
+        </a>
+      </section>
+
+
+      <!-- ── THE END OF THE ROAD ─────────────────────────────────────────
+           Deleting the account kills its code with it — permanently,
+           because a printed id cannot be handed back out. That has to
+           be said here, not in a dialog after the click. -->
+
+      <section class="card danger">
+        <span class="card__title">Danger zone</span>
+
+        <div class="set" style="padding-top:0">
+          <span class="set__txt">
+            <span class="set__t">Log out</span>
+            <span class="set__v">On this device only</span>
+          </span>
+          <span class="set__end">
+            <a class="btn btn--ghost btn--sm" href="../../signup.html?mode=login">
+              <span data-ic-in="out"></span>Log out
+            </a>
+          </span>
+        </div>
+
+        <div class="set">
+          <span class="set__txt">
+            <span class="set__t">Signed-in devices</span>
+            <span class="set__v">This browser, and an iPhone in Chandigarh</span>
+          </span>
+          <span class="set__end">
+            <button class="btn btn--ghost btn--sm" type="button"
+                    data-soon="Signs out everywhere except here">Sign out others</button>
+          </span>
+        </div>
+
+        <div class="set">
+          <span class="set__txt">
+            <span class="set__t">Delete account</span>
+            <span class="set__v" id="delNote">Your page comes down and your stickers
+              stop working, for good</span>
+          </span>
+          <span class="set__end">
+            <button class="btn btn--bad btn--sm" type="button" id="del">
+              <span data-ic-in="trash"></span>Delete
+            </button>
+          </span>
+        </div>
+      </section>
+
+
+      <nav class="foot">
+        <a href="../../homepage.html">Home</a>
+        <a href="../../homepage.html#faq">Help</a>
+        <a href="../../privacy.html">Privacy</a>
+        <a href="../../terms.html">Terms</a>
+      </nav>
+
+    </main>
+  </div>
+</div>
+
+
+<script src="state.js"></script>
+<script src="../../dashboard.js"></script>
+<script src="../../tab-settings.js"></script>

@@ -1,0 +1,171 @@
+<title>My QR · Codemarca</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../dashboard.css">
+<link rel="stylesheet" href="../../tab-qr.css">
+
+<!-- ==========================================================================
+     CODEMARCA — MY QR  ·  flow 2, page live, no pack
+     The screen that makes this folder worth having.
+
+     One profile = one QR, and the code is minted with the PAGE — so this
+     person already has a real, permanent code even though nothing has been
+     printed. That means this tab is not an empty state waiting on an order:
+     it is a working screen on day one. Download the square, put it on an
+     Instagram bio, a visiting card, a poster, a shop board.
+
+     And that is also the best argument for the pack, because it is made
+     with the thing itself rather than with a promise: here is your code,
+     it already works — stickers put it on the things you actually carry.
+     ========================================================================== -->
+
+<div class="app">
+  <div class="app__main">
+    <main class="view">
+
+      <header class="head">
+        <h1>My QR</h1>
+        <p data-when="fresh settled">Made when your page went live, and yours for good. Nothing is
+           printed yet — but the square already works anywhere you can put a
+           picture.</p>
+        <p data-when="coming">Made when your page went live, and yours for good. It already
+           works — the stickers on their way carry this exact square.</p>
+      </header>
+
+      <section class="card big big--split">
+        <div class="big__l">
+        <button class="big__qr" type="button" data-qr
+                aria-label="Show my QR full screen"></button>
+
+        <p class="big__hint">Tap to show it full screen</p>
+        </div>
+
+        <div class="big__r">
+
+        <span class="big__url">
+          <span>codemarca.com/<b data-fill="profile.handle">garry</b></span>
+          <button type="button" data-copy-url aria-label="Copy my page link"></button>
+        </span>
+
+        <div class="big__acts">
+          <button class="btn btn--ghost btn--sm" type="button" data-download>
+            <span data-ic-in="down"></span>Download PNG
+          </button>
+          <button class="btn btn--ghost btn--sm" type="button" data-share-code>
+            <span data-ic-in="share"></span>Share
+          </button>
+          <a class="btn btn--ghost btn--sm" href="#" data-view target="_blank" rel="noopener">
+            <span data-ic-in="eye"></span>View page
+          </a>
+          <a class="btn btn--quiet btn--sm" href="profile.html">
+            <span data-ic-in="pen"></span>Edit what it opens
+          </a>
+        </div>
+
+
+
+        </div>
+      </section>
+
+
+
+      <!-- ══ PREVIEW ═════════════════════════════════════════════════════
+           The page itself, live, inside the dashboard — not a drawing and
+           not a screenshot. It is the same URL a scan opens, in an iframe,
+           so it can never drift from what people actually see.
+
+           Phone is the default because that is what a scan happens on. Web
+           is there because the link gets sent too.
+
+           The page's own live switch sits under it: taking the page offline
+           is a different thing from switching the CODE off, and this is the
+           one screen where both belong next to each other. -->
+
+      <section class="card pv" data-pv data-view="phone">
+        <div class="card__head">
+          <span class="card__title">Preview</span>
+          <span class="pv__acts">
+            <a class="btn btn--quiet btn--sm" href="#" data-view target="_blank" rel="noopener">
+              <span data-ic-in="share"></span>Open
+            </a>
+            <!-- the action belongs beside the thing it changes: Edit when
+                 there is a page, Build when there is not (Garry, 2026-09-28) -->
+            <a class="btn btn--ghost btn--sm" href="profile.html" data-pv-do>
+              <span data-ic-in="pen"></span>Edit page
+            </a>
+          </span>
+        </div>
+
+        <div class="seg seg--sm" role="tablist" aria-label="Preview size">
+          <button class="seg__b" type="button" role="tab" aria-selected="true" data-pv-tab="phone">
+            <span data-ic-in="phone"></span>Phone
+          </button>
+          <button class="seg__b" type="button" role="tab" aria-selected="false" data-pv-tab="web">
+            <span data-ic-in="card"></span>Web
+          </button>
+        </div>
+
+        <div class="pv__stage">
+          <div class="pv__frame"><iframe data-pv-frame title="Your page, as a scan opens it" loading="lazy"></iframe></div>
+        </div>
+
+        <div class="onoff">
+          <span class="onoff__txt">
+            <span class="onoff__t" data-live-t>Your page is live</span>
+            <span class="onoff__s" data-live-s>Sticker scans and your link both open it</span>
+          </span>
+          <label class="sw"><input type="checkbox" checked data-live aria-label="Page live or hidden"><span class="sw__track"></span></label>
+        </div>
+      </section>
+
+
+
+      <!-- ── the pack, argued with the code rather than at it ──────────── -->
+
+      <section class="card card--dark card--close card--act" data-when="fresh settled">
+        <span class="card__title">Next</span>
+        <p class="card__h" style="margin-top:var(--s-2)">Get it on things.</p>
+        <p class="card__note" style="margin-top:var(--s-2)">
+          A 4″ sticker for the car, bike or shutter and a 1.5″ for a laptop,
+          bottle or phone case — both printed with this exact code. The pack
+          is free; you only pay delivery.
+        </p>
+
+        <!-- The photos moved in here on 2026-09-27 (Garry). They used to be
+             their own card called "Put it somewhere today", two sections
+             away from the button they were arguing for. They are the
+             argument, so they belong with the ask. -->
+        <div class="ps" data-strip>
+          <div class="ps__row">
+            <img class="ps__ph" src="../../assets/photos/codemarca-qr-sticker-car-window-scan-parking.jpg" alt="Someone scanning a Codemarca QR sticker on a car window" width="2400" height="1792" loading="lazy">
+            <img class="ps__ph" src="../../assets/photos/codemarca-qr-sticker-cafe-counter.jpg" alt="Codemarca QR sticker on a café counter" width="2400" height="1792" loading="lazy">
+            <img class="ps__ph" src="../../assets/photos/codemarca-qr-sticker-dog-collar-tag-scan.jpg" alt="Codemarca QR tag on a dog collar being scanned" width="2400" height="1792" loading="lazy">
+            <img class="ps__ph" src="../../assets/photos/codemarca-qr-sticker-4x4-window-black-offroad.jpg" alt="Codemarca QR sticker on a 4x4's side window" width="2400" height="1792" loading="lazy">
+          </div>
+          <span class="ps__bar" aria-hidden="true"><i></i></span>
+        </div>
+
+        <a class="btn btn--go btn--wide" href="../../select-pack.html?built=1"
+           style="margin-top:var(--s-2)">Get my pack</a>
+      </section>
+
+
+      <section class="card" id="code">
+        <div class="card__head">
+          <span class="card__title">Printed on</span>
+          <span class="chip chip--ok" data-status>Active</span>
+        </div>
+        <div class="stks" data-stickers></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="state.js"></script>
+<script src="../../dashboard.js"></script>
+<script src="../../tab-qr.js"></script>
+<script>CM.strip(document.querySelector("[data-strip]"));</script>

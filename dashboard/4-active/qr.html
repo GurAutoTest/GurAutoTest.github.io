@@ -1,0 +1,179 @@
+<title>My QR · Codemarca</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../dashboard.css">
+<link rel="stylesheet" href="../../tab-qr.css">
+
+<!-- ==========================================================================
+     CODEMARCA — MY QR  ·  flow 4, active account
+     This tab used to be called "Codes" and was nearly cut. What saved it is
+     the decision of 2026-09-16: one profile = one QR, for good. A list of
+     codes would have been an empty list forever — but ONE code that never
+     changes is the most permanent thing this account owns, and it deserves
+     a screen that treats it that way.
+
+     So: the square is large, and the three things you can do with it are
+     the screen.
+
+       DOWNLOAD   the QR as a PNG, to put on a bio, a card, a poster, a
+                  shop board, a WhatsApp display picture. This is the part
+                  that costs us nothing and spreads the code furthest.
+       ORDER      more stickers. Same code, reprinted. The ask is here
+                  because this is the screen where someone is already
+                  looking at the thing they would be ordering.
+       EDIT       what sits behind it — which is the profile tab, not here.
+
+     GIFTS SENT moved to the Gift & Refer tab on 2026-09-18 (Garry). A
+     gifted code is never this account's code, so this screen — which is
+     about the one code that is — no longer lists them.
+
+     NO "PRINTED ON" LIST — Garry, 2026-09-24. We cannot know which
+     stickers are still stuck to something and which came off, so a list of
+     them, a status chip and a Pause on top of it were all claiming to know
+     something we don't. Lost-sticker reprints are asked for from Home and
+     Orders, where the rest of the ordering lives.
+     ========================================================================== -->
+
+<div class="app">
+  <div class="app__main">
+    <main class="view">
+
+      <header class="head">
+        <h1>My QR</h1>
+        <p>One code, yours for good. Change your page whenever you like — the
+           code never changes, so nothing you have already printed or stuck
+           on anything ever goes stale.</p>
+      </header>
+
+
+      <!-- ══ THE SQUARE ══════════════════════════════════════════════════ -->
+
+      <section class="card big big--split">
+        <div class="big__l">
+        <button class="big__qr" type="button" data-qr
+                aria-label="Show my QR full screen"></button>
+
+        <p class="big__hint">Tap to show it full screen</p>
+        </div>
+
+        <div class="big__r">
+
+        <span class="big__url">
+          <span>codemarca.com/<b data-fill="profile.handle">garry</b></span>
+          <button type="button" data-copy-url aria-label="Copy my page link"></button>
+        </span>
+
+        <div class="big__acts">
+          <button class="btn btn--ghost btn--sm" type="button" data-download>
+            <span data-ic-in="down"></span>Download PNG
+          </button>
+          <button class="btn btn--ghost btn--sm" type="button" data-share-code>
+            <span data-ic-in="share"></span>Share
+          </button>
+          <a class="btn btn--ghost btn--sm" href="#" data-view target="_blank" rel="noopener">
+            <span data-ic-in="eye"></span>View page
+          </a>
+          <a class="btn btn--quiet btn--sm" href="profile.html">
+            <span data-ic-in="pen"></span>Edit what it opens
+          </a>
+        </div>
+
+
+
+        </div>
+      </section>
+
+
+
+      <!-- ══ PREVIEW ═════════════════════════════════════════════════════
+           The page itself, live, inside the dashboard — not a drawing and
+           not a screenshot. It is the same URL a scan opens, in an iframe,
+           so it can never drift from what people actually see.
+
+           Phone is the default because that is what a scan happens on. Web
+           is there because the link gets sent too.
+
+           The page's own live switch sits under it: taking the page offline
+           is a different thing from switching the CODE off, and this is the
+           one screen where both belong next to each other. -->
+
+      <section class="card pv" data-pv data-view="phone">
+        <div class="card__head">
+          <span class="card__title">Preview</span>
+          <span class="pv__acts">
+            <a class="btn btn--quiet btn--sm" href="#" data-view target="_blank" rel="noopener">
+              <span data-ic-in="share"></span>Open
+            </a>
+            <!-- the action belongs beside the thing it changes: Edit when
+                 there is a page, Build when there is not (Garry, 2026-09-28) -->
+            <a class="btn btn--ghost btn--sm" href="profile.html" data-pv-do>
+              <span data-ic-in="pen"></span>Edit page
+            </a>
+          </span>
+        </div>
+
+        <div class="seg seg--sm" role="tablist" aria-label="Preview size">
+          <button class="seg__b" type="button" role="tab" aria-selected="true" data-pv-tab="phone">
+            <span data-ic-in="phone"></span>Phone
+          </button>
+          <button class="seg__b" type="button" role="tab" aria-selected="false" data-pv-tab="web">
+            <span data-ic-in="card"></span>Web
+          </button>
+        </div>
+
+        <div class="pv__stage">
+          <div class="pv__frame"><iframe data-pv-frame title="Your page, as a scan opens it" loading="lazy"></iframe></div>
+        </div>
+
+        <div class="onoff">
+          <span class="onoff__txt">
+            <span class="onoff__t" data-live-t>Your page is live</span>
+            <span class="onoff__s" data-live-s>Sticker scans and your link both open it</span>
+          </span>
+          <label class="sw"><input type="checkbox" checked data-live aria-label="Page live or hidden"><span class="sw__track"></span></label>
+        </div>
+      </section>
+
+      <!-- ══ ORDER MORE ══════════════════════════════════════════════════
+           Repeated from Home on purpose. Someone on this screen is already
+           looking at the exact thing a sticker carries. -->
+
+      <section class="card">
+        <span class="card__title">Want it on something?</span>
+        <p class="card__note" style="margin-top:var(--s-2); font-size:var(--fs-sm); color:var(--ink-mid)">
+          Every sticker we print for you carries this same code. Order another
+          pack for the second car, the shop shutter, a bike, or to hand to
+          someone who keeps asking for your number.
+        </p>
+        <!-- the photos do the arguing here too, the way they do on the pack
+             card in flow 2 (Garry, 2026-09-29) -->
+        <div class="ps" data-strip style="margin-top:var(--s-4)">
+          <div class="ps__row">
+            <img class="ps__ph" src="../../assets/photos/codemarca-qr-sticker-motorcycle-fuel-tank.jpg" alt="Codemarca QR sticker on a motorcycle fuel tank" width="2400" height="1792" loading="lazy">
+            <img class="ps__ph" src="../../assets/photos/codemarca-qr-sticker-salon-mirror-scan.jpg" alt="Someone scanning a Codemarca QR sticker on a salon mirror" width="2400" height="1792" loading="lazy">
+            <img class="ps__ph" src="../../assets/photos/codemarca-qr-sticker-suitcase-airport.jpg" alt="Codemarca QR sticker on a suitcase at the airport" width="2400" height="1792" loading="lazy">
+            <img class="ps__ph" src="../../assets/photos/codemarca-qr-sticker-water-bottle-gym.jpg" alt="Codemarca QR sticker on a water bottle at the gym" width="2400" height="1792" loading="lazy">
+          </div>
+          <span class="ps__bar" aria-hidden="true"><i></i></span>
+        </div>
+
+        <div class="card__foot">
+          <a class="btn btn--go btn--sm btn--grow" href="../../select-pack.html?pack=custom&amp;built=1&amp;free=used">
+            <span data-ic-in="plus"></span>Order more stickers
+          </a>
+          <a class="btn btn--ghost btn--sm btn--grow" href="orders.html">My orders</a>
+        </div>
+      </section>
+
+
+    </main>
+  </div>
+</div>
+
+<script src="state.js"></script>
+<script src="../../dashboard.js"></script>
+<script src="../../tab-qr.js"></script>
+<script>CM.strip(document.querySelector("[data-strip]"));</script>

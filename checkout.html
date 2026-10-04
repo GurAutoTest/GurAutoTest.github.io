@@ -1,0 +1,1733 @@
+<title>Codemarca Checkout</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="shots.css">
+
+<style>
+/* ==========================================================================
+   CODEMARCA — CHECKOUT
+   The screen after select-pack.html. What is being bought was settled
+   there; this screen only handles where it goes and who pays.
+
+   Three steps in one file, switched by <div class="ck" data-step>:
+     1  delivery   — pincode (city + state fill themselves), then the street.
+                    Your own order: name and phone arrive pre-filled from the
+                    account as one line with an Edit. A gift: the fields open
+                    empty, for the person receiving it. No profile is built.
+     2  payment    — method choice, then a handoff to the gateway.
+     3  placed     — order id, and the next step for the answer given in 1.
+
+   Rules this screen is built on (decided 2026-09-04 / 09-06 / 09-12):
+     · one FREE pack per account — quantity exists only on custom orders,
+       and it is chosen on select-pack.html, never here
+     · no guest checkout — the buyer arrives already signed in
+     · prepaid only, no COD — RTO on a free pack costs the courier twice
+     · never pre-fill a PROFILE from the name and phone typed here —
+       a gift buyer is not the person the page belongs to. Pre-filling the
+       DELIVERY fields from the account is the opposite thing and is fine
+     · NOBODY IS ASKED WHO IT IS FOR — Garry, 2026-09-18. The free pack is
+       always for the account itself. A gift arrives here already decided,
+       as `gift=1` from the dashboard's Gift & Refer tab: it is paid, it is
+       custom, it goes to one person, and the buyer is handed back to that
+       tab afterwards (`from=<flow>`). The question that used to open this
+       screen ("for me / a gift", 2026-09-17) is gone.
+
+   Money on this screen comes from pack.js — sizes, per-sticker prices and
+   the delivery bands all live there. EVERY FIGURE IS A PLACEHOLDER until
+   the printer and the courier quote. Change them in pack.js, not here.
+
+   Delivery is resolved from the pincode's state, so it is genuinely
+   unknown until a valid pincode is typed. Until then this screen says so
+   rather than printing a number it would have to take back.
+   ========================================================================== */
+
+/* ── 0. TOKENS — same set as signup.html / onboarding.html ─────────────── */
+:root {
+  /* Brand — locked 2026-09-01 */
+  --brand-violet:#6E27E6; --brand-violet-lift:#A171F4; --brand-violet-press:#5A1DC4;
+  --brand-violet-tint:#F1E9FE; --brand-violet-edge:#DCC9FB;
+
+  /* Ink */
+  --ink:#101215; --ink-mid:#5B5D68; --ink-soft:#8C8E9C; --ink-faint:#B6B8C4;
+  --ink-invert:#FFFFFF;
+
+  /* Ground */
+  --ground:#FFFFFF; --ground-soft:#F4F3F7; --ground-sunk:#EDEBF2;
+
+  /* Line */
+  --line:rgba(16,18,21,.09); --line-strong:rgba(16,18,21,.16);
+
+  /* State */
+  --ok:#17914F; --bad:#C4342B;
+
+  /* Type */
+  --font-sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+
+  --fs-body:1rem; --fs-sm:.875rem; --fs-xs:.8125rem; --fs-label:.6875rem;
+  --lh-body:1.55;
+  --ls-display:-.038em; --ls-body:-.011em; --ls-label:.13em; --ls-soft:.14px;
+  --fw-medium:500; --fw-semibold:600; --fw-bold:700; --fw-black:800;
+
+  /* Space */
+  --s-1:.25rem; --s-2:.5rem; --s-3:.75rem; --s-4:1rem; --s-5:1.25rem;
+  --s-6:1.5rem; --s-8:2rem; --s-10:2.5rem; --s-12:3rem;
+
+  /* Layout */
+  --gutter:1.25rem;
+  --logo-h:20px;
+  --bar-h:56px;
+  --col:600px;              /* the form column */
+  --rail:340px;             /* the order summary, desktop only */
+
+  /* Radius */
+  --r-xs:6px; --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px; --r-pill:999px;
+
+  /* Elevation */
+  --shadow-sm:0 2px 8px rgba(16,18,21,.06);
+  --shadow-md:0 6px 20px rgba(16,18,21,.07);
+  --shadow-lg:0 20px 56px rgba(16,18,21,.11);
+
+  /* Controls */
+  --control-h:52px;
+  --btn-h:52px;
+  --focus-ring:0 0 0 3px var(--ground-sunk),0 0 0 5px var(--ink);
+  --focus-glow:0 0 0 4px rgba(16,18,21,.08);
+
+  /* Motion */
+  --dur-fast:140ms; --dur:240ms;
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+@media (min-width:960px){
+  :root{ --gutter:2.5rem; --bar-h:68px; --control-h:56px; --btn-h:56px; }
+}
+
+/* ── 1. BASE ───────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground-soft); color:var(--ink);
+  font-family:var(--font-sans); font-size:var(--fs-body); font-weight:var(--fw-medium);
+  line-height:var(--lh-body); letter-spacing:var(--ls-body);
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,p,ul,li,dl,dd,dt{margin:0; padding:0}
+ul{list-style:none}
+a{color:inherit; text-decoration:none}
+button,input,textarea,select{font:inherit; color:inherit}
+img,svg{display:block; max-width:100%}
+[hidden]{display:none !important}
+:focus-visible{outline:none; box-shadow:var(--focus-ring); border-radius:var(--r-xs)}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+/* ── 2. SHELL ──────────────────────────────────────────────────────────── */
+.ck{display:flex; flex-direction:column; min-height:100svh}
+
+.ck__bar{
+  position:sticky; top:0; z-index:40;
+  display:flex; align-items:center; gap:var(--s-4);
+  height:var(--bar-h); padding-inline:var(--gutter);
+  background:var(--ground); box-shadow:0 1px 0 var(--line);
+}
+.ck__logo svg{height:var(--logo-h); width:auto}
+.ck__logo .wm{display:none}
+.ck__exit{
+  margin-left:auto; font-size:var(--fs-sm); font-weight:var(--fw-bold);
+  color:var(--ink-soft); padding:var(--s-2); border-radius:var(--r-sm);
+}
+.ck__exit:hover{color:var(--ink)}
+@media (min-width:520px){ .ck__logo .wm{display:block} .ck__logo .mk{display:none} }
+
+/* progress — three segments, no "Step 2 of 3" eyebrow, same as the builder */
+.steps{display:flex; align-items:center; gap:6px; flex:1; max-width:260px}
+.steps__seg{flex:1; height:4px; border-radius:var(--r-pill); background:var(--ground-sunk); overflow:hidden}
+.steps__seg i{display:block; height:100%; width:0; background:var(--brand-violet);
+  border-radius:inherit; transition:width var(--dur) var(--ease)}
+.ck[data-step="1"] .steps__seg:nth-child(1) i{width:100%}
+.ck[data-step="2"] .steps__seg:nth-child(-n+2) i{width:100%}
+.ck[data-step="3"] .steps__seg i{width:100%}
+
+/* mobile-first: the summary sits ABOVE the form as one folded line (see 6b);
+   ≥960 it becomes a rail */
+.ck__wrap{
+  flex:1; display:grid; gap:var(--s-5);
+  grid-template-columns:minmax(0,var(--col));
+  justify-content:center; align-content:start;
+  padding:var(--s-5) var(--gutter) 0;
+}
+@media (min-width:960px){
+  .ck__wrap{
+    grid-template-columns:minmax(0,var(--col)) var(--rail);
+    gap:var(--s-8); padding-top:var(--s-8);
+  }
+}
+.ck__col{display:flex; flex-direction:column; min-width:0}
+@media (min-width:960px){ .ck__col{order:1} }
+
+/* ── 3. PANES ──────────────────────────────────────────────────────────── */
+.pane{display:none; flex-direction:column; gap:var(--s-5); flex:1; padding-bottom:var(--s-6)}
+.ck[data-step="1"] [data-pane="1"],
+.ck[data-step="2"] [data-pane="2"],
+.ck[data-step="3"] [data-pane="3"]{display:flex}
+
+.head h1{
+  font-size:clamp(1.625rem,5.5vw,2.125rem); font-weight:var(--fw-black);
+  line-height:1.06; letter-spacing:var(--ls-display); text-wrap:balance;
+}
+.head p{margin-top:var(--s-3); color:var(--ink-mid); font-size:var(--fs-sm)}
+
+.card{
+  background:var(--ground); border-radius:var(--r-lg); padding:var(--s-5);
+  box-shadow:var(--shadow-sm), inset 0 0 0 1px var(--line);
+  display:flex; flex-direction:column; gap:var(--s-5);
+}
+.card__title{
+  font-size:var(--fs-label); font-weight:var(--fw-bold); letter-spacing:var(--ls-label);
+  text-transform:uppercase; color:var(--ink-soft);
+}
+.card__note{font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.45}
+
+/* "Ordering as <email>" used to sit here. It is gone: the buyer signed in a
+   minute ago, the courier has no use for it, and the email is on the invoice.
+
+   Who the pack goes to — pre-filled from the account, so it is one line to
+   glance at, not two fields to scroll past. Edit opens the real fields. */
+.contact{
+  display:flex; align-items:center; gap:var(--s-3);
+  padding:var(--s-3) var(--s-3) var(--s-3) var(--s-4); border-radius:var(--r-md);
+  background:var(--ground-soft);
+}
+.contact__ic{
+  width:36px; height:36px; flex-shrink:0; border-radius:50%;
+  display:grid; place-items:center; background:var(--ground); color:var(--ink-mid);
+  box-shadow:inset 0 0 0 1px var(--line);
+}
+.contact__ic svg{width:18px; height:18px}
+.contact__txt{flex:1; min-width:0}
+.contact__name{font-size:var(--fs-sm); font-weight:var(--fw-bold); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.contact__sub{font-size:var(--fs-xs); color:var(--ink-mid); font-variant-numeric:tabular-nums}
+
+.fields{display:flex; flex-direction:column; gap:var(--s-5)}
+
+/* Step 2's "Delivering to" — the name on its own line, the address and the
+   phone each on theirs, and an Edit with room to tap. */
+.echo{display:flex; align-items:flex-start; justify-content:space-between; gap:var(--s-4)}
+.echo__msg{color:var(--ink-mid); font-style:italic}
+.echo__v{display:flex; flex-direction:column; gap:var(--s-1); min-width:0; font-size:var(--fs-sm)}
+.echo__v b{font-weight:var(--fw-bold)}
+.echo__v small{font-size:var(--fs-xs); color:var(--ink-mid); line-height:1.45}
+.linkbtn.echo__edit{flex-shrink:0; margin:calc(var(--s-1) * -1) 0 0; padding:var(--s-2) var(--s-4); background:var(--brand-violet-tint); border-radius:var(--r-pill)}
+
+/* a text button — Edit, Change, Add a landmark */
+.linkbtn{
+  border:0; background:none; cursor:pointer; padding:var(--s-1) var(--s-2); margin:calc(var(--s-1) * -1) 0;
+  border-radius:var(--r-xs); white-space:nowrap;
+  font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--brand-violet);
+}
+.linkbtn:hover{background:var(--ground-sunk, #EDEBF2)}
+.linkbtn--add{align-self:flex-start; margin:calc(var(--s-2) * -1) 0 0 calc(var(--s-2) * -1); padding:var(--s-2)}
+
+/* ── 4. FIELDS ─────────────────────────────────────────────────────────── */
+.grid2{display:grid; gap:var(--s-5); grid-template-columns:1fr}
+@media (min-width:520px){ .grid2{grid-template-columns:1fr 1fr} }
+
+.fld{display:flex; flex-direction:column; gap:var(--s-2); min-width:0}
+.fld__top{display:flex; align-items:baseline; justify-content:space-between; gap:var(--s-3)}
+.fld__lbl{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.fld__opt{font-weight:var(--fw-medium); color:var(--ink-soft)}
+.fld__count{margin-left:auto; font-family:var(--font-mono); font-size:var(--fs-xs);
+  color:var(--ink-faint); letter-spacing:var(--ls-soft)}
+/* the claim card belongs to a first pack for yourself, with no page yet */
+.ck[data-gift="other"] #claimCard,
+.ck[data-built="1"] #claimCard{display:none}
+/* the gift note belongs to a gift and nothing else */
+.ck:not([data-gift="other"]) #msgFld{display:none}
+
+.inp{
+  display:flex; align-items:center; gap:var(--s-2);
+  min-height:var(--control-h); padding-inline:var(--s-4);
+  background:var(--ground); border-radius:var(--r-md);
+  box-shadow:inset 0 0 0 1.5px var(--line-strong);
+  transition:box-shadow var(--dur) var(--ease);
+}
+.inp:focus-within{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.inp input,.inp textarea,.inp select{
+  flex:1; min-width:0; border:0; background:none; outline:none; padding:0;
+  font-weight:var(--fw-semibold); letter-spacing:var(--ls-body);
+}
+.inp input:focus-visible,.inp textarea:focus-visible,.inp select:focus-visible{box-shadow:none}
+.inp input::placeholder,.inp textarea::placeholder{color:var(--ink-faint); font-weight:var(--fw-medium)}
+
+/* Chrome paints its own pale-blue block behind anything it autofills, which
+   overrides the field's own ground. Parking the transition indefinitely keeps
+   our background and ink; it is the one fix that does not need to know the
+   field's colour. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+  -webkit-text-fill-color:var(--ink);
+  caret-color:var(--ink);
+  transition:background-color 600000s 0s, color 600000s 0s;
+}
+.inp--area{align-items:stretch; padding-block:var(--s-3)}
+.inp--area textarea{resize:none; line-height:1.5; min-height:66px; font-family:inherit}
+.inp--sel{position:relative; padding-right:var(--s-3)}
+.inp--sel select{appearance:none; cursor:pointer; padding-right:var(--s-5)}
+.inp--sel svg{width:18px; height:18px; flex-shrink:0; color:var(--ink-soft); pointer-events:none}
+.inp__pre{font-family:var(--font-mono); font-size:var(--fs-sm); color:var(--ink-soft);
+  letter-spacing:-.02em; white-space:nowrap; user-select:none}
+.inp[data-state="bad"]{box-shadow:inset 0 0 0 1.5px var(--bad)}
+
+.note{font-size:var(--fs-xs); font-weight:var(--fw-semibold); color:var(--ink-soft)}
+/* An empty note takes no room. It used to reserve 18px under every field so
+   an error would not nudge the page — seven of those were a screen's worth
+   of scrolling on a phone, which is the worse trade. */
+.note:empty{display:none}
+/* A note that carries a button (the pincode's "Change") lays out as a
+   wrapping row with a real gap, so the button never sits on the text when
+   the line is narrow. */
+.note:has(.linkbtn){display:flex; flex-wrap:wrap; align-items:center; gap:var(--s-1) var(--s-3)}
+.note .linkbtn{margin:0; padding:3px var(--s-2); line-height:1.35; background:var(--brand-violet-tint)}
+.note[data-state="ok"]{color:var(--ok)}
+.note[data-state="bad"]{color:var(--bad)}
+.note b{font-weight:var(--fw-bold); color:inherit}
+
+/* ── 5. PAYMENT METHODS ────────────────────────────────────────────────
+   A method is a radio, not a tab — the choice is part of the order, and a
+   radio group is what a screen reader already knows how to announce. */
+.pay{display:flex; flex-direction:column; gap:var(--s-3)}
+.meth{
+  display:block; cursor:pointer; border-radius:var(--r-md); background:var(--ground);
+  box-shadow:inset 0 0 0 1.5px var(--line-strong);
+  transition:box-shadow var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.meth:hover{box-shadow:inset 0 0 0 1.5px var(--line-strong), var(--shadow-sm)}
+/* the row IS the label — every rule below is scoped to the radio inside it,
+   never to plain `input`, or the panel's own fields collapse to nothing */
+.meth__row{display:flex; align-items:center; gap:var(--s-3); padding:var(--s-4); cursor:pointer}
+.meth__row > input{position:absolute; opacity:0; width:0; height:0}
+.meth__dot{
+  width:20px; height:20px; flex-shrink:0; border-radius:50%;
+  box-shadow:inset 0 0 0 1.5px var(--line-strong); display:grid; place-items:center;
+  transition:box-shadow var(--dur-fast) var(--ease);
+}
+.meth__dot::after{content:""; width:9px; height:9px; border-radius:50%;
+  background:var(--brand-violet); transform:scale(0); transition:transform var(--dur-fast) var(--ease)}
+.meth__txt{flex:1; min-width:0}
+.meth__name{font-size:var(--fs-sm); font-weight:var(--fw-bold); display:flex; align-items:center; gap:var(--s-2)}
+.meth__sub{font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.4}
+.meth__marks{display:flex; align-items:center; gap:6px; flex-shrink:0}
+.meth__mark{
+  height:22px; padding-inline:7px; display:grid; place-items:center; border-radius:var(--r-xs);
+  background:var(--ground-soft); color:var(--ink-mid);
+  font-size:.5625rem; font-weight:var(--fw-bold); letter-spacing:.04em; white-space:nowrap;
+}
+.tag{
+  font-size:.5625rem; font-weight:var(--fw-bold); letter-spacing:var(--ls-label);
+  text-transform:uppercase; color:var(--brand-violet);
+  background:var(--brand-violet-tint); padding:3px 7px; border-radius:var(--r-xs);
+}
+.meth:has(.meth__row > input:checked){box-shadow:inset 0 0 0 1.5px var(--brand-violet); background:var(--ground)}
+.meth:has(.meth__row > input:checked) .meth__dot{box-shadow:inset 0 0 0 1.5px var(--brand-violet)}
+.meth__row > input:checked + .meth__dot::after{transform:scale(1)}
+.meth:has(.meth__row > input:focus-visible){box-shadow:var(--focus-ring)}
+
+/* the panel under a chosen method — never card fields, see the note in it */
+.meth__panel{display:none; padding:0 var(--s-4) var(--s-4); flex-direction:column; gap:var(--s-3)}
+.meth:has(.meth__row > input:checked) .meth__panel{display:flex}
+.meth__panel .inp{background:var(--ground-soft); box-shadow:inset 0 0 0 1.5px var(--line)}
+.meth__panel .inp:focus-within{box-shadow:inset 0 0 0 1.5px var(--ink)}
+
+.safe{
+  display:flex; align-items:flex-start; gap:var(--s-3);
+  font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.5;
+}
+.safe svg{width:16px; height:16px; flex-shrink:0; margin-top:2px; color:var(--ok)}
+.safe b{color:var(--ink-mid); font-weight:var(--fw-bold)}
+
+/* ── 6. ORDER SUMMARY ──────────────────────────────────────────────────── */
+.ck__aside{min-width:0}
+@media (min-width:960px){
+  .ck__aside{order:2; position:sticky; top:calc(var(--bar-h) + var(--s-8)); align-self:start}
+}
+.ck[data-step="3"] .ck__aside{display:none}
+
+.sum{
+  background:var(--ground); border-radius:var(--r-lg); padding:var(--s-5);
+  box-shadow:var(--shadow-sm), inset 0 0 0 1px var(--line);
+  display:flex; flex-direction:column; gap:var(--s-4);
+}
+.sum__t{min-width:0}
+.sum__t h2{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.sum__t p{margin-top:2px; font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.4}
+.sum__lines{display:flex; flex-direction:column; gap:var(--s-3)}
+.sum__row{display:flex; align-items:baseline; justify-content:space-between; gap:var(--s-4);
+  font-size:var(--fs-sm)}
+.sum__row dt{color:var(--ink-mid)}
+.sum__row dd{font-weight:var(--fw-bold); font-variant-numeric:tabular-nums}
+.sum__row--free dd{color:var(--ok)}
+.sum__row--soft dd{font-weight:var(--fw-medium); color:var(--ink-soft)}
+.sum__rule{height:1px; background:var(--line)}
+.sum__total{display:flex; align-items:baseline; justify-content:space-between; gap:var(--s-4)}
+.sum__total dt{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.sum__total dd{font-size:1.375rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display);
+  font-variant-numeric:tabular-nums}
+.sum__note{font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.45}
+.sum__note b{color:var(--ink-mid); font-weight:var(--fw-bold)}
+.sum__one{
+  display:flex; align-items:center; gap:var(--s-2);
+  font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-mid);
+  padding-top:var(--s-1);
+}
+.sum__one svg{width:15px; height:15px; color:var(--brand-violet); flex-shrink:0}
+
+/* ── 6b. SUMMARY ON A PHONE ────────────────────────────────────────────
+   Above the form, the full summary was 711px — photo slider, rows, notes —
+   so "Where should the pack go?" started below the first screen. Under
+   960px it folds to one line: what it is, what it costs, tap for the rest.
+   No photo slider on a phone at all; the pack was on screen one step ago.
+
+   On a desktop the wrappers are display:contents, so the rail lays out
+   exactly as it did before they existed. */
+.sum__bar{display:none}
+.sum__body,.sum__inner,.sum__pad{display:contents}
+@media (max-width:959.98px){
+  .ck__aside .shots{display:none}
+  .sum{padding:0; gap:0}
+  .sum__bar{
+    display:flex; align-items:center; gap:var(--s-3); width:100%; min-height:60px;
+    padding:var(--s-3) var(--s-4); border:0; border-radius:inherit; background:none;
+    cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent;
+  }
+  .sum__bar-t{flex:1; min-width:0; display:flex; flex-direction:column}
+  .sum__bar-t b{font-size:var(--fs-sm); font-weight:var(--fw-bold); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .sum__bar-t small{font-size:var(--fs-xs); color:var(--ink-soft)}
+  .sum__bar-amt{font-size:var(--fs-body); font-weight:var(--fw-black); letter-spacing:-.02em;
+    font-variant-numeric:tabular-nums; white-space:nowrap}
+  .sum__bar svg{width:18px; height:18px; flex-shrink:0; color:var(--ink-soft); transition:transform var(--dur) var(--ease)}
+  .sum[data-open] .sum__bar svg{transform:rotate(180deg)}
+
+  .sum__body{display:grid; grid-template-rows:0fr; transition:grid-template-rows var(--dur) var(--ease)}
+  .sum[data-open] .sum__body{grid-template-rows:1fr}
+  .sum__inner{display:block; min-height:0; overflow:hidden}
+  .sum__pad{
+    display:flex; flex-direction:column; gap:var(--s-4);
+    margin-inline:var(--s-4); padding-block:var(--s-4); border-top:1px solid var(--line);
+  }
+}
+
+/* ── 7. FOOTER ACTIONS ─────────────────────────────────────────────────── */
+.ck__foot{
+  position:sticky; bottom:0; z-index:30; margin-top:auto;
+  display:flex; align-items:center; gap:var(--s-3);
+  padding-block:var(--s-3) var(--s-4);
+  background:linear-gradient(to top,var(--ground-soft) 68%,rgba(244,243,247,0));
+}
+.ck[data-step="3"] .ck__foot{display:none}
+.btn{
+  display:flex; align-items:center; justify-content:center; gap:var(--s-2);
+  height:var(--btn-h); padding-inline:var(--s-6); border:0; border-radius:var(--r-pill);
+  cursor:pointer; font-weight:var(--fw-bold); letter-spacing:-.01em;
+  transition:transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.btn:active{transform:scale(.985)}
+.btn--go{flex:1; background:var(--ink); color:var(--ink-invert)}
+.btn--go:hover{background:var(--ink-strong, #33353D)}
+.btn--go:disabled{background:var(--ground-sunk); color:var(--ink-faint); cursor:not-allowed; transform:none}
+.btn--ghost{background:var(--ground); color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+.btn--ghost:hover{color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--ink)}
+.btn--icon{padding-inline:0; width:var(--btn-h); flex-shrink:0}
+.btn svg{width:19px; height:19px}
+.btn[data-busy="true"]{pointer-events:none; opacity:.72}
+.btn__spin{width:17px; height:17px; border-radius:50%; display:none;
+  border:2px solid rgba(255,255,255,.35); border-top-color:#fff; animation:spin .7s linear infinite}
+.btn[data-busy="true"] .btn__spin{display:block}
+.btn[data-busy="true"] .btn__lbl{opacity:.85}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── 8. PLACED — the one screen in the flow that gets to celebrate ─────
+   The order is done, so the chrome that belonged to an unfinished order goes
+   with it: no progress bar to step through and nothing left to cancel. The
+   bar keeps the logo alone, and the whole screen centres in the viewport. */
+.ck[data-step="3"] .ck__bar{justify-content:center}
+.ck[data-step="3"] .steps,
+.ck[data-step="3"] .ck__exit{display:none}
+.ck[data-step="3"] .pane{flex:none}
+.ck[data-step="3"] .ck__wrap{
+  /* the summary column is gone by now, so its track has to go with it —
+     otherwise the grid keeps centring an empty 340px and the screen sits
+     left of true centre */
+  grid-template-columns:minmax(0,var(--col));
+  align-content:center;
+  align-content:safe center;      /* content taller than the viewport scrolls */
+  padding-block:var(--s-4);
+}
+
+.done{align-items:center; text-align:center; gap:var(--s-4)}
+.done .head{display:flex; flex-direction:column; align-items:center; gap:var(--s-3)}
+.done .head h1{font-size:clamp(2rem,6.4vw,3rem); line-height:1.02}
+.done .head p{margin-top:0; font-size:var(--fs-body); color:var(--ink-mid); max-width:42ch}
+
+.live{
+  display:inline-flex; align-items:center; gap:7px; padding:6px 13px; border-radius:var(--r-pill);
+  background:rgba(23,145,79,.10); color:var(--ok);
+  font-size:var(--fs-label); font-weight:var(--fw-bold);
+  letter-spacing:var(--ls-label); text-transform:uppercase;
+}
+.live i{width:7px; height:7px; border-radius:50%; background:currentColor}
+
+/* the tick — a mark that draws itself, with two rings going out behind it */
+.mark{
+  position:relative; width:88px; height:88px; display:grid; place-items:center;
+  border-radius:50%; background:var(--brand-violet); color:#fff;
+  box-shadow:0 16px 36px rgba(110,39,230,.34);
+  animation:markIn .52s var(--ease) backwards;
+}
+.mark__ring{
+  position:absolute; inset:0; border-radius:50%; opacity:0;
+  box-shadow:0 0 0 2px var(--brand-violet);
+  animation:ring 1.4s var(--ease) .3s 2;
+}
+.mark__ring--2{animation-delay:.85s}
+.mark__tick{width:54px; height:54px; overflow:visible}
+.mark__tick path{
+  fill:none; stroke:#fff; stroke-width:3.6; stroke-linecap:round; stroke-linejoin:round;
+  stroke-dasharray:28; stroke-dashoffset:28;
+  animation:draw .42s var(--ease) .24s forwards;
+}
+@keyframes markIn{from{opacity:0; transform:scale(.55)} to{opacity:1; transform:none}}
+@keyframes ring{from{opacity:.5; transform:scale(1)} to{opacity:0; transform:scale(1.75)}}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+/* everything under the tick arrives a beat after it */
+@keyframes rise{from{opacity:0; transform:translateY(16px)} to{opacity:1; transform:none}}
+.ck[data-step="3"] .done > *{animation:rise .5s var(--ease) backwards}
+.ck[data-step="3"] .done > *:nth-child(2){animation-delay:.22s}
+.ck[data-step="3"] .done > *:nth-child(3){animation-delay:.34s}
+.ck[data-step="3"] .done > *:nth-child(4){animation-delay:.42s}
+.ck[data-step="3"] .done > *:nth-child(5){animation-delay:.42s}
+.ck[data-step="3"] .done > *:nth-child(6){animation-delay:.50s}
+.ck[data-step="3"] .done > *:nth-child(7){animation-delay:.58s}
+.ck[data-step="3"] .done > *:nth-child(8){animation-delay:.58s}
+
+.ordline{
+  display:inline-flex; align-items:center; gap:var(--s-2); flex-wrap:wrap;
+  justify-content:center;
+  padding:7px var(--s-4); border-radius:var(--r-pill);
+  background:var(--ground); box-shadow:inset 0 0 0 1px var(--line);
+  font-size:var(--fs-xs); font-weight:var(--fw-semibold); color:var(--ink-soft);
+}
+.ordline b{font-weight:var(--fw-bold); color:var(--ink)}
+.ordline .id{font-family:var(--font-mono); letter-spacing:-.02em; color:var(--brand-violet)}
+
+/* confetti — one burst, then the layer removes itself */
+.confetti{position:fixed; inset:0; z-index:70; pointer-events:none; overflow:hidden}
+.confetti i{
+  position:absolute; top:-16px; width:8px; height:14px; border-radius:2px; opacity:0;
+  animation:fall linear forwards;
+}
+@keyframes fall{
+  0%{opacity:1; transform:translate3d(0,0,0) rotate(0deg)}
+  100%{opacity:0; transform:translate3d(var(--dx),104svh,0) rotate(var(--rot))}
+}
+
+/* the receipt, reduced to one quiet line — reassurance, not another box.
+   Four stacked cards was what made this screen read like paperwork. */
+.recap{
+  max-width:46ch; font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.6;
+}
+.recap b{color:var(--ink-mid); font-weight:var(--fw-bold)}
+
+/* WHO IT IS FOR — step 1, above the address (Garry, 2026-09-17).
+   Two big options, ink when chosen — the violet stays for the brand. */
+
+/* Done screen: the next-step card follows the answer from step 1. Someone
+   with a page who bought for themselves has nothing to set up, so the
+   dashboard is the one CTA. */
+.ck[data-built="1"][data-gift="self"] .branch{display:none}
+
+.ask{
+  width:100%; max-width:420px; display:flex; flex-direction:column; gap:var(--s-4);
+  padding:var(--s-5); background:var(--ground); border-radius:var(--r-xl);
+  box-shadow:var(--shadow-md), inset 0 0 0 1px var(--line); text-align:left;
+}
+.ask h2{font-size:1.0625rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display)}
+.ask p{font-size:var(--fs-sm); color:var(--ink-mid); margin-top:var(--s-1)}
+.ask__opts{display:grid; gap:var(--s-3); grid-template-columns:1fr 1fr}
+.ask__opt{
+  display:flex; flex-direction:column; align-items:flex-start; gap:2px;
+  padding:var(--s-4); border:0; border-radius:var(--r-md); cursor:pointer; text-align:left;
+  background:var(--ground-soft); box-shadow:inset 0 0 0 1.5px transparent;
+  transition:box-shadow var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.ask__opt:hover{box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+.ask__opt b{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.ask__opt span{font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.4}
+.ask__opt[aria-pressed="true"]{background:var(--brand-violet-tint);
+  box-shadow:inset 0 0 0 1.5px var(--brand-violet)}
+
+/* The branch card opens by animating its own height, so nothing on the screen
+   jumps: 0 → card, card → the other card's height, card → 0. The gap that
+   .done would put above it lives INSIDE the box (on the inner element, so a
+   height of 0 is really 0) and the box pulls that gap back out with a negative
+   margin — otherwise a closed box would still be paying for a flex gap. */
+.branch{
+  width:100%; max-width:420px;
+  height:0; overflow:hidden;
+  margin-top:calc(var(--s-4) * -1);
+  transition:height 340ms var(--ease);
+}
+.branch__inner{padding-top:var(--s-4)}
+.branch .next{animation:fade 260ms var(--ease)}
+@keyframes fade{from{opacity:0} to{opacity:1}}
+
+.next{
+  width:100%; max-width:420px; display:flex; flex-direction:column; gap:var(--s-4);
+  padding:var(--s-5); border-radius:var(--r-xl); text-align:left;
+  background:var(--ink); color:var(--ink-invert); box-shadow:var(--shadow-lg);
+}
+.next h2{font-size:1.0625rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display)}
+.next p{font-size:var(--fs-sm); color:rgba(255,255,255,.72); margin-top:var(--s-2); line-height:1.5}
+.next .btn--go{background:var(--ink-invert); color:var(--ink); width:100%; flex:none}
+.next .btn--go:hover{background:var(--ground-sunk, #EDEBF2); color:var(--ink)}
+.done__acts{display:flex; flex-direction:column; gap:var(--s-3); width:100%; max-width:420px}
+.done__acts .btn{width:100%}
+.done__acts .btn--go{flex:none}
+
+/* An own pack with no page yet shows the "Build my page" card, which has
+   its own black button — so the dashboard button steps back rather than
+   compete with it. */
+.ck:not([data-built="1"])[data-gift="self"] .btn--dash{
+  background:var(--ground); color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--line-strong);
+}
+.ck:not([data-built="1"])[data-gift="self"] .btn--dash:hover{
+  background:var(--ground); color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--ink);
+}
+.status{
+  min-height:20px; font-size:var(--fs-xs); font-weight:var(--fw-semibold);
+  color:var(--ink-soft); text-align:center;
+}
+.status:empty{display:none}   /* an empty line still costs a gap — don't pay it */
+
+/* ── 9. REVIEW TOOL — delete this block, its CSS and its script loop ───── */
+.preview{
+  position:fixed; right:var(--s-4); bottom:96px; z-index:50;
+  display:flex; align-items:center; gap:var(--s-1); padding:5px; border-radius:var(--r-pill);
+  background:var(--ground); box-shadow:var(--shadow-lg), inset 0 0 0 1px var(--line);
+}
+.preview button{
+  border:0; cursor:pointer; background:none; color:var(--ink-soft);
+  font-size:var(--fs-xs); font-weight:var(--fw-bold); padding:6px var(--s-3);
+  border-radius:var(--r-pill); white-space:nowrap;
+}
+.preview button:hover{color:var(--ink)}
+.preview button[aria-pressed="true"]{background:var(--brand-violet); color:#fff}
+@media (min-width:960px){ .preview{bottom:var(--s-5)} }
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; transition-duration:.001ms !important}
+}
+
+/* ── SUPPORTING TEXT ───────────────────────────────────────────────────
+   Headings and body copy run on negative tracking. The small grey lines
+   under them — subtitles, help, notes, values — do not: at 13–14px the
+   letters need the air back instead. Any new small line on this page
+   belongs in this list. */
+.head p,
+.card__note,
+.contact__sub,
+.echo__v small,
+.linkbtn,
+.sum__bar-t small,
+.fld__lbl,
+.meth__sub,
+.safe,
+.sum__t p,
+.sum__note,
+.sum__one,
+.note,
+.ordline,
+.recap,
+.next p,
+.status{ letter-spacing:var(--ls-soft) }
+</style>
+
+<!-- data-fee is the ONLY place the delivery charge is written. -->
+<div class="ck" data-step="1" data-gift="self">
+
+  <!-- ══ BAR ═══════════════════════════════════════════════════════════ -->
+  <header class="ck__bar">
+    <a class="ck__logo" href="homepage.html" aria-label="Codemarca home">
+      <svg class="wm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 257 40" fill="none" role="img" aria-label="Codemarca"><g fill="#6E27E6"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></g><g fill="#101215"><path d="M245.956 14.0999H252.172V34.82H245.956V32.8723C244.589 34.447 242.558 35.4002 239.782 35.4002C234.353 35.4002 229.877 30.6345 229.877 24.46C229.877 18.2854 234.353 13.5198 239.782 13.5198C242.558 13.5198 244.589 14.4729 245.956 16.0476V14.0999ZM241.025 29.5157C243.884 29.5157 245.956 27.568 245.956 24.46C245.956 21.352 243.884 19.4043 241.025 19.4043C238.165 19.4043 236.093 21.352 236.093 24.46C236.093 27.568 238.165 29.5157 241.025 29.5157Z"/><path d="M220.695 35.4002C214.396 35.4002 209.713 30.6345 209.713 24.46C209.713 18.2854 214.396 13.5198 220.695 13.5198C224.714 13.5198 228.278 15.6332 230.06 18.8241L224.631 21.9736C223.927 20.5232 222.435 19.6529 220.612 19.6529C217.918 19.6529 215.929 21.6006 215.929 24.46C215.929 27.3193 217.918 29.267 220.612 29.267C222.435 29.267 223.968 28.3968 224.631 26.9464L230.06 30.0544C228.278 33.2867 224.756 35.4002 220.695 35.4002Z"/><path d="M203.477 17.7881C204.306 15.0116 207.083 13.6855 209.693 13.6855V20.7304C207.124 20.316 203.477 21.352 203.477 25.4545V34.82H197.261V14.1H203.477V17.7881Z"/><path d="M187.728 14.0999H193.944V34.82H187.728V32.8723C186.361 34.447 184.33 35.4002 181.554 35.4002C176.125 35.4002 171.649 30.6345 171.649 24.46C171.649 18.2854 176.125 13.5198 181.554 13.5198C184.33 13.5198 186.361 14.4729 187.728 16.0476V14.0999ZM182.797 29.5157C185.656 29.5157 187.728 27.568 187.728 24.46C187.728 21.352 185.656 19.4043 182.797 19.4043C179.937 19.4043 177.865 21.352 177.865 24.46C177.865 27.568 179.937 29.5157 182.797 29.5157Z"/><path d="M161.806 13.5198C166.571 13.5198 169.679 16.9179 169.679 22.0979V34.82H163.463V22.6366C163.463 20.5646 162.469 19.2385 160.479 19.2385C158.407 19.2385 157.247 20.6889 157.247 23.1339V34.82H151.031V22.6366C151.031 20.5646 150.037 19.2385 148.047 19.2385C145.975 19.2385 144.815 20.6889 144.815 23.1339V34.82H138.599V14.0999H144.815V16.0062C145.768 14.5972 147.592 13.5198 150.368 13.5198C152.813 13.5198 154.636 14.5143 155.797 16.2548C156.957 14.5972 158.863 13.5198 161.806 13.5198Z"/><path d="M121.357 26.9464C122.144 29.1013 124.051 29.8472 126.33 29.8472C128.029 29.8472 129.479 29.1841 130.308 28.2725L135.281 31.1318C133.25 33.9497 130.184 35.4002 126.247 35.4002C119.161 35.4002 114.768 30.6345 114.768 24.46C114.768 18.2854 119.244 13.5198 125.791 13.5198C131.841 13.5198 136.317 18.2025 136.317 24.46C136.317 25.3302 136.234 26.159 136.068 26.9464H121.357ZM121.233 22.3051H130.142C129.479 19.9016 127.614 19.0313 125.75 19.0313C123.388 19.0313 121.813 20.1916 121.233 22.3051Z"/><path d="M106.271 5.81201H112.487V34.8201H106.271V32.8724C104.903 34.4471 102.873 35.4002 100.096 35.4002C94.6674 35.4002 90.1919 30.6346 90.1919 24.4601C90.1919 18.2855 94.6674 13.5199 100.096 13.5199C102.873 13.5199 104.903 14.473 106.271 16.0477V5.81201ZM101.339 29.5158C104.199 29.5158 106.271 27.5681 106.271 24.4601C106.271 21.3521 104.199 19.4044 101.339 19.4044C98.4799 19.4044 96.4079 21.3521 96.4079 24.4601C96.4079 27.5681 98.4799 29.5158 101.339 29.5158Z"/><path d="M77.9738 35.4002C71.8821 35.4002 66.9922 30.6345 66.9922 24.46C66.9922 18.2854 71.8821 13.5198 77.9738 13.5198C84.0655 13.5198 88.9554 18.2854 88.9554 24.46C88.9554 30.6345 84.0655 35.4002 77.9738 35.4002ZM77.9738 29.3499C80.6674 29.3499 82.7394 27.4022 82.7394 24.46C82.7394 21.5177 80.6674 19.57 77.9738 19.57C75.2802 19.57 73.2082 21.5177 73.2082 24.46C73.2082 27.4022 75.2802 29.3499 77.9738 29.3499Z"/><path d="M57.8088 35.4002C51.5099 35.4002 46.8271 30.6345 46.8271 24.46C46.8271 18.2854 51.5099 13.5198 57.8088 13.5198C61.8285 13.5198 65.3923 15.6332 67.1742 18.8241L61.7456 21.9736C61.0411 20.5232 59.5493 19.6529 57.7259 19.6529C55.0323 19.6529 53.0432 21.6006 53.0432 24.46C53.0432 27.3193 55.0323 29.267 57.7259 29.267C59.5493 29.267 61.0825 28.3968 61.7456 26.9464L67.1742 30.0544C65.3923 33.2867 61.8699 35.4002 57.8088 35.4002Z"/></g></svg>
+      <svg class="mk" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="#6E27E6" role="img" aria-label="Codemarca"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></svg>
+    </a>
+
+    <div class="steps" role="progressbar" aria-label="Checkout progress" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1" id="steps">
+      <span class="steps__seg"><i></i></span>
+      <span class="steps__seg"><i></i></span>
+      <span class="steps__seg"><i></i></span>
+    </div>
+
+    <a class="ck__exit" href="homepage.html" id="exit">Cancel</a>
+  </header>
+
+  <main class="ck__wrap">
+    <!-- ══ ORDER SUMMARY — above the form on a phone, a rail on desktop ══ -->
+    <aside class="ck__aside" aria-label="Order summary">
+      <div class="sum" id="sum">
+        <button class="sum__bar" type="button" id="sumBar" aria-expanded="false" aria-controls="sumBody">
+          <span class="sum__bar-t"><b id="sumBarT">Codemarca pack</b><small id="sumBarHint">Order summary</small></span>
+          <span class="sum__bar-amt" id="sumBarAmt">&mdash;</span>
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="sum__body" id="sumBody"><div class="sum__inner"><div class="sum__pad">
+        <!-- The 56px thumbnail that used to sit here told nobody anything.
+             What a person about to pay wants is the product, at a size they
+             can actually judge — and, for a custom order, the size chart. -->
+        <div class="shots shots--rail" id="shots" tabindex="0" aria-label="Product photos"></div>
+
+        <div class="sum__t">
+          <h2 id="sumTitle">Codemarca pack</h2>
+          <p id="sumBlurb">Two stickers — 4″ and 1.5″ · one code · one page</p>
+        </div>
+
+        <dl class="sum__lines">
+          <div class="sum__row" id="rowPack"><dt id="packDt">Pack</dt><dd id="packDd">Free</dd></div>
+          <div class="sum__row" id="rowShip"><dt>Delivery</dt><dd id="shipDd">—</dd></div>
+        </dl>
+
+        <div class="sum__rule"></div>
+
+        <dl class="sum__total"><dt>Total</dt><dd id="totalDd">—</dd></dl>
+
+        <p class="sum__note" id="sumNote"><b>Every figure here is a placeholder.</b> The print and courier quotes are not in yet.</p>
+
+        <p class="sum__one" id="sumOne">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.5 8 14l8-8.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="sumOneTxt">One free pack per account, for you</span>
+        </p>
+        </div></div></div>
+      </div>
+    </aside>
+
+    <div class="ck__col">
+
+      <!-- ══ 1 — DELIVERY ══════════════════════════════════════════════ -->
+      <section class="pane" data-pane="1" aria-labelledby="h1a">
+        <div class="head">
+          <h1 id="h1a">Where should it go?</h1>
+          <p id="h1aSub">Your pincode first — the city, the state and the delivery charge follow from it.</p>
+        </div>
+
+        <!-- CLAIM YOUR LINK — Garry, 2026-09-29. A pack for yourself, bought
+             before any page exists: the link is claimed here, pre-filled from
+             the Google name. Name + link is enough for the page to go live
+             (bare) the moment the order is placed, so a scan is never a dead
+             end. Not shown for a gift, or when a page already exists. -->
+        <div class="card" id="claimCard">
+          <span class="card__title">Your link</span>
+          <div class="fld">
+            <div class="fld__top"><label class="fld__lbl" for="handle">Claim your link</label></div>
+            <div class="inp" id="handleWrap">
+              <span class="inp__pre">codemarca.com/</span>
+              <input id="handle" type="text" maxlength="24" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="yourname">
+            </div>
+            <p class="note" id="handleNote" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="card__title" id="shipTitle">Delivery details</span>
+          <!-- who it goes to: one line, pre-filled from the account -->
+          <div class="contact" id="contactRow">
+            <span class="contact__ic" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="10" cy="6.8" r="3.1"/><path d="M4 16.6c.8-3 3.2-4.6 6-4.6s5.2 1.6 6 4.6"/></svg></span>
+            <div class="contact__txt">
+              <p class="contact__name" id="cName">&mdash;</p>
+              <p class="contact__sub" id="cPhone">&mdash;</p>
+            </div>
+            <button class="linkbtn" type="button" id="cEdit" aria-controls="contactFields" aria-expanded="false" aria-label="Edit name and phone">Edit</button>
+          </div>
+
+          <div class="fields" id="contactFields" hidden>
+            <div class="fld">
+              <div class="fld__top"><label class="fld__lbl" for="name">Full name</label></div>
+              <div class="inp" id="nameWrap"><input id="name" type="text" maxlength="60" autocomplete="name" placeholder="Garry Singh"></div>
+              <p class="note" id="nameNote" role="status" aria-live="polite"></p>
+            </div>
+
+            <div class="fld">
+              <div class="fld__top"><label class="fld__lbl" for="phone">Phone</label></div>
+              <div class="inp" id="phoneWrap">
+                <span class="inp__pre">+91</span>
+                <input id="phone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel-national" placeholder="98765 43210">
+              </div>
+              <p class="note" id="phoneNote" role="status" aria-live="polite">The courier calls this number.</p>
+            </div>
+          </div>
+
+          <!-- pincode first: it fills city and state, and prices delivery -->
+          <div class="fld">
+            <div class="fld__top"><label class="fld__lbl" for="pin">Pincode</label></div>
+            <div class="inp" id="pinWrap">
+              <input id="pin" type="text" inputmode="numeric" maxlength="6" autocomplete="postal-code" placeholder="141001">
+            </div>
+            <p class="note" id="pinNote" role="status" aria-live="polite"></p>
+          </div>
+
+          <!-- only opened when the lookup cannot answer, or on Change -->
+          <div class="grid2" id="placeFields" hidden>
+            <div class="fld">
+              <div class="fld__top"><label class="fld__lbl" for="city">City</label></div>
+              <div class="inp" id="cityWrap"><input id="city" type="text" maxlength="40" autocomplete="address-level2" placeholder="Ludhiana"></div>
+            </div>
+
+            <div class="fld">
+              <div class="fld__top"><label class="fld__lbl" for="state">State</label></div>
+              <div class="inp inp--sel" id="stateWrap">
+                <select id="state" autocomplete="address-level1">
+                  <option value="">Choose a state</option>
+                </select>
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <p class="note" id="stateNote" role="status" aria-live="polite"></p>
+            </div>
+          </div>
+
+          <div class="fld">
+            <div class="fld__top"><label class="fld__lbl" for="addr">House, street, area</label></div>
+            <div class="inp inp--area" id="addrWrap">
+              <textarea id="addr" rows="2" maxlength="180" autocomplete="street-address" placeholder="House 12, Guru Nanak Nagar"></textarea>
+            </div>
+            <p class="note" id="addrNote" role="status" aria-live="polite"></p>
+          </div>
+
+          <button class="linkbtn linkbtn--add" type="button" id="markAdd" aria-controls="markFld" aria-expanded="false">+ Add a landmark</button>
+          <div class="fld" id="markFld" hidden>
+            <div class="fld__top">
+              <label class="fld__lbl" for="mark">Landmark <span class="fld__opt">— optional</span></label>
+            </div>
+            <div class="inp"><input id="mark" type="text" maxlength="60" placeholder="Opposite the Punjab National Bank"></div>
+          </div>
+
+          <!-- THE GIFT NOTE — decided 2026-09-27, Garry. Whoever scans a gifted
+               sticker sees this message FIRST, before the claim step, so it is
+               the only thing the buyer gets to say. Optional, and capped at 90
+               characters so it stays a note on a phone and not a wall. -->
+          <div class="fld" id="msgFld">
+            <div class="fld__top">
+              <label class="fld__lbl" for="msg">Message for them <span class="fld__opt">&mdash; optional</span></label>
+              <span class="fld__count" id="msgCount">0/90</span>
+            </div>
+            <div class="inp inp--area">
+              <textarea id="msg" rows="2" maxlength="90" placeholder="Stick it on your bike. Happy birthday!"></textarea>
+            </div>
+            <p class="card__note">They see this when they scan, before they set the code up.</p>
+          </div>
+        </div>
+
+        <!-- contact.html does not exist yet — it will carry the phone number and
+             email. Every bulk / talk-to-us link on the site points there. -->
+        <p class="card__note" id="shipNote">Shipping outside India? We do bulk orders worldwide &mdash; <a href="contact.html" style="color:var(--brand-violet); font-weight:var(--fw-bold)">talk to us</a>.</p>
+      </section>
+
+      <!-- ══ 2 — PAYMENT ═══════════════════════════════════════════════ -->
+      <section class="pane" data-pane="2" aria-labelledby="h1b">
+        <div class="head">
+          <h1 id="h1b">Pay ₹<span id="payAmt">—</span></h1>
+          <p id="paySub">The pack itself is free. This is the courier's charge, and we take no margin on it.</p>
+        </div>
+
+        <div class="card">
+          <h2 class="card__title">Pay with</h2>
+
+          <div class="pay" role="radiogroup" aria-label="Payment method">
+
+            <!-- UPI first: it is what most people in India actually reach for -->
+            <div class="meth">
+              <label class="meth__row">
+                <input type="radio" name="method" value="upi" id="mUpi" checked>
+                <span class="meth__dot" aria-hidden="true"></span>
+                <span class="meth__txt">
+                  <span class="meth__name">UPI <span class="tag">Fastest</span></span>
+                  <span class="meth__sub">GPay, PhonePe, Paytm — any app</span>
+                </span>
+                <span class="meth__marks" aria-hidden="true">
+                  <span class="meth__mark">UPI</span>
+                </span>
+              </label>
+              <div class="meth__panel">
+                <div class="fld">
+                  <div class="fld__top"><label class="fld__lbl" for="upi">UPI ID <span class="fld__opt">— optional</span></label></div>
+                  <div class="inp"><input id="upi" type="text" spellcheck="false" autocapitalize="off" placeholder="yourname@okhdfcbank"></div>
+                </div>
+                <p class="card__note">Leave it blank and the payment page will open your UPI app instead.</p>
+              </div>
+            </div>
+
+            <!-- Card: fields are NOT built here on purpose. They belong to the
+                 gateway's own hosted page — we never see or store a card. -->
+            <div class="meth">
+              <label class="meth__row">
+                <input type="radio" name="method" value="card" id="mCard">
+                <span class="meth__dot" aria-hidden="true"></span>
+                <span class="meth__txt">
+                  <span class="meth__name">Card</span>
+                  <span class="meth__sub">Debit or credit</span>
+                </span>
+                <span class="meth__marks" aria-hidden="true">
+                  <span class="meth__mark">VISA</span>
+                  <span class="meth__mark">MC</span>
+                  <span class="meth__mark">RUPAY</span>
+                </span>
+              </label>
+              <div class="meth__panel">
+                <p class="card__note">Card details are typed on the payment page, not here. Nothing about your card ever touches Codemarca.</p>
+              </div>
+            </div>
+
+            <div class="meth">
+              <label class="meth__row">
+                <input type="radio" name="method" value="nb" id="mNb">
+                <span class="meth__dot" aria-hidden="true"></span>
+                <span class="meth__txt">
+                  <span class="meth__name">Netbanking</span>
+                  <span class="meth__sub">All major banks</span>
+                </span>
+              </label>
+              <div class="meth__panel">
+                <div class="fld">
+                  <div class="fld__top"><label class="fld__lbl" for="bank">Bank</label></div>
+                  <div class="inp inp--sel">
+                    <select id="bank">
+                      <option value="">Pick on the payment page</option>
+                      <option>HDFC Bank</option>
+                      <option>State Bank of India</option>
+                      <option>ICICI Bank</option>
+                      <option>Axis Bank</option>
+                      <option>Punjab National Bank</option>
+                      <option>Kotak Mahindra Bank</option>
+                    </select>
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 8 5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <p class="safe">
+            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2.5 4 5v4.6c0 3.5 2.5 6.6 6 7.9 3.5-1.3 6-4.4 6-7.9V5l-6-2.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m7.4 10 1.9 1.9 3.5-3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>Prepaid only.</b> <span id="prepaidWhy">We don't do cash on delivery on a free pack — a refused parcel would cost the courier twice.</span></span>
+          </p>
+        </div>
+
+        <div class="card">
+          <h2 class="card__title">Delivering to</h2>
+          <div class="echo">
+            <p class="echo__v" id="addrEcho">—</p>
+            <p class="echo__v echo__msg" id="msgEcho" hidden></p>
+            <button class="linkbtn echo__edit" type="button" id="editAddr" aria-label="Edit delivery details">Edit</button>
+          </div>
+        </div>
+
+        <p class="status" id="payStatus" role="status" aria-live="polite"></p>
+      </section>
+
+      <!-- ══ 3 — PLACED ════════════════════════════════════════════════
+           Order-in-progress chrome is gone by here — see section 8. The tick,
+           the confetti and the stagger are the only decoration on the whole
+           flow, and they are spent in one burst on the one moment that has
+           earned them. -->
+      <section class="pane done" data-pane="3" aria-labelledby="h1c">
+
+        <div class="mark" aria-hidden="true">
+          <span class="mark__ring"></span>
+          <span class="mark__ring mark__ring--2"></span>
+          <svg class="mark__tick" viewBox="0 0 44 44"><path d="M13 22.5 19.5 29 31 16.5"/></svg>
+        </div>
+
+        <div class="head">
+          <span class="live"><i></i> Order placed</span>
+          <h1 id="h1c">Your pack is on the way</h1>
+          <p id="doneSub">We'll ping you on WhatsApp before it lands. Look out for a small flat envelope.</p>
+          <p class="ordline">
+            <span class="id" id="orderId">CM-000000</span>
+            <span>·</span>
+            <span>arriving in <b>3&ndash;7 days</b></span>
+          </p>
+        </div>
+
+        <div class="branch" id="branch">
+          <div class="branch__inner">
+
+        <!-- self branch -->
+        <div class="next" id="nextSelf" hidden>
+          <div>
+            <h2>Set your page up now</h2>
+            <p>Two minutes, and your stickers open it the day they arrive.</p>
+          </div>
+          <a class="btn btn--go" href="onboarding.html?ordered=1" id="buildPage">Build my page</a>
+        </div>
+
+        <!-- gift branch -->
+        <div class="next" id="nextGift" hidden>
+          <div>
+            <h2>Nothing else to do</h2>
+            <p>It goes straight to <b id="giftTo">them</b>. They scan any sticker and sign in with their own email, and the code becomes theirs. Once their page is up, it counts as one of your referrals.</p>
+          </div>
+        </div>
+
+          </div>
+        </div>
+
+        <div class="done__acts">
+          <button class="btn btn--go btn--dash" type="button" id="toDash">Go to my dashboard</button>
+          <a class="btn btn--ghost" id="toInvoice" href="invoice.html" target="_blank" rel="noopener">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M10 3v10m0 0 3.4-3.4M10 13 6.6 9.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15.5h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Download invoice
+          </a>
+        </div>
+
+        <p class="recap">Going to <b id="shipTo">—</b>. Paid <b>₹<span id="paidAmt">—</span></b><span id="recapTail"> — pack free, delivery only.</span></p>
+        <p class="status" id="doneStatus" role="status" aria-live="polite"></p>
+      </section>
+
+      <!-- ══ FOOTER ACTIONS ════════════════════════════════════════════ -->
+      <footer class="ck__foot" id="foot">
+        <button class="btn btn--ghost btn--icon" type="button" id="back" aria-label="Back">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M12 4 6 10l6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="btn btn--go" type="button" id="next">
+          <span class="btn__spin" aria-hidden="true"></span>
+          <span class="btn__lbl" id="nextLbl">Continue to payment</span>
+        </button>
+      </footer>
+    </div>
+
+  </main>
+</div>
+
+<!-- Review tool only — delete this block, its CSS section and its script loop. -->
+<div class="preview" role="group" aria-label="Jump to step">
+  <button type="button" data-go="1" aria-pressed="true">Address</button>
+  <button type="button" data-go="2" aria-pressed="false">Payment</button>
+  <button type="button" data-go="3" aria-pressed="false">Placed</button>
+</div>
+
+<script src="pack.js"></script>
+<script src="lightbox.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ══ 0. HELPERS ══════════════════════════════════════════════════════ */
+  var $ = function (id) { return document.getElementById(id); };
+  var P = window.PACK;
+  var ck = document.querySelector(".ck");
+
+  function note(el, state, text) {
+    if (!el) return;
+    if (state) el.dataset.state = state; else el.removeAttribute("data-state");
+    el.innerHTML = text || "";
+  }
+  var REDUCE = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  function mark(wrap, bad) {
+    if (!wrap) return;
+    if (bad) wrap.dataset.state = "bad"; else wrap.removeAttribute("data-state");
+  }
+
+  /* ══ 1. THE ORDER ═══════════════════════════════════════════════════
+     What is being bought arrived in the query string from select-pack.html.
+     What it costs to send is worked out from the delivery state, which the
+     pincode gives us — so `state` starts null and the screen is honest
+     about not knowing the delivery charge yet.
+
+     Every figure comes out of pack.js. There is no price in this file. */
+  var ORDER = P.readOrder();          /* kind, items, built, freeUsed */
+  var Q = P.priceOrder(ORDER);        /* recomputed on every pincode change */
+
+  /* A custom order with no sizes in it has nothing to deliver — that only
+     happens on a hand-typed link. Send it back to pick sizes. */
+  if (Q.kind === "custom" && !Q.lines.length) {
+    location.replace("select-pack.html" + P.orderQuery(ORDER));
+    return;
+  }
+
+  function linesText(sep) {
+    return Q.lines.map(function (l) { return l.qty + " \u00D7 " + l.size.name; }).join(sep || ", ");
+  }
+
+  /* `built` only changes the done screen — a page already exists, so there
+     is no "build your page" card to show. */
+  if (ORDER.built) ck.dataset.built = "1";
+
+  function repriceFrom(state) {
+    ORDER.state = state || null;
+    Q = P.priceOrder(ORDER);
+    paintSum();
+    paintPay();
+  }
+
+  /* ══ 2. STATES ══════════════════════════════════════════════════════ */
+  var STATES = ["Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa",
+    "Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala","Madhya Pradesh",
+    "Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Punjab","Rajasthan",
+    "Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal",
+    "Andaman & Nicobar Islands","Chandigarh","Dadra & Nagar Haveli and Daman & Diu","Delhi",
+    "Jammu & Kashmir","Ladakh","Lakshadweep","Puducherry"];
+  var stateSel = $("state");
+  STATES.forEach(function (s) {
+    var o = document.createElement("option");
+    o.value = s; o.textContent = s;
+    stateSel.appendChild(o);
+  });
+
+  /* Pincode → state, first two digits only. This is a courtesy hint for the
+     prototype, not a lookup — the backend must resolve the real city/state
+     from the pincode API before anything ships. */
+  var PIN2 = {
+    "11":"Delhi","12":"Haryana","13":"Punjab","14":"Punjab","15":"Punjab",
+    "16":"Chandigarh","17":"Himachal Pradesh","18":"Jammu & Kashmir","19":"Jammu & Kashmir",
+    "20":"Uttar Pradesh","21":"Uttar Pradesh","22":"Uttar Pradesh","23":"Uttar Pradesh",
+    "24":"Uttar Pradesh","25":"Uttar Pradesh","26":"Uttar Pradesh","27":"Uttar Pradesh",
+    "28":"Uttar Pradesh","30":"Rajasthan","31":"Rajasthan","32":"Rajasthan","33":"Rajasthan",
+    "34":"Rajasthan","36":"Gujarat","37":"Gujarat","38":"Gujarat","39":"Gujarat",
+    "40":"Maharashtra","41":"Maharashtra","42":"Maharashtra","43":"Maharashtra","44":"Maharashtra",
+    "45":"Madhya Pradesh","46":"Madhya Pradesh","47":"Madhya Pradesh","48":"Madhya Pradesh",
+    "49":"Chhattisgarh","50":"Telangana","51":"Andhra Pradesh","52":"Andhra Pradesh",
+    "53":"Andhra Pradesh","56":"Karnataka","57":"Karnataka","58":"Karnataka","59":"Karnataka",
+    "60":"Tamil Nadu","61":"Tamil Nadu","62":"Tamil Nadu","63":"Tamil Nadu","64":"Tamil Nadu",
+    "67":"Kerala","68":"Kerala","69":"Kerala","70":"West Bengal","71":"West Bengal",
+    "72":"West Bengal","73":"West Bengal","74":"West Bengal","75":"Odisha","76":"Odisha",
+    "77":"Odisha","78":"Assam","79":"Assam","80":"Bihar","81":"Bihar","82":"Bihar",
+    "83":"Jharkhand","84":"Bihar","85":"Bihar"
+  };
+
+  /* ══ 3. VALIDATION ══════════════════════════════════════════════════ */
+  var f = {
+    name:  { el:$("name"),  wrap:$("nameWrap"),  note:$("nameNote") },
+    phone: { el:$("phone"), wrap:$("phoneWrap"), note:$("phoneNote") },
+    addr:  { el:$("addr"),  wrap:$("addrWrap"),  note:$("addrNote") },
+    pin:   { el:$("pin"),   wrap:$("pinWrap"),   note:$("pinNote") },
+    city:  { el:$("city"),  wrap:$("cityWrap"),  note:null },
+    state: { el:$("state"), wrap:$("stateWrap"), note:$("stateNote") }
+  };
+
+  var RULES = {
+    name:  function (v) { return v.trim().length >= 3 || "Type the full name the courier should ask for."; },
+    phone: function (v) { return /^[6-9]\d{9}$/.test(v) || "A 10-digit mobile number, starting 6 to 9."; },
+    addr:  function (v) { return v.trim().length >= 10 || "House and street, so it actually gets delivered."; },
+    pin:   function (v) { return /^[1-9]\d{5}$/.test(v) || "Six digits."; },
+    city:  function (v) { return v.trim().length >= 2 || "Which city?"; },
+    state: function (v) { return v !== "" || "Pick a state."; }
+  };
+
+  /* A field's note line has two lives: the resting hint it carries when the
+     field is fine, and the complaint it carries when it isn't. Keeping the
+     resting hint here is what stops a blur from wiping the pincode's
+     "Looks like Punjab" the moment the person moves to the next field. */
+  var HINT = {
+    phone: { state:null, html:"The courier calls this number." },
+    pin:   { state:null, html:"" }
+  };
+  function rest(key) {
+    var box = f[key];
+    if (!box.note) return;
+    var h = HINT[key];
+    note(box.note, h ? h.state : null, h ? h.html : "");
+  }
+
+  function check(key, quiet) {
+    var box = f[key];
+    var r = RULES[key](box.el.value);
+    var ok = r === true;
+    if (!quiet) {
+      mark(box.wrap, !ok);
+      if (box.note) {
+        if (ok) rest(key); else note(box.note, "bad", r);
+      }
+    }
+    return ok;
+  }
+
+  Object.keys(f).forEach(function (key) {
+    var box = f[key];
+    box.el.addEventListener("blur", function () { if (box.el.value) check(key); });
+    box.el.addEventListener("input", function () {
+      if (key === "phone" || key === "pin") {
+        var digits = box.el.value.replace(/\D/g, "");
+        if (digits !== box.el.value) box.el.value = digits;
+      }
+      mark(box.wrap, false);
+      if (key === "pin") pinChanged();
+      if (key === "name" || key === "phone") paintContact();
+      if (key === "city") { placeAuto = false; placeHint(); }
+      rest(key);
+      sync();
+    });
+  });
+
+  f.state.el.addEventListener("change", function () {
+    placeAuto = false;
+    repriceFrom(f.state.el.value);
+    placeHint();
+    sync();
+  });
+
+  /* ══ 3a. PINCODE → CITY + STATE ═════════════════════════════════════
+     Six digits in, and the city and state fill themselves — the two fields
+     stay folded away and the pincode's note line says where it resolved to,
+     with the delivery charge and a Change link. The fields only open when
+     the lookup cannot answer, or when the person asks.
+
+     The prototype asks India Post's public pincode API straight from the
+     page. The real build must do this server-side (and cache it); PIN2
+     above stays as the offline fallback that still gets the STATE, and so
+     the delivery band, right when the API is slow or down.
+
+     placeAuto: true while city/state hold what a lookup put there. Once a
+     person types into either, a new pincode no longer overwrites them. */
+  var placeAuto = true;
+  var pinSeq = 0;
+
+  function esc(t) {
+    return String(t).replace(/[&<>"]/g, function (c) {
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c];
+    });
+  }
+  function normState(t) {
+    return String(t || "").toLowerCase().replace(/&/g, "and").replace(/[^a-z]/g, "");
+  }
+  function matchState(name) {
+    var k = normState(name);
+    for (var i = 0; i < STATES.length; i++) if (normState(STATES[i]) === k) return STATES[i];
+    return "";
+  }
+
+  function lookupPin(pin) {
+    if (!window.fetch) return Promise.resolve(null);
+    var ctl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 4000);
+    return fetch("https://api.postalpincode.in/pincode/" + pin, ctl ? { signal: ctl.signal } : {})
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        clearTimeout(timer);
+        var hit = d && d[0];
+        if (!hit) return null;
+        if (hit.Status !== "Success" || !hit.PostOffice || !hit.PostOffice.length) return { none: true };
+        var po = hit.PostOffice[0];
+        return { city: po.District || po.Block || "", state: matchState(po.State) };
+      })
+      .catch(function () { clearTimeout(timer); return null; });
+  }
+
+  function openPlace(focus) {
+    $("placeFields").hidden = false;
+    if (focus) f.city.el.focus();
+  }
+
+  /* Paint the pincode's note from whatever city/state now hold. */
+  function placeHint(missing) {
+    var city = f.city.el.value.trim(), st = f.state.el.value;
+    var folded = $("placeFields").hidden;
+    if (city && st) {
+      HINT.pin = {
+        state: "ok",
+        html: "<span><b>" + esc(city) + ", " + esc(st) + "</b>" +
+              (Q.ship !== null ? " \u00B7 " + RS + P.inr(Q.ship) + " delivery" : "") + "</span>" +
+              (folded ? '<button type="button" class="linkbtn" data-place>Change</button>' : "")
+      };
+    } else if (missing) {
+      HINT.pin = { state: "bad", html: "We could not find that pincode. Check it, or add the city and state below." };
+      openPlace(false);
+    } else if (f.pin.el.value.length === 6) {
+      HINT.pin = { state: null, html: st ? "Looks like <b>" + esc(st) + "</b>. Add your city below." : "Add your city and state below." };
+      openPlace(false);
+    } else {
+      HINT.pin = { state: null, html: "" };
+    }
+    rest("pin");
+  }
+
+  function pinChanged() {
+    var v = f.pin.el.value;
+    var seq = ++pinSeq;
+
+    if (!/^[1-9]\d{5}$/.test(v)) {
+      if (placeAuto) { f.city.el.value = ""; f.state.el.value = ""; }
+      repriceFrom(f.state.el.value);
+      HINT.pin = { state: null, html: "" };
+      return;
+    }
+
+    /* the state from the first two digits lands at once, so delivery is
+       priced before the network has answered */
+    var guess = PIN2[v.slice(0, 2)] || "";
+    if (placeAuto) { f.city.el.value = ""; f.state.el.value = guess; }
+    repriceFrom(f.state.el.value);
+    HINT.pin = { state: null, html: "Finding your area\u2026" };
+
+    lookupPin(v).then(function (place) {
+      if (seq !== pinSeq) return;               /* a newer pincode is being typed */
+      if (place && !place.none && placeAuto) {
+        if (place.city)  f.city.el.value  = place.city;
+        if (place.state) f.state.el.value = place.state;
+        repriceFrom(f.state.el.value);
+      }
+      placeHint(place && place.none);
+      sync();
+    });
+  }
+
+  $("pinNote").addEventListener("click", function (e) {
+    if (!e.target.closest("[data-place]")) return;
+    openPlace(true);
+    placeHint();
+  });
+
+  /* ══ 3b-. WHO IT GOES TO ════════════════════════════════════════════ */
+  function fmtPhone(v) { return v.length === 10 ? v.slice(0, 5) + " " + v.slice(5) : v; }
+  function paintContact() {
+    $("cName").textContent  = f.name.el.value.trim() || "Add the receiver's name";
+    $("cPhone").textContent = f.phone.el.value ? "+91 " + fmtPhone(f.phone.el.value) : "Add a phone number";
+  }
+  function openContact(focus) {
+    $("contactFields").hidden = false;
+    $("contactRow").hidden = true;
+    $("cEdit").setAttribute("aria-expanded", "true");
+    if (focus) f.name.el.focus();
+  }
+  $("cEdit").addEventListener("click", function () { openContact(true); });
+
+  $("markAdd").addEventListener("click", function () {
+    $("markFld").hidden = false;
+    $("markAdd").hidden = true;
+    $("markAdd").setAttribute("aria-expanded", "true");
+    $("mark").focus({ preventScroll: true });
+
+    /* On a phone the new field opens right behind the sticky Continue bar,
+       so the page lifts it into view instead of leaving the person to nudge
+       it up. Parked just under the top bar, it also stays clear of the
+       keyboard that is about to open. */
+    if (PHONE.matches) {
+      var barH = document.querySelector(".ck__bar").offsetHeight;
+      var top = $("markFld").getBoundingClientRect().top + window.scrollY - barH - 96;
+      window.scrollTo({ top: Math.max(0, top), behavior: REDUCE ? "auto" : "smooth" });
+    }
+  });
+
+  function addressOk(quiet) {
+    var ok = ["name","phone","addr","pin","city","state"]
+      .map(function (k) { return check(k, quiet); })
+      .every(Boolean);
+    return claimOk(quiet) && ok;
+  }
+
+  /* ── the link, for a first pack bought before any page exists ───────── */
+  var RESERVED = ["admin","codemarca","hello","support","help","api","about","login","signup","app","www","shop","blog"];
+  var TAKEN    = ["gurdeep","garry","nikk","nancy","amit","gill"];
+  function needsClaim() { return !ORDER.gift && ck.dataset.gift !== "other" && !ORDER.built; }
+  function cleanHandle(v) { return String(v).toLowerCase().replace(/[^a-z0-9._-]/g, "").slice(0, 24); }
+  function handleWhy(v) {
+    if (v.length < 3) return "Pick a link with at least 3 characters.";
+    if (RESERVED.indexOf(v) > -1) return "<b>" + v + "</b> is reserved. Try another.";
+    if (TAKEN.indexOf(v) > -1) return "<b>" + v + "</b> is taken. Try another.";
+    return "";
+  }
+  function claimOk(quiet) {
+    if (!needsClaim()) return true;
+    var v = cleanHandle($("handle").value), why = handleWhy(v);
+    var note = $("handleNote");
+    if (!why) {
+      note.dataset.state = "ok";
+      note.innerHTML = "<b>codemarca.com/" + v + "</b> is yours. Your page goes live with your name on it the moment you order.";
+      $("handleWrap").dataset.state = "";
+    } else if (!quiet || v.length) {
+      note.dataset.state = "bad"; note.innerHTML = why;
+      $("handleWrap").dataset.state = "bad";
+    }
+    return !why;
+  }
+
+  /* ══ 3b. PAINTING THE MONEY ═════════════════════════════════════════
+     Two painters, because the summary and the pay button answer different
+     questions: the rail itemises, the button states the one figure that is
+     about to leave the person's account.
+
+     Both refuse to guess. Before a pincode resolves there is no delivery
+     charge, so they say "worked out from your pincode" instead of showing
+     a number that would then change. */
+  var RS = "\u20B9";                   /* the rupee sign, spelled out */
+
+  function paintSum() {
+    $("sumTitle").textContent = Q.title;
+    $("sumBarT").textContent  = Q.title;
+    $("sumBlurb").textContent = Q.blurb;
+
+    /* one row per size on a custom order, drawn just above Delivery */
+    Array.prototype.forEach.call(document.querySelectorAll("[data-line]"), function (r) { r.remove(); });
+    if (Q.kind === "free") {
+      $("rowPack").hidden = false;
+      $("rowPack").classList.add("sum__row--free");
+      $("packDt").textContent = "Pack";
+      $("packDd").textContent = "Free";
+      $("sumOneTxt").textContent = "One free pack per account, for you";
+    } else {
+      $("rowPack").hidden = true;
+      Q.lines.forEach(function (l) {
+        var row = document.createElement("div");
+        row.className = "sum__row";
+        row.setAttribute("data-line", l.size.key);
+        row.innerHTML = "<dt>" + l.size.name + " \u00D7 " + l.qty + "</dt><dd>" + RS + P.inr(l.amount) + "</dd>";
+        $("rowShip").parentNode.insertBefore(row, $("rowShip"));
+      });
+      $("sumOneTxt").textContent = Q.lines.length === 1
+        ? Q.qty + " \u00D7 " + RS + P.inr(Q.lines[0].size.price) + " a sticker"
+        : Q.qty + " stickers in " + Q.lines.length + " sizes";
+    }
+
+    if (Q.ship === null) {
+      $("rowShip").classList.add("sum__row--soft");
+      $("shipDd").textContent = "From your pincode";
+      $("totalDd").textContent = Q.kind === "free" ? RS + "0 + delivery"
+                                                   : RS + P.inr(Q.goods) + " + delivery";
+      $("sumNote").innerHTML =
+        "<b>Delivery lands once you type a pincode.</b> It is charged in bands, " +
+        "so what it costs depends on where the pack is going.";
+    } else {
+      $("rowShip").classList.remove("sum__row--soft");
+      $("shipDd").textContent = RS + P.inr(Q.ship);
+      $("totalDd").textContent = RS + P.inr(Q.total);
+      $("sumNote").innerHTML =
+        "<b>Every figure here is a placeholder.</b> " + Q.zone.label +
+        " band \u2014 the real print and courier quotes are not in yet.";
+    }
+    $("sumBarAmt").textContent = $("totalDd").textContent;
+  }
+
+  /* The phone fold. inert while closed, so a screen reader or a Tab press
+     does not walk through rows nobody can see; on a desktop it never is. */
+  var sumEl = $("sum"), sumBody = $("sumBody"), sumBar = $("sumBar");
+  var PHONE = window.matchMedia ? window.matchMedia("(max-width: 959.98px)") : { matches:false };
+  function paintFold() {
+    var open = !!sumEl.dataset.open;
+    sumBar.setAttribute("aria-expanded", String(open));
+    $("sumBarHint").textContent = open ? "Hide summary" : "Order summary";
+    sumBody.inert = !!PHONE.matches && !open;
+  }
+  sumBar.addEventListener("click", function () {
+    if (sumEl.dataset.open) delete sumEl.dataset.open; else sumEl.dataset.open = "1";
+    paintFold();
+  });
+  if (PHONE.addEventListener) PHONE.addEventListener("change", paintFold);
+  else if (PHONE.addListener) PHONE.addListener(paintFold);
+
+  /* The pay button and the step-2 heading name the whole amount, not the
+     delivery line. On a custom order most of it is the stickers. */
+  function paintPay() {
+    var amt = Q.total === null ? "\u2014" : P.inr(Q.total);
+    $("payAmt").textContent = amt;
+    if (nextLbl && ck.dataset.step === "2") {
+      nextLbl.textContent = Q.total === null ? "Pay" : "Pay " + RS + amt;
+    }
+    $("paySub").textContent = Q.kind === "free"
+      ? "The pack itself is free. This is the courier's charge, and we take no margin on it."
+      : "That is " + RS + P.inr(Q.goods) + " for " + Q.qty + (Q.qty === 1 ? " sticker" : " stickers") +
+        (Q.ship === null ? ", plus delivery." : " plus " + RS + P.inr(Q.ship) + " delivery.");
+
+    /* Why we refuse COD is a different sentence on a paid order: there is no
+       free pack in it to be refused. */
+    $("prepaidWhy").textContent = Q.kind === "free"
+      ? "We don't do cash on delivery on a free pack \u2014 a refused parcel would cost the courier twice."
+      : "We don't do cash on delivery. Stickers are printed to your order, so a refused parcel cannot be resold.";
+  }
+
+  /* ══ 4. STEPS ═══════════════════════════════════════════════════════ */
+  var nextBtn = $("next"), nextLbl = $("nextLbl"), backBtn = $("back"), steps = $("steps");
+
+  function addressLine() {
+    var bits = [f.addr.el.value.trim(), $("mark").value.trim(), f.city.el.value.trim(),
+                f.state.el.value, f.pin.el.value].filter(Boolean);
+    return bits.join(", ");
+  }
+
+  /* One burst, on arrival, and never twice — the layer takes itself out.
+     Anyone who has asked for less motion gets the screen without it. */
+  var partied = false;
+  function celebrate() {
+    if (partied) return;
+    partied = true;
+    if (REDUCE) return;
+
+    var layer = document.createElement("div");
+    layer.className = "confetti";
+    layer.setAttribute("aria-hidden", "true");
+    var colors = ["#6E27E6", "#A171F4", "#DCC9FB", "#101215"];
+    for (var i = 0; i < 26; i++) {
+      var bit = document.createElement("i");
+      bit.style.left = (Math.random() * 100) + "vw";
+      bit.style.width = (6 + Math.random() * 5) + "px";
+      bit.style.height = (10 + Math.random() * 8) + "px";
+      bit.style.background = colors[i % colors.length];
+      bit.style.animationDuration = (1.5 + Math.random() * 1.1) + "s";
+      bit.style.animationDelay = (Math.random() * 0.35) + "s";
+      bit.style.setProperty("--dx", Math.round(Math.random() * 220 - 110) + "px");
+      bit.style.setProperty("--rot", Math.round(Math.random() * 900 - 450) + "deg");
+      layer.appendChild(bit);
+    }
+    document.body.appendChild(layer);
+    setTimeout(function () { layer.remove(); }, 3400);
+  }
+
+  /* the gift note's counter — it is the only field on this screen with a
+     limit worth showing, because the limit is a layout rule, not a validation */
+  (function () {
+    var msg = $("msg"), out = $("msgCount");
+    if (!msg) { return; }
+    var paint = function () { out.textContent = msg.value.length + "/90"; };
+    msg.addEventListener("input", paint);
+    paint();
+  })();
+
+  function go(n) {
+    ck.dataset.step = String(n);
+    steps.setAttribute("aria-valuenow", String(n));
+    backBtn.hidden = n === 3;
+    nextLbl.textContent = n === 1 ? "Continue to payment"
+      : (Q.total === null ? "Pay" : "Pay " + RS + P.inr(Q.total));
+    if (n === 2) {
+      var note = $("msg").value.trim();
+      $("msgEcho").hidden = !(ck.dataset.gift === "other" && note);
+      $("msgEcho").innerHTML = "&ldquo;" + esc(note) + "&rdquo;";
+      $("addrEcho").innerHTML = "<b>" + esc(f.name.el.value.trim()) + "</b><small>" +
+        esc(addressLine()) + "</small><small>+91 " + fmtPhone(f.phone.el.value) + "</small>";
+    }
+    if (n === 3) {
+      /* the BUYER's first name — for a gift the delivery name is someone else */
+      var first = (ck.dataset.gift === "other" ? who : f.name.el.value).trim().split(/\s+/)[0];
+      paintDone();
+      var toFirst = f.name.el.value.trim().split(/\s+/)[0];
+      $("doneSub").textContent = ck.dataset.gift === "other"
+        ? (first ? "Nice one, " + first + " — it" : "It") + " is headed to " + (toFirst || "them") +
+          ". We'll keep you posted on WhatsApp until it lands."
+        : (first ? "Nice one, " + first + " — we'll" : "We'll") +
+          " ping you on WhatsApp before it lands. Look out for a small flat envelope.";
+      celebrate();
+    }
+    Array.prototype.forEach.call(document.querySelectorAll(".preview button"), function (b) {
+      b.setAttribute("aria-pressed", String(b.dataset.go === String(n)));
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    sync();
+  }
+
+  function sync() {
+    nextBtn.disabled = ck.dataset.step === "1" ? !addressOk(true) : false;
+  }
+
+  /* ══ 4b. PLACING IT ═════════════════════════════════════════════════
+     One place builds the order id, the recap line and the invoice link, so
+     the three can never describe different orders. The invoice is its own
+     page and everything it prints is handed over in the query string —
+     there is no backend to fetch it from yet, and a page that renders only
+     what it was given is a page that cannot show a stale total. */
+  var ORDER_ID = "";
+
+  function placeOrder() {
+    ORDER_ID = "CM-" + String(Date.now()).slice(-6);
+    $("orderId").textContent = ORDER_ID;
+    $("shipTo").textContent = f.name.el.value.trim() + ", " + addressLine();
+    $("paidAmt").textContent = Q.total === null ? "\u2014" : P.inr(Q.total);
+    $("recapTail").textContent = Q.kind === "free"
+      ? " \u2014 pack free, delivery only."
+      : " \u2014 " + linesText() + " plus delivery.";
+
+    var method = document.querySelector('input[name="method"]:checked');
+    var p = new URLSearchParams({
+      id:    ORDER_ID,
+      pack:  Q.kind,
+      name:  f.name.el.value.trim(),
+      phone: f.phone.el.value,
+      email: mail,
+      addr:  addressLine(),
+      state: f.state.el.value,
+      ship:  String(Q.ship === null ? 0 : Q.ship),
+      zone:  Q.zone ? Q.zone.label : "",
+      pay:   method ? method.value : ""
+    });
+    if (Q.kind === "custom") p.set("items", P.itemsParam(Q.items));
+    $("toInvoice").href = "invoice.html?" + p.toString();
+  }
+
+  nextBtn.addEventListener("click", function () {
+    if (ck.dataset.step === "1") {
+      if (!addressOk()) return;
+      go(2);
+      return;
+    }
+
+    /* Payment handoff. The gateway is not wired yet; when it is, this is the
+       call that opens it, and the step-3 hop happens on its success callback.
+       Card and UPI credentials are typed on the gateway's own page — this
+       screen must never grow fields for them. */
+    var method = document.querySelector('input[name="method"]:checked').value;
+    nextBtn.dataset.busy = "true";
+    note($("payStatus"), null, method === "upi"
+      ? "Opening your UPI app…" : "Opening the secure payment page…");
+
+    setTimeout(function () {
+      nextBtn.dataset.busy = "false";
+      note($("payStatus"), null, "");
+      placeOrder();
+      go(3);
+    }, 1100);
+  });
+
+  /* Step 1 goes back to select-pack with the order intact, so the sizes
+     picked there are still picked; step 2 steps back to the address. */
+  backBtn.addEventListener("click", function () {
+    if (ck.dataset.step === "1") location.href = "select-pack.html" + P.orderQuery(ORDER);
+    else go(1);
+  });
+  $("editAddr").addEventListener("click", function () { go(1); });
+
+  /* ══ 5. A GIFT, OR YOUR OWN ═══════════════════════════════════════
+     Not a question any more (Garry, 2026-09-18). `gift=1` in the URL is
+     the whole answer, set by the Gift & Refer tab that sent the buyer here.
+     It lives on the root as data-gift ("self" | "other") and drives:
+       · the delivery fields — the account's name and phone for your own
+         pack, empty fields for the person receiving a gift
+       · the done screen's next-step card
+       · where "Go to my dashboard" leads
+     It never pre-fills a PROFILE — a gift buyer is not the page's owner. */
+  function asGift() {
+    ck.dataset.gift = "other";
+    f.name.el.value = ""; f.phone.el.value = "";
+    $("h1a").textContent = "Where should the gift go?";
+    $("h1aSub").textContent = "Their name and phone — the courier calls them, not you.";
+    $("shipTitle").textContent = "Their details";
+    document.querySelector('label[for="name"]').textContent = "Their full name";
+    document.querySelector('label[for="phone"]').textContent = "Their phone";
+    $("toDash").textContent = "See my gifts";
+    /* the sample name is the buyer's own — on an empty gift field it reads as if it were filled in */
+    f.name.el.placeholder = "Who it's going to";
+    /* a gift is started from the dashboard, so Cancel goes back there, not to the website */
+    $("exit").href = "dashboard/" + P.flowOr(ORDER.from) + "/gift.html";
+    openContact(false);
+    mark(f.name.wrap, false); mark(f.phone.wrap, false);
+    rest("name"); rest("phone");
+    paintContact();
+    sync();
+  }
+
+  /* the done screen, drawn from the answer — nothing left to ask there */
+  function paintDone() {
+    var gift = ck.dataset.gift === "other";
+    var to = f.name.el.value.trim().split(/\s+/)[0] || "them";
+    $("h1c").textContent = gift ? "Your gift is on the way" : "Your pack is on the way";
+    $("giftTo").textContent = to;
+    $("nextSelf").hidden = gift;
+    $("nextGift").hidden = !gift;
+    $("branch").style.height = "auto";
+  }
+
+  /* WHICH DASHBOARD — added 2026-09-16 with the flow folders.
+       a gift    back to the Gift & Refer tab it was started from, in
+                 whichever flow that was — the gift changes nothing about
+                 the buyer's own account
+       built=1, first pack   page live, pack on its way → 2-page-live ?state=coming
+                             (Garry, 2026-09-29 — was 4-active, which said the
+                             stickers were already working)
+       built=1, freeUsed     they already have stickers   → 4-active
+       no page   their own pack is coming, nothing behind it → 3-pack-coming */
+  /* the pack is paid for, so onboarding must not sell it again — and the
+     link claimed above goes with them, shown read-only there */
+  $("buildPage").addEventListener("click", function (e) {
+    e.preventDefault();
+    location.href = "onboarding.html?ordered=1&handle=" + encodeURIComponent(cleanHandle($("handle").value)) +
+      "&name=" + encodeURIComponent(f.name.el.value.trim());
+  });
+
+  $("toDash").addEventListener("click", function () {
+    if (ck.dataset.gift === "other") {
+      location.href = "dashboard/" + P.flowOr(ORDER.from) + "/gift.html";
+      return;
+    }
+    if (ck.dataset.built !== "1") { location.href = "dashboard/3-pack-coming/home.html"; return; }
+    location.href = ORDER.freeUsed ? "dashboard/4-active/home.html"
+                                   : "dashboard/2-page-live/home.html?state=coming";
+  });
+
+  /* ══ 6. THE ACCOUNT ═════════════════════════════════════════════════
+     Stands in for what the session gives us in the real build. The query
+     string overrides are only so the screen can be reviewed as somebody
+     else.
+
+     The name and phone are pre-filled into the DELIVERY fields, which is
+     the opposite of the rule this screen is careful about: a profile must
+     never be built out of what is typed here, but the courier fields may
+     certainly be filled from the account that is already signed in. Both
+     stay editable — the pack may well be going to a different address
+     under a different name. */
+  var q = new URLSearchParams(location.search);
+  var mail  = q.get("email") || "garry@gmail.com";
+  var who   = q.get("name")  || "Garry Singh";
+  var whoNo = q.get("phone") || "9876543210";
+
+  /* the link starts as the first name, or the full name run together when
+     the first name is gone — the person can change it before paying */
+  (function () {
+    var bits = who.trim().split(/\s+/);
+    var first = cleanHandle(bits[0] || ""), full = cleanHandle(bits.join(""));
+    $("handle").value = handleWhy(first) ? full : first;
+    $("handle").addEventListener("input", function () {
+      var v = cleanHandle(this.value);
+      if (v !== this.value) this.value = v;
+      claimOk(false); sync();
+    });
+    claimOk(true);
+  })();
+
+  if (!f.name.el.value)  f.name.el.value  = who;
+  if (!f.phone.el.value) f.phone.el.value = whoNo;
+  paintContact();
+  /* a pre-fill that would not pass is not worth hiding behind a line */
+  if (!check("name", true) || !check("phone", true)) openContact(false);
+
+  /* a gift clears what the account just filled in — it is going to someone else */
+  if (ORDER.gift) asGift();
+
+  /* Preview switcher — review tool, delete before launch. */
+  Array.prototype.forEach.call(document.querySelectorAll(".preview button"), function (b) {
+    b.addEventListener("click", function () {
+      if (b.dataset.go !== "1" && !addressOk(true)) {
+        f.name.el.value  = f.name.el.value  || (ORDER.gift ? "Simran Kaur" : "Garry Singh");
+        f.phone.el.value = f.phone.el.value || (ORDER.gift ? "9812345678" : "9876543210");
+        f.addr.el.value  = f.addr.el.value  || "House 12, Guru Nanak Nagar, near the water tank";
+        f.pin.el.value   = f.pin.el.value   || "141001";
+        f.city.el.value  = f.city.el.value  || "Ludhiana";
+        f.state.el.value = f.state.el.value || "Punjab";
+        paintContact();
+      }
+      repriceFrom(f.state.el.value);
+      placeHint();
+      if (b.dataset.go === "3") {
+        partied = false;   /* review tool: let the burst replay on every visit */
+        placeOrder();
+      }
+      go(Number(b.dataset.go));
+    });
+  });
+
+  P.mountShots($("shots"));
+  paintSum();
+  paintPay();
+  paintFold();
+  go(1);
+  sync();
+})();
+</script>

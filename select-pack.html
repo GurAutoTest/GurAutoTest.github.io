@@ -1,0 +1,1330 @@
+<title>Codemarca — Choose your pack</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* ==========================================================================
+   CODEMARCA — SELECT PACK
+   The screen before checkout. Everything that reaches checkout comes
+   through here, so this is where the "what am I buying" question is settled
+   and checkout is left to deal only with "where does it go and who pays".
+
+   Two steps in one file, switched by <div class="sp" data-step>:
+     1  which pack   — the free one, or a custom size
+     2  sizes & how many — custom only; any mix of sizes, each with its own
+        quantity, built up in the summary. The free pack skips straight out
+
+   Where it goes next:
+     free    → checkout.html?pack=free
+     custom  → checkout.html?pack=custom&items=L:2,XL:1
+     gift    → checkout.html?pack=custom&items=…&gift=1&from=<flow>
+
+   GIFT MODE — Garry, 2026-09-18. `gift=1` comes only from the dashboard's
+   Gift & Refer tab. A gift is always paid and always custom, so step 1 (the
+   free-or-custom choice) never shows: the screen opens on sizes, has no Back
+   into step 1, and "Back to dashboard" returns to that same tab. The free
+   pack is always for the account itself and never offered as a gift.
+
+   Sizes, prices, delivery bands and the photo list all live in pack.js.
+   None of them are in this file — change them there.
+
+   EVERY PRICE ON THIS SCREEN IS A PLACEHOLDER until the printer quotes.
+   ========================================================================== */
+
+/* ── 0. TOKENS — same set as signup.html / onboarding.html ─────────────── */
+:root {
+  /* Brand — locked 2026-09-01 */
+  --brand-violet:#6E27E6; --brand-violet-lift:#A171F4; --brand-violet-press:#5A1DC4;
+  --brand-violet-tint:#F1E9FE; --brand-violet-edge:#DCC9FB;
+
+  /* Ink */
+  --ink:#101215; --ink-mid:#5B5D68; --ink-soft:#8C8E9C; --ink-faint:#B6B8C4;
+  --ink-invert:#FFFFFF;
+
+  /* Ground */
+  --ground:#FFFFFF; --ground-soft:#F4F3F7; --ground-sunk:#EDEBF2;
+
+  /* Line */
+  --line:rgba(16,18,21,.09); --line-strong:rgba(16,18,21,.16);
+
+  /* State */
+  --ok:#17914F; --bad:#C4342B;
+
+  /* Type */
+  --font-sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+
+  --fs-body:1rem; --fs-sm:.875rem; --fs-xs:.8125rem; --fs-label:.6875rem;
+  --lh-body:1.55;
+  --ls-display:-.038em; --ls-body:-.011em; --ls-label:.13em; --ls-soft:.14px;
+  --fw-medium:500; --fw-semibold:600; --fw-bold:700; --fw-black:800;
+
+  /* Space */
+  --s-1:.25rem; --s-2:.5rem; --s-3:.75rem; --s-4:1rem; --s-5:1.25rem;
+  --s-6:1.5rem; --s-8:2rem; --s-10:2.5rem; --s-12:3rem;
+
+  /* Layout */
+  --gutter:1.25rem;
+  --logo-h:20px;
+  --bar-h:56px;
+  --col:600px;              /* the form column */
+  --rail:340px;             /* the order summary, desktop only */
+
+  /* Radius */
+  --r-xs:6px; --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px; --r-pill:999px;
+
+  /* Elevation */
+  --shadow-sm:0 2px 8px rgba(16,18,21,.06);
+  --shadow-md:0 6px 20px rgba(16,18,21,.07);
+  --shadow-lg:0 20px 56px rgba(16,18,21,.11);
+
+  /* Controls */
+  --control-h:52px;
+  --btn-h:52px;
+  --focus-ring:0 0 0 3px var(--ground-sunk),0 0 0 5px var(--ink);
+  --focus-glow:0 0 0 4px rgba(16,18,21,.08);
+
+  /* Motion */
+  --dur-fast:140ms; --dur:240ms;
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+@media (min-width:960px){
+  :root{ --gutter:2.5rem; --bar-h:68px; --control-h:56px; --btn-h:56px; }
+}
+
+/* ── 1. BASE ───────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground-soft); color:var(--ink);
+  font-family:var(--font-sans); font-size:var(--fs-body); font-weight:var(--fw-medium);
+  line-height:var(--lh-body); letter-spacing:var(--ls-body);
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,p,ul,li,dl,dd,dt{margin:0; padding:0}
+ul{list-style:none}
+a{color:inherit; text-decoration:none}
+button,input,textarea,select{font:inherit; color:inherit}
+img,svg{display:block; max-width:100%}
+[hidden]{display:none !important}
+:focus-visible{outline:none; box-shadow:var(--focus-ring); border-radius:var(--r-xs)}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+/* ── 2. SHELL ──────────────────────────────────────────────────────────── */
+.sp{display:flex; flex-direction:column; min-height:100svh}
+
+.sp__bar{
+  position:sticky; top:0; z-index:40;
+  display:flex; align-items:center; gap:var(--s-4);
+  height:var(--bar-h); padding-inline:var(--gutter);
+  background:var(--ground); box-shadow:0 1px 0 var(--line);
+}
+.sp__logo svg{height:var(--logo-h); width:auto}
+.sp__logo .wm{display:none}
+.sp__exit{
+  margin-left:auto; font-size:var(--fs-sm); font-weight:var(--fw-bold);
+  color:var(--ink-soft); padding:var(--s-2); border-radius:var(--r-sm);
+}
+.sp__exit:hover{color:var(--ink)}
+@media (min-width:520px){ .sp__logo .wm{display:block} .sp__logo .mk{display:none} }
+
+/* No progress bar here. Checkout owns the three-segment run; this screen sits
+   in front of it, and a second counter that disagreed with that one would be
+   worse than no counter at all. */
+
+.sp__wrap{
+  display:grid; gap:var(--s-5);
+  grid-template-columns:minmax(0,var(--col));
+  justify-content:center; align-content:start;
+  padding:var(--s-5) var(--gutter) 0;
+}
+@media (min-width:960px){
+  .sp__wrap{
+    grid-template-columns:minmax(0,var(--col)) var(--rail);
+    gap:var(--s-8); padding-top:var(--s-8);
+  }
+}
+/* The headline spans both columns, so the tiles and the summary start on
+   the same line. There is no product photo in the rail any more — the tiles
+   carry the pictures — which leaves the rail a short card that would
+   otherwise float above the tiles next to a headline. */
+.sp__head{min-width:0; order:0; padding-block:var(--s-2) var(--s-2); text-align:center}
+.sp__head .head{display:none}
+.sp[data-step="1"] [data-head="1"],
+.sp[data-step="2"] [data-head="2"]{display:block}
+@media (min-width:960px){
+  .sp__head{grid-column:1 / -1; padding-block:0}
+}
+
+.sp__col{display:flex; flex-direction:column; min-width:0; order:1}
+
+/* ── WHO IT IS FOR — Garry, 2026-09-29 ─────────────────────────────────────
+   Two tabs over the headline. "For someone else" makes this a gift: paid,
+   custom only, the free pack greyed with the reason under it. Hidden when a
+   gift arrives already decided from the dashboard's Gift & Refer tab. */
+.who{
+  display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px;
+  width:100%; max-width:360px; margin:0 auto var(--s-4);
+  border-radius:var(--r-pill); background:var(--ground-sunk);
+}
+.who[hidden]{display:none}
+.who__b{
+  border:0; cursor:pointer; height:38px; border-radius:var(--r-pill);
+  background:none; color:var(--ink-mid);
+  font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-bold);
+  transition:background .15s ease, color .15s ease;
+}
+.who__b:hover{color:var(--ink)}
+.who__b[aria-selected="true"]{background:var(--ground); color:var(--ink); box-shadow:var(--shadow-sm)}
+
+/* Note this is the opposite of checkout, on purpose. There, the summary sits
+   above the form on a phone: you are about to pay, so what you are paying for
+   comes first. Here the question on the screen IS the choice, so the two
+   packs come first and the summary answers them underneath. */
+
+/* ── 3. PANES ──────────────────────────────────────────────────────────── */
+.pane{display:none; flex-direction:column; gap:var(--s-5); flex:1; padding-bottom:var(--s-6)}
+.sp[data-step="1"] [data-pane="1"],
+.sp[data-step="2"] [data-pane="2"]{display:flex}
+
+.head h1{
+  font-size:clamp(1.625rem,5.5vw,2.125rem); font-weight:var(--fw-black);
+  line-height:1.06; letter-spacing:var(--ls-display); text-wrap:balance;
+}
+.head p{margin-top:var(--s-2); color:var(--ink-mid); font-size:var(--fs-sm)}
+
+.card{
+  background:var(--ground); border-radius:var(--r-lg); padding:var(--s-5);
+  box-shadow:var(--shadow-sm), inset 0 0 0 1px var(--line);
+  display:flex; flex-direction:column; gap:var(--s-4);
+}
+.card__title{
+  font-size:var(--fs-label); font-weight:var(--fw-bold); letter-spacing:var(--ls-label);
+  text-transform:uppercase; color:var(--ink-soft);
+}
+.card__note{font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.45}
+
+/* ── 4. THE TWO PACKS ──────────────────────────────────────────────────── */
+/* Apple-store shape: one two-tone headline, two tiles side by side, a
+   picture on top, the name and price under it, two specs at the foot.
+   No bullet lists — anything that needs a sentence belongs in the summary
+   or on the next screen, not on the tile. */
+.head--xl h1{font-size:clamp(1.875rem,7vw,2.75rem); line-height:1.08}
+.head--xl h1 span{color:var(--ink-soft)}
+
+/* Two columns at every width. At phone width each tile is ~165px, which is
+   enough for a picture, a name and a price — and seeing both at once is the
+   whole point of a comparison. */
+.opts{
+  display:grid; grid-template-columns:1fr 1fr; gap:var(--s-3);
+  grid-template-rows:auto auto auto auto;
+}
+@media (min-width:600px){ .opts{gap:var(--s-4)} }
+
+/* The tile IS the label, so a click anywhere picks it natively. Everything
+   inside is phrasing content (spans), which a label is allowed to hold.
+   Subgrid keeps the name, price and spec rows level across both tiles even
+   when one line wraps and the other does not. */
+.opt{
+  position:relative; cursor:pointer;
+  grid-row:span 4; display:grid; grid-template-rows:subgrid; row-gap:0;
+  padding:var(--s-2); border-radius:26px;
+  background:var(--ground);
+  box-shadow:0 0 0 1px var(--line);
+  transition:box-shadow var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
+  -webkit-tap-highlight-color:transparent;
+}
+.opt:hover{box-shadow:var(--shadow-md), 0 0 0 1px var(--line-strong)}
+.opt:has(:checked){box-shadow:var(--shadow-lg), 0 0 0 2px var(--brand-violet)}
+.opt:active{transform:scale(.985)}
+.opt:has(:focus-visible){box-shadow:var(--focus-ring)}
+
+/* ─ the picture ─ */
+.art{
+  position:relative; aspect-ratio:4/3; border-radius:19px; overflow:hidden;
+  background:linear-gradient(165deg,#F8F7FB 0%,#ECEAF2 100%);
+}
+.art::before{
+  content:""; position:absolute; inset:0; opacity:0;
+  background:linear-gradient(165deg,#F7F1FF 0%,#E6D9FC 100%);
+  transition:opacity var(--dur) var(--ease);
+}
+.opt:has(:checked) .art::before{opacity:1}
+
+.stk{
+  display:block; height:auto;
+  filter:drop-shadow(0 6px 12px rgba(16,18,21,.14)) drop-shadow(0 1px 2px rgba(16,18,21,.10));
+}
+
+/* Free: both stickers on the one violet backing card, as it arrives. */
+.art__card{
+  position:absolute; left:50%; top:50%; width:66%; aspect-ratio:1.32;
+  display:flex; align-items:center; justify-content:space-evenly;
+  border-radius:9% / 12%;
+  background:linear-gradient(150deg,var(--brand-violet-lift) -20%,var(--brand-violet) 55%,var(--brand-violet-press) 120%);
+  box-shadow:0 14px 28px rgba(90,29,196,.28), 0 2px 4px rgba(90,29,196,.2);
+  transform:translate(-50%,-50%) rotate(-9deg);
+  transition:transform 520ms cubic-bezier(.2,.9,.25,1.15);
+}
+.art__card .stk:first-child{width:48%}
+.art__card .stk:last-child{width:20%; align-self:flex-end; margin-bottom:14%}
+.opt:has(:checked) .art__card{transform:translate(-50%,-50%) rotate(-4deg) scale(1.05)}
+
+/* Custom: three sizes standing in a row, smallest to largest. */
+.art__row{
+  position:absolute; inset:0; padding-bottom:17%;
+  display:flex; align-items:flex-end; justify-content:center; gap:5%;
+}
+.art__row .stk{transition:transform 520ms cubic-bezier(.2,.9,.25,1.15)}
+.art__row .stk:nth-child(1){width:15%}
+.art__row .stk:nth-child(2){width:23%}
+.art__row .stk:nth-child(3){width:34%}
+.opt:has(:checked) .art__row .stk:nth-child(1){transform:translateY(-4px)}
+.opt:has(:checked) .art__row .stk:nth-child(2){transform:translateY(-7px); transition-delay:40ms}
+.opt:has(:checked) .art__row .stk:nth-child(3){transform:translateY(-10px); transition-delay:80ms}
+
+.opt__tick{
+  position:absolute; z-index:2; top:calc(var(--s-2) + 10px); right:calc(var(--s-2) + 10px);
+  width:24px; height:24px; border-radius:50%; display:grid; place-items:center;
+  background:rgba(255,255,255,.85); box-shadow:inset 0 0 0 1.5px var(--line-strong);
+  -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+  transition:background var(--dur) var(--ease), box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.opt__tick svg{width:13px; height:13px; color:#fff; opacity:0; transition:opacity var(--dur) var(--ease)}
+.opt:has(:checked) .opt__tick{background:var(--brand-violet); box-shadow:none; transform:scale(1.08)}
+.opt:has(:checked) .opt__tick svg{opacity:1}
+
+.opt__badge{
+  position:absolute; z-index:2; top:calc(var(--s-2) + 10px); left:calc(var(--s-2) + 10px);
+  padding:3px 9px; border-radius:var(--r-pill); background:var(--ground);
+  font-size:var(--fs-label); font-weight:var(--fw-bold); color:var(--ink-mid);
+  letter-spacing:var(--ls-label); text-transform:uppercase;
+}
+
+/* ─ the words ─ */
+.opt__head,.opt__cost{
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  padding-inline:var(--s-2);
+}
+.opt__head{padding-top:var(--s-4)}
+.opt__h{
+  font-size:clamp(1rem,3.8vw,1.25rem); font-weight:var(--fw-black);
+  letter-spacing:-.025em; line-height:1.2;
+}
+.opt__sub{margin-top:3px; font-size:var(--fs-xs); color:var(--ink-mid); line-height:1.35}
+
+.opt__cost{padding-top:var(--s-3)}
+.opt__price{
+  font-size:var(--fs-body); font-weight:var(--fw-bold); letter-spacing:-.015em;
+  font-variant-numeric:tabular-nums;
+}
+.opt__per{font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.3}
+
+.opt__specs{
+  display:flex; flex-direction:column; gap:var(--s-3);
+  margin:var(--s-4) var(--s-2) 0; padding:var(--s-4) 0 var(--s-3);
+  border-top:1px solid var(--line);
+}
+.spec{
+  display:flex; flex-direction:column; align-items:center; gap:5px; text-align:center;
+  font-size:var(--fs-xs); color:var(--ink-mid); line-height:1.3;
+}
+.spec svg{width:22px; height:22px; color:var(--ink); transition:color var(--dur) var(--ease)}
+.opt:has(:checked) .spec svg{color:var(--brand-violet)}
+
+/* Claimed — dimmed but still legible, and the reason sits right under the
+   tiles, because explaining itself is the entire job of this state. */
+.opt[data-off]{cursor:not-allowed; background:var(--ground-soft); box-shadow:0 0 0 1px var(--line)}
+.opt[data-off]:hover{box-shadow:0 0 0 1px var(--line)}
+.opt[data-off]:active{transform:none}
+.opt[data-off] .art__card{filter:grayscale(1); opacity:.45}
+.opt[data-off] .opt__tick{display:none}
+.opt[data-off] .opt__h,
+.opt[data-off] .opt__price,
+.opt[data-off] .spec svg{color:var(--ink-soft)}
+
+.opt__why{
+  display:flex; align-items:flex-start; gap:var(--s-2);
+  font-size:var(--fs-xs); font-weight:var(--fw-semibold); color:var(--ink-mid);
+  padding:var(--s-3) var(--s-4); border-radius:var(--r-md); background:var(--ground-sunk);
+  line-height:1.45;
+}
+.opt__why svg{width:16px; height:16px; margin-top:1px; flex-shrink:0; color:var(--ink-soft)}
+
+/* Under 400px the pair turns into a swipe row: each tile gets bigger, the
+   second one peeks in by half so it is obviously there, and a scrollbar
+   underneath says how far along you are. Tapping a tile still picks it.
+   The bar is drawn, not native — iOS hides its own the moment you let go. */
+.opts__bar{display:none}
+@media (max-width:399.98px){
+  .opts{
+    grid-template-columns:none; grid-auto-flow:column;
+    grid-auto-columns:calc((100vw - var(--gutter) - var(--s-3)) / 1.5);
+    overflow-x:auto; overscroll-behavior-x:contain;
+    scroll-snap-type:x mandatory; scroll-padding-inline:var(--gutter);
+    margin-inline:calc(var(--gutter) * -1);
+    padding:var(--s-2) var(--gutter) var(--s-5);
+    scrollbar-width:none;
+  }
+  .opts::-webkit-scrollbar{display:none}
+  .opts[data-drag]{scroll-snap-type:none}
+  .opt{scroll-snap-align:start}
+
+  /* 24px of hit area around a 4px track, so a thumb can actually grab it. */
+  .opts__bar{
+    display:block; position:relative; margin-top:calc(var(--s-6) * -1);
+    padding-block:10px; cursor:pointer; touch-action:none;
+  }
+}
+.opts__track{
+  position:relative; display:block; height:4px; border-radius:var(--r-pill);
+  background:rgba(16,18,21,.08);
+}
+.opts__thumb{
+  position:absolute; top:0; bottom:0; left:0; width:50%;
+  border-radius:var(--r-pill); background:var(--ink);
+  transition:height var(--dur-fast) var(--ease), top var(--dur-fast) var(--ease), bottom var(--dur-fast) var(--ease);
+}
+.opts__bar:active .opts__thumb,
+.opts[data-drag] + .opts__bar .opts__thumb{top:-1px; bottom:-1px}
+
+.opts__note{text-align:center; font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.45; text-wrap:balance}
+
+/* ── 5. SIZE STAGE + SIZES ─────────────────────────────────────────────── */
+/* No list of places to stick it — where it goes is the buyer's business.
+   The only question this screen answers is "how big is that, really", and a
+   picture answers it faster than a sentence. Every size has a `photo` slot in
+   pack.js; until one is set, the stage draws the sticker to scale next to a
+   ₹10 coin (27 mm), which everyone has held. */
+.stage{
+  position:relative; overflow:hidden; aspect-ratio:5/4;
+  border-radius:26px;
+  background:
+    radial-gradient(120% 70% at 50% 0%,rgba(255,255,255,.9) 0%,rgba(255,255,255,0) 65%),
+    linear-gradient(170deg,#F5F0FD 0%,#E3D8F7 100%);
+  box-shadow:0 0 0 1px var(--line);
+}
+@media (min-width:600px){ .stage{aspect-ratio:16/10} }
+
+.stage__label{
+  position:absolute; z-index:2; top:var(--s-5); left:var(--s-5); right:var(--s-5);
+  display:flex; flex-direction:column; gap:2px;
+}
+.stage__name{
+  font-size:clamp(1.25rem,5vw,1.625rem); font-weight:var(--fw-black);
+  letter-spacing:-.03em; line-height:1.1;
+}
+.stage__dim{font-size:var(--fs-sm); color:var(--ink-mid); font-variant-numeric:tabular-nums}
+
+/* Everything stands on one baseline, so the coin reads as a scale and not
+   as decoration. --stk and --coin are set from JS in real millimetres. */
+.stage__floor{
+  position:absolute; left:var(--s-5); right:var(--s-5); bottom:19%; height:54%;
+  display:flex; align-items:flex-end; justify-content:center; gap:var(--s-5);
+}
+.stage__floor::after{
+  content:""; position:absolute; left:10%; right:10%; bottom:-14px; height:24px;
+  border-radius:50%;
+  background:radial-gradient(closest-side,rgba(70,30,140,.16),rgba(70,30,140,0));
+}
+.stage__stk{
+  position:relative; z-index:1; flex-shrink:0;
+  width:var(--stk,120px); height:var(--stk,120px);
+  filter:drop-shadow(0 10px 18px rgba(40,20,90,.18)) drop-shadow(0 2px 3px rgba(40,20,90,.12));
+  transition:width 560ms cubic-bezier(.34,1.32,.5,1), height 560ms cubic-bezier(.34,1.32,.5,1);
+}
+.stage__coin{
+  position:relative; z-index:1; flex-shrink:0;
+  width:var(--coin,28px); height:var(--coin,28px); border-radius:50%;
+  display:grid; place-items:center;
+  background:
+    radial-gradient(circle,#E4E5EA 0 57%,#B9BBC3 58% 61%,#D6B46A 62% 88%,#B8913F 90% 100%);
+  box-shadow:0 4px 8px rgba(40,20,90,.18), inset 0 1px 1px rgba(255,255,255,.7);
+  transition:width 560ms cubic-bezier(.34,1.32,.5,1), height 560ms cubic-bezier(.34,1.32,.5,1);
+}
+.stage__coin span{
+  font-size:calc(var(--coin,28px) * .3); font-weight:var(--fw-black);
+  color:rgba(16,18,21,.38); letter-spacing:-.04em; line-height:1;
+}
+.stage__cap{
+  position:absolute; left:0; right:0; bottom:var(--s-4); text-align:center;
+  font-size:var(--fs-xs); color:var(--ink-mid);
+}
+
+/* The first measured paint snaps into place; only later picks animate. */
+.stage:not([data-ready]) .stage__stk,
+.stage:not([data-ready]) .stage__coin{transition:none}
+
+/* A real photo covers the whole stage and retires the drawing and caption. */
+.stage__photo{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+.stage[data-photo] .stage__floor,
+.stage[data-photo] .stage__cap{display:none}
+
+/* Five chips in one row at every width — a size chart reads left to right.
+   Each chip is a checkbox: tap adds that size to the order (green, with its
+   count on a badge), tap again takes it out. Green, not purple — it says
+   "in your order", the same green the free price uses. */
+.sizes{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:var(--s-2)}
+@media (min-width:600px){ .sizes{gap:var(--s-3)} }
+.size{
+  position:relative; cursor:pointer; min-width:0;
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  padding:var(--s-3) 2px;
+  border-radius:var(--r-lg); background:var(--ground);
+  box-shadow:0 0 0 1px var(--line);
+  transition:box-shadow var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
+  -webkit-tap-highlight-color:transparent;
+}
+.size:hover{box-shadow:var(--shadow-sm), 0 0 0 1px var(--line-strong)}
+.size:has(:checked){background:rgba(23,145,79,.07); box-shadow:var(--shadow-sm), 0 0 0 2px var(--ok)}
+.size:active{transform:scale(.96)}
+.size:has(:focus-visible){box-shadow:var(--focus-ring)}
+
+.size__k{font-size:var(--fs-body); font-weight:var(--fw-black); letter-spacing:-.02em; line-height:1.25}
+.size__d{font-size:var(--fs-xs); color:var(--ink-mid); font-variant-numeric:tabular-nums; line-height:1.3}
+.size__p{
+  margin-top:var(--s-1); font-size:var(--fs-xs); font-weight:var(--fw-bold);
+  font-variant-numeric:tabular-nums; transition:color var(--dur) var(--ease);
+}
+.size:has(:checked) .size__p{color:var(--ok)}
+
+.size__n{
+  position:absolute; top:-8px; right:-6px; z-index:1;
+  min-width:22px; height:22px; padding:0 6px; border-radius:var(--r-pill);
+  display:grid; place-items:center;
+  background:var(--ok); color:#fff; font-size:.6875rem; font-weight:var(--fw-black);
+  font-variant-numeric:tabular-nums; box-shadow:0 0 0 2px var(--ground-soft);
+  transform:scale(0); transition:transform 280ms cubic-bezier(.34,1.5,.5,1);
+}
+.size:has(:checked) .size__n{transform:scale(1)}
+
+/* the order is at 50 — a size not already in it cannot be added */
+.size[data-full]:not(:has(:checked)){opacity:.45; cursor:not-allowed}
+.size[data-full]:not(:has(:checked)):active{transform:none}
+
+.sizes__note{text-align:center; font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.45; text-wrap:balance}
+.sizes__note a{color:var(--ink); font-weight:var(--fw-bold); text-decoration:underline; text-underline-offset:2px}
+
+/* ── 6. THE ORDER LINES ────────────────────────────────────────────────
+   One row per size in the summary: the size, what that line costs, a
+   stepper and a remove. Rows are kept and updated in place rather than
+   redrawn, so a stepper press keeps its focus and only a new row animates. */
+.cart{display:flex; flex-direction:column; gap:var(--s-2)}
+.cart__row{
+  display:grid; grid-template-columns:40px minmax(0,1fr) auto;
+  grid-template-areas:"k name amt" "k step del";
+  column-gap:var(--s-3); row-gap:var(--s-2); align-items:center;
+  padding:var(--s-3); border-radius:var(--r-md); background:var(--ground-soft);
+}
+.cart__row.is-new{animation:cartIn 320ms var(--ease)}
+@keyframes cartIn{from{opacity:0; transform:translateY(-6px)} to{opacity:1; transform:none}}
+.cart__k{
+  grid-area:k; align-self:start; width:40px; height:40px; border-radius:var(--r-sm);
+  display:grid; place-items:center; background:var(--ground); box-shadow:inset 0 0 0 1px var(--line);
+  font-size:var(--fs-xs); font-weight:var(--fw-black); letter-spacing:-.01em;
+}
+.cart__name{grid-area:name; min-width:0; display:flex; flex-direction:column}
+.cart__name b{font-size:var(--fs-sm); font-weight:var(--fw-bold); line-height:1.25;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.cart__name small{font-size:var(--fs-xs); color:var(--ink-soft); font-variant-numeric:tabular-nums}
+.cart__amt{grid-area:amt; justify-self:end; font-size:var(--fs-sm); font-weight:var(--fw-black); font-variant-numeric:tabular-nums}
+
+.qty{
+  grid-area:step; justify-self:start;
+  display:flex; align-items:center; gap:2px;
+  padding:3px; border-radius:var(--r-pill);
+  background:var(--ground); box-shadow:inset 0 0 0 1px var(--line);
+}
+.qty__btn{
+  width:30px; height:30px; padding:0; border:0; border-radius:50%; cursor:pointer;
+  display:grid; place-items:center; background:var(--ground-soft); color:var(--ink);
+  transition:background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.qty__btn:hover:not(:disabled){background:var(--ground-sunk)}
+.qty__btn:active:not(:disabled){transform:scale(.9)}
+.qty__btn:disabled{background:transparent; color:var(--ink-faint); cursor:not-allowed}
+.qty__btn svg{width:13px; height:13px}
+.qty__in{
+  width:34px; height:30px; padding:0; text-align:center; border:0; background:transparent;
+  font-size:var(--fs-sm); font-weight:var(--fw-black); font-variant-numeric:tabular-nums;
+}
+.qty__in::-webkit-outer-spin-button,
+.qty__in::-webkit-inner-spin-button{-webkit-appearance:none; margin:0}
+.qty__in{-moz-appearance:textfield; appearance:textfield}
+
+.cart__del{
+  grid-area:del; justify-self:end; width:34px; height:34px; padding:0; border:0; border-radius:50%;
+  display:grid; place-items:center; background:none; color:var(--ink-soft); cursor:pointer;
+  transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.cart__del:hover{background:var(--ground-sunk); color:var(--ink)}
+.cart__del svg{width:17px; height:17px}
+
+.cart__empty{
+  padding:var(--s-4); border-radius:var(--r-md); border:1.5px dashed var(--line-strong);
+  text-align:center; font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.45;
+}
+
+/* the total nudges when it changes, so the eye catches that it moved */
+.bump{animation:bump 360ms var(--ease)}
+@keyframes bump{40%{transform:scale(1.08)}}
+.sum__total dd{transform-origin:right center}
+
+/* ── 7. SUMMARY RAIL ───────────────────────────────────────────────────── */
+.sp__aside{min-width:0; order:2}
+@media (min-width:960px){
+  .sp__aside{position:sticky; top:calc(var(--bar-h) + var(--s-8)); align-self:start}
+}
+.sum{
+  background:var(--ground); border-radius:var(--r-lg); padding:var(--s-5);
+  box-shadow:var(--shadow-sm), inset 0 0 0 1px var(--line);
+  display:flex; flex-direction:column; gap:var(--s-4);
+}
+.sum__t h2{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.sum__t p{margin-top:2px; font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.4}
+.sum__lines{display:flex; flex-direction:column; gap:var(--s-3)}
+.sum__row{display:flex; align-items:baseline; justify-content:space-between; gap:var(--s-4);
+  font-size:var(--fs-sm)}
+.sum__row dt{color:var(--ink-mid)}
+.sum__row dd{font-weight:var(--fw-bold); font-variant-numeric:tabular-nums}
+.sum__row--free dd{color:var(--ok)}
+.sum__row--soft dd{font-weight:var(--fw-medium); color:var(--ink-soft)}
+.sum__rule{height:1px; background:var(--line)}
+.sum__total{display:flex; align-items:baseline; justify-content:space-between; gap:var(--s-4)}
+.sum__total dt{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.sum__total dd{font-size:1.375rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display);
+  font-variant-numeric:tabular-nums}
+.sum__note{font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.45}
+.sum__note b{color:var(--ink-mid); font-weight:var(--fw-bold)}
+
+/* ── 8. FOOTER ACTIONS ─────────────────────────────────────────────────── */
+/* The bar sits after the summary (so on a phone the summary is never below
+   it) but lays out on the SAME grid as the page — one column on a phone,
+   column + rail on a desktop — and the buttons fill the first column. That
+   is what lines the CTA up with the tiles edge for edge, as on checkout.
+   It follows the content rather than the bottom of the window, and stays
+   sticky so it is in reach while a phone scrolls. */
+.sp__foot{
+  position:sticky; bottom:0; z-index:30;
+  display:grid; grid-template-columns:minmax(0,var(--col)); justify-content:center;
+  padding:var(--s-3) var(--gutter) var(--s-4);
+  background:linear-gradient(to top,var(--ground-soft) 68%,rgba(244,243,247,0));
+}
+@media (min-width:960px){
+  .sp__foot{grid-template-columns:minmax(0,var(--col)) var(--rail); column-gap:var(--s-8)}
+}
+.sp__foot-in{display:flex; flex-wrap:wrap; align-items:center; gap:var(--s-3); min-width:0}
+/* On a phone the summary is below the chips and out of sight, so the order
+   so far rides above the buttons — tap it to go and see the lines. */
+.sp__tally{display:none}
+@media (max-width:959.98px){
+  .sp[data-step="2"][data-kind="custom"] .sp__tally{display:flex}
+}
+.sp__tally{
+  flex-basis:100%; align-items:center; gap:var(--s-2);
+  padding:var(--s-2) var(--s-3) var(--s-2) var(--s-4); border:0; border-radius:var(--r-pill);
+  background:var(--ground); box-shadow:inset 0 0 0 1px var(--line); cursor:pointer;
+  font-size:var(--fs-xs); font-weight:var(--fw-semibold); color:var(--ink-mid); text-align:left;
+}
+.sp__tally b{color:var(--ink); font-weight:var(--fw-black); font-variant-numeric:tabular-nums}
+.sp__tally span{flex:1; min-width:0}
+.sp__tally svg{width:16px; height:16px; flex-shrink:0; color:var(--ink-soft)}
+
+.btn{
+  display:flex; align-items:center; justify-content:center; gap:var(--s-2);
+  height:var(--btn-h); padding-inline:var(--s-6); border:0; border-radius:var(--r-pill);
+  cursor:pointer; font-weight:var(--fw-bold); letter-spacing:-.01em;
+  transition:transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.btn:active{transform:scale(.985)}
+.btn--go{flex:1; background:var(--ink); color:var(--ink-invert)}
+.btn--go:hover{background:var(--ink-strong, #33353D)}
+.btn--go:disabled{background:var(--ground-sunk); color:var(--ink-faint); cursor:not-allowed; transform:none}
+.btn--ghost{background:var(--ground); color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+.btn--ghost:hover{color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--ink)}
+.btn--icon{padding-inline:0; width:var(--btn-h); flex-shrink:0}
+.btn svg{width:19px; height:19px}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important; transition-duration:.01ms !important}
+}
+
+/* ── SUPPORTING TEXT ───────────────────────────────────────────────────
+   Headings and body copy run on negative tracking. The small grey lines
+   under them — subtitles, help, notes, values — do not: at 13–14px the
+   letters need the air back instead. Any new small line on this page
+   belongs in this list. */
+.head p,
+.card__note,
+.opt__sub,
+.opt__per,
+.spec,
+.opt__why,
+.opts__note,
+.size__d,
+.size__p,
+.stage__dim,
+.stage__cap,
+.sizes__note,
+.cart__name small,
+.cart__empty,
+.sp__tally,
+.sum__t p,
+.sum__note{ letter-spacing:var(--ls-soft) }
+
+/* Chrome paints its own pale-blue block behind anything it autofills, which
+   overrides the field's own ground. Parking the transition indefinitely keeps
+   our background and ink; it is the one fix that does not need to know the
+   field's colour. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+  -webkit-text-fill-color:var(--ink);
+  caret-color:var(--ink);
+  transition:background-color 600000s 0s, color 600000s 0s;
+}
+</style>
+
+<div class="sp" data-step="1" data-kind="free">
+
+  <!-- ══ BAR ═══════════════════════════════════════════════════════════ -->
+  <header class="sp__bar">
+    <a class="sp__logo" href="homepage.html" aria-label="Codemarca home" id="logoLink">
+      <svg class="wm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 257 40" fill="none" role="img" aria-label="Codemarca"><g fill="#6E27E6"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></g><g fill="#101215"><path d="M245.956 14.0999H252.172V34.82H245.956V32.8723C244.589 34.447 242.558 35.4002 239.782 35.4002C234.353 35.4002 229.877 30.6345 229.877 24.46C229.877 18.2854 234.353 13.5198 239.782 13.5198C242.558 13.5198 244.589 14.4729 245.956 16.0476V14.0999ZM241.025 29.5157C243.884 29.5157 245.956 27.568 245.956 24.46C245.956 21.352 243.884 19.4043 241.025 19.4043C238.165 19.4043 236.093 21.352 236.093 24.46C236.093 27.568 238.165 29.5157 241.025 29.5157Z"/><path d="M220.695 35.4002C214.396 35.4002 209.713 30.6345 209.713 24.46C209.713 18.2854 214.396 13.5198 220.695 13.5198C224.714 13.5198 228.278 15.6332 230.06 18.8241L224.631 21.9736C223.927 20.5232 222.435 19.6529 220.612 19.6529C217.918 19.6529 215.929 21.6006 215.929 24.46C215.929 27.3193 217.918 29.267 220.612 29.267C222.435 29.267 223.968 28.3968 224.631 26.9464L230.06 30.0544C228.278 33.2867 224.756 35.4002 220.695 35.4002Z"/><path d="M203.477 17.7881C204.306 15.0116 207.083 13.6855 209.693 13.6855V20.7304C207.124 20.316 203.477 21.352 203.477 25.4545V34.82H197.261V14.1H203.477V17.7881Z"/><path d="M187.728 14.0999H193.944V34.82H187.728V32.8723C186.361 34.447 184.33 35.4002 181.554 35.4002C176.125 35.4002 171.649 30.6345 171.649 24.46C171.649 18.2854 176.125 13.5198 181.554 13.5198C184.33 13.5198 186.361 14.4729 187.728 16.0476V14.0999ZM182.797 29.5157C185.656 29.5157 187.728 27.568 187.728 24.46C187.728 21.352 185.656 19.4043 182.797 19.4043C179.937 19.4043 177.865 21.352 177.865 24.46C177.865 27.568 179.937 29.5157 182.797 29.5157Z"/><path d="M161.806 13.5198C166.571 13.5198 169.679 16.9179 169.679 22.0979V34.82H163.463V22.6366C163.463 20.5646 162.469 19.2385 160.479 19.2385C158.407 19.2385 157.247 20.6889 157.247 23.1339V34.82H151.031V22.6366C151.031 20.5646 150.037 19.2385 148.047 19.2385C145.975 19.2385 144.815 20.6889 144.815 23.1339V34.82H138.599V14.0999H144.815V16.0062C145.768 14.5972 147.592 13.5198 150.368 13.5198C152.813 13.5198 154.636 14.5143 155.797 16.2548C156.957 14.5972 158.863 13.5198 161.806 13.5198Z"/><path d="M121.357 26.9464C122.144 29.1013 124.051 29.8472 126.33 29.8472C128.029 29.8472 129.479 29.1841 130.308 28.2725L135.281 31.1318C133.25 33.9497 130.184 35.4002 126.247 35.4002C119.161 35.4002 114.768 30.6345 114.768 24.46C114.768 18.2854 119.244 13.5198 125.791 13.5198C131.841 13.5198 136.317 18.2025 136.317 24.46C136.317 25.3302 136.234 26.159 136.068 26.9464H121.357ZM121.233 22.3051H130.142C129.479 19.9016 127.614 19.0313 125.75 19.0313C123.388 19.0313 121.813 20.1916 121.233 22.3051Z"/><path d="M106.271 5.81201H112.487V34.8201H106.271V32.8724C104.903 34.4471 102.873 35.4002 100.096 35.4002C94.6674 35.4002 90.1919 30.6346 90.1919 24.4601C90.1919 18.2855 94.6674 13.5199 100.096 13.5199C102.873 13.5199 104.903 14.473 106.271 16.0477V5.81201ZM101.339 29.5158C104.199 29.5158 106.271 27.5681 106.271 24.4601C106.271 21.3521 104.199 19.4044 101.339 19.4044C98.4799 19.4044 96.4079 21.3521 96.4079 24.4601C96.4079 27.5681 98.4799 29.5158 101.339 29.5158Z"/><path d="M77.9738 35.4002C71.8821 35.4002 66.9922 30.6345 66.9922 24.46C66.9922 18.2854 71.8821 13.5198 77.9738 13.5198C84.0655 13.5198 88.9554 18.2854 88.9554 24.46C88.9554 30.6345 84.0655 35.4002 77.9738 35.4002ZM77.9738 29.3499C80.6674 29.3499 82.7394 27.4022 82.7394 24.46C82.7394 21.5177 80.6674 19.57 77.9738 19.57C75.2802 19.57 73.2082 21.5177 73.2082 24.46C73.2082 27.4022 75.2802 29.3499 77.9738 29.3499Z"/><path d="M57.8088 35.4002C51.5099 35.4002 46.8271 30.6345 46.8271 24.46C46.8271 18.2854 51.5099 13.5198 57.8088 13.5198C61.8285 13.5198 65.3923 15.6332 67.1742 18.8241L61.7456 21.9736C61.0411 20.5232 59.5493 19.6529 57.7259 19.6529C55.0323 19.6529 53.0432 21.6006 53.0432 24.46C53.0432 27.3193 55.0323 29.267 57.7259 29.267C59.5493 29.267 61.0825 28.3968 61.7456 26.9464L67.1742 30.0544C65.3923 33.2867 61.8699 35.4002 57.8088 35.4002Z"/></g></svg>
+      <svg class="mk" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="#6E27E6" role="img" aria-label="Codemarca"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></svg>
+    </a>
+    <a class="sp__exit" href="homepage.html" id="exit">Save &amp; exit</a>
+  </header>
+
+  <main class="sp__wrap">
+
+    <!-- ══ HEADLINE — full width above both columns, one per step ═════ -->
+    <div class="sp__head">
+      <div class="who" role="tablist" aria-label="Who is this for" id="who">
+        <button class="who__b" type="button" role="tab" data-who="me" aria-selected="true">For me</button>
+        <button class="who__b" type="button" role="tab" data-who="gift" aria-selected="false">For someone else</button>
+      </div>
+      <div class="head head--xl" data-head="1">
+        <h1 id="h1a">Choose your pack. <span>Same code, same page.</span></h1>
+      </div>
+      <div class="head head--xl" data-head="2">
+        <h1 id="h1b">Pick your sizes. <span>Tap to add, tap again to remove.</span></h1>
+        <h1 id="h1g" hidden>Pick their stickers. <span>One code on every one — it becomes theirs.</span></h1>
+      </div>
+    </div>
+
+    <div class="sp__col">
+
+      <!-- ══ 1 — WHICH PACK ════════════════════════════════════════════ -->
+      <section class="pane" data-pane="1" aria-labelledby="h1a">
+        <!-- One drawn sticker, reused at every size in both pictures. A stand-in
+             QR — three finders, a few modules, the mark in the fourth corner. -->
+        <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+          <symbol id="stk" viewBox="0 0 40 40">
+            <rect width="40" height="40" rx="7" fill="#fff"/>
+            <g fill="#101215">
+              <path fill-rule="evenodd" d="M6 6h9v9H6zM7.8 7.8v5.4h5.4V7.8z"/><rect x="9" y="9" width="3" height="3"/>
+              <path fill-rule="evenodd" d="M25 6h9v9h-9zM26.8 7.8v5.4h5.4V7.8z"/><rect x="28" y="9" width="3" height="3"/>
+              <path fill-rule="evenodd" d="M6 25h9v9H6zM7.8 26.8v5.4h5.4v-5.4z"/><rect x="9" y="28" width="3" height="3"/>
+              <rect x="18" y="6" width="2.6" height="2.6"/><rect x="21" y="9.2" width="2.6" height="2.6"/>
+              <rect x="18" y="12.4" width="2.6" height="2.6"/><rect x="6" y="18.4" width="2.6" height="2.6"/>
+              <rect x="12.2" y="18.4" width="2.6" height="2.6"/><rect x="15.2" y="21.4" width="2.6" height="2.6"/>
+              <rect x="18.4" y="18.4" width="2.6" height="2.6"/><rect x="21.6" y="21.4" width="2.6" height="2.6"/>
+              <rect x="25" y="18.4" width="2.6" height="2.6"/><rect x="31.4" y="18.4" width="2.6" height="2.6"/>
+              <rect x="18.4" y="25" width="2.6" height="2.6"/><rect x="18.4" y="31.4" width="2.6" height="2.6"/>
+            </g>
+            <g fill="#6E27E6" transform="translate(24.4 24.4) scale(.25)"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></g>
+          </symbol>
+        </svg>
+
+        <div class="opts" role="radiogroup" aria-labelledby="h1a">
+
+          <label class="opt" data-kind="free" id="optFree">
+            <input class="sr" type="radio" name="pack" value="free" id="radFree" checked>
+            <span class="opt__tick" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.5 12 13 4.6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="opt__badge" id="freeTag" hidden>Claimed</span>
+
+            <span class="art" aria-hidden="true">
+              <span class="art__card">
+                <svg class="stk" viewBox="0 0 40 40"><use href="#stk"/></svg>
+                <svg class="stk" viewBox="0 0 40 40"><use href="#stk"/></svg>
+              </span>
+            </span>
+
+            <span class="opt__head">
+              <span class="opt__h">Free pack</span>
+              <span class="opt__sub">4&Prime; + 1.5&Prime; stickers</span>
+            </span>
+
+            <span class="opt__cost">
+              <span class="opt__price" id="freePrice">Free</span>
+              <span class="opt__per" id="freePer">you pay delivery</span>
+            </span>
+
+            <span class="opt__specs">
+              <span class="spec">
+                <svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="2.5" y="5" width="10" height="10" rx="2.2"/><rect x="14.5" y="10" width="5" height="5" rx="1.4"/></svg>
+                2 stickers
+              </span>
+              <span class="spec">
+                <svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="7.5" r="3.3"/><path d="M4.5 18.5c.9-3.3 3.5-5 6.5-5s5.6 1.7 6.5 5"/></svg>
+                One per account, for you
+              </span>
+            </span>
+          </label>
+
+          <label class="opt" data-kind="custom" id="optCustom">
+            <input class="sr" type="radio" name="pack" value="custom" id="radCustom">
+            <span class="opt__tick" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.5 12 13 4.6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+
+            <span class="art" aria-hidden="true">
+              <span class="art__row">
+                <svg class="stk" viewBox="0 0 40 40"><use href="#stk"/></svg>
+                <svg class="stk" viewBox="0 0 40 40"><use href="#stk"/></svg>
+                <svg class="stk" viewBox="0 0 40 40"><use href="#stk"/></svg>
+              </span>
+            </span>
+
+            <span class="opt__head">
+              <span class="opt__h">Custom size</span>
+              <span class="opt__sub">Five sizes, 1.5&Prime; to 6&Prime;</span>
+            </span>
+
+            <span class="opt__cost">
+              <span class="opt__price" id="customPrice">From &#8377;79</span>
+              <span class="opt__per">per sticker</span>
+            </span>
+
+            <span class="opt__specs">
+              <span class="spec">
+                <svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M11 3.5 18.5 7.3 11 11.1 3.5 7.3z"/><path d="m3.5 11 7.5 3.8 7.5-3.8M3.5 14.7l7.5 3.8 7.5-3.8"/></svg>
+                Up to 50 an order
+              </span>
+              <span class="spec">
+                <svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M7.2 8C5.4 8 4 9.3 4 11s1.4 3 3.2 3c3 0 4.6-6 7.6-6 1.8 0 3.2 1.3 3.2 3s-1.4 3-3.2 3c-3 0-4.6-6-7.6-6Z"/></svg>
+                Order again anytime
+              </span>
+            </span>
+          </label>
+
+        </div>
+
+        <div class="opts__bar" id="optBar" aria-hidden="true">
+          <span class="opts__track"><span class="opts__thumb" id="optThumb"></span></span>
+        </div>
+
+        <p class="opt__why" id="freeWhy" hidden>
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.2v3.6M8 5.1v.1" stroke-linecap="round"/></svg>
+          <span id="freeWhyText"></span>
+        </p>
+
+        <p class="opts__note">Same weatherproof print on both. Delivery is worked out from your pincode next.</p>
+      </section>
+
+      <!-- ══ 2 — SIZE &amp; HOW MANY ══════════════════════════════════════ -->
+      <section class="pane" data-pane="2" aria-labelledby="h1b">
+        <div class="stage" id="stage" aria-hidden="true">
+          <span class="stage__label">
+            <span class="stage__name" id="stageName">Large</span>
+            <span class="stage__dim" id="stageDim"></span>
+          </span>
+          <span class="stage__floor" id="stageFloor">
+            <svg class="stage__stk" viewBox="0 0 40 40"><use href="#stk"/></svg>
+            <span class="stage__coin"><span>10</span></span>
+          </span>
+          <span class="stage__cap">Shown next to a &#8377;10 coin</span>
+          <img class="stage__photo" id="stagePhoto" alt="" hidden>
+        </div>
+
+        <div class="sizes" id="sizes" role="group" aria-label="Sizes in your order"></div>
+
+        <p class="sizes__note">Mix any sizes, up to 50 stickers an order. Need more? <a href="contact.html">Talk to us about bulk</a>.</p>
+      </section>
+
+    </div>
+
+    <!-- ══ SUMMARY — under the tiles on a phone, a rail on a desktop ════ -->
+    <aside class="sp__aside" aria-label="What you are ordering">
+      <div class="sum">
+        <div class="sum__t">
+          <h2 id="sumTitle">Codemarca pack</h2>
+          <p id="sumBlurb">Two stickers — 4&Prime; and 1.5&Prime; &middot; one code &middot; one page</p>
+        </div>
+
+        <ul class="cart" id="cart" aria-label="Sizes in your order" hidden></ul>
+        <p class="cart__empty" id="cartEmpty" hidden>No sizes yet. Tap a size to add it.</p>
+
+        <dl class="sum__lines">
+          <div class="sum__row" id="rowPack"><dt id="packDt">Pack</dt><dd id="packDd">Free</dd></div>
+          <div class="sum__row sum__row--soft"><dt>Delivery</dt><dd>Worked out next</dd></div>
+        </dl>
+
+        <div class="sum__rule"></div>
+
+        <dl class="sum__total"><dt id="totalDt">Today</dt><dd id="totalDd">&#8377;0</dd></dl>
+
+        <p class="sum__note" id="sumNote"><b>Plus delivery.</b> The charge depends on your pincode, so it lands on the next screen.</p>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ══ FOOTER ACTIONS — after the summary, lined up with the tiles ══ -->
+  <footer class="sp__foot">
+    <div class="sp__foot-in">
+      <button class="sp__tally" type="button" id="tally" aria-label="See your order">
+        <span id="tallyTxt">No sizes picked yet</span>
+        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 12.5 5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="btn btn--ghost btn--icon" type="button" id="back" aria-label="Back" hidden>
+        <svg viewBox="0 0 20 20" fill="none"><path d="M12 4 6 10l6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="btn btn--go" type="button" id="next">Continue</button>
+    </div>
+  </footer>
+
+</div>
+
+<!-- lightbox.js before pack.js: PACK.mountShots() binds the product
+     photos to it as it mounts them, and checkout.html already loads it —
+     without this the same photos opened on checkout and did nothing
+     here (audit, 2026-09-29). -->
+<script src="lightbox.js"></script>
+<script src="pack.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var P = window.PACK;
+  var sp = document.querySelector(".sp");
+
+  /* ══ 1. WHERE DID WE COME FROM ════════════════════════════════════════
+     `built` says this account already has a live page, which changes only
+     one thing here: where "Save & exit" goes. (Checkout asks who the pack
+     is for of everyone since 2026-09-17.) `free=used` is the demo switch for an
+     account that has already spent its one free pack. */
+  var ctx = P.readOrder();
+  /* Read the whole order back, not just the flags — readOrder and orderQuery
+     are a round trip, so a link into this screen (or a Back from checkout)
+     lands on the choice it names rather than resetting to the free pack. */
+  var O = {
+    kind:  ctx.kind, items: ctx.items,
+    built: ctx.built, freeUsed: ctx.freeUsed,
+    gift:  ctx.gift, from: ctx.from
+  };
+  /* The size on the stage. Something is always shown, even before a size is
+     picked; a tap moves it to the size that was tapped. */
+  var view = O.items.length ? O.items[0].size : "L";
+
+  /* WHERE "BACK" GOES — added 2026-09-16 with the flow folders.
+     `built` means there is a page to go back to; `freeUsed` means the free
+     pack is already spent, which only happens once a pack has been
+     delivered — so that is the active account. */
+  if (O.gift) {
+    /* a gift was started on the Gift & Refer tab, so that is where it goes back to */
+    var giftBack = "dashboard/" + P.flowOr(O.from) + "/gift.html";
+    sp.dataset.gift = "1";
+    document.title = "Codemarca — Send a gift";
+    $("h1b").hidden = true;
+    $("h1g").hidden = false;
+    $("exit").textContent = "Back to dashboard";
+    $("exit").href = giftBack;
+    $("logoLink").href = giftBack;
+  } else if (O.built) {
+    var back = "dashboard/" + (O.freeUsed ? "4-active" : "2-page-live") + "/home.html";
+    $("exit").textContent = "Back to dashboard";
+    $("exit").href = back;
+    $("logoLink").href = back;
+  }
+
+  /* ══ 2. THE FREE PACK, ONCE ═══════════════════════════════════════════
+     A spent free pack is disabled rather than hidden — someone who came
+     here for the free one needs to be told why it is gone, not left
+     wondering where it went. */
+  /* The free pack is greyed for two reasons: it is spent, or this order is
+     a gift (the free pack is only ever for the account itself). */
+  var FREE_TXT = { price: $("freePrice").textContent, per: $("freePer").textContent };
+  function paintFree() {
+    var off = O.freeUsed || O.gift;
+    if (off) O.kind = "custom";
+    if (off) $("optFree").dataset.off = "1"; else delete $("optFree").dataset.off;
+    $("radFree").disabled = !!off;
+    $("freeTag").hidden = !O.freeUsed || O.gift;
+    $("freePrice").textContent = !off ? FREE_TXT.price : O.gift ? "Not for gifts" : "Claimed";
+    $("freePer").textContent   = !off ? FREE_TXT.per   : O.gift ? "only for you" : "on this account";
+    $("freeWhy").hidden = !off;
+    $("freeWhyText").textContent = O.gift
+      ? "The free pack is only for you. For a gift, pick custom sizes — one code goes on all of them, and it becomes theirs."
+      : "Your one free pack is already used. Extra stickers are a custom order.";
+  }
+  paintFree();
+
+  /* ══ 3. PACK CHOICE ══════════════════════════════════════════════════
+     Each tile is the <label> for its radio, so a click anywhere on it checks
+     the radio natively, and arrowing between them fires change — one
+     listener covers mouse, touch and keyboard. A disabled radio ignores its
+     label, which is all the claimed state needs. */
+  var RAD = { free:$("radFree"), custom:$("radCustom") };
+
+  function pick(kind) {
+    if (O.kind === kind) return;
+    O.kind = kind;
+    paintOpts(); paintSum(); paintNext();
+  }
+  function paintOpts() {
+    RAD[O.kind].checked = true;
+    sp.dataset.kind = O.kind;
+  }
+  Object.keys(RAD).forEach(function (kind) {
+    RAD[kind].addEventListener("change", function () { pick(kind); showOpt(kind, true); });
+  });
+
+  /* The swipe row (under 400px only). Everything below is a no-op when the
+     tiles sit side by side, because there is nothing to scroll. The bar is
+     aria-hidden: the tiles are radios, reachable without it. */
+  var optsEl = document.querySelector(".opts");
+  var bar    = $("optBar");
+  var thumb  = $("optThumb");
+  var ORDER  = ["free", "custom"];
+
+  function scrollRoom() { return optsEl.scrollWidth - optsEl.clientWidth; }
+  function showOpt(kind, smooth) {
+    var room = scrollRoom();
+    if (room <= 1) return;
+    optsEl.scrollTo({ left: ORDER.indexOf(kind) * room, behavior: smooth ? "smooth" : "auto" });
+  }
+  function paintBar() {
+    var room = scrollRoom();
+    if (room <= 1) return;
+    var size = optsEl.clientWidth / optsEl.scrollWidth * 100;
+    var at   = Math.min(1, Math.max(0, optsEl.scrollLeft / room));
+    thumb.style.width = size + "%";
+    thumb.style.left  = at * (100 - size) + "%";
+  }
+  optsEl.addEventListener("scroll", paintBar, { passive:true });
+  window.addEventListener("resize", paintBar);
+
+  /* Drag the thumb, or press anywhere on the track to jump there. Snapping
+     is off while the finger is down, then snaps to a tile on release. */
+  function barTo(x) {
+    var r = bar.getBoundingClientRect();
+    var t = thumb.getBoundingClientRect().width;
+    var at = (x - r.left - t / 2) / (r.width - t);
+    optsEl.scrollLeft = Math.min(1, Math.max(0, at)) * scrollRoom();
+  }
+  bar.addEventListener("pointerdown", function (e) {
+    if (scrollRoom() <= 1) return;
+    bar.setPointerCapture(e.pointerId);
+    optsEl.dataset.drag = "1";
+    barTo(e.clientX);
+  });
+  bar.addEventListener("pointermove", function (e) {
+    if (optsEl.dataset.drag) barTo(e.clientX);
+  });
+  function barUp() {
+    if (!optsEl.dataset.drag) return;
+    delete optsEl.dataset.drag;
+    showOpt(ORDER[Math.round(optsEl.scrollLeft / scrollRoom())], true);
+  }
+  bar.addEventListener("pointerup", barUp);
+  bar.addEventListener("pointercancel", barUp);
+
+  /* ══ 4. SIZES ════════════════════════════════════════════════════════
+     Five chips, each a checkbox: on = that size is in the order. The stage
+     above shows whichever size was tapped last, to scale. */
+  var span = P.SIZES.length - 1;
+  var COIN_MM = 27;
+  var BIGGEST = parseFloat(P.SIZES[span].mm);
+  var RS = "\u20B9";
+
+  $("sizes").innerHTML = P.SIZES.map(function (s) {
+    return '<label class="size" data-size="' + s.key + '">' +
+             '<input class="sr" type="checkbox" value="' + s.key + '" aria-label="' +
+               s.name + ', ' + s.inch + ', ' + RS + P.inr(s.price) + ' each">' +
+             '<span class="size__n" aria-hidden="true"></span>' +
+             '<span class="size__k">' + s.key + '</span>' +
+             '<span class="size__d">' + s.inch.split(" ")[0] + '</span>' +
+             '<span class="size__p">' + RS + P.inr(s.price) + '</span>' +
+           '</label>';
+  }).join("");
+
+  function itemFor(key) {
+    for (var i = 0; i < O.items.length; i++) if (O.items[i].size === key) return O.items[i];
+    return null;
+  }
+  function count() { return O.items.reduce(function (a, it) { return a + it.qty; }, 0); }
+  function room()  { return P.QTY_MAX - count(); }
+
+  /* Sizes the drawing in real millimetres: the biggest sticker fills the
+     floor, and the sticker and coin share one mm-to-px ratio. Re-run on
+     resize and when step 2 opens — a hidden stage measures zero. */
+  function paintStage() {
+    var s = P.sizeFor(view) || P.SIZES[2];
+    $("stageName").textContent = s.name;
+    $("stageDim").textContent = s.inch + " \u00B7 " + s.mm;
+
+    var photo = $("stagePhoto");
+    if (s.photo) {
+      if (photo.getAttribute("src") !== s.photo) photo.src = s.photo;
+      photo.alt = s.name + " sticker, " + s.inch;
+      photo.hidden = false; $("stage").dataset.photo = "1";
+    } else {
+      photo.hidden = true; photo.removeAttribute("src");
+      delete $("stage").dataset.photo;
+    }
+
+    var floor = $("stageFloor");
+    if (!floor.clientHeight) return;
+    var fit = Math.min(floor.clientHeight * 0.9, floor.clientWidth * 0.62);
+    var k = fit / BIGGEST;
+    floor.style.setProperty("--stk",  Math.round(parseFloat(s.mm) * k) + "px");
+    floor.style.setProperty("--coin", Math.round(COIN_MM * k) + "px");
+    if (!$("stage").dataset.ready) {
+      requestAnimationFrame(function () { $("stage").dataset.ready = "1"; });
+    }
+  }
+  window.addEventListener("resize", paintStage);
+
+  var chips = $("sizes").querySelectorAll(".size");
+  function paintSizes() {
+    var full = room() <= 0;
+    Array.prototype.forEach.call(chips, function (chip) {
+      var it = itemFor(chip.dataset.size);
+      var box = chip.querySelector("input");
+      box.checked = !!it;
+      box.disabled = full && !it;
+      chip.querySelector(".size__n").textContent = it ? it.qty : "";
+      if (full) chip.dataset.full = "1"; else delete chip.dataset.full;
+    });
+  }
+
+  /* one place every change to the order goes through */
+  function changed() {
+    O.items = P.cleanItems(O.items);
+    paintSizes(); paintSum(); paintNext();
+  }
+
+  Array.prototype.forEach.call(chips, function (chip) {
+    var key = chip.dataset.size;
+    chip.querySelector("input").addEventListener("change", function (e) {
+      if (e.target.checked) {
+        if (!itemFor(key) && room() > 0) O.items.push({ size: key, qty: 1 });
+      } else {
+        O.items = O.items.filter(function (it) { return it.size !== key; });
+      }
+      view = key;
+      paintStage();
+      changed();
+    });
+  });
+
+  /* ══ 5. THE ORDER LINES ══════════════════════════════════════════════
+     A row per size in the summary. Rows are matched by size and updated in
+     place — a redraw would drop the focus from the stepper being pressed. */
+  var cart = $("cart");
+
+  function setQty(key, n) {
+    var it = itemFor(key);
+    if (!it) return;
+    n = parseInt(n, 10);
+    if (!(n >= 1)) n = 1;
+    it.qty = Math.min(n, it.qty + room());
+    changed();
+  }
+
+  function makeRow(s) {
+    var li = document.createElement("li");
+    li.className = "cart__row is-new";
+    li.dataset.size = s.key;
+    li.innerHTML =
+      '<span class="cart__k" aria-hidden="true">' + s.key + '</span>' +
+      '<span class="cart__name"><b>' + s.name + ' \u00B7 ' + s.inch.split(" ")[0] + '</b>' +
+        '<small>' + RS + P.inr(s.price) + ' each</small></span>' +
+      '<span class="cart__amt"></span>' +
+      '<span class="qty" role="group" aria-label="How many ' + s.name + '">' +
+        '<button class="qty__btn" type="button" data-act="dec" aria-label="One fewer ' + s.name + '">' +
+          '<svg viewBox="0 0 20 20" fill="none"><path d="M4.5 10h11" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>' +
+        '<input class="qty__in" type="number" inputmode="numeric" min="1" max="' + P.QTY_MAX + '" aria-label="' + s.name + ' stickers">' +
+        '<button class="qty__btn" type="button" data-act="inc" aria-label="One more ' + s.name + '">' +
+          '<svg viewBox="0 0 20 20" fill="none"><path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>' +
+      '</span>' +
+      '<button class="cart__del" type="button" data-act="del" aria-label="Remove ' + s.name + '">' +
+        '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
+          '<path d="M3.5 5.5h13M8 5.5V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1.5M5.5 5.5l.7 10.1a1.5 1.5 0 0 0 1.5 1.4h4.6a1.5 1.5 0 0 0 1.5-1.4l.7-10.1M8.5 9v4.5M11.5 9v4.5"/></svg>' +
+      '</button>';
+    li.addEventListener("animationend", function () { li.classList.remove("is-new"); });
+    return li;
+  }
+
+  function paintCart(q) {
+    var keep = {};
+    q.lines.forEach(function (l, i) {
+      var row = cart.querySelector('[data-size="' + l.size.key + '"]') || makeRow(l.size);
+      keep[l.size.key] = true;
+      if (cart.children[i] !== row) cart.insertBefore(row, cart.children[i] || null);
+      row.querySelector(".cart__amt").textContent = RS + P.inr(l.amount);
+      var inp = row.querySelector(".qty__in");
+      if (document.activeElement !== inp) inp.value = l.qty;
+      row.querySelector('[data-act="dec"]').disabled = l.qty <= 1;
+      row.querySelector('[data-act="inc"]').disabled = q.qty >= P.QTY_MAX;
+    });
+    Array.prototype.slice.call(cart.children).forEach(function (row) {
+      if (!keep[row.dataset.size]) row.remove();
+    });
+  }
+
+  cart.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-act]");
+    if (!b || b.disabled) return;
+    var key = b.closest(".cart__row").dataset.size;
+    var it = itemFor(key);
+    if (!it) return;
+    if (b.dataset.act === "inc") setQty(key, it.qty + 1);
+    if (b.dataset.act === "dec") setQty(key, it.qty - 1);
+    if (b.dataset.act === "del") {
+      O.items = O.items.filter(function (x) { return x.size !== key; });
+      changed();
+    }
+  });
+  /* typing is left alone until blur or Enter — clamping mid-keystroke turns
+     "12" into "1" before the 2 lands */
+  cart.addEventListener("input", function (e) {
+    if (!e.target.classList.contains("qty__in")) return;
+    var raw = e.target.value.replace(/\D/g, "");
+    if (raw !== e.target.value) e.target.value = raw;
+  });
+  cart.addEventListener("focusout", function (e) {
+    if (!e.target.classList.contains("qty__in")) return;
+    setQty(e.target.closest(".cart__row").dataset.size, e.target.value);
+  });
+  cart.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && e.target.classList.contains("qty__in")) e.target.blur();
+  });
+
+  $("tally").addEventListener("click", function () {
+    document.querySelector(".sp__aside").scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  /* ══ 6. THE SUMMARY ══════════════════════════════════════════════════
+     Delivery is genuinely unknown until a pincode exists, so this screen
+     says so instead of printing a number it would have to take back. */
+  var lastTotal = null;
+  function paintSum() {
+    var q = P.priceOrder({ kind:O.kind, items:O.items, gift:O.gift });
+
+    $("sumTitle").textContent = q.title;
+    $("sumBlurb").textContent = q.blurb;
+
+    var custom = q.kind === "custom";
+    cart.hidden = !custom || !q.lines.length;
+    $("cartEmpty").hidden = !custom || q.lines.length > 0;
+    $("rowPack").hidden = custom;
+
+    if (!custom) {
+      $("rowPack").classList.add("sum__row--free");
+      $("packDt").textContent = "Pack";
+      $("packDd").textContent = "Free";
+      $("totalDt").textContent = "Today";
+      $("totalDd").textContent = RS + P.inr(0);
+      $("sumNote").innerHTML =
+        "<b>Plus delivery.</b> The pack is free — the courier is the only money that moves, and that is set by your pincode.";
+    } else {
+      paintCart(q);
+      $("totalDt").textContent = q.qty ? q.qty + (q.qty === 1 ? " sticker" : " stickers") : "Stickers";
+      $("totalDd").textContent = RS + P.inr(q.goods);
+      $("sumNote").innerHTML = q.qty >= P.QTY_MAX
+        ? "<b>That is 50, the most in one order.</b> For more, talk to us about bulk."
+        : "<b>Plus delivery.</b> The courier charge depends on your pincode, so it lands on the next screen.";
+      $("tallyTxt").innerHTML = q.lines.length
+        ? q.lines.length + (q.lines.length === 1 ? " size" : " sizes") + " \u00B7 " +
+          q.qty + (q.qty === 1 ? " sticker" : " stickers") + " \u00B7 <b>" + RS + P.inr(q.goods) + "</b>"
+        : "No sizes picked yet";
+    }
+
+    var total = $("totalDd").textContent;
+    if (lastTotal !== null && total !== lastTotal) {
+      var dd = $("totalDd");
+      dd.classList.remove("bump"); void dd.offsetWidth; dd.classList.add("bump");
+    }
+    lastTotal = total;
+  }
+
+  /* ══ 7. STEPS ════════════════════════════════════════════════════════
+     The free pack has nothing to configure, so it does not get a second
+     step — it goes straight to checkout. */
+  function paintNext() {
+    var s = Number(sp.dataset.step);
+    /* a gift has no step 1 to go back to — "Back to dashboard" is the way out */
+    $("back").hidden = s === 1 || (O.gift && O.from && $("who").hidden);
+    if (s === 1) {
+      $("next").textContent = O.kind === "free" ? "Continue to delivery" : "Pick sizes";
+      $("next").disabled = false;
+    } else {
+      $("next").textContent = "Continue to delivery";
+      $("next").disabled = !O.items.length;      /* nothing to deliver yet */
+    }
+  }
+
+  function setStep(n) {
+    sp.dataset.step = n;
+    paintNext();
+    if (Number(n) === 2) paintStage();
+    window.scrollTo({ top:0, behavior:"auto" });
+  }
+
+  $("next").addEventListener("click", function () {
+    var s = Number(sp.dataset.step);
+    if (s === 1 && O.kind === "custom") { setStep(2); return; }
+    location.href = "checkout.html" + P.orderQuery(O);
+  });
+  $("back").addEventListener("click", function () { setStep(1); });
+
+  /* ══ 7b. FOR ME / FOR SOMEONE ELSE ═══════════════════════════════════
+     A gift started on the dashboard arrives decided (`from` is set), so the
+     tabs only show for an order that started here. Switching to a gift from
+     the website hands the buyer back afterwards to the Gift & Refer tab of
+     the flow they are in. */
+  var who = $("who");
+  var tabs = who.querySelectorAll("[data-who]");
+  if (O.gift && O.from) {
+    who.hidden = true;
+  } else {
+    var myFlow = !O.built ? "1-empty" : O.freeUsed ? "4-active" : "2-page-live";
+    var paintWho = function () {
+      Array.prototype.forEach.call(tabs, function (t) {
+        t.setAttribute("aria-selected", String((t.dataset.who === "gift") === !!O.gift));
+      });
+      sp.dataset.gift = O.gift ? "1" : "";
+      document.title = O.gift ? "Codemarca — Send a gift" : "Codemarca — Choose your pack";
+      $("h1b").hidden = !!O.gift;
+      $("h1g").hidden = !O.gift;
+    };
+    Array.prototype.forEach.call(tabs, function (t) {
+      t.addEventListener("click", function () {
+        var g = t.dataset.who === "gift";
+        if (g === !!O.gift) return;
+        O.gift = g;
+        O.from = g ? myFlow : null;
+        if (!g && !O.freeUsed && !O.items.length) O.kind = "free";
+        paintFree(); paintOpts(); paintSum(); paintNext(); showOpt(O.kind, true);
+      });
+    });
+    paintWho();
+    /* paint the tabs again on every switch */
+    var _pf = paintFree;
+    paintFree = function () { _pf(); paintWho(); };
+  }
+
+  /* ══ 8. BOOT ═════════════════════════════════════════════════════════ */
+  paintOpts(); paintSizes(); paintStage(); paintSum();
+  showOpt(O.kind, false); paintBar();
+
+  /* pack=custom in the URL has already answered step 1, so the screen opens
+     on the step that configures it. The one exception is a spent free pack:
+     custom is forced there, and step 1 is the only place that says why. */
+  setStep((O.gift && $("who").hidden) || (O.kind === "custom" && !O.freeUsed && !O.gift) ? 2 : 1);
+})();
+</script>

@@ -1,0 +1,404 @@
+<title>Codemarca — Invoice</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* ==========================================================================
+   CODEMARCA — INVOICE
+
+   A document, not a screen. Everything it prints arrives in the query
+   string from checkout.html, because there is no backend to fetch an order
+   from yet — and a page that can only render what it was handed is a page
+   that cannot quietly show a stale total.
+
+   "Download" is a print dialog. A browser cannot write a PDF on its own;
+   Save as PDF in the print sheet is the real, no-dependency route, and the
+   print stylesheet below is what makes that output clean — the chrome goes,
+   the background goes, and the page is laid out for A4.
+
+   THE SELLER BLOCK IS NOT FILLED IN. Legal entity name, registered address
+   and GSTIN are marked as pending on purpose — they have to be real before
+   this document goes to a single customer. Search for data-todo.
+   ========================================================================== */
+
+:root{
+  --brand-violet:#6E27E6;
+  --ink:#101215; --ink-mid:#5B5D68; --ink-soft:#8C8E9C; --ink-faint:#B6B8C4;
+  --ground:#FFFFFF; --ground-soft:#F4F3F7; --ground-sunk:#EDEBF2;
+  --line:rgba(16,18,21,.10); --line-strong:rgba(16,18,21,.20);
+  --ok:#17914F; --warn:#B4690E;
+  --font-sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --fs-sm:.875rem; --fs-xs:.8125rem; --fs-label:.6875rem;
+  --ls-label:.13em; --ls-display:-.03em; --ls-soft:.14px;
+  --fw-medium:500; --fw-semibold:600; --fw-bold:700; --fw-black:800;
+  --s-1:.25rem; --s-2:.5rem; --s-3:.75rem; --s-4:1rem; --s-5:1.25rem;
+  --s-6:1.5rem; --s-8:2rem; --s-10:2.5rem;
+  --r-xs:6px; --r-sm:10px; --r-md:14px; --r-lg:20px; --r-pill:999px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; padding:var(--s-5); background:var(--ground-soft); color:var(--ink);
+  font-family:var(--font-sans); font-weight:var(--fw-medium); line-height:1.55;
+  letter-spacing:-.011em; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,p,dl,dd,dt,table,ul,li{margin:0; padding:0}
+ul{list-style:none}
+table{border-collapse:collapse; width:100%}
+
+/* ── THE SHEET ───────────────────────────────────────────────────────────
+   Sized to A4's proportions so what is on screen is what comes out of the
+   printer, rather than a surprise at the print sheet. */
+.inv{
+  max-width:760px; margin-inline:auto; background:var(--ground);
+  border-radius:var(--r-lg); padding:var(--s-10);
+  box-shadow:0 6px 20px rgba(16,18,21,.07), inset 0 0 0 1px var(--line);
+}
+@media (max-width:620px){ .inv{padding:var(--s-6)} body{padding:var(--s-3)} }
+
+/* ── ACTION BAR — screen only ───────────────────────────────────────────── */
+.acts{
+  max-width:760px; margin:0 auto var(--s-4);
+  display:flex; align-items:center; gap:var(--s-3); flex-wrap:wrap;
+}
+.acts__back{
+  margin-right:auto; font-size:var(--fs-sm); font-weight:var(--fw-bold);
+  color:var(--ink-soft); text-decoration:none; padding:var(--s-2);
+}
+.acts__back:hover{color:var(--ink)}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s-2);
+  height:44px; padding-inline:var(--s-5); border:0; border-radius:var(--r-pill);
+  cursor:pointer; font-family:inherit; font-size:var(--fs-sm); font-weight:var(--fw-bold);
+  background:var(--ink); color:#fff; text-decoration:none;
+  transition:background 140ms cubic-bezier(.22,.61,.36,1);
+}
+.btn:hover{background:var(--ink-strong, #33353D)}
+.btn svg{width:17px; height:17px}
+
+/* ── HEAD ───────────────────────────────────────────────────────────────── */
+.inv__top{
+  display:flex; align-items:flex-start; justify-content:space-between;
+  gap:var(--s-6); flex-wrap:wrap; padding-bottom:var(--s-6);
+  border-bottom:1.5px solid var(--line-strong);
+}
+.inv__wm{height:22px; width:auto}
+.inv__seller{margin-top:var(--s-4); font-size:var(--fs-xs); color:var(--ink-mid); line-height:1.6}
+.inv__seller b{display:block; color:var(--ink); font-weight:var(--fw-bold); font-size:var(--fs-sm)}
+
+/* Anything still unresolved says so, in the document, where it cannot be
+   forgotten. These have to be gone before an invoice reaches a customer. */
+[data-todo]{
+  background:rgba(180,105,14,.10); color:var(--warn);
+  padding:1px 5px; border-radius:var(--r-xs);
+  font-size:var(--fs-label); font-weight:var(--fw-bold);
+  letter-spacing:var(--ls-label); text-transform:uppercase; white-space:nowrap;
+}
+
+.inv__meta{text-align:right}
+.inv__title{
+  font-size:1.5rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display);
+  line-height:1.1;
+}
+.inv__rows{margin-top:var(--s-3); display:grid; gap:var(--s-1); font-size:var(--fs-xs)}
+.inv__rows div{display:flex; gap:var(--s-3); justify-content:flex-end}
+.inv__rows dt{color:var(--ink-soft)}
+.inv__rows dd{font-family:var(--font-mono); font-weight:var(--fw-semibold); color:var(--ink)}
+.paid{
+  display:inline-flex; align-items:center; gap:6px; margin-top:var(--s-3);
+  padding:4px 11px; border-radius:var(--r-pill);
+  background:rgba(23,145,79,.10); color:var(--ok);
+  font-size:var(--fs-label); font-weight:var(--fw-bold);
+  letter-spacing:var(--ls-label); text-transform:uppercase;
+}
+.paid i{width:6px; height:6px; border-radius:50%; background:currentColor}
+
+/* ── PARTIES ────────────────────────────────────────────────────────────── */
+.parties{
+  display:grid; gap:var(--s-6); grid-template-columns:1fr 1fr;
+  padding-block:var(--s-6); border-bottom:1px solid var(--line);
+}
+@media (max-width:620px){ .parties{grid-template-columns:1fr} }
+.party h2{
+  font-size:var(--fs-label); font-weight:var(--fw-bold); letter-spacing:var(--ls-label);
+  text-transform:uppercase; color:var(--ink-soft); margin-bottom:var(--s-2);
+}
+.party p{font-size:var(--fs-sm); line-height:1.55}
+.party b{font-weight:var(--fw-bold)}
+.party small{display:block; font-size:var(--fs-xs); color:var(--ink-mid)}
+
+/* ── LINES ──────────────────────────────────────────────────────────────── */
+.lines{margin-top:var(--s-6)}
+.lines th{
+  text-align:left; padding-bottom:var(--s-3);
+  font-size:var(--fs-label); font-weight:var(--fw-bold); letter-spacing:var(--ls-label);
+  text-transform:uppercase; color:var(--ink-soft);
+  border-bottom:1px solid var(--line);
+}
+.lines th:last-child,.lines td:last-child{text-align:right}
+.lines th:nth-child(2),.lines td:nth-child(2),
+.lines th:nth-child(3),.lines td:nth-child(3){text-align:center}
+.lines td{
+  padding-block:var(--s-4); font-size:var(--fs-sm);
+  border-bottom:1px solid var(--line); vertical-align:top;
+}
+.lines td b{font-weight:var(--fw-bold)}
+.lines td small{display:block; margin-top:2px; font-size:var(--fs-xs); color:var(--ink-soft)}
+.num{font-variant-numeric:tabular-nums; font-weight:var(--fw-bold)}
+.num--free{color:var(--ok)}
+
+/* ── TOTALS ─────────────────────────────────────────────────────────────── */
+.tot{margin-top:var(--s-5); margin-left:auto; max-width:300px; display:grid; gap:var(--s-3)}
+.tot__r{display:flex; justify-content:space-between; gap:var(--s-4); font-size:var(--fs-sm)}
+.tot__r dt{color:var(--ink-mid)}
+.tot__r dd{font-variant-numeric:tabular-nums; font-weight:var(--fw-bold)}
+.tot__rule{height:1.5px; background:var(--line-strong)}
+.tot__g{display:flex; justify-content:space-between; gap:var(--s-4); align-items:baseline}
+.tot__g dt{font-weight:var(--fw-bold)}
+.tot__g dd{
+  font-size:1.5rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display);
+  font-variant-numeric:tabular-nums;
+}
+
+/* ── FOOT ───────────────────────────────────────────────────────────────── */
+.inv__foot{
+  margin-top:var(--s-8); padding-top:var(--s-5); border-top:1px solid var(--line);
+  display:grid; gap:var(--s-3); font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.6;
+}
+.inv__foot b{color:var(--ink-mid); font-weight:var(--fw-bold)}
+.inv__thanks{
+  padding:var(--s-4); border-radius:var(--r-md); background:var(--ground-soft);
+  font-size:var(--fs-sm); color:var(--ink-mid);
+}
+.inv__thanks b{color:var(--ink)}
+
+/* ── PRINT ──────────────────────────────────────────────────────────────
+   The sheet is the only thing on the paper. No shadows, no tinted ground,
+   no action bar, and nothing allowed to break across a page. */
+@page{ size:A4; margin:14mm }
+@media print{
+  body{background:#fff; padding:0; font-size:11pt}
+  .acts{display:none !important}
+  .inv{
+    max-width:none; margin:0; padding:0;
+    border-radius:0; box-shadow:none;
+  }
+  .parties,.lines,.tot,.inv__thanks{break-inside:avoid}
+  .lines tr{break-inside:avoid}
+  [data-todo]{background:none; color:#000; padding:0; text-decoration:underline}
+  .paid{background:none; color:#000; padding:0}
+  a[href]{color:inherit; text-decoration:none}
+}
+
+/* ── SUPPORTING TEXT ───────────────────────────────────────────────────
+   Headings and body copy run on negative tracking. The small grey lines
+   under them — subtitles, help, notes, values — do not: at 13–14px the
+   letters need the air back instead. Any new small line on this page
+   belongs in this list. */
+.inv__seller,
+.inv__rows,
+.party p,
+.party small,
+.lines td small,
+.inv__foot,
+.inv__thanks{ letter-spacing:var(--ls-soft) }
+</style>
+
+<div class="acts">
+  <a class="acts__back" href="dashboard/4-active/orders.html">&larr; Back to my orders</a>
+  <button class="btn" type="button" id="print">
+    <svg viewBox="0 0 20 20" fill="none"><path d="M6 7V3h8v4M6 14H4.5A1.5 1.5 0 0 1 3 12.5v-4A1.5 1.5 0 0 1 4.5 7h11A1.5 1.5 0 0 1 17 8.5v4a1.5 1.5 0 0 1-1.5 1.5H14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 11.5h8V17H6z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Print or save as PDF
+  </button>
+</div>
+
+<main class="inv">
+
+  <div class="inv__top">
+    <div>
+      <svg class="inv__wm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 257 40" fill="none" role="img" aria-label="Codemarca"><g fill="#6E27E6"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></g><g fill="#101215"><path d="M245.956 14.0999H252.172V34.82H245.956V32.8723C244.589 34.447 242.558 35.4002 239.782 35.4002C234.353 35.4002 229.877 30.6345 229.877 24.46C229.877 18.2854 234.353 13.5198 239.782 13.5198C242.558 13.5198 244.589 14.4729 245.956 16.0476V14.0999ZM241.025 29.5157C243.884 29.5157 245.956 27.568 245.956 24.46C245.956 21.352 243.884 19.4043 241.025 19.4043C238.165 19.4043 236.093 21.352 236.093 24.46C236.093 27.568 238.165 29.5157 241.025 29.5157Z"/><path d="M220.695 35.4002C214.396 35.4002 209.713 30.6345 209.713 24.46C209.713 18.2854 214.396 13.5198 220.695 13.5198C224.714 13.5198 228.278 15.6332 230.06 18.8241L224.631 21.9736C223.927 20.5232 222.435 19.6529 220.612 19.6529C217.918 19.6529 215.929 21.6006 215.929 24.46C215.929 27.3193 217.918 29.267 220.612 29.267C222.435 29.267 223.968 28.3968 224.631 26.9464L230.06 30.0544C228.278 33.2867 224.756 35.4002 220.695 35.4002Z"/><path d="M203.477 17.7881C204.306 15.0116 207.083 13.6855 209.693 13.6855V20.7304C207.124 20.316 203.477 21.352 203.477 25.4545V34.82H197.261V14.1H203.477V17.7881Z"/><path d="M187.728 14.0999H193.944V34.82H187.728V32.8723C186.361 34.447 184.33 35.4002 181.554 35.4002C176.125 35.4002 171.649 30.6345 171.649 24.46C171.649 18.2854 176.125 13.5198 181.554 13.5198C184.33 13.5198 186.361 14.4729 187.728 16.0476V14.0999ZM182.797 29.5157C185.656 29.5157 187.728 27.568 187.728 24.46C187.728 21.352 185.656 19.4043 182.797 19.4043C179.937 19.4043 177.865 21.352 177.865 24.46C177.865 27.568 179.937 29.5157 182.797 29.5157Z"/><path d="M161.806 13.5198C166.571 13.5198 169.679 16.9179 169.679 22.0979V34.82H163.463V22.6366C163.463 20.5646 162.469 19.2385 160.479 19.2385C158.407 19.2385 157.247 20.6889 157.247 23.1339V34.82H151.031V22.6366C151.031 20.5646 150.037 19.2385 148.047 19.2385C145.975 19.2385 144.815 20.6889 144.815 23.1339V34.82H138.599V14.0999H144.815V16.0062C145.768 14.5972 147.592 13.5198 150.368 13.5198C152.813 13.5198 154.636 14.5143 155.797 16.2548C156.957 14.5972 158.863 13.5198 161.806 13.5198Z"/><path d="M121.357 26.9464C122.144 29.1013 124.051 29.8472 126.33 29.8472C128.029 29.8472 129.479 29.1841 130.308 28.2725L135.281 31.1318C133.25 33.9497 130.184 35.4002 126.247 35.4002C119.161 35.4002 114.768 30.6345 114.768 24.46C114.768 18.2854 119.244 13.5198 125.791 13.5198C131.841 13.5198 136.317 18.2025 136.317 24.46C136.317 25.3302 136.234 26.159 136.068 26.9464H121.357ZM121.233 22.3051H130.142C129.479 19.9016 127.614 19.0313 125.75 19.0313C123.388 19.0313 121.813 20.1916 121.233 22.3051Z"/><path d="M106.271 5.81201H112.487V34.8201H106.271V32.8724C104.903 34.4471 102.873 35.4002 100.096 35.4002C94.6674 35.4002 90.1919 30.6346 90.1919 24.4601C90.1919 18.2855 94.6674 13.5199 100.096 13.5199C102.873 13.5199 104.903 14.473 106.271 16.0477V5.81201ZM101.339 29.5158C104.199 29.5158 106.271 27.5681 106.271 24.4601C106.271 21.3521 104.199 19.4044 101.339 19.4044C98.4799 19.4044 96.4079 21.3521 96.4079 24.4601C96.4079 27.5681 98.4799 29.5158 101.339 29.5158Z"/><path d="M77.9738 35.4002C71.8821 35.4002 66.9922 30.6345 66.9922 24.46C66.9922 18.2854 71.8821 13.5198 77.9738 13.5198C84.0655 13.5198 88.9554 18.2854 88.9554 24.46C88.9554 30.6345 84.0655 35.4002 77.9738 35.4002ZM77.9738 29.3499C80.6674 29.3499 82.7394 27.4022 82.7394 24.46C82.7394 21.5177 80.6674 19.57 77.9738 19.57C75.2802 19.57 73.2082 21.5177 73.2082 24.46C73.2082 27.4022 75.2802 29.3499 77.9738 29.3499Z"/><path d="M57.8088 35.4002C51.5099 35.4002 46.8271 30.6345 46.8271 24.46C46.8271 18.2854 51.5099 13.5198 57.8088 13.5198C61.8285 13.5198 65.3923 15.6332 67.1742 18.8241L61.7456 21.9736C61.0411 20.5232 59.5493 19.6529 57.7259 19.6529C55.0323 19.6529 53.0432 21.6006 53.0432 24.46C53.0432 27.3193 55.0323 29.267 57.7259 29.267C59.5493 29.267 61.0825 28.3968 61.7456 26.9464L67.1742 30.0544C65.3923 33.2867 61.8699 35.4002 57.8088 35.4002Z"/></g></svg>
+      <div class="inv__seller">
+        <b>Codemarca <span data-todo>legal name pending</span></b>
+        <span data-todo>registered address pending</span><br>
+        GSTIN <span data-todo>not registered yet</span><br>
+        <span id="sellerMail">hello@codemarca.com</span>
+      </div>
+    </div>
+
+    <div class="inv__meta">
+      <h1 class="inv__title">Invoice</h1>
+      <dl class="inv__rows">
+        <div><dt>Invoice no.</dt><dd id="invNo">&mdash;</dd></div>
+        <div><dt>Order</dt><dd id="ordNo">&mdash;</dd></div>
+        <div><dt>Date</dt><dd id="invDate">&mdash;</dd></div>
+      </dl>
+      <span class="paid"><i></i> Paid</span>
+    </div>
+  </div>
+
+  <div class="parties">
+    <div class="party">
+      <h2>Billed to</h2>
+      <p>
+        <b id="billName">&mdash;</b>
+        <small id="billMail">&mdash;</small>
+      </p>
+    </div>
+    <div class="party">
+      <h2>Delivering to</h2>
+      <p>
+        <b id="shipName">&mdash;</b>
+        <small id="shipAddr">&mdash;</small>
+        <small id="shipPhone">&mdash;</small>
+      </p>
+    </div>
+  </div>
+
+  <table class="lines">
+    <thead>
+      <tr>
+        <th scope="col">Item</th>
+        <th scope="col">Qty</th>
+        <th scope="col">Rate</th>
+        <th scope="col">Amount</th>
+      </tr>
+    </thead>
+    <tbody id="lines"></tbody>
+  </table>
+
+  <dl class="tot">
+    <div class="tot__r"><dt id="subDt">Stickers</dt><dd id="subDd">&mdash;</dd></div>
+    <div class="tot__r"><dt id="shipDt">Delivery</dt><dd id="shipDd">&mdash;</dd></div>
+    <div class="tot__rule"></div>
+    <div class="tot__g"><dt>Total paid</dt><dd id="totDd">&mdash;</dd></div>
+  </dl>
+
+  <div class="inv__foot">
+    <p class="inv__thanks" id="thanks"><b>Thank you.</b> Your pack ships flat, like a SIM card, and arrives in 3&ndash;7 days.</p>
+    <p><b>Paid by</b> <span id="payBy">&mdash;</span>. Prepaid only &mdash; we do not offer cash on delivery.</p>
+    <p><b>No tax has been charged</b> on this invoice. <span data-todo>GST position pending</span> &mdash; once registration is in place this document becomes a tax invoice and will show the breakdown.</p>
+    <p>Questions about this order? Reply to the confirmation on WhatsApp, or write to <span id="footMail">hello@codemarca.com</span> quoting the order number above.</p>
+  </div>
+</main>
+
+<script src="pack.js"></script>
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var P = window.PACK;
+  var RS = "\u20B9";
+
+  function esc(t) {
+    return String(t).replace(/[&<>"]/g, function (c) {
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c];
+    });
+  }
+
+  /* ══ WHAT WE WERE HANDED ═════════════════════════════════════════════
+     checkout.html puts the whole order in the query string. Nothing here
+     is computed from scratch — the one thing this page works out is the
+     subtotal, and only so the arithmetic on the paper adds up. */
+  var q = new URLSearchParams(location.search);
+  function g(k, dflt) { var v = q.get(k); return v === null || v === "" ? (dflt || "") : v; }
+
+  var kind  = g("pack", "free") === "custom" ? "custom" : "free";
+  var id    = g("id", "CM-000000");
+  var ship  = Math.max(0, parseInt(g("ship", "0"), 10) || 0);
+
+  /* One line per size. `items=L:2,XL:1` is what checkout sends now; an older
+     link with size/qty/unit is still read, and keeps the unit price it was
+     sold at rather than today's. */
+  var lines = kind !== "custom" ? [] : P.readItems(q).map(function (it) {
+    var s = P.sizeFor(it.size);
+    var unit = q.get("items") ? s.price : Math.max(0, parseInt(g("unit", String(s.price)), 10) || 0);
+    return { size: s, qty: it.qty, unit: unit, amount: unit * it.qty };
+  });
+  var qty   = lines.reduce(function (a, l) { return a + l.qty; }, 0);
+  var goods = lines.reduce(function (a, l) { return a + l.amount; }, 0);
+  var total = goods + ship;
+
+  /* Invoice numbers and order numbers are not the same thing, and an
+     accountant will want both. Until there is a real series, the invoice
+     number is derived from the order so it is at least stable and unique. */
+  $("invNo").textContent   = "INV-" + id.replace(/^CM-/, "");
+  $("ordNo").textContent   = id;
+  /* A past order carries its own date; today's is only the fallback for an
+     invoice opened straight off the placed screen. */
+  $("invDate").textContent = g("date") || new Date().toLocaleDateString("en-IN",
+    { day:"2-digit", month:"short", year:"numeric" });
+
+  $("billName").textContent  = g("name", "\u2014");
+  $("billMail").textContent  = g("email", "\u2014");
+  $("shipName").textContent  = g("name", "\u2014");
+  $("shipAddr").textContent  = g("addr", "\u2014");
+  $("shipPhone").textContent = g("phone") ? "+91 " + g("phone") : "\u2014";
+
+  /* ══ THE LINES ═══════════════════════════════════════════════════════ */
+  var rows = [];
+
+  if (kind === "free") {
+    rows.push(
+      "<tr><td><b>Codemarca pack</b>" +
+        "<small>Two stickers \u2014 4\u2033 and 1.5\u2033 \u00b7 one code \u00b7 one page</small></td>" +
+      "<td>1</td><td class='num num--free'>Free</td>" +
+      "<td class='num num--free'>Free</td></tr>"
+    );
+  } else {
+    lines.forEach(function (l) {
+      rows.push(
+        "<tr><td><b>Custom sticker \u2014 " + esc(l.size.name) + "</b>" +
+          "<small>" + esc(l.size.inch) + " \u00b7 " + esc(l.size.mm) +
+          " \u00b7 one code \u00b7 one page</small></td>" +
+        "<td class='num'>" + l.qty + "</td>" +
+        "<td class='num'>" + RS + P.inr(l.unit) + "</td>" +
+        "<td class='num'>" + RS + P.inr(l.amount) + "</td></tr>"
+      );
+    });
+  }
+
+  var zone = g("zone");
+  rows.push(
+    "<tr><td><b>Delivery</b><small>" +
+      (zone ? esc(zone) + " band \u00b7 " : "") +
+      esc(g("state", "India")) + " \u00b7 prepaid courier</small></td>" +
+    "<td>1</td>" +
+    "<td class='num'>" + RS + P.inr(ship) + "</td>" +
+    "<td class='num'>" + RS + P.inr(ship) + "</td></tr>"
+  );
+
+  $("lines").innerHTML = rows.join("");
+
+  /* ══ THE TOTALS ══════════════════════════════════════════════════════ */
+  if (kind === "free") {
+    $("subDt").textContent = "Pack";
+    $("subDd").textContent = "Free";
+    $("subDd").className = "num--free";
+    $("thanks").innerHTML =
+      "<b>Thank you.</b> The pack itself is free \u2014 the delivery charge is all that was paid. " +
+      "It ships flat, like a SIM card, and arrives in 3\u20137 days.";
+  } else {
+    $("subDt").textContent = lines.length === 1
+      ? qty + " \u00D7 " + lines[0].size.name
+      : qty + " stickers, " + lines.length + " sizes";
+    $("subDd").textContent = RS + P.inr(goods);
+  }
+  $("shipDd").textContent = RS + P.inr(ship);
+  $("totDd").textContent  = RS + P.inr(total);
+
+  var PAY = { upi:"UPI", card:"Card", netbanking:"Net banking" };
+  $("payBy").textContent = PAY[g("pay")] || "an online method";
+
+  /* ══ DOWNLOAD ════════════════════════════════════════════════════════
+     A browser cannot hand over a PDF by itself, so this is the print sheet
+     with Save as PDF in it. It is not auto-opened: a dialog that appears
+     before the page has been read is a dialog people dismiss. */
+  $("print").addEventListener("click", function () { window.print(); });
+
+  document.title = "Codemarca invoice " + id;
+})();
+</script>

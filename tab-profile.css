@@ -1,0 +1,247 @@
+/* CODEMARCA — PROFILE TAB. Shared by every flow folder. */
+/* ── PAGE-ONLY COMPONENTS ───────────────────────────────────────────── */
+
+/* ── HANDLE, BASICS — the builder's step 1 controls ────────────────────
+   Same white outlined boxes, same labels, same photo disc as
+   onboarding.html, so the whole page reads as one form. */
+
+/* labels at the builder's size — this page overrides dashboard.css */
+.fld__lbl{font-size:var(--fs-sm); font-weight:var(--fw-bold); color:var(--ink)}
+.fld__opt{font-weight:var(--fw-medium); color:var(--ink-soft)}
+.fld__count{font-size:var(--fs-xs); color:var(--ink-faint); font-variant-numeric:tabular-nums}
+.fld__count[data-over="true"]{color:var(--bad)}
+
+.photo{display:flex; align-items:center; gap:var(--s-4)}
+.photo__disc{
+  position:relative; width:88px; height:88px; flex-shrink:0; border-radius:50%;
+  background:var(--brand-violet); color:#fff; display:grid; place-items:center;
+  font-size:2.125rem; font-weight:var(--fw-black); letter-spacing:-.03em;
+  overflow:hidden; user-select:none;
+}
+.photo__disc img{width:100%; height:100%; object-fit:cover}
+/* Remove sits BESIDE the button, not under it (Garry, 2026-09-24) — stacked,
+   it appeared the moment a photo landed and shunted the button upwards. */
+.photo__acts{display:flex; flex-direction:column; align-items:flex-start; gap:var(--s-1)}
+.photo__row{display:flex; align-items:center; gap:var(--s-2)}
+.photo__btn{
+  border:0; background:var(--ground-soft); cursor:pointer; border-radius:var(--r-pill);
+  padding:10px var(--s-4); font-size:var(--fs-sm); font-weight:var(--fw-bold);
+}
+.photo__btn:hover{background:var(--ground-sunk)}
+.photo__clear{border:0; background:none; cursor:pointer; padding:6px var(--s-2);
+  font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-soft); border-radius:var(--r-sm)}
+.photo__clear:hover{color:var(--bad)}
+.photo__hint{font-size:var(--fs-xs); color:var(--ink-soft)}
+
+/* handle — mono, violet, with the availability line under it. The line is
+   .hnote, not .note: dashboard.css already uses .note for the info box. */
+.inp--mono input{font-family:var(--font-mono); font-size:var(--fs-sm); letter-spacing:-.02em;
+  font-weight:var(--fw-semibold); color:var(--brand-violet); caret-color:var(--brand-violet)}
+.inp[data-state="bad"]{box-shadow:inset 0 0 0 1.5px var(--bad)}
+.hnote{min-height:18px; font-size:var(--fs-xs); font-weight:var(--fw-semibold); color:var(--ink-soft)}
+.hnote[data-state="ok"]{color:var(--ok)}
+.hnote[data-state="bad"]{color:var(--bad)}
+.hnote b{font-family:var(--font-mono); font-weight:var(--fw-semibold)}
+
+.inp--area{align-items:stretch; padding-block:var(--s-3)}
+.inp--area textarea{
+  flex:1; min-width:0; border:0; background:none; outline:none; padding:0;
+  resize:none; line-height:1.5; min-height:66px; font-family:inherit;
+  font-weight:var(--fw-semibold); letter-spacing:var(--ls-body);
+}
+.inp--area textarea:focus-visible{box-shadow:none}
+.inp--area textarea::placeholder{color:var(--ink-faint); font-weight:var(--fw-medium)}
+
+/* ── CONTACT & LINKS — the builder's own controls ───────────────────────
+   Lifted from onboarding.html step 2 so the page is changed with exactly
+   the controls it was made with. Two renames, because dashboard.css
+   already owns the names: the builder's .chip is .pick here (dashboard
+   .chip is a status pill), and its .grid is .picks. */
+.defs{position:absolute; width:0; height:0; overflow:hidden}
+.fld__top{display:flex; align-items:baseline; justify-content:space-between; gap:var(--s-3)}
+
+.inp{
+  display:flex; align-items:center; gap:var(--s-2);
+  min-height:var(--control-h); padding-inline:var(--s-4);
+  background:var(--ground); border-radius:var(--r-md);
+  box-shadow:inset 0 0 0 1.5px var(--line-strong);
+  transition:box-shadow var(--dur) var(--ease);
+}
+.inp:focus-within{box-shadow:inset 0 0 0 1.5px var(--ink)}
+
+/* Chrome paints its own pale-blue block behind anything it autofills, which
+   overrides the field's own ground. Parking the transition indefinitely keeps
+   our background and ink; it is the one fix that does not need to know the
+   field's colour. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+  -webkit-text-fill-color:var(--ink);
+  caret-color:var(--ink);
+  transition:background-color 600000s 0s, color 600000s 0s;
+}
+
+.inp input{
+  flex:1; min-width:0; border:0; background:none; outline:none; padding:0;
+  font-weight:var(--fw-semibold); letter-spacing:var(--ls-body);
+}
+.inp input:focus-visible{box-shadow:none}
+.inp input::placeholder{color:var(--ink-faint); font-weight:var(--fw-medium)}
+.inp__pre{font-family:var(--font-mono); font-size:var(--fs-sm); color:var(--ink-soft);
+  letter-spacing:-.02em; white-space:nowrap; user-select:none}
+
+/* the eye — off must OMIT the field from the API response, never CSS-hide it */
+.eye{
+  flex-shrink:0; width:34px; height:34px; display:grid; place-items:center;
+  border:0; border-radius:var(--r-sm); background:none; cursor:pointer; color:var(--ink-faint);
+  transition:color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.eye:hover{background:var(--ground-soft); color:var(--ink-mid)}
+.eye[aria-pressed="true"]{color:var(--ink-mid)}
+.eye svg{width:19px; height:19px}
+.eye .off{display:none}
+.eye[aria-pressed="false"] .on{display:none}
+.eye[aria-pressed="false"] .off{display:block}
+.eye[aria-pressed="false"]{color:var(--ink-faint)}
+
+/* checkbox — "same as phone" */
+.chk{display:flex; align-items:center; gap:var(--s-3); cursor:pointer;
+  font-size:var(--fs-sm); font-weight:var(--fw-semibold); color:var(--ink-mid)}
+.chk input{position:absolute; opacity:0; width:0; height:0}
+.chk__box{
+  width:20px; height:20px; flex-shrink:0; border-radius:var(--r-xs);
+  box-shadow:inset 0 0 0 1.5px var(--line-strong); display:grid; place-items:center;
+  transition:background var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.chk__box svg{width:12px; height:12px; opacity:0; color:#fff}
+.chk input:checked + .chk__box{background:var(--ink); box-shadow:inset 0 0 0 1.5px var(--ink)}
+.chk input:checked + .chk__box svg{opacity:1}
+.chk input:focus-visible + .chk__box{box-shadow:var(--focus-ring)}
+
+/* the platform grid */
+.picks{display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:var(--s-2)}
+.pick{
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  padding:var(--s-3) var(--s-2); border:0; cursor:pointer; border-radius:var(--r-md);
+  background:var(--ground-soft); font-size:var(--fs-xs); font-weight:var(--fw-bold);
+  color:var(--ink-mid); text-align:center; line-height:1.2;
+  transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.pick:hover{background:var(--ground-sunk); color:var(--ink)}
+.pick[data-on="true"]{background:var(--brand-violet-tint); color:var(--brand-violet)}
+.pick .ic{width:30px; height:30px}
+
+/* a link that has been added — icon, the value itself, eye, remove */
+.added{display:flex; flex-direction:column; gap:var(--s-3)}
+.added:empty{display:none}
+/* The arrows sit BEFORE the icon — they order the row of circles the page
+   draws, so only socials get them (Garry, 2026-09-24). */
+.lrow__move{display:flex; flex-direction:column; gap:2px; flex-shrink:0}
+.lrow__move button{
+  width:24px; height:18px; display:grid; place-items:center; border:0; cursor:pointer;
+  border-radius:var(--r-xs); background:var(--ground-soft); color:var(--ink-mid);
+}
+.lrow__move button:hover{background:var(--ground-sunk); color:var(--ink)}
+.lrow__move button:disabled{opacity:.3; cursor:default}
+.lrow__move svg{width:12px; height:12px}
+
+.lrow{display:flex; align-items:center; gap:var(--s-2)}
+.lrow .ic{width:30px; height:30px; flex-shrink:0}
+.lrow .inp{flex:1; min-width:0}
+.lrow .inp input{font-size:var(--fs-sm)}
+.kill{
+  flex-shrink:0; width:34px; height:34px; display:grid; place-items:center;
+  border:0; border-radius:var(--r-sm); background:none; cursor:pointer; color:var(--ink-faint);
+}
+.kill:hover{background:var(--bad-tint); color:var(--bad)}
+.kill svg{width:16px; height:16px}
+
+.addcustom{
+  align-self:flex-start; display:flex; align-items:center; gap:var(--s-2);
+  border:0; cursor:pointer; background:none; padding:var(--s-2) var(--s-3);
+  border-radius:var(--r-sm); font-size:var(--fs-sm); font-weight:var(--fw-bold);
+  color:var(--brand-violet);
+}
+.addcustom:hover{background:var(--ground-sunk, #EDEBF2)}
+.addcustom svg{width:16px; height:16px}
+.custom{display:flex; flex-direction:column; gap:var(--s-2)}
+.custom:empty{display:none}
+
+/* order on the page — every button the same size, order alone is hierarchy */
+.order{display:flex; flex-direction:column; gap:var(--s-2)}
+.ord{
+  display:flex; align-items:center; gap:var(--s-3);
+  padding:var(--s-3); border-radius:var(--r-md); background:var(--ground-soft);
+  transition:background var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
+}
+.ord[draggable="true"]{cursor:grab}
+.ord[data-drag="true"]{opacity:.45}
+.ord[data-over="true"]{background:var(--brand-violet-tint)}
+.ord__grip{color:var(--ink-faint); flex-shrink:0}
+.ord__grip svg{width:16px; height:16px}
+.ord__name{flex:1; min-width:0; font-size:var(--fs-sm); font-weight:var(--fw-bold);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ord__move{display:flex; gap:2px; flex-shrink:0}
+.ord__move button{
+  width:30px; height:30px; display:grid; place-items:center; border:0; cursor:pointer;
+  border-radius:var(--r-xs); background:var(--ground); color:var(--ink-mid); box-shadow:var(--shadow-sm);
+}
+.ord__move button:hover{color:var(--ink)}
+.ord__move button:disabled{opacity:.3; cursor:default; color:var(--ink-faint)}
+.ord__move svg{width:14px; height:14px}
+.order__empty{font-size:var(--fs-sm); color:var(--ink-soft)}
+
+/* the dark "me" card at the top lives in dashboard.css (.me.me--dark) */
+
+/* theme swatches */
+.themes{display:grid; grid-template-columns:repeat(auto-fit,minmax(92px,1fr)); gap:var(--s-3)}
+.theme{
+  display:flex; flex-direction:column; gap:var(--s-2); align-items:center;
+  padding:var(--s-3) var(--s-2); border:0; border-radius:var(--r-md);
+  background:none; cursor:pointer; box-shadow:inset 0 0 0 1.5px var(--line);
+  transition:box-shadow var(--dur-fast) var(--ease);
+}
+.theme:hover{box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+.theme[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--brand-violet)}
+.theme__sw{
+  width:100%; aspect-ratio:3/4; border-radius:var(--r-sm);
+  box-shadow:inset 0 0 0 1px rgba(16,18,21,.12);
+  display:flex; flex-direction:column; justify-content:flex-end; gap:4px; padding:6px;
+}
+.theme__sw i{display:block; height:5px; border-radius:var(--r-pill); background:currentColor; opacity:.85}
+.theme__sw i:first-child{width:60%; height:7px; opacity:1}
+.theme__n{font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-mid)}
+.theme[aria-pressed="true"] .theme__n{color:var(--brand-violet)}
+/* the seven, matching profile.html exactly */
+.theme__sw[data-t="light"]   {background:#FFFFFF; color:#101215}
+.theme__sw[data-t="dark"]    {background:#101215; color:#FFFFFF}
+.theme__sw[data-t="violet"]  {background:#6E27E6; color:#FFFFFF}
+.theme__sw[data-t="cream"]   {background:#F6EFE4; color:#2A2118}
+.theme__sw[data-t="gradient"]{background:linear-gradient(168deg,#6E27E6,#B32E6E 55%,#C2452E); color:#FFFFFF}
+.theme__sw[data-t="glass-ember"]{color:#FFFFFF; background:linear-gradient(180deg, rgba(7,4,16,.26), rgba(7,4,16,.46)), url("assets/profile-bg/4.jpg") 40% 50% / cover no-repeat, #1A0806}
+.theme__sw[data-t="glass-violet"]{color:#FFFFFF; background:linear-gradient(180deg, rgba(7,4,16,.26), rgba(7,4,16,.46)), url("assets/profile-bg/3.jpg") 44% 50% / cover no-repeat, #0C0630}
+/* the glass swatches show the panel, not just the ground — the frosted
+   sheet is the whole point of these two and a flat chip would hide it */
+.theme__sw[data-t^="glass-"]{position:relative; overflow:hidden}
+.theme__sw[data-t^="glass-"]::before{
+  content:""; position:absolute; inset:5px 5px 0; border-radius:7px 7px 0 0;
+  background:rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22);
+}
+.theme__sw[data-t^="glass-"] i{position:relative}
+
+/* ── SUPPORTING TEXT ───────────────────────────────────────────────────
+   Headings and body copy run on negative tracking. The small grey lines
+   under them — subtitles, help, notes, values — do not: at 13–14px the
+   letters need the air back instead. Any new small line on this page
+   belongs in this list. */
+.theme__n,
+.fld__lbl,
+.fld__count,
+.photo__hint,
+.hnote,
+.chk,
+.pick,
+.order__empty{ letter-spacing:var(--ls-soft) }

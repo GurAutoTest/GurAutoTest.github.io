@@ -1,0 +1,703 @@
+<title>Home · Codemarca</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../dashboard.css">
+<link rel="stylesheet" href="../../home.css">
+
+<!-- ==========================================================================
+     CODEMARCA — HOME, ACTIVE ACCOUNT
+     The home screen for someone who is DONE setting up: page built, pack
+     delivered, both stickers out in the world. Nothing is left to finish,
+     so this screen stops being a checklist and becomes two things:
+
+       1. a quick way back into the page, because the only job left is
+          keeping it right — a new number, a new link, a new photo
+       2. the referral — the one reason to open the dashboard when nothing
+          has changed
+
+     Top to bottom:
+       · YOU            dark card: photo, name, QR, the link as the share
+                        button, Edit page → Profile tab (2026-09-17: what is
+                        ON the page is not repeated here)
+       · REFER FRIENDS  50 counted friends → a black tee with your code
+       · YOUR REFERRALS a count and a ring; the list opens in a sheet
+       · YOUR STICKERS  a photo of each sticker, lost sticker
+       · MORE STICKERS  a photo slider and one button
+
+     REFERRAL RULE — decided 2026-09-15, Garry
+       A friend COUNTS when they signed up through your link AND finished
+       their page. Ordering is not required. At 50 counted, the tee
+       unlocks and the owner picks one of five designs.
+
+     ORDER MORE — decided 2026-09-16, Garry
+       Reordering is the other job of this screen, and the copy has to be
+       explicit that a second pack carries the SAME code, reprinted. The
+       card sits under YOUR STICKERS, and the ask is repeated on the QR tab
+       and at the top of Orders, because "order more" is the one thing we
+       actually want from a finished account.
+
+     STATES — 4-active/state.js
+       1 steady · 2 second pack on the way · 3 fifty referrals, tee unlocked
+       All three are active accounts; the switcher moves between them.
+
+     OPEN IT THROUGH THE LOCAL SERVER (localhost:4175), not a file preview:
+     a preview that inlines the page cannot load dashboard.css / .js.
+     ========================================================================== -->
+
+<style>
+/* YOUR PAGE — the .pg card, .check and quick edits come from home.css,
+   the same card 2-page-live opens with. */
+
+/* ── REFER FRIENDS ─────────────────────────────────────────────────────
+   The loud card on this screen, in the same black-to-violet band the
+   pack CTA wears on the pre-order home — so the one dark object is,
+   again, the one asking for something. */
+/* home.css gives .card--close the pack CTA's roomy, edge-to-edge padding.
+   The referral card keeps a normal card's padding — the tee row bleeds
+   out by exactly that amount — and its own gradient stops. */
+.ref.card--close{
+  background:linear-gradient(180deg,
+    var(--close-head) 0%, var(--close-head) 22%,
+    var(--close-body) 64%, var(--close-foot) 100%);
+  padding:var(--s-5); margin-inline:0; border-radius:var(--r-lg);
+}
+.ref{gap:var(--s-6); position:relative}
+@media (min-width:1024px){
+  .ref.card--close{padding:var(--s-10)}
+  .ref .tees{margin-inline:calc(var(--s-10) * -1); padding-inline:var(--s-10); scroll-padding-inline:var(--s-10)}
+}
+.ref__say{display:flex; flex-direction:column; gap:var(--s-2)}
+.ref__h{font-size:clamp(1.5rem,5vw,2rem); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display); line-height:1.08; text-wrap:balance}
+.ref__p{font-size:var(--fs-sm); color:rgba(255,255,255,.72); max-width:46ch}
+.ref__p b{color:var(--ink-invert)}
+
+.ref__meter{display:flex; flex-direction:column; gap:var(--s-3)}
+.ref__count{display:flex; align-items:baseline; gap:var(--s-2)}
+.ref__n{font-size:clamp(2.5rem,9vw,3.5rem); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display); line-height:1}
+.ref__of{font-size:1.125rem; font-weight:var(--fw-bold); color:rgba(255,255,255,.5)}
+.ref__bar{height:10px; border-radius:var(--r-pill); background:rgba(255,255,255,.12); overflow:hidden}
+.ref__fill{height:100%; border-radius:inherit; background:var(--brand-violet-lift);
+  transition:width var(--dur-slow) var(--ease-out)}
+.ref__sub{font-size:var(--fs-xs); color:rgba(255,255,255,.62)}
+.ref__sub b{color:var(--ink-invert)}
+
+.ref__share{display:flex; gap:var(--s-2); flex-direction:column}
+@media (min-width:560px){ .ref__share{flex-direction:row; align-items:center} }
+.ref__share .linkbox{flex:1; min-width:0}
+.card--dark .linkbox button{background:var(--ground-dark); color:rgba(255,255,255,.7);
+  box-shadow:inset 0 0 0 1px var(--line-invert)}
+.card--dark .linkbox button:hover{color:var(--ink-invert)}
+
+/* the five tees — a swipe row on phones, five across on desktop */
+.tees__head{display:flex; align-items:baseline; gap:var(--s-3); margin-bottom:var(--s-3)}
+.tees__head .card__title{flex:1}
+.tees__hint{font-size:var(--fs-xs); color:rgba(255,255,255,.55)}
+.tees{
+  display:grid; grid-auto-flow:column; grid-auto-columns:minmax(150px,1fr); gap:var(--s-3);
+  overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none;
+  margin-inline:calc(var(--s-5) * -1); padding-inline:var(--s-5); scroll-padding-inline:var(--s-5); padding-bottom:2px;
+}
+.tees::-webkit-scrollbar{display:none}
+@media (min-width:1280px){
+  .ref .tees{grid-auto-flow:row; grid-template-columns:repeat(5,1fr); overflow:visible;
+        margin-inline:0; padding-inline:0}
+}
+.tee{
+  scroll-snap-align:start; display:flex; flex-direction:column; gap:var(--s-2);
+  padding:var(--s-3); border:0; border-radius:var(--r-md); text-align:left;
+  background:rgba(255,255,255,.06); color:inherit;
+  box-shadow:inset 0 0 0 1px var(--line-invert);
+  transition:box-shadow var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+button.tee{cursor:pointer}
+button.tee:hover{background:rgba(255,255,255,.1)}
+.tee[aria-checked="true"]{background:rgba(161,113,244,.16);
+  box-shadow:inset 0 0 0 2px var(--brand-violet-lift)}
+.tee__fig{position:relative; aspect-ratio:1; border-radius:var(--r-sm);
+  background:linear-gradient(180deg,#2A2C33,#1E2026); display:grid; place-items:center}
+.tee__fig svg{width:96%; height:auto}
+.tee__side{
+  position:absolute; top:6px; left:6px; padding:2px 6px; border-radius:var(--r-xs);
+  font-family:var(--font-mono); font-size:.5625rem; font-weight:var(--fw-bold);
+  letter-spacing:var(--ls-label); text-transform:uppercase;
+  background:rgba(0,0,0,.45); color:rgba(255,255,255,.7);
+}
+.tee__tick{
+  position:absolute; top:6px; right:6px; width:20px; height:20px; border-radius:50%;
+  display:none; place-items:center; background:var(--brand-violet-lift); color:var(--ink);
+}
+.tee__tick svg{width:12px; height:12px}
+.tee[aria-checked="true"] .tee__tick{display:grid}
+.tee__t{font-size:var(--fs-sm); font-weight:var(--fw-bold); line-height:1.2}
+.tee__s{font-size:var(--fs-xs); color:rgba(255,255,255,.55); line-height:1.35}
+
+/* claim — only once the tee is unlocked */
+.claim{display:flex; flex-direction:column; gap:var(--s-4);
+  padding-top:var(--s-5); box-shadow:inset 0 1px 0 var(--line-invert)}
+.sizes{display:flex; gap:var(--s-2); flex-wrap:wrap}
+.size{
+  min-width:48px; height:40px; padding-inline:var(--s-3); border:0; border-radius:var(--r-pill);
+  background:transparent; color:var(--ink-invert); cursor:pointer;
+  font-size:var(--fs-xs); font-weight:var(--fw-bold);
+  box-shadow:inset 0 0 0 1.5px var(--line-invert);
+}
+.size:hover{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.4)}
+.size[aria-checked="true"]{background:var(--ink-invert); color:var(--ink); box-shadow:none}
+.claim__addr{font-size:var(--fs-xs); color:rgba(255,255,255,.62)}
+.claim__addr b{color:var(--ink-invert)}
+.claim__addr button{border:0; background:none; padding:0; cursor:pointer;
+  color:var(--brand-violet-lift); font-weight:var(--fw-bold); font-size:inherit}
+
+.ref__done{display:flex; gap:var(--s-3); align-items:flex-start;
+  padding:var(--s-4); border-radius:var(--r-md); background:rgba(74,222,128,.1);
+  box-shadow:inset 0 0 0 1px rgba(74,222,128,.28); font-size:var(--fs-sm)}
+.ref__done svg{width:18px; height:18px; flex-shrink:0; margin-top:2px; color:var(--ok-lift)}
+.ref__done span{color:rgba(255,255,255,.72)}
+.ref__done b{color:var(--ink-invert)}
+
+/* the account-state switcher means nothing on a page pinned to one state */
+
+/* NOT PART OF THE PRODUCT — flips the meter between 23 and 50 */
+
+/* ── YOUR REFERRALS ──────────────────────────────────────────────────
+   70 / 30: words and the button left, the ring right. */
+.rl{display:grid; grid-template-columns:1fr auto; align-items:center; gap:var(--s-4)}
+@media (min-width:640px){ .rl{grid-template-columns:7fr 3fr} }
+.rl__say{display:flex; flex-direction:column; align-items:flex-start; gap:var(--s-2); min-width:0}
+.rl__h{font-size:1.0625rem; font-weight:var(--fw-bold); letter-spacing:var(--ls-display)}
+.rl__h b{font-weight:var(--fw-black)}
+.rl__s{font-size:var(--fs-xs); color:var(--ink-soft); max-width:40ch}
+.rl__go{margin-top:var(--s-2)}
+.rl__go svg{width:14px; height:14px}
+.rl__viz{display:grid; place-items:center}
+.ring{width:104px; height:104px}
+@media (min-width:640px){ .ring{width:132px; height:132px} }
+.ring text{font-family:var(--font-body, Manrope), sans-serif}
+
+/* the list, inside the sheet */
+.people{margin-inline:calc(var(--s-5) * -1)}
+.people .row{padding-block:var(--s-3); padding-inline:var(--s-5)}
+.people__av{
+  display:grid; place-items:center; width:36px; height:36px; border-radius:50%; flex-shrink:0;
+  background:var(--ground-sunk); color:var(--ink-mid);
+  font-size:var(--fs-xs); font-weight:var(--fw-black); letter-spacing:0;
+}
+.people__av[data-done]{background:var(--ok-tint); color:var(--ok)}
+.tally{display:flex; gap:var(--s-2); flex-wrap:wrap}
+
+/* ── YOUR STICKERS ──────────────────────────────────────────────────── */
+.sk{gap:var(--s-4)}
+.sk__grid{display:grid; grid-template-columns:1fr 1fr; gap:var(--s-3)}
+.sk__item{display:flex; flex-direction:column; gap:2px; min-width:0}
+.sk__item .shot__ph{aspect-ratio:1; margin-bottom:var(--s-2); border-radius:var(--r-md)}
+.sk__item .shot__desc{font-size:.6875rem}
+.sk__t{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.sk__t .mono{font-size:.85em; color:var(--ink-soft)}
+.sk__s{font-size:var(--fs-xs); color:var(--ink-soft)}
+.sk__row{margin-inline:calc(var(--s-5) * -1); padding-inline:var(--s-5); padding-block:var(--s-3);
+  box-shadow:inset 0 1px 0 var(--line)}
+.sk__row:last-child{margin-bottom:calc(var(--s-3) * -1)}
+@media (min-width:1024px){ .sk__row{margin-inline:calc(var(--s-6) * -1); padding-inline:var(--s-6)} }
+
+/* ── SUPPORTING TEXT ───────────────────────────────────────────────────
+   The small lines this page owns, tracked open like every other page —
+   see section 26 of dashboard.css. */
+.ref__p,
+.ref__sub,
+.rl__s,
+.sk__s,
+.tees__hint,
+.tee__s,
+.claim__addr{ letter-spacing:var(--ls-soft) }
+/* ── MORE STICKERS ─────────────────────────────────────────────────── */
+/* RENAMED from .more (2026-09-29): dashboard.css already owns .more for the
+   bottom nav's overflow sheet, and its negative margin-inline was leaking
+   onto this card — it sat 40px wider than every other card on the page. */
+.restock{gap:var(--s-5)}
+.restock__acts{display:flex; flex-direction:column; gap:var(--s-3); align-items:stretch}
+@media (min-width:640px){
+  .restock__acts{flex-direction:row; align-items:center}
+  .restock__acts .btn--wide{flex:1}
+}
+</style>
+
+<div class="app">
+  <div class="app__main">
+    <main class="view">
+
+      <header class="head">
+        <div class="head__row">
+          <div>
+            <h1>Hey, <span data-fill="user.first">Garry</span>.</h1>
+            <p>Your page is live on both stickers.</p>
+          </div>
+        </div>
+      </header>
+
+
+      <!-- ══ YOU ═════════════════════════════════════════════════════════
+           Who you are, your code, your link — nothing that is ON the page.
+           The link is the share button (Linktree's pill); editing happens
+           in the Profile tab, which "Edit page" opens. -->
+
+      <section class="card me">
+        <span class="me__mark" data-mark></span>
+
+        <div class="me__top">
+          <span class="me__av" data-fill="user.initial">G</span>
+          <span class="me__who">
+            <span class="me__name" data-fill="profile.title">Garry Singh</span>
+            <span class="me__live"><i></i>Live</span>
+          </span>
+          <button class="me__qr" type="button" data-show data-qr
+                  aria-label="Show my QR full screen"></button>
+        </div>
+
+        <button class="me__link" type="button" data-share-page aria-label="Share my page">
+          <span class="me__url"><span>codemarca.com/</span><b data-fill="profile.handle">garry</b></span>
+          <span class="me__share"><span data-ic-in="share"></span><span class="me__share-t">Share</span></span>
+        </button>
+
+        <div class="me__acts">
+          <a class="me__btn" href="profile.html"><span data-ic-in="pen"></span>Edit page</a>
+          <a class="me__btn" href="../../profile.html?view=owner&amp;handle=garry"
+             target="_blank" rel="noopener" data-owner-view><span data-ic-in="eye"></span>View page</a>
+        </div>
+      </section>
+
+
+
+      <!-- ══ WHAT IS STILL MISSING ════════════════════════════════════════
+           Onboarding's Save & exit lets people leave with a live page that
+           is half filled in, so the same checklist lives here. Drawn by
+           CM.mountTodo; not rendered at all when nothing is missing. -->
+
+      <section class="card todo" data-page-todo hidden></section>
+
+      <!-- ══ REFER FRIENDS ═══════════════════════════════════════════════
+           The meter, the rule in one sentence, the link, and the reward
+           you can see from the first day — people push harder for a thing
+           they have already picked out. Designs are view-only until 50;
+           at 50 they become a choice, with size and address underneath. -->
+
+      <section class="card card--dark card--close ref" id="ref">
+
+        <div class="ref__say">
+          <span class="card__title">Refer friends</span>
+          <h2 class="ref__h" id="refH">Bring 50 friends. Wear your code.</h2>
+          <p class="ref__p" id="refP">Get a black tee printed with your own QR, in one of
+             five designs. A friend counts once they <b>sign up with your link and
+             finish their page</b> — they don’t have to order anything.</p>
+        </div>
+
+        <div class="ref__meter">
+          <div class="ref__count">
+            <b class="ref__n" id="refN">23</b><span class="ref__of">/ <span data-fill="referrals.goal">50</span></span>
+          </div>
+          <div class="ref__bar" role="progressbar" aria-valuemin="0" aria-valuemax="50" id="refBar">
+            <div class="ref__fill" id="refFill" style="width:46%"></div>
+          </div>
+          <span class="ref__sub" id="refSub"><b>27 more</b> to go · 6 friends are still building their page</span>
+        </div>
+
+        <div class="ref__share" id="refShare">
+          <div class="linkbox">
+            <span class="linkbox__url"><span>codemarca.com/r/</span><b data-fill="profile.handle">garry</b></span>
+            <button type="button" data-ic-btn="copy" aria-label="Copy my invite link" data-copy-ref></button>
+          </div>
+          <button class="btn btn--go" type="button" data-share-ref>
+            <span data-ic-in="share"></span>Invite friends
+          </button>
+        </div>
+
+        <div>
+          <div class="tees__head">
+            <span class="card__title" id="teesTitle">The five designs</span>
+            <span class="tees__hint" id="teesHint">You pick one at 50</span>
+          </div>
+          <div class="tees" id="tees" role="radiogroup" aria-labelledby="teesTitle"></div>
+        </div>
+
+        <!-- at 50 only -->
+        <div class="claim" id="claim" hidden>
+          <div>
+            <span class="card__title">Your size</span>
+            <div class="sizes" role="radiogroup" aria-label="T-shirt size" id="sizes"
+                 style="margin-top:var(--s-3)"></div>
+          </div>
+          <p class="claim__addr">Ships to <b data-fill="order.address">H.No 214, Sector 22-A, Chandigarh 160022</b>
+            · <button type="button" data-soon="Opens the address form">Change</button></p>
+          <button class="btn btn--go btn--wide" type="button" id="claimGo" disabled>Pick a design and a size</button>
+        </div>
+
+        <div class="ref__done" id="claimed" hidden>
+          <span data-ic-in="check"></span>
+          <span><b>Your tee is claimed.</b> <span id="claimedWhat">Pocket, size L</span> — we
+            print it with your code and send it to the address above.</span>
+        </div>
+      </section>
+
+
+      <!-- ══ YOUR REFERRALS ══════════════════════════════════════════════
+           The people, not the prize (that is the card above). A number and
+           a picture of it here; the list itself opens in a sheet — a bottom
+           sheet on a phone, a popup on desktop. The ring is joined friends:
+           the dark part counts, the rest still have a page to finish. -->
+
+      <section class="card rl" id="rl">
+        <div class="rl__say">
+          <span class="card__title">Your referrals</span>
+          <p class="rl__h"><b data-fill="referrals.counted">23</b> count ·
+             <b data-fill="referrals.waiting">6</b> waiting</p>
+          <p class="rl__s">Waiting friends signed up but have not finished
+             their page. A nudge usually does it.</p>
+          <button class="btn btn--ghost btn--sm rl__go" type="button" data-open-people>
+            View all<span data-ic-in="chev"></span>
+          </button>
+        </div>
+        <div class="rl__viz" aria-hidden="true">
+          <svg class="ring" viewBox="0 0 120 120" id="ring"></svg>
+        </div>
+      </section>
+
+
+      <!-- ══ YOUR STICKERS ═══════════════════════════════════════════════
+           The two stickers as things — a photo each, not a row of text.
+           Tapping a photo opens it full screen; the rows under them are the
+           ones that go somewhere. -->
+
+      <section class="card sk">
+        <div class="card__head">
+          <span class="card__title">Your stickers</span>
+          <span class="chip chip--ok">Working</span>
+        </div>
+
+        <div class="sk__grid">
+          <div class="sk__item">
+            <span class="shot--light"><img class="shot__ph" src="../../assets/photos/codemarca-qr-sticker-cafe-counter-portrait.jpg" alt="Your 4 inch Codemarca sticker on a shop counter" width="1792" height="2400"></span>
+            <span class="sk__t">Big sticker <span class="mono">4″</span></span>
+            <span class="sk__s">Car, bike, shutter</span>
+          </div>
+          <div class="sk__item">
+            <span class="shot--light"><img class="shot__ph" src="../../assets/photos/codemarca-qr-sticker-laptop-office-desk-square.jpg" alt="Your 1.5 inch Codemarca sticker on a laptop lid" width="2048" height="2048"></span>
+            <span class="sk__t">Small sticker <span class="mono">1.5″</span></span>
+            <span class="sk__s">Laptop, bottle, phone case</span>
+          </div>
+        </div>
+
+        <!-- only while a reprint is in transit -->
+        <a class="row sk__row" href="orders.html" data-when="reorder">
+          <span class="row__ic" data-ic="truck"></span>
+          <span class="row__txt"><span class="row__t">More stickers on the way</span>
+            <span class="row__s">Arriving <span data-fill="order.eta">19 Sep 2026</span></span></span>
+          <span class="row__end"><span class="chip chip--warn">On the way</span><span data-ic="chev"></span></span>
+        </a>
+
+        <a class="row sk__row" href="qr.html">
+          <span class="row__ic" data-ic="help"></span>
+          <span class="row__txt"><span class="row__t">Lost or damaged a sticker?</span>
+            <span class="row__s">We reprint the same one</span></span>
+          <span class="row__end" data-ic="chev"></span>
+        </a>
+      </section>
+
+
+      <!-- ══ MORE STICKERS ═══════════════════════════════════════════════
+           Sold with pictures, not paragraphs: real surfaces, one line, one
+           button. -->
+
+      <section class="card restock">
+        <div>
+          <span class="card__title">More stickers</span>
+          <p class="card__h" style="margin-top:var(--s-2)">One more surface, same code.</p>
+        </div>
+
+        <div class="shot shot--light" data-shots>
+          <div class="shot__track">
+            <div class="shot__slide"><img class="shot__ph" src="../../assets/photos/codemarca-qr-sticker-4x4-window-black-offroad.jpg" alt="Codemarca QR sticker on a second car's window" width="2400" height="1792" loading="lazy"></div>
+            <div class="shot__slide"><img class="shot__ph" src="../../assets/photos/codemarca-qr-sticker-cafe-counter.jpg" alt="Codemarca QR sticker on a shop counter" width="2400" height="1792" loading="lazy"></div>
+            <div class="shot__slide"><img class="shot__ph" src="../../assets/photos/codemarca-qr-sticker-motorcycle-rider-city-street.jpg" alt="Codemarca QR sticker on a motorcycle fuel tank" width="2400" height="1792" loading="lazy"></div>
+            <div class="shot__slide"><img class="shot__ph" src="../../assets/photos/codemarca-qr-sticker-salon-mirror-scan.jpg" alt="Someone scanning a Codemarca QR sticker on a salon mirror" width="2400" height="1792" loading="lazy"></div>
+          </div>
+          <div class="shot__dots">
+            <button class="shot__dot" type="button" data-go="0" aria-label="Photo 1"></button>
+            <button class="shot__dot" type="button" data-go="1" aria-label="Photo 2"></button>
+            <button class="shot__dot" type="button" data-go="2" aria-label="Photo 3"></button>
+            <button class="shot__dot" type="button" data-go="3" aria-label="Photo 4"></button>
+          </div>
+        </div>
+
+        <div class="restock__acts">
+          <a class="btn btn--go btn--wide" href="../../select-pack.html?pack=custom&amp;built=1&amp;free=used">
+            Order more stickers
+          </a>
+          <a class="btn btn--quiet btn--sm" href="orders.html">Past orders</a>
+        </div>
+      </section>
+
+
+    </main>
+  </div>
+</div>
+
+<script src="state.js"></script>
+<script src="../../dashboard.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ══ 0. STATE ═════════════════════════════════════════════════════════
+     Every state in this folder is an active account, so there is nothing
+     to pin — the switcher moves between steady, reordering, and the tee
+     unlocked, and all three are drawn from 4-active/state.js. */
+  var a = CM.shell({ page: "home", title: "Home" });
+
+  /* what the builder was left without — nothing here when the page is done */
+  CM.mountTodo(a);
+
+  /* the conditional layer — the "more stickers on the way" row only exists
+     while a reprint is actually in transit */
+  Array.prototype.forEach.call(document.querySelectorAll("[data-when]"), function (el) {
+    if (el.getAttribute("data-when").split(" ").indexOf(a.state) === -1) { el.hidden = true; }
+  });
+
+  var R = a.referrals;
+  var pageUrl = "https://" + CM.url(a.profile.handle);
+  var refUrl  = "https://" + R.link;
+
+  /* ══ 1. FILL ══════════════════════════════════════════════════════════ */
+  var derived = {
+    "user.first":   (a.user.name || "").split(" ")[0],
+    "user.initial": (a.user.name || "?").charAt(0).toUpperCase()
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-fill]"), function (el) {
+    var k = el.getAttribute("data-fill");
+    var v = (k in derived) ? derived[k]
+          : k.split(".").reduce(function (o, p) { return o == null ? o : o[p]; }, a);
+    if (v !== undefined && v !== null && v !== "") { el.textContent = v; }
+  });
+
+  /* ══ 2. YOUR PAGE ═════════════════════════════════════════════════════
+     The square is seeded on the code id, so it matches the stickers. */
+  var pattern = CM.qr(a.code.id);
+  Array.prototype.forEach.call(document.querySelectorAll("[data-qr]"), function (el) {
+    el.innerHTML = pattern;
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-show]"), function (el) {
+    el.addEventListener("click", function () {
+      CM.showCode({ title: a.profile.title, sub: CM.url(a.profile.handle), url: pageUrl, seed: a.code.id });
+    });
+  });
+  document.querySelector("[data-share-page]").addEventListener("click", function () {
+    CM.shareSheet({ title: "Share your page", url: pageUrl, name: a.profile.title });
+  });
+  document.querySelector("[data-mark]").innerHTML = CM.mark();
+  var owner = document.querySelector("[data-owner-view]");
+  owner.href = CM.ROOT + "profile.html?view=owner&handle=" + encodeURIComponent(a.profile.handle) +
+    "&theme=" + encodeURIComponent((a.profile.theme || "").toLowerCase());
+
+  CM.carousel(document.querySelector("[data-shots]"));
+  /* the two sticker photos open full screen too — they are photos, not a
+     door into another tab (Garry, 2026-09-24) */
+  CM.lightbox(document.querySelector(".sk__grid"), ".shot__ph");
+
+  /* ══ 3. THE FIVE TEES ═════════════════════════════════════════════════
+     The designs and the drawing live in dashboard.js (CM.TEES, CM.tee) —
+     2-page-live shows the same five. */
+  var DESIGNS = CM.TEES;
+  function tee(d) { return CM.tee(d, pattern, a); }
+
+  var teesEl = document.getElementById("tees");
+  var pick = { design: null, size: null };
+
+  function drawTees(open) {
+    teesEl.innerHTML = DESIGNS.map(function (d) {
+      var tag = open ? "button" : "div";
+      var attrs = open
+        ? ' type="button" role="radio" aria-checked="' + (pick.design === d.k) + '" data-design="' + d.k + '"'
+        : "";
+      return "<" + tag + ' class="tee"' + attrs + ">" +
+        '<span class="tee__fig">' + tee(d) +
+          '<span class="tee__side">' + d.side + "</span>" +
+          '<span class="tee__tick">' + CM.icon("check") + "</span>" +
+        "</span>" +
+        '<span class="tee__t">' + d.n + "</span>" +
+        '<span class="tee__s">' + d.s + "</span>" +
+      "</" + tag + ">";
+    }).join("");
+  }
+
+  teesEl.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-design]");
+    if (!b) { return; }
+    pick.design = b.getAttribute("data-design");
+    Array.prototype.forEach.call(teesEl.querySelectorAll("[data-design]"), function (x) {
+      x.setAttribute("aria-checked", String(x === b));
+    });
+    readyClaim();
+  });
+
+  /* ══ 4. SIZES + CLAIM ═════════════════════════════════════════════════ */
+  var SIZES = ["S", "M", "L", "XL", "XXL"];
+  var sizesEl = document.getElementById("sizes");
+  sizesEl.innerHTML = SIZES.map(function (s) {
+    return '<button class="size" type="button" role="radio" aria-checked="false" data-size="' + s + '">' + s + "</button>";
+  }).join("");
+  sizesEl.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-size]");
+    if (!b) { return; }
+    pick.size = b.getAttribute("data-size");
+    Array.prototype.forEach.call(sizesEl.children, function (x) {
+      x.setAttribute("aria-checked", String(x === b));
+    });
+    readyClaim();
+  });
+
+  var claimGo = document.getElementById("claimGo");
+  function readyClaim() {
+    var ok = pick.design && pick.size;
+    claimGo.disabled = !ok;
+    claimGo.textContent = ok ? "Claim my tee"
+      : !pick.design && !pick.size ? "Pick a design and a size"
+      : !pick.design ? "Pick a design" : "Pick a size";
+  }
+  claimGo.addEventListener("click", function () {
+    var d = DESIGNS.filter(function (x) { return x.k === pick.design; })[0];
+    CM.dialog({
+      title: "Claim the " + d.n + " tee, size " + pick.size + "?",
+      body: "It is printed with your code, so the design and size cannot change once it goes to print.",
+      actions: [
+        { id: "yes", label: "Claim it", kind: "go" },
+        { id: "no",  label: "Go back",  kind: "quiet" }
+      ],
+      onPick: function (id) {
+        if (id !== "yes") { return; }
+        document.getElementById("claim").hidden = true;
+        document.getElementById("claimedWhat").textContent = d.n + ", size " + pick.size;
+        document.getElementById("claimed").hidden = false;
+        drawTees(false);
+        var chosen = DESIGNS.indexOf(d);
+        teesEl.children[chosen].setAttribute("aria-checked", "true");
+        document.getElementById("teesHint").textContent = "Your pick";
+        CM.toast("Tee claimed");
+      }
+    });
+  });
+
+  /* ══ 5. THE METER ═════════════════════════════════════════════════════
+     One function paints both states. `n` is the counted total. */
+  function paintRef(n) {
+    var goal = R.goal, open = n >= goal, left = Math.max(0, goal - n);
+    document.getElementById("refN").textContent = Math.min(n, goal);
+    document.getElementById("refFill").style.width = Math.min(100, n / goal * 100) + "%";
+    document.getElementById("refBar").setAttribute("aria-valuenow", Math.min(n, goal));
+
+    document.getElementById("refH").textContent = open
+      ? "50 friends. Your tee is unlocked."
+      : "Bring 50 friends. Wear your code.";
+    document.getElementById("refP").innerHTML = open
+      ? "Pick the design you want and your size — we print it with <b>your own code</b> and send it to you."
+      : "Get a black tee printed with your own QR, in one of five designs. A friend counts once they " +
+        "<b>sign up with your link and finish their page</b> — they don’t have to order anything.";
+    document.getElementById("refSub").innerHTML = open
+      ? "<b>Goal reached.</b> Keep sharing — friends who join still get their own page."
+      : "<b>" + left + " more</b> to go · " + R.waiting + " friends are still building their page";
+
+    document.getElementById("teesHint").textContent = open ? "Tap one to choose" : "You pick one at 50";
+    document.getElementById("refShare").hidden = open;
+    document.getElementById("claim").hidden = !open;
+    document.getElementById("claimed").hidden = true;
+    pick = { design: null, size: null };
+    Array.prototype.forEach.call(sizesEl.children, function (x) { x.setAttribute("aria-checked", "false"); });
+    readyClaim();
+    drawTees(open);
+  }
+
+  document.querySelector("[data-copy-ref]").addEventListener("click", function () {
+    CM.copy(refUrl, "Invite link copied");
+  });
+  document.querySelector("[data-share-ref]").addEventListener("click", function () {
+    CM.shareSheet({ title: "Invite friends", url: refUrl, name: a.profile.title });
+  });
+
+
+  paintRef(R.counted);
+
+  /* ══ 6. REFERRALS — the ring, and the list in a sheet ════════════════
+     Ring = friends who joined through you. Ink for the ones that count,
+     amber for the ones still building their page. */
+  (function ring() {
+    var joined = R.counted + R.waiting, r = 50, C = 2 * Math.PI * r;
+    var done = joined ? C * R.counted / joined : 0;
+    document.getElementById("ring").innerHTML =
+      '<circle cx="60" cy="60" r="' + r + '" fill="none" stroke="var(--warn-tint)" stroke-width="12"/>' +
+      (R.waiting ? '<circle cx="60" cy="60" r="' + r + '" fill="none" stroke="var(--warn)" stroke-opacity=".55" stroke-width="12"' +
+        ' stroke-dasharray="' + (C - done) + " " + C + '" stroke-dashoffset="' + (-done) + '" transform="rotate(-90 60 60)" stroke-linecap="butt"/>' : "") +
+      '<circle cx="60" cy="60" r="' + r + '" fill="none" stroke="var(--ink)" stroke-width="12"' +
+        ' stroke-dasharray="' + done + " " + C + '" transform="rotate(-90 60 60)"/>' +
+      '<text x="60" y="58" text-anchor="middle" font-size="28" font-weight="800" fill="var(--ink)">' + joined + "</text>" +
+      '<text x="60" y="78" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink-soft)">joined</text>';
+  })();
+
+  function peopleHtml() {
+    return '<span class="tally">' +
+        '<span class="chip chip--ok">' + R.counted + " count</span>" +
+        '<span class="chip chip--warn">' + R.waiting + " waiting</span>" +
+      "</span>" +
+      '<div class="rows people">' + R.people.map(function (p, i) {
+        return '<div class="row row--static">' +
+          '<span class="people__av"' + (p.done ? " data-done" : "") + ">" + p.name.charAt(0) + "</span>" +
+          '<span class="row__txt">' +
+            '<span class="row__t">' + p.name + "</span>" +
+            '<span class="row__s">Joined ' + p.joined + " · " + (p.done ? "page finished" : "page not finished") + "</span>" +
+          "</span>" +
+          '<span class="row__end">' +
+            (p.done
+              ? '<span class="chip chip--ok">Counts</span>'
+              : '<button class="btn btn--ghost btn--sm" type="button" data-nudge="' + i + '">Nudge</button>') +
+          "</span>" +
+        "</div>";
+      }).join("") + "</div>" +
+      '<p class="card__note">“Waiting” means signed up, page not finished yet. It counts the moment they finish.</p>';
+  }
+
+  document.querySelector("[data-open-people]").addEventListener("click", function () {
+    CM.sheet({
+      title: "Your referrals",
+      html: peopleHtml(),
+      onOpen: function (panel) {
+        panel.addEventListener("click", function (e) {
+          var b = e.target.closest("[data-nudge]");
+          if (!b) { return; }
+          var p = R.people[Number(b.getAttribute("data-nudge"))];
+          b.disabled = true;
+          b.textContent = "Nudged";
+          CM.toast(p.name.split(" ")[0] + " gets a reminder to finish their page");
+        });
+      }
+    });
+  });
+
+  fillIcons();
+
+  /* ══ 7. ICON SLOTS ════════════════════════════════════════════════════ */
+  function fillIcons() {
+    Array.prototype.forEach.call(document.querySelectorAll("[data-ic]"), function (el) {
+      var n = el.getAttribute("data-ic");
+      el.insertAdjacentHTML("afterbegin", CM.icon(n, n === "chev" ? "row__chev" : ""));
+      el.removeAttribute("data-ic");
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-ic-in]"), function (el) {
+      el.outerHTML = CM.icon(el.getAttribute("data-ic-in"));
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-ic-btn]"), function (el) {
+      el.innerHTML = CM.icon(el.getAttribute("data-ic-btn"));
+    });
+  }
+})();
+</script>

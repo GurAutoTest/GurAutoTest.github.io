@@ -1,0 +1,84 @@
+<title>Orders · Codemarca</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../dashboard.css">
+<link rel="stylesheet" href="../../tab-orders.css">
+
+<!-- ==========================================================================
+     CODEMARCA — ORDERS  ·  flow 1, empty account
+     Nothing has been bought, in any state of this flow. So this screen has
+     one job, and it is NOT to sell a pack: it is to get a page built.
+
+     Priority, from Garry, 2026-09-16 — a customer with a page and no pack
+     is worth more than a pack with no page. The page is the product; the
+     sticker is a way of handing it out. So "Build my page" is the loud
+     button and "just send me stickers" is the quiet one underneath — there,
+     because we do not block anyone who only wants the sticker, but second.
+
+     The `scanned` state is the person who was GIFTED a pack: the sticker is
+     already in their hand, so there is nothing to order at all. What they
+     need is the page behind it.
+     ========================================================================== -->
+
+<div class="app">
+  <div class="app__main">
+    <main class="view">
+
+      <!-- ── nothing ordered, no sticker in hand ───────────────────── -->
+
+      <section class="card" data-when="fresh returning">
+        <div class="empty">
+          <span class="empty__ic" data-ic="box"></span>
+          <span class="empty__t">No orders yet</span>
+          <p class="empty__p" data-fold>Build your page first. A page with no sticker is
+             still a link you can send anyone — a sticker with no page behind
+             it opens nothing. It takes about two minutes, and your code is
+             made the moment you finish.</p>
+        </div>
+
+        <!-- what is being talked about, in photos (Garry, 2026-09-24) -->
+        <div class="ps" data-strip>
+          <div class="ps__row">
+            <img class="ps__ph" src="../../assets/photos/codemarca-qr-sticker-car-rear-window.jpg" alt="Codemarca QR sticker on a car's rear window" width="2400" height="1792" loading="lazy">
+            <img class="ps__ph" src="../../assets/photos/codemarca-qr-sticker-backpack-college-campus.jpg" alt="Codemarca QR sticker on a student's backpack on a college campus" width="2400" height="1792" loading="lazy">
+            <img class="ps__ph" src="../../assets/photos/codemarca-qr-sticker-water-bottle-gym.jpg" alt="Codemarca QR sticker on a water bottle at the gym" width="2400" height="1792" loading="lazy">
+            <img class="ps__ph" src="../../assets/photos/codemarca-qr-sticker-cafe-counter.jpg" alt="Codemarca QR sticker on a café counter" width="2400" height="1792" loading="lazy">
+          </div>
+          <span class="ps__bar" aria-hidden="true"><i></i></span>
+        </div>
+
+        <div class="empty" style="padding-top:0">
+          <a class="btn btn--go" href="../../onboarding.html">Build my page</a>
+          <a class="btn btn--quiet btn--sm" href="../../select-pack.html"
+             style="margin-top:var(--s-1)">Or just send me the stickers</a>
+        </div>
+
+      </section>
+
+
+      <!-- ── someone gifted them a pack ────────────────────────────────── -->
+
+      <section class="card" data-when="scanned">
+        <div class="empty">
+          <span class="empty__ic" data-ic="tag"></span>
+          <span class="empty__t">Nothing to order — yours was a gift</span>
+          <p class="empty__p"><b data-fill="giftedBy.name">Arjun M.</b> paid for
+             the stickers you are holding, and signing in made that code yours.
+             It is live — it just opens a page with only your name on it.</p>
+          <a class="btn btn--go" href="../../onboarding.html" style="margin-top:var(--s-2)">Build my page</a>
+        </div>
+      </section>
+
+      <div data-orders></div>
+
+    </main>
+  </div>
+</div>
+
+<script src="state.js"></script>
+<script src="../../dashboard.js"></script>
+<script src="../../tab-orders.js"></script>
+<script>CM.strip(document.querySelector("[data-strip]"));</script>

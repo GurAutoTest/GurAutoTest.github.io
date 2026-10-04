@@ -1,0 +1,260 @@
+<title>Codemarca</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="tokens.css">
+
+<!-- ==========================================================================
+     CODEMARCA — THE SCAN LANDING
+     What a phone opens when it scans codemarca.com/c/<id> and there is no
+     finished page behind that code. A code WITH a page never reaches this
+     screen — it goes straight to profile.html.
+
+     FOUR ANSWERS, and which one shows is the server's call, not a choice
+     made here. ?state= is only so all four can be reviewed.
+
+       gift     A gifted sticker nobody has claimed. The buyer's message
+                comes FIRST — decided 2026-09-27, it is the only thing they
+                get to say — and under it the claim: a name, then Google.
+                WHOEVER SCANS AND SIGNS UP OWNS IT. No check on who they
+                are; that is the rule, brother, servant or stranger.
+       waiting  The code already belongs to someone who has not built their
+                page. A stranger gets a plain "not set up yet" and nothing
+                to claim. The owner gets a way back in.
+       paused   The owner switched it off. Their page is untouched.
+       unknown  Not a code we know. Mistyped, or a very old sticker.
+
+     THE NAME FIELD is a head start, not a form: whatever is typed carries
+     into onboarding so the first screen is already half filled. Google is
+     what actually creates the account.
+     ========================================================================== -->
+
+<style>
+*{box-sizing:border-box; margin:0; padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  min-height:100dvh; display:flex; flex-direction:column;
+  font-family:var(--font-sans); background:var(--ground-soft); color:var(--ink);
+  letter-spacing:var(--ls-body); line-height:var(--lh-body);
+  padding:var(--s-5) var(--gutter) calc(var(--s-10) + env(safe-area-inset-bottom));
+}
+:focus-visible{outline:none; box-shadow:var(--focus-ring); border-radius:var(--r-xs)}
+
+.wrap{width:100%; max-width:26rem; margin-inline:auto; display:flex; flex-direction:column; gap:var(--s-5)}
+.brand{display:flex; justify-content:center; padding-block:var(--s-2)}
+.brand svg{height:var(--logo-h); width:auto}
+
+.card{
+  display:flex; flex-direction:column; gap:var(--s-4);
+  padding:var(--s-6) var(--s-5); border-radius:var(--r-lg);
+  background:var(--ground); box-shadow:var(--shadow-md);
+}
+.ic{
+  display:grid; place-items:center; width:52px; height:52px; border-radius:50%;
+  background:var(--ground-sunk); color:var(--ink);
+}
+.ic svg{width:24px; height:24px}
+.ic--gift{background:var(--brand-violet-tint); color:var(--brand-violet)}
+.ic--off{background:var(--caution-tint); color:var(--caution)}
+
+.h{font-size:clamp(1.375rem,5.4vw,1.75rem); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display); line-height:1.12; text-wrap:balance}
+.p{font-size:var(--fs-sm); color:var(--ink-mid); letter-spacing:var(--ls-soft)}
+.p b{color:var(--ink); font-weight:var(--fw-bold)}
+
+/* the buyer's note — the first thing on the screen, in their words */
+.note{
+  padding:var(--s-5); border-radius:var(--r-md);
+  background:var(--brand-violet-tint); box-shadow:inset 0 0 0 1px var(--brand-violet-edge);
+}
+.note__q{font-size:1.0625rem; line-height:1.5; font-weight:var(--fw-semibold); color:var(--ink)}
+.note__from{display:block; margin-top:var(--s-3); font-size:var(--fs-xs);
+  color:var(--brand-violet-press); font-weight:var(--fw-bold); letter-spacing:var(--ls-soft)}
+
+.lbl{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.inp{
+  display:flex; align-items:center; min-height:var(--control-h); padding-inline:var(--s-4);
+  border-radius:var(--r-md); background:var(--ground); box-shadow:inset 0 0 0 1.5px var(--line-strong);
+  transition:box-shadow var(--dur) var(--ease);
+}
+.inp:focus-within{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.inp input{flex:1; min-width:0; border:0; background:none; outline:none; font:inherit;
+  font-size:var(--fs-body); font-weight:var(--fw-semibold); color:var(--ink)}
+.inp input::placeholder{color:var(--ink-faint); font-weight:var(--fw-medium)}
+
+.btn{
+  display:flex; align-items:center; justify-content:center; gap:var(--s-3);
+  height:var(--btn-h); padding-inline:var(--s-5); border:0; cursor:pointer;
+  border-radius:var(--r-pill); font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-bold);
+  text-decoration:none; transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.btn--go{background:var(--ink); color:var(--ink-invert)}
+.btn--go:hover{background:var(--ink-strong)}
+.btn--ghost{background:var(--ground); color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+.btn--ghost:hover{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.btn svg{width:18px; height:18px}
+
+.code{font-family:var(--font-mono); font-size:var(--fs-xs); color:var(--ink-faint);
+  text-align:center; letter-spacing:var(--ls-soft)}
+
+/* what this thing even is — for someone who has never heard of us */
+.what{display:flex; gap:var(--s-4); align-items:center; padding:var(--s-4) var(--s-5);
+  border-radius:var(--r-lg); background:var(--ground); box-shadow:var(--shadow-sm);
+  text-decoration:none; color:inherit}
+.what:hover .what__t{text-decoration:underline; text-underline-offset:3px}
+.what__t{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.what__s{font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:var(--ls-soft)}
+.what svg{width:20px; height:20px; color:var(--brand-violet); flex-shrink:0}
+
+[hidden]{display:none !important}
+
+/* review tool — delete with the demo switcher */
+.demo{position:fixed; left:50%; bottom:var(--s-4); transform:translateX(-50%); z-index:60;
+  display:flex; align-items:center; gap:var(--s-3); padding:var(--s-2) var(--s-3) var(--s-2) var(--s-5);
+  border-radius:var(--r-pill); background:var(--ink); box-shadow:var(--shadow-lg)}
+.demo span{font-family:var(--font-mono); font-size:var(--fs-label); text-transform:uppercase;
+  letter-spacing:var(--ls-label); color:rgba(255,255,255,.55)}
+.demo select{border:0; border-radius:var(--r-pill); padding:6px var(--s-3);
+  background:rgba(255,255,255,.1); color:#fff; font:inherit; font-size:var(--fs-xs); font-weight:var(--fw-bold)}
+</style>
+
+<div class="wrap">
+
+  <a class="brand" href="homepage.html" aria-label="Codemarca"></a>
+
+  <!-- ══ GIFT — unclaimed, and the buyer left a note ════════════════════ -->
+  <div class="card" data-when="gift">
+    <span class="ic ic--gift" data-ic="gift"></span>
+    <h1 class="h">Someone sent you this.</h1>
+
+    <div class="note">
+      <p class="note__q" data-msg>Stick it on your bike. Happy birthday!</p>
+      <b class="note__from">— <span data-from>Arjun</span></b>
+    </div>
+
+    <p class="p">These stickers are yours. Put your name in and this code opens
+       your own contact page — number, WhatsApp, socials, all on one tap.</p>
+
+    <form data-claim>
+      <label class="lbl" for="nm">Your name</label>
+      <div class="inp" style="margin-top:var(--s-2)"><input id="nm" type="text" maxlength="40"
+        autocomplete="name" placeholder="Simran Kaur" required></div>
+      <button class="btn btn--go" type="submit" style="width:100%; margin-top:var(--s-4)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#EA4335" d="M12 10.2v3.9h5.5a4.7 4.7 0 0 1-2 3.1l3.2 2.5c1.9-1.7 3-4.3 3-7.3 0-.7-.1-1.4-.2-2z" opacity=".001"/><circle cx="12" cy="12" r="9" fill="#fff"/><path d="M20.6 12.2c0-.6-.1-1.2-.2-1.8H12v3.5h4.8a4.1 4.1 0 0 1-1.8 2.7v2.2h2.9c1.7-1.6 2.7-3.9 2.7-6.6z" fill="#4285F4"/><path d="M12 21c2.4 0 4.5-.8 6-2.2l-2.9-2.2c-.8.5-1.8.9-3.1.9-2.4 0-4.4-1.6-5.1-3.8H3.9v2.3A9 9 0 0 0 12 21z" fill="#34A853"/><path d="M6.9 13.7a5.4 5.4 0 0 1 0-3.4V8H3.9a9 9 0 0 0 0 8z" fill="#FBBC05"/><path d="M12 6.6c1.3 0 2.5.5 3.4 1.4l2.6-2.6A9 9 0 0 0 3.9 8l3 2.3c.7-2.2 2.7-3.7 5.1-3.7z" fill="#EA4335"/></svg>
+        Continue with Google
+      </button>
+    </form>
+
+    <p class="p" style="font-size:var(--fs-xs)">Whoever signs up first keeps this
+       code. It is free — the stickers are already paid for.</p>
+  </div>
+
+  <!-- ══ WAITING — owned, page not built ════════════════════════════════ -->
+  <div class="card" data-when="waiting" hidden>
+    <span class="ic" data-ic="qr"></span>
+    <h1 class="h">This code is not set up yet.</h1>
+    <p class="p">It belongs to someone who has not finished their page. Nothing
+       to see here for now — try again in a day or two.</p>
+    <a class="btn btn--ghost" href="signup.html?mode=login">Is this yours? Log in</a>
+  </div>
+
+  <!-- ══ PAUSED — the owner switched it off ═════════════════════════════ -->
+  <div class="card" data-when="paused" hidden>
+    <span class="ic ic--off" data-ic="pause"></span>
+    <h1 class="h">This code is paused.</h1>
+    <p class="p">Its owner has switched it off for now. The sticker still works
+       — it just will not open anything until they switch it back on.</p>
+    <a class="btn btn--ghost" href="signup.html?mode=login">Is this yours? Log in</a>
+  </div>
+
+  <!-- ══ UNKNOWN ════════════════════════════════════════════════════════ -->
+  <div class="card" data-when="unknown" hidden>
+    <span class="ic" data-ic="help"></span>
+    <h1 class="h">We don't know this code.</h1>
+    <p class="p">Check the sticker and try the scan again. If it keeps happening,
+       the code may have been retired.</p>
+    <a class="btn btn--ghost" href="contact.html">Tell us about it</a>
+  </div>
+
+  <p class="code">codemarca.com/c/<span data-code>q4v8n1</span></p>
+
+  <a class="what" href="homepage.html">
+    <span data-ic="spark"></span>
+    <span>
+      <span class="what__t">What is Codemarca?</span>
+      <span class="what__s">One QR sticker. Your number, links and socials, one tap away.</span>
+    </span>
+  </a>
+
+</div>
+
+<script src="dashboard.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* The server decides which of the four this is. ?state= only exists so
+     all four can be looked at; ?msg and ?from stand in for what a gift
+     order carries. */
+  var q = new URLSearchParams(location.search);
+  var state = q.get("state") || "gift";
+  var code  = q.get("code") || "q4v8n1";
+
+  function one(s) { return document.querySelector(s); }
+
+  one(".brand").innerHTML = CM.wordmark();
+  one("[data-code]").textContent = code;
+  if (q.get("msg"))  { one("[data-msg]").textContent = q.get("msg"); }
+  if (q.get("from")) { one("[data-from]").textContent = q.get("from"); }
+
+  /* a gift with no message loses the quote block, not the screen */
+  if (state === "gift" && !one("[data-msg]").textContent.trim()) {
+    one(".note").hidden = true;
+  }
+
+  function paint() {
+    Array.prototype.forEach.call(document.querySelectorAll("[data-when]"), function (el) {
+      el.hidden = el.getAttribute("data-when") !== state;
+    });
+  }
+  paint();
+
+  Array.prototype.forEach.call(document.querySelectorAll("[data-ic]"), function (el) {
+    el.insertAdjacentHTML("afterbegin", CM.icon(el.getAttribute("data-ic")));
+  });
+
+  /* The name is a head start for onboarding, nothing more — Google is what
+     makes the account, and the code is attached to whoever that turns out
+     to be. */
+  one("[data-claim]").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = one("#nm").value.trim();
+    if (!name) { return; }
+    location.href = "onboarding.html?name=" + encodeURIComponent(name) +
+      "&handle=" + encodeURIComponent(name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")) +
+      "&claim=" + encodeURIComponent(code);
+  });
+
+  /* ══ review tool — delete before launch ════════════════════════════
+     ?chrome=0 leaves it out: the dashboard embeds this page as a preview,
+     and a demo switcher inside that frame would read as part of the
+     product. */
+  if (q.get("chrome") === "0") { return; }
+
+  var d = document.createElement("div");
+  d.className = "demo";
+  d.innerHTML = '<span>Scan state</span><select aria-label="Preview state">' +
+    '<option value="gift">1 · Gifted, unclaimed</option>' +
+    '<option value="waiting">2 · Owned, no page</option>' +
+    '<option value="paused">3 · Paused</option>' +
+    '<option value="unknown">4 · Unknown code</option></select>';
+  d.querySelector("select").value = state;
+  d.querySelector("select").addEventListener("change", function (e) {
+    state = e.target.value;
+    paint();
+  });
+  document.body.appendChild(d);
+})();
+</script>

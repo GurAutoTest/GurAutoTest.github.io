@@ -1,0 +1,278 @@
+<title>Home · Codemarca</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../dashboard.css">
+<link rel="stylesheet" href="../../home.css">
+
+<!-- ==========================================================================
+     CODEMARCA — HOME  ·  flow 2, page live, no pack
+     The page is built and public, and — this is the part the old dashboard
+     could not show — the CODE ALREADY EXISTS. One profile = one QR, minted
+     with the page, not with an order.
+
+     That changes what this screen is. It is not a waiting room for a
+     parcel. It is a working pass: here is your page, here is your code,
+     here is the link, take them anywhere today. The pack is then sold with
+     the object in the person's hand rather than as a promise — stickers put
+     this exact square on the things you already carry.
+
+     ORDER OF THE SCREEN
+       1  YOU          dark card: photo, name, QR, the link as the share
+                       button, Edit page — the same card 4-active opens with.
+       2  GET THE PACK the ask, and the only dark object on the screen.
+                       `coming`: replaced by the order card — already asked.
+       3  FREE TEE     50 friends who finish their page → a tee with your
+                       code. No order needed, so it is sold here too.
+     ========================================================================== -->
+
+<style>
+/* the free tee card (.rf) lives in home.css — 3-pack-coming uses it too */
+</style>
+
+<div class="app">
+  <div class="app__main">
+    <main class="view">
+
+      <!-- ══ WHO JUST WALKED IN ══════════════════════════════════════════ -->
+
+      <header class="head" data-when="fresh">
+        <div class="head__row">
+          <div>
+            <h1>Your page is live.</h1>
+            <p>Anyone with the link can save your details already, and your
+               code is made. The stickers are what let you stop sending the
+               link at all.</p>
+          </div>
+        </div>
+      </header>
+
+      <header class="head" data-when="coming">
+        <div class="head__row">
+          <div>
+            <h1>Your pack is on the way.</h1>
+            <p>Your page is already live and your QR already works. The
+               stickers just carry it onto the things you use every day.</p>
+          </div>
+        </div>
+      </header>
+
+      <header class="head" data-when="settled">
+        <div class="head__row">
+          <div>
+            <h1>Hey, <span data-fill="user.first">Garry</span>.</h1>
+            <p>Your page has been live a while and you have sent the link
+               <b data-fill="shares">31</b> times. A sticker is that link,
+               already on the thing you were holding.</p>
+          </div>
+        </div>
+      </header>
+
+
+      <!-- ══ YOU ═════════════════════════════════════════════════════════
+           Who you are, your code, your link — nothing that is ON the page.
+           The link is the share button (Linktree's pill); editing happens
+           in the Profile tab, which "Edit page" opens. -->
+
+      <section class="card me">
+        <span class="me__mark" data-mark></span>
+
+        <div class="me__top">
+          <span class="me__av" data-fill="user.initial">G</span>
+          <span class="me__who">
+            <span class="me__name" data-fill="profile.title">Garry Singh</span>
+            <span class="me__live"><i></i>Live</span>
+          </span>
+          <button class="me__qr" type="button" data-show data-qr
+                  aria-label="Show my QR full screen"></button>
+        </div>
+
+        <button class="me__link" type="button" data-share-page aria-label="Share my page">
+          <span class="me__url"><span>codemarca.com/</span><b data-fill="profile.handle">garry</b></span>
+          <span class="me__share"><span data-ic-in="share"></span><span class="me__share-t">Share</span></span>
+        </button>
+
+        <div class="me__acts">
+          <a class="me__btn" href="profile.html"><span data-ic-in="pen"></span>Edit page</a>
+          <a class="me__btn" href="../../profile.html?view=owner&amp;handle=garry"
+             target="_blank" rel="noopener" data-owner-view><span data-ic-in="eye"></span>View page</a>
+        </div>
+      </section>
+
+
+
+      <!-- ══ WHAT IS STILL MISSING ════════════════════════════════════════
+           Onboarding's Save & exit lets people leave with a live page that
+           is half filled in, so the same checklist lives here. Drawn by
+           CM.mountTodo; not rendered at all when nothing is missing. -->
+
+      <section class="card todo" data-page-todo hidden></section>
+
+      <!-- ══ THE ASK ═════════════════════════════════════════════════════ -->
+
+      <section class="card card--dark card--close card--act" data-when="fresh settled">
+        <div class="pack2">
+
+          <div class="pack2__say">
+            <span class="card__title">Next</span>
+            <p class="card__h" style="margin-top:var(--s-2)">Get your two stickers.</p>
+            <p class="card__note" style="margin-top:var(--s-2)">
+              A 4″ for the car, bike or shutter and a 1.5″ for a laptop, bottle
+              or phone case — both printed with <b>the code you already have</b>.
+              Someone scans, your page opens, your details save to their phone.
+              The pack is free — delivery from <b data-fill="fee">₹49</b>, set by your pincode.
+            </p>
+          </div>
+
+          <div class="pack2__show">
+            <div class="shot" data-shots>
+              <div class="shot__track">
+                <div class="shot__slide"><img class="shot__ph" src="../../assets/photos/codemarca-qr-sticker-car-rear-window-night-street.jpg" alt="Codemarca 4 inch QR sticker on a car's rear window at night" width="2400" height="1792" loading="lazy"></div>
+                <div class="shot__slide"><img class="shot__ph" src="../../assets/photos/codemarca-qr-sticker-phone-case-studio.jpg" alt="Codemarca 1.5 inch QR sticker on a phone case" width="2400" height="1792" loading="lazy"></div>
+                <div class="shot__slide"><img class="shot__ph" src="../../assets/photos/codemarca-qr-sticker-car-window-scan-parking.jpg" alt="Someone scanning a Codemarca QR sticker on a car window" width="2400" height="1792" loading="lazy"></div>
+              </div>
+              <div class="shot__dots">
+                <button class="shot__dot" type="button" data-go="0" aria-label="Photo 1"></button>
+                <button class="shot__dot" type="button" data-go="1" aria-label="Photo 2"></button>
+                <button class="shot__dot" type="button" data-go="2" aria-label="Photo 3"></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="pack2__cta">
+            <a class="btn btn--go btn--wide" href="../../select-pack.html?built=1">Get my pack</a>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ══ THE PARCEL — `coming` only ═══════════════════════════════════
+           Takes the pack card's place once the pack is ordered. Nothing to
+           do here: the page is live, the code works, the timeline is on
+           Orders. -->
+
+      <section class="card" data-when="coming">
+        <div class="card__head">
+          <span class="card__title">Order <span class="mono" data-fill="order.id">CM-5214</span></span>
+          <span class="chip chip--flat">Placed</span>
+        </div>
+
+        <div class="item">
+          <span class="item__ic" data-ic="box"></span>
+          <span class="item__txt">
+            <span class="item__t" data-fill="order.items">Codemarca pack — 2 stickers</span>
+            <span class="item__s">Expected <span data-fill="order.eta">4 Oct 2026</span>
+              · both carry the code you already have</span>
+          </span>
+        </div>
+
+        <div class="card__foot">
+          <a class="btn btn--ghost btn--sm btn--grow" href="orders.html">Order details</a>
+        </div>
+      </section>
+
+
+      <!-- ══ FREE TEE ════════════════════════════════════════════════════
+           The referral, sold before the pack is. The tee needs no order —
+           not from this person and not from their friends — so it is the
+           one reward a page-only account can already earn. Paper, not dark:
+           the pack card above stays the one dark object on the screen. -->
+
+      <section class="card rf">
+
+        <div class="rf__say">
+          <span class="card__title">Free tee · no order needed</span>
+          <h2 class="rf__h">Bring 50 friends. Wear your code.</h2>
+          <p class="rf__p">A black tee printed with your own QR, free, in one of five
+             designs. A friend counts once they <b>sign up with your link and
+             finish their page</b>. Nobody has to buy anything, you included.</p>
+        </div>
+
+        <div class="rf__meter">
+          <div class="rf__count">
+            <b class="rf__n" data-fill="referrals.counted">0</b><span class="rf__of">/ <span data-fill="referrals.goal">50</span></span>
+          </div>
+          <div class="rf__bar" role="progressbar" aria-valuemin="0" aria-valuemax="50" id="rfBar">
+            <div class="rf__fill" id="rfFill"></div>
+          </div>
+          <span class="rf__sub" id="rfSub"></span>
+        </div>
+
+        <div class="rf__share">
+          <div class="linkbox">
+            <span class="linkbox__url"><span>codemarca.com/r/</span><b data-fill="profile.handle">garry</b></span>
+            <button type="button" data-ic-btn="copy" aria-label="Copy my invite link" data-copy-ref></button>
+          </div>
+          <button class="btn btn--go" type="button" data-share-ref>
+            <span data-ic-in="share"></span>Invite friends
+          </button>
+        </div>
+
+        <div>
+          <div class="rf__head">
+            <span class="card__title" id="teesTitle">The five designs</span>
+            <span class="rf__hint">You pick one at 50</span>
+          </div>
+          <div class="rf__tees" id="tees" aria-labelledby="teesTitle"></div>
+        </div>
+      </section>
+
+
+    </main>
+  </div>
+</div>
+
+<script src="state.js"></script>
+<script src="../../dashboard.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var a = CM.shell({ page: "home", title: "Home" });
+
+  /* what the builder was left without — nothing here when the page is done */
+  CM.mountTodo(a);
+  var pageUrl = "https://" + CM.url(a.profile.handle);
+
+  /* the square, seeded on the code id so it matches the QR tab and every
+     sticker this account will ever be sent */
+  var pattern = CM.qr(a.code.id);
+  Array.prototype.forEach.call(document.querySelectorAll("[data-qr]"), function (el) {
+    el.innerHTML = pattern;
+  });
+
+  var open = function () {
+    CM.showCode({
+      title: a.profile.title,
+      sub:   CM.url(a.profile.handle),
+      url:   pageUrl,
+      seed:  a.code.id
+    });
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-show]"), function (el) {
+    el.addEventListener("click", open);
+  });
+
+  document.querySelector("[data-share-page]").addEventListener("click", function () {
+    CM.shareSheet({ title: "Share your page", url: pageUrl, name: a.profile.title });
+  });
+  document.querySelector("[data-mark]").innerHTML = CM.mark();
+
+  var owner = document.querySelector("[data-owner-view]");
+  owner.href = CM.ROOT + "profile.html?view=owner&handle=" +
+    encodeURIComponent(a.profile.handle) +
+    "&theme=" + encodeURIComponent((a.profile.theme || "").toLowerCase());
+
+  CM.carousel(document.querySelector("[data-shots]"));
+
+  /* the free tee — the meter, the invite link, and the five designs */
+  CM.referCard(a, pattern);
+
+  CM.draw(a, CM.assign(CM.derived(a), {
+    "profile.at": a.profile.handle,
+    "fee":        CM.money(49)
+  }));
+})();
+</script>

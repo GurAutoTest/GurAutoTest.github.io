@@ -1,0 +1,226 @@
+/* ==========================================================================
+   CODEMARCA — SITE PAGES (legal, about, how it works)
+   Shared by privacy/terms/refund/shipping (payment gateways ask for them
+   live) and about/how-it-works, built 2026-09-29 for phase 1. Tokens, nav,
+   head and footer are copied from contact.html so the pages match it.
+   ========================================================================== */
+
+/* ── 0. TOKENS ─────────────────────────────────────────────────────────── */
+:root {
+  --brand-violet:#6E27E6; --brand-violet-lift:#A171F4; --brand-violet-press:#5A1DC4;
+  --brand-violet-tint:#F1E9FE; --brand-violet-edge:#DCC9FB;
+
+  --ink:#101215; --ink-mid:#5B5D68; --ink-soft:#8C8E9C; --ink-faint:#B6B8C4;
+  --ink-invert:#FFFFFF;
+
+  --ground:#FFFFFF; --ground-soft:#F4F3F7; --ground-sunk:#EDEBF2;
+  --ground-dark:#101215; --ground-dark-2:#1B1D24;
+
+  --line:rgba(16,18,21,.09); --line-strong:rgba(16,18,21,.16);
+  --line-invert:rgba(255,255,255,.14);
+
+  --bad:#C4342B; --ok:#17914F; --ok-press:#12783F; --ok-tint:#E7F6ED; --ok-deep:#0C7A41; --ok-lift:#4FD98C;
+
+  --font-sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+
+  /* Page title = the "Get your pack" headline on signup.html, on purpose. */
+  --fs-title:clamp(2.125rem,3.6vw,2.875rem);
+  --fs-h3:clamp(1.375rem,2.3vw,1.875rem);
+  --fs-lead:clamp(1.0625rem,1.5vw,1.3125rem);
+  --fs-body:1.0625rem; --fs-sm:.9375rem; --fs-xs:.8125rem; --fs-label:.75rem;
+
+  --ls-display:-.042em; --ls-heading:-.032em; --ls-body:-.011em; --ls-label:.14em; --ls-soft:.14px;
+  --fw-medium:500; --fw-semibold:600; --fw-bold:700; --fw-black:800;
+
+  --s-1:.25rem; --s-2:.5rem; --s-3:.75rem; --s-4:1rem; --s-5:1.25rem;
+  --s-6:1.5rem; --s-8:2rem; --s-10:2.5rem; --s-12:3rem; --s-16:4rem; --s-20:5rem;
+  --section-y:clamp(4rem,8vw,7rem);
+
+  --shell:1200px; --shell-wide:1360px;
+  --gutter:clamp(1.25rem,4vw,2.5rem); --nav-h:72px;
+  --logo-h:24px; --logo-h-footer:20px;
+
+  --r-xs:6px; --r-sm:10px; --r-md:16px; --r-lg:24px; --r-xl:32px; --r-pill:999px;
+
+  --shadow-sm:0 1px 2px rgba(16,18,21,.05);
+  --shadow-md:0 6px 20px rgba(16,18,21,.07);
+
+  --btn-h:52px;
+  --focus-ring:0 0 0 3px var(--ground-sunk),0 0 0 5px var(--ink);
+
+  --dur-fast:140ms; --dur:260ms; --dur-slow:620ms;
+  --ease:cubic-bezier(.22,.61,.36,1); --ease-out:cubic-bezier(.16,1,.3,1);
+}
+
+/* ── 1. BASE ───────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--font-sans); font-size:var(--fs-body); font-weight:var(--fw-medium);
+  line-height:1.62; letter-spacing:var(--ls-body);
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+h1,h2,h3,h4,p,ul,ol,figure{margin:0}
+ul,ol{padding:0; list-style:none}
+a{color:inherit; text-decoration:none}
+button{font:inherit; color:inherit}
+img,svg{display:block; max-width:100%}
+:focus-visible{outline:none; box-shadow:var(--focus-ring); border-radius:var(--r-xs)}
+
+.shell{width:100%; max-width:var(--shell); margin-inline:auto; padding-inline:var(--gutter)}
+.shell--wide{max-width:var(--shell-wide)}
+
+.eyebrow{
+  font-family:var(--font-mono); font-size:var(--fs-label); font-weight:var(--fw-semibold);
+  letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--ink-soft);
+}
+
+/* ── 2. NAV (same bar as the homepage, minus the pack count) ───────────── */
+.nav{
+  position:sticky; top:0; z-index:50; height:var(--nav-h);
+  display:flex; align-items:center;
+  background:rgba(255,255,255,.72); backdrop-filter:blur(18px) saturate(180%);
+  -webkit-backdrop-filter:blur(18px) saturate(180%);
+  border-bottom:1px solid transparent; transition:border-color var(--dur) var(--ease);
+}
+.nav[data-scrolled="true"]{border-bottom-color:var(--line)}
+.nav__inner{display:flex; align-items:center; justify-content:space-between; width:100%}
+.nav__logo svg{height:var(--logo-h); width:auto}
+.nav__right{display:flex; align-items:center; gap:var(--s-6)}
+.nav__login{
+  font-weight:var(--fw-bold); font-size:var(--fs-sm); letter-spacing:.02em;
+  text-transform:uppercase; padding:var(--s-2) var(--s-1);
+}
+.nav__menu{
+  display:grid; gap:5px; width:44px; height:44px; padding:11px 8px;
+  place-content:center; background:none; border:0; cursor:pointer; border-radius:var(--r-sm);
+}
+.nav__menu span{display:block; width:26px; height:2.5px; background:var(--ink); border-radius:2px}
+@media (max-width:760px){ .nav__right{gap:var(--s-4)} }
+
+/* ── 3. BUTTONS ────────────────────────────────────────────────────────── */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s-2);
+  height:var(--btn-h); padding-inline:var(--s-8); border:0; border-radius:var(--r-pill);
+  font-weight:var(--fw-bold); font-size:var(--fs-body); letter-spacing:-.01em;
+  cursor:pointer; white-space:nowrap;
+  transition:transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease),
+             color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.btn:active{transform:scale(.975)}
+.btn svg{width:20px; height:20px; flex-shrink:0}
+.btn--primary{background:var(--ink); color:var(--ink-invert)}
+.btn--primary:hover{background:#33353D}
+.btn--ghost{background:transparent; color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+.btn--ghost:hover{box-shadow:inset 0 0 0 1.5px var(--ink); background:var(--ink); color:var(--ink-invert)}
+.btn--wa{background:var(--ok); color:#fff}
+.btn--wa:hover{background:var(--ok-press)}
+
+/* ── 4. HEAD ───────────────────────────────────────────────────────────── */
+.head{padding-block:clamp(var(--s-10),6vw,var(--s-16)) clamp(var(--s-8),4vw,var(--s-12))}
+.title{
+  font-size:var(--fs-title); font-weight:var(--fw-black);
+  line-height:1.04; letter-spacing:var(--ls-display); text-wrap:balance;
+  max-width:18ch;
+}
+.title span{color:var(--ink-soft)}
+.sub{
+  margin-top:var(--s-4); max-width:46ch;
+  font-size:var(--fs-lead); color:var(--ink-mid); line-height:1.45; text-wrap:pretty;
+}
+
+
+/* ── 4b. STORY PAGES (about, how it works) ─────────────────────────────── */
+.band{padding-block:clamp(var(--s-12),7vw,var(--s-20))}
+.band--soft{background:var(--ground-soft)}
+.band--dark{background:var(--ground-dark); color:var(--ink-invert)}
+.band--dark .sub,.band--dark .muted{color:rgba(255,255,255,.66)}
+.band--dark .eyebrow{color:rgba(255,255,255,.5)}
+.h2{font-size:clamp(1.75rem,3.2vw,2.5rem); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display); line-height:1.08; text-wrap:balance; max-width:22ch}
+.h2 span{color:var(--ink-soft)}
+.band--dark .h2 span{color:rgba(255,255,255,.5)}
+.h4{font-size:1.25rem; font-weight:var(--fw-black); letter-spacing:var(--ls-heading); line-height:1.2}
+.muted{color:var(--ink-mid); font-size:var(--fs-sm); line-height:1.55; letter-spacing:var(--ls-soft)}
+.muted b{color:var(--ink); font-weight:var(--fw-bold)}
+.band__head{display:flex; flex-direction:column; gap:var(--s-4); margin-bottom:clamp(var(--s-8),4vw,var(--s-12))}
+
+.grid{display:grid; gap:var(--s-5)}
+@media (min-width:720px){ .grid--2{grid-template-columns:1fr 1fr} .grid--3{grid-template-columns:repeat(3,1fr)} }
+@media (min-width:720px) and (max-width:1023px){ .grid--4{grid-template-columns:1fr 1fr} }
+@media (min-width:1024px){ .grid--4{grid-template-columns:repeat(4,1fr)} }
+.grid--mid{align-items:center; gap:clamp(var(--s-8),5vw,var(--s-16))}
+
+.tile{display:flex; flex-direction:column; gap:var(--s-3); padding:var(--s-6);
+  border-radius:var(--r-lg); background:var(--ground); box-shadow:inset 0 0 0 1px var(--line)}
+.band--soft .tile{box-shadow:var(--shadow-sm), inset 0 0 0 1px var(--line)}
+.tile__n{font-family:var(--font-mono); font-size:var(--fs-label); font-weight:var(--fw-semibold);
+  letter-spacing:var(--ls-label); color:var(--ink-soft)}
+.tile__ph{width:100%; height:auto; aspect-ratio:4/3; object-fit:cover; border-radius:var(--r-md); background:var(--ground-sunk)}
+.tile__size{font-family:var(--font-mono); font-size:1.5rem; font-weight:var(--fw-semibold); letter-spacing:-.02em}
+.pic{width:100%; height:auto; aspect-ratio:4/3; object-fit:cover; border-radius:var(--r-lg); background:var(--ground-sunk)}
+
+.acts{display:flex; flex-wrap:wrap; gap:var(--s-3); margin-top:var(--s-4)}
+.band--dark .btn--ghost{color:var(--ink-invert); box-shadow:inset 0 0 0 1.5px var(--line-invert)}
+.band--dark .btn--ghost:hover{background:var(--ink-invert); color:var(--ink)}
+.btn--light{background:var(--ink-invert); color:var(--ink)}
+.btn--light:hover{background:var(--ground-sunk)}
+@media (max-width:520px){ .acts .btn{width:100%} }
+
+/* ── 5. THE DOCUMENT ───────────────────────────────────────────────────── */
+.legal{display:grid; gap:clamp(var(--s-8),5vw,var(--s-16)); padding-bottom:var(--section-y)}
+@media (min-width:960px){ .legal{grid-template-columns:220px minmax(0,1fr)} }
+.legal__meta{margin-top:var(--s-4); font-size:var(--fs-sm); color:var(--ink-soft)}
+
+.toc{display:flex; flex-direction:column; gap:var(--s-1); align-self:start}
+@media (min-width:960px){ .toc{position:sticky; top:calc(var(--nav-h) + var(--s-6))} }
+.toc h4{font-family:var(--font-mono); font-size:var(--fs-label); font-weight:var(--fw-semibold);
+  letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--ink-soft); margin-bottom:var(--s-2)}
+.toc a{font-size:var(--fs-sm); font-weight:var(--fw-semibold); color:var(--ink-mid);
+  padding:var(--s-1) 0; transition:color var(--dur-fast) var(--ease)}
+.toc a:hover,.toc a[aria-current="page"]{color:var(--ink)}
+.toc a[aria-current="page"]{font-weight:var(--fw-bold)}
+
+.doc{max-width:68ch; display:flex; flex-direction:column; gap:var(--s-10)}
+.doc section{display:flex; flex-direction:column; gap:var(--s-3); scroll-margin-top:calc(var(--nav-h) + var(--s-4))}
+.doc h2{font-size:var(--fs-h3); font-weight:var(--fw-black); letter-spacing:var(--ls-heading); line-height:1.15}
+.doc p,.doc li{color:var(--ink-mid); font-size:var(--fs-body)}
+.doc b{color:var(--ink); font-weight:var(--fw-bold)}
+.doc a{color:var(--ink); font-weight:var(--fw-bold); text-decoration:underline; text-underline-offset:3px}
+.doc ul{display:flex; flex-direction:column; gap:var(--s-2); padding-left:1.1em; list-style:disc}
+.doc li::marker{color:var(--ink-faint)}
+.legal__note{padding:var(--s-4) var(--s-5); border-radius:var(--r-md); background:var(--ground-soft);
+  font-size:var(--fs-sm); color:var(--ink-mid)}
+
+/* ── 8. FOOTER (same as the homepage) ──────────────────────────────────── */
+.footer{background:var(--ground); border-top:1px solid var(--line); padding-block:var(--s-16) var(--s-8)}
+.footer__grid{display:grid; grid-template-columns:1.6fr repeat(3,1fr); gap:clamp(var(--s-8),4vw,var(--s-12))}
+@media (max-width:860px){.footer__grid{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.footer__grid{grid-template-columns:1fr}}
+.footer__logo svg{height:var(--logo-h-footer); width:auto; margin-bottom:var(--s-4)}
+.footer h4{
+  font-family:var(--font-mono); font-size:var(--fs-label); font-weight:var(--fw-semibold);
+  letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--ink-soft); margin-bottom:var(--s-4);
+}
+.footer__links{display:flex; flex-direction:column; gap:var(--s-3)}
+.footer__links a{font-size:var(--fs-sm); font-weight:var(--fw-semibold); color:var(--ink-mid); transition:color var(--dur-fast) var(--ease); width:fit-content}
+.footer__links a:hover{color:var(--ink)}
+.footer__base{
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--s-4);
+  margin-top:var(--s-16); padding-top:var(--s-6); border-top:1px solid var(--line);
+  font-size:var(--fs-sm); color:var(--ink-soft); font-weight:var(--fw-medium);
+}
+.footer__tag{max-width:30ch; font-size:var(--fs-sm); color:var(--ink-mid)}
+
+/* "Made in India, with love" — the heart is the only red on the page. */
+.love{display:inline-flex; flex-wrap:wrap; align-items:center; gap:0 .3em}
+.heart{display:inline-block; width:1em; height:1em; fill:#E0263A; flex-shrink:0; transform:translateY(.05em)}
+
+/* Small supporting lines get their air back (house rule). */
+.footer__base,.footer__links a,.footer__tag,.sub,
+.legal__meta,.toc a,.legal__note{letter-spacing:var(--ls-soft)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; transition-duration:.001ms !important}
+}

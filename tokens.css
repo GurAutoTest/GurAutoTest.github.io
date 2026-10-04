@@ -1,0 +1,190 @@
+/* ==========================================================================
+   CODEMARCA — DESIGN TOKENS
+   Single source of truth. Change a value here, the whole site follows.
+   Nothing in a component file should ever contain a raw hex, px radius,
+   or px font-size. If you need a new value, add a token — don't inline it.
+   ========================================================================== */
+
+:root {
+
+  /* ---------------------------------------------------------------------
+     1. BRAND
+     Locked 2026-09-01. Do not recolour, do not gradient.
+     --------------------------------------------------------------------- */
+  --brand-violet:        #6E27E6;   /* primary — light grounds. 6.78:1 on white */
+  --brand-violet-lift:   #A171F4;   /* dark grounds only. 6.18:1 on black */
+  --brand-violet-press:  #5A1DC4;   /* active/pressed state */
+  --brand-violet-tint:   #F1E9FE;   /* tinted fill — chips, highlights */
+  --brand-violet-edge:   #DCC9FB;   /* border on a tinted fill */
+
+  /* ---------------------------------------------------------------------
+     2. INK  (text)
+     Neutrals carry a slight violet bias so they sit with the brand
+     instead of reading as a default grey.
+     --------------------------------------------------------------------- */
+  --ink:        #101215;   /* headlines, primary text */
+  --ink-mid:    #5B5D68;   /* body copy, descriptions */
+  --ink-soft:   #8C8E9C;   /* captions, meta, placeholder */
+  --ink-faint:  #B6B8C4;   /* disabled, decorative */
+  --ink-invert: #FFFFFF;   /* text on dark grounds */
+
+  /* ---------------------------------------------------------------------
+     3. GROUND  (surfaces)
+     Sections alternate between these to create rhythm down the page.
+     --------------------------------------------------------------------- */
+  --ground:        #FFFFFF;
+  --ground-soft:   #F4F3F7;   /* the grey band — violet-biased, not neutral */
+  --ground-sunk:   #EDEBF2;   /* one step deeper — inputs, wells */
+  --ground-dark:   #101215;   /* the dark moment: "in the box" */
+  --ground-dark-2: #1B1D24;   /* raised card on the dark ground */
+
+  /* ---------------------------------------------------------------------
+     4. LINE  (borders / dividers)
+     --------------------------------------------------------------------- */
+  --line:         rgba(16, 18, 21, 0.09);
+  --line-strong:  rgba(16, 18, 21, 0.16);
+  --line-invert:  rgba(255, 255, 255, 0.14);
+
+  /* ---------------------------------------------------------------------
+     5. STATE  (semantic — separate from the brand accent)
+     --------------------------------------------------------------------- */
+  --ok:      #17914F;
+  --ok-tint: #E7F6ED;
+  --warn:    #B2600A;
+  --bad:     #C4342B;
+
+  /* ---------------------------------------------------------------------
+     6. TYPEFACES
+     Manrope   — display + body. Sits closest to the Google Sans Flex
+                 wordmark of the open faces, so the logo and the page agree.
+     JetBrains — utility only: URL prefixes, spec labels, batch codes.
+                 Never for body copy.
+     --------------------------------------------------------------------- */
+  --font-sans: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ---------------------------------------------------------------------
+     7. TYPE SCALE
+     Fluid. Every size clamps between a mobile floor and a desktop ceiling,
+     so nothing needs a media query to resize.
+     --------------------------------------------------------------------- */
+  --fs-display: clamp(2.75rem, 7.4vw, 5.75rem);   /* hero H1 only */
+  --fs-h2:      clamp(2rem,   4.8vw, 3.75rem);    /* section headlines */
+  --fs-h3:      clamp(1.375rem, 2.3vw, 1.875rem); /* card + block headings */
+  --fs-h4:      clamp(1.125rem, 1.5vw, 1.3125rem);
+  --fs-lead:    clamp(1.0625rem, 1.5vw, 1.3125rem); /* the line under an H1/H2 */
+  --fs-body:    1.0625rem;                        /* 17px — never go below */
+  --fs-sm:      0.9375rem;
+  --fs-label:   0.75rem;                          /* mono eyebrows only */
+
+  --lh-tight: 0.98;   /* display */
+  --lh-snug:  1.08;   /* headings */
+  --lh-body:  1.62;   /* running text */
+
+  --ls-display: -0.042em;  /* the tight tracking is the whole look — keep it */
+  --ls-heading: -0.032em;
+  --ls-body:    -0.011em;
+  --ls-label:    0.14em;   /* mono eyebrows are tracked open */
+  --ls-soft:     0.14px;   /* 13-14px support text — subtitles, help, notes */
+
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
+  --fw-black:    800;   /* all display type */
+
+  /* ---------------------------------------------------------------------
+     8. SPACE
+     4px base. Use these, not arbitrary px.
+     --------------------------------------------------------------------- */
+  --s-1:  0.25rem;   --s-2:  0.5rem;    --s-3:  0.75rem;
+  --s-4:  1rem;      --s-5:  1.25rem;   --s-6:  1.5rem;
+  --s-8:  2rem;      --s-10: 2.5rem;    --s-12: 3rem;
+  --s-16: 4rem;      --s-20: 5rem;      --s-24: 6rem;
+
+  /* Vertical rhythm of a full-bleed section */
+  --section-y:      clamp(5rem, 10vw, 10rem);
+  --section-y-tight: clamp(3.5rem, 6vw, 5.5rem);
+
+  /* ---------------------------------------------------------------------
+     9. LAYOUT
+     --------------------------------------------------------------------- */
+  --shell:       1200px;   /* standard content width */
+  --shell-wide:  1360px;   /* image bands, card fan */
+  --shell-text:  680px;    /* running prose — ~65 characters */
+  --gutter:      clamp(1.25rem, 4vw, 2.5rem);
+  --nav-h:       72px;
+
+  /* ---------------------------------------------------------------------
+     10. RADIUS
+     --------------------------------------------------------------------- */
+  --r-xs:   6px;
+  --r-sm:   10px;
+  --r-md:   16px;
+  --r-lg:   24px;
+  --r-xl:   32px;
+  --r-2xl:  40px;
+  --r-pill: 999px;
+
+  /* ---------------------------------------------------------------------
+     11. ELEVATION
+     Kept deliberately shallow. Depth comes from the ground change,
+     not from drop shadows.
+     --------------------------------------------------------------------- */
+  --shadow-sm:  0 1px 2px rgba(16, 18, 21, 0.05);
+  --shadow-md:  0 6px 20px rgba(16, 18, 21, 0.07);
+  --shadow-lg:  0 20px 56px rgba(16, 18, 21, 0.11);
+  --shadow-card: 0 24px 64px rgba(16, 18, 21, 0.14);
+
+  /* ---------------------------------------------------------------------
+     12. CONTROLS
+     The claim field is the most important control on the site.
+     Its height is matched to Linktree's — big enough to be the
+     obvious next action on a phone.
+     --------------------------------------------------------------------- */
+  --control-h:     68px;   /* claim field, desktop */
+  --control-h-sm:  60px;   /* claim field, mobile */
+  --btn-h:         52px;   /* standard button */
+  --btn-h-sm:      44px;
+  --focus-ring:    0 0 0 3px var(--ground-sunk), 0 0 0 5px var(--ink);
+  --focus-glow:    0 0 0 4px rgba(110, 39, 230, 0.13);   /* soft — for controls whose own
+                                                            frame already shows focus, e.g.
+                                                            the claim field */
+
+  /* ---------------------------------------------------------------------
+     13. MOTION
+     --------------------------------------------------------------------- */
+  --dur-fast:  140ms;
+  --dur:       260ms;
+  --dur-slow:  620ms;
+  --ease:      cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out:  cubic-bezier(0.16, 1, 0.3, 1);
+  --carousel-interval: 3400ms;   /* hero fan — slow enough to actually read */
+
+  /* ---------------------------------------------------------------------
+     14. HERO CARD FAN
+     Geometry of the five tilted cards. Overridden at the mobile
+     breakpoint so the fan tightens instead of overflowing.
+     --------------------------------------------------------------------- */
+  --card-w:  300px;
+  --card-h:  408px;
+  --mini-scale: 1;    /* the mini profile is authored at 300x408 and scaled */
+  --fan-x1:  296px;  --fan-y1: 34px;   --fan-r1: 7deg;
+  --fan-x2:  562px;  --fan-y2: 120px;  --fan-r2: 15deg;
+}
+
+/* Mobile fan geometry — three cards visible, outer pair as peeks */
+@media (max-width: 760px) {
+  :root {
+    --card-w: 216px;
+    --card-h: 294px;
+    --mini-scale: .72;   /* 216 / 300 */
+    --fan-x1: 132px;  --fan-y1: 24px;  --fan-r1: 8deg;
+    --fan-x2: 226px;  --fan-y2: 82px;  --fan-r2: 16deg;
+    --control-h: var(--control-h-sm);
+  }
+}
+
+/* The site is deliberately light-theme only — a product decision, not an
+   omission. Every surface below paints its own background so the page holds
+   its own on any host. Do not add a dark-mode block without a brief. */

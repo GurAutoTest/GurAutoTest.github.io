@@ -1,0 +1,135 @@
+/* ==========================================================================
+   CODEMARCA — GIFT & REFER TAB. Shared by every flow folder.
+   Built on dashboard.css — only what this screen adds lives here.
+   ========================================================================== */
+
+/* ── SEND A GIFT — the one dark card, the one ask ─────────────────────── */
+.send{gap:var(--s-5)}
+.send__h{font-size:clamp(1.375rem,4.4vw,1.75rem); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display); line-height:1.12; text-wrap:balance; margin-top:var(--s-2)}
+
+.send__how{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:var(--s-3);
+  counter-reset:how}
+.send__how li{display:flex; gap:var(--s-3); align-items:flex-start;
+  font-size:var(--fs-sm); line-height:1.45; color:rgba(255,255,255,.72); counter-increment:how}
+.send__how li::before{
+  content:counter(how); flex-shrink:0; display:grid; place-items:center;
+  width:24px; height:24px; border-radius:50%; margin-top:-1px;
+  background:rgba(255,255,255,.1); color:var(--ink-invert);
+  font-size:.75rem; font-weight:var(--fw-bold);
+}
+.send__how b{color:var(--ink-invert); font-weight:var(--fw-bold)}
+
+.send__foot{display:flex; flex-wrap:wrap; align-items:center; gap:var(--s-3) var(--s-4)}
+.send__price{font-size:var(--fs-xs); color:rgba(255,255,255,.55)}
+.send__price b{color:var(--ink-invert); font-weight:var(--fw-bold)}
+
+/* ── GIFTS YOU SENT ───────────────────────────────────────────────────── */
+.sent__sum{margin-left:auto; font-size:var(--fs-xs); color:var(--ink-soft)}
+.sent__sum b{color:var(--ink); font-weight:var(--fw-bold)}
+.sent .rows{margin-inline:calc(var(--s-5) * -1); margin-block:calc(var(--s-2) * -1)}
+.sent .row{text-decoration:none; color:inherit}
+.sent .row:hover .row__t{text-decoration:underline; text-underline-offset:2px}
+.sent .row__ic[data-done]{background:var(--ok-tint); color:var(--ok)}
+/* a name and a status line are the whole point of a row — let them wrap
+   rather than ellipse down to "For D…" beside the chip on a narrow phone */
+.sent .row__t, .sent .row__s,
+.hop .row__t, .hop .row__s{white-space:normal; overflow:visible}
+.sent .empty{padding-block:var(--s-6)}
+
+/* ── INVITE + TEE — they live on Home; this is the way there ──────────── */
+.hop{flex-direction:row; align-items:center; gap:var(--s-4); padding:var(--s-4) var(--s-5);
+  text-decoration:none; color:inherit}
+.hop:hover .row__t{text-decoration:underline; text-underline-offset:2px}
+
+.send__price, .sent__sum{letter-spacing:var(--ls-soft)}
+
+/* ══ TWO TABS — REFER FIRST ══════════════════════════════════════════════
+   Reworked 2026-09-27 (Garry): the screen was all gift, and gift is the
+   smaller prize. Referring earns a tee with your own code on it, so Refer
+   opens first and Gift waits behind it. Both keep their own list. */
+
+.pane{display:flex; flex-direction:column; gap:var(--s-5)}
+.pane[hidden]{display:none}
+
+/* ── WHO JOINED ───────────────────────────────────────────────────────── */
+.who .rows{margin-inline:calc(var(--s-5) * -1); margin-block:calc(var(--s-2) * -1)}
+.who .row__t, .who .row__s{white-space:normal; overflow:visible}
+.who .row__ic[data-done]{background:var(--ok-tint); color:var(--ok)}
+.who .empty{padding-block:var(--s-6)}
+
+/* ── PICK A DESIGN, THEN CLAIM ────────────────────────────────────────── */
+.rf__tee{cursor:pointer}
+/* the tee figures are near-black, so the chosen one is ringed in white */
+.rf__tee[aria-checked="true"] .rf__fig{box-shadow:inset 0 0 0 2px rgba(255,255,255,.92)}
+.rf__tee[aria-checked="true"] .rf__t{text-decoration:underline; text-underline-offset:3px}
+.rf__tees[data-locked] .rf__tee{cursor:default}
+
+.pick{display:flex; flex-direction:column; gap:var(--s-3);
+  padding-top:var(--s-4); box-shadow:inset 0 1px 0 var(--line)}
+.sizes{display:flex; gap:var(--s-2); flex-wrap:wrap}
+.size{
+  border:0; cursor:pointer; min-width:44px; height:36px; padding-inline:var(--s-3);
+  border-radius:var(--r-md); background:var(--ground-sunk); color:var(--ink-mid);
+  font:inherit; font-size:var(--fs-xs); font-weight:var(--fw-bold);
+}
+.size[aria-checked="true"]{background:var(--ink); color:var(--ink-invert)}
+
+/* ── THE ADDRESS ASK — one step, then it ships ────────────────────────── */
+.csheet{position:fixed; inset:0; z-index:80; display:grid; place-items:end center}
+.csheet[hidden]{display:none}
+.csheet__scrim{position:absolute; inset:0; background:rgba(11,12,15,.5)}
+.csheet__box{
+  position:relative; width:min(420px, 100%); display:flex; flex-direction:column; gap:var(--s-4);
+  padding:var(--s-6) var(--s-5) calc(var(--s-6) + env(safe-area-inset-bottom));
+  background:var(--ground); border-radius:var(--r-lg) var(--r-lg) 0 0; box-shadow:var(--shadow-lg);
+}
+@media (min-width:640px){
+  .csheet{place-items:center}
+  .csheet__box{border-radius:var(--r-lg)}
+}
+.csheet__t{font-size:1.125rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display)}
+.csheet__s{font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:var(--ls-soft)}
+.fld{
+  display:flex; padding:var(--s-3) var(--s-4); border-radius:var(--r-md); background:var(--ground);
+  box-shadow:inset 0 0 0 1.5px var(--line-strong); transition:box-shadow var(--dur) var(--ease);
+}
+.fld:focus-within{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.fld textarea{
+  flex:1; min-width:0; border:0; background:none; outline:none; resize:none;
+  font:inherit; font-size:var(--fs-sm); line-height:1.5; color:var(--ink);
+}
+.csheet__acts{display:flex; gap:var(--s-2)}
+.csheet__acts .btn{flex:1}
+
+/* ══ THE TEE CARD, DARK ══════════════════════════════════════════════════
+   2026-09-27, Garry: with the purple pulled out of the controls the screen
+   had gone grey — "feeka". The fix is not to paint the controls again, it
+   is to give each tab one coloured object. Here it is the tee card, in the
+   same black-to-violet band the homepage closes with; on the Gift tab it
+   is the send card. Everything else stays paper. */
+
+.rf--dark .rf__p{color:rgba(255,255,255,.72)}
+.rf--dark .rf__p b{color:var(--ink-invert)}
+.rf--dark .rf__of{color:rgba(255,255,255,.5)}
+.rf--dark .rf__bar{background:rgba(255,255,255,.12)}
+.rf--dark .rf__fill{background:var(--brand-violet-lift)}
+.rf--dark .rf__sub{color:rgba(255,255,255,.62)}
+.rf--dark .rf__sub b{color:var(--ink-invert)}
+.rf--dark .rf__hint{color:rgba(255,255,255,.5)}
+.rf--dark .pick{box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+.rf--dark .size{background:rgba(255,255,255,.1); color:rgba(255,255,255,.8)}
+.rf--dark .size[aria-checked="true"]{background:var(--ink-invert); color:var(--ink)}
+.rf--dark .rf__lock{background:rgba(255,255,255,.06)}
+.rf--dark .rf__lock-ic{background:rgba(255,255,255,.1); color:var(--ink-invert)}
+.rf--dark .rf__lock-s{color:rgba(255,255,255,.6)}
+.rf--dark .note{background:rgba(74,222,128,.12); box-shadow:inset 0 0 0 1px rgba(74,222,128,.3);
+  color:rgba(255,255,255,.82)}
+.rf--dark .note svg{color:var(--ok-lift)}
+
+/* the figures carry the card now, so give them room and a lit ground */
+.rf--dark .rf__fig{background:rgba(255,255,255,.06)}
+.rf--dark .rf__side{background:rgba(255,255,255,.14); color:var(--ink-invert)}
+
+/* who joined — a counted friend is the good news, so it is the green one */
+.who .row__ic[data-wait]{background:var(--caution-tint); color:var(--caution)}

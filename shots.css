@@ -1,0 +1,96 @@
+@charset "utf-8";
+/* ==========================================================================
+   SHOTS — the product photo slider.
+
+   Mounted by PACK.mountShots() in pack.js, used by select-pack.html and
+   checkout.html. Lives in its own file because both pages need it and a
+   copy in each is a copy that drifts.
+
+   Reads the token set that every page declares on :root — it defines no
+   colours of its own, so it themes with whatever page it lands in.
+
+   Until real files exist in assets/product/, every frame renders as a
+   labelled placeholder. That is deliberate: the layout you see now is the
+   layout you get once the photos land, so nothing moves later.
+   ========================================================================== */
+
+.shots{display:flex; flex-direction:column; gap:var(--s-3); min-width:0}
+
+/* Square, because the shots crop square and a shifting aspect ratio makes
+   the whole rail jump every time the slide changes. */
+.shots__stage{
+  position:relative; aspect-ratio:1; width:100%;
+  border-radius:var(--r-md); overflow:hidden;
+  background:var(--ground-sunk); box-shadow:inset 0 0 0 1px var(--line);
+}
+
+.shots__f{
+  position:absolute; inset:0; margin:0;
+  opacity:0; visibility:hidden;
+  transition:opacity var(--dur) var(--ease), visibility var(--dur) var(--ease);
+}
+.shots__f[data-on="1"]{opacity:1; visibility:visible}
+.shots__f img{width:100%; height:100%; object-fit:cover; display:none}
+.shots__f[data-has="1"] img{display:block}
+.shots__f[data-has="1"] .shots__ph{display:none}
+
+/* The stand-in. Dashed so nobody mistakes it for a finished frame, and it
+   names the shot it is waiting for so the brief is on the screen itself. */
+.shots__ph{
+  position:absolute; inset:var(--s-3);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:var(--s-2); padding:var(--s-4); text-align:center;
+  border-radius:var(--r-sm); border:1.5px dashed var(--line-strong);
+  color:var(--ink-soft); font-size:var(--fs-xs); line-height:1.4;
+}
+.shots__ph b{
+  font-size:var(--fs-label); font-weight:var(--fw-bold);
+  letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--ink-faint);
+}
+
+/* Arrows rest at low contrast and come up on hover, so they never fight the
+   photo. On a touch screen there is no hover, so they simply stay up. */
+.shots__arw{
+  position:absolute; top:50%; transform:translateY(-50%);
+  display:grid; place-items:center;
+  width:34px; height:34px; padding:0; border:0; cursor:pointer;
+  border-radius:50%; background:var(--ground); color:var(--ink);
+  box-shadow:var(--shadow-sm), inset 0 0 0 1px var(--line);
+  opacity:.55; transition:opacity var(--dur-fast) var(--ease);
+}
+.shots__arw svg{width:17px; height:17px}
+.shots__arw--p{left:var(--s-3)}
+.shots__arw--n{right:var(--s-3)}
+.shots__stage:hover .shots__arw,
+.shots__arw:focus-visible{opacity:1}
+@media (hover:none){ .shots__arw{opacity:.9} }
+
+.shots__cap{
+  font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.4;
+  min-height:2.4em;      /* two lines reserved, so the dots never hop */
+}
+
+.shots__dots{display:flex; align-items:center; gap:6px}
+.shots__dot{
+  width:7px; height:7px; padding:0; border:0; cursor:pointer;
+  border-radius:var(--r-pill); background:var(--ink-faint);
+  transition:width var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.shots__dot[aria-selected="true"]{width:20px; background:var(--brand-violet)}
+
+/* In the checkout rail the slider replaces a 56px thumbnail, so it gets a
+   ceiling — a full-width square there would push the price lines off the
+   fold on a phone. */
+.shots--rail{max-width:100%}
+.shots--rail .shots__stage{max-width:none}
+@media (min-width:960px){
+  .shots--rail .shots__cap{min-height:3.6em}
+}
+
+/* ── SUPPORTING TEXT ───────────────────────────────────────────────────
+   Headings and body copy run on negative tracking. The small grey lines
+   under them — subtitles, help, notes, values — do not: at 13–14px the
+   letters need the air back instead. Any new small line on this page
+   belongs in this list. */
+.shots__ph,
+.shots__cap{ letter-spacing:var(--ls-soft) }

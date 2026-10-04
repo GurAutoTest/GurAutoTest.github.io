@@ -1,0 +1,61 @@
+<title>Orders · Codemarca</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../dashboard.css">
+<link rel="stylesheet" href="../../tab-orders.css">
+
+<style>
+.nx{gap:var(--s-3)}
+.nx__p{font-size:var(--fs-sm); color:var(--ink-mid); letter-spacing:var(--ls-soft)}
+.nx .btn{margin-top:var(--s-2)}
+</style>
+
+<!-- ==========================================================================
+     CODEMARCA — ORDERS  ·  flow 3, pack bought, no page
+     Their free pack, and one light "Next step" card under it: set up your
+     page, one button. No countdown banner. Stickers without a page are
+     allowed; we do not hold an order hostage.
+
+     The free pack is always for themselves (Garry, 2026-09-18). A gift is a
+     separate, paid order placed from the Gift & Refer tab.
+     ========================================================================== -->
+
+<div class="app">
+  <div class="app__main">
+    <main class="view">
+
+      <header class="head">
+        <h1>Orders</h1>
+        <p>Your pack and where it has got to.</p>
+      </header>
+
+
+      <div data-orders></div>
+
+      <!-- ── next step, said once and plainly ─────────────────────────────
+           Orders is for the order. The old dark "Before it lands" banner sat
+           above it, assumed the pack was theirs without asking, and pushed
+           with a countdown. Now: one light card under the order, one line,
+           one button. -->
+
+      <section class="card nx">
+        <span class="card__title">Next step</span>
+        <p class="card__h">Set up your page</p>
+        <p class="nx__p" data-when="placed shipped">So your stickers open it the day they arrive. Takes about two minutes.</p>
+        <p class="nx__p" data-when="delivered">Your stickers are here. They start working as soon as your page is set up.</p>
+        <a class="btn btn--go btn--wide" href="../../onboarding.html?ordered=1">Build my page</a>
+      </section>
+
+      <!-- ── the soft ask ──────────────────────────────────────────────── -->
+
+
+    </main>
+  </div>
+</div>
+
+<script src="state.js"></script>
+<script src="../../dashboard.js"></script>
+<script src="../../tab-orders.js"></script>

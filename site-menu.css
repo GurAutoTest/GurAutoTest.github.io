@@ -1,0 +1,77 @@
+/* CODEMARCA — SITE MENU
+   The hamburger's panel, shared by every marketing page (homepage, contact,
+   and whatever comes next). site-menu.js builds the panel, so the list of
+   links lives in one place. Reads the page's own tokens — each marketing
+   page carries the same :root block. */
+
+/* ── The button: two bars that cross into an X ─────────────────────────── */
+.nav__menu span{transition:transform var(--dur) var(--ease)}
+.nav__menu[aria-expanded="true"] span:first-child{transform:translateY(3.75px) rotate(45deg)}
+.nav__menu[aria-expanded="true"] span:last-child{transform:translateY(-3.75px) rotate(-45deg)}
+
+/* While open the nav sits on a solid ground, so the panel and the bar read
+   as one sheet instead of a blurred strip over white. */
+.nav[data-menu="open"]{background:var(--ground); border-bottom-color:var(--line)}
+
+/* ── The panel ─────────────────────────────────────────────────────────── */
+.menu{
+  position:fixed; left:0; right:0; bottom:0; top:var(--menu-top, var(--nav-h));
+  z-index:49; background:var(--ground);
+  overflow-y:auto; overscroll-behavior:contain;
+  opacity:0; visibility:hidden; transform:translateY(-8px);
+  transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease-out), visibility 0s linear var(--dur);
+}
+.menu[data-open="true"]{
+  opacity:1; visibility:visible; transform:none;
+  transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease-out), visibility 0s;
+}
+body[data-menu="open"]{overflow:hidden}
+
+.menu__inner{
+  min-height:100%; display:flex; flex-direction:column; gap:var(--s-10);
+  padding-block:var(--s-8) var(--s-10);
+}
+
+/* Big, heavy links — this is the whole site on one screen. */
+.menu__links{display:flex; flex-direction:column}
+.menu__links a{
+  display:flex; align-items:baseline; gap:var(--s-4);
+  padding-block:var(--s-3);
+  font-size:clamp(1.75rem,4.4vw,3rem); font-weight:var(--fw-black);
+  line-height:1.1; letter-spacing:var(--ls-heading);
+  transition:color var(--dur-fast) var(--ease), transform var(--dur) var(--ease);
+}
+.menu__links a + a{box-shadow:inset 0 1px 0 var(--line)}
+.menu__links a:hover{transform:translateX(6px)}
+.menu__links a[aria-current="page"]{color:var(--ink-soft)}
+.menu__n{
+  font-family:var(--font-mono); font-size:var(--fs-label); font-weight:var(--fw-semibold);
+  letter-spacing:var(--ls-label); color:var(--ink-soft); min-width:2ch;
+  transform:translateY(-.4em);
+}
+
+.menu__cta{display:flex; flex-wrap:wrap; gap:var(--s-3)}
+.menu__cta .btn{flex:1 1 180px}
+
+.menu__foot{
+  margin-top:auto; padding-top:var(--s-6); border-top:1px solid var(--line);
+  display:flex; flex-wrap:wrap; gap:var(--s-2) var(--s-6);
+  font-size:var(--fs-sm); color:var(--ink-mid); font-weight:var(--fw-semibold);
+  letter-spacing:var(--ls-soft);
+}
+.menu__foot a:hover{color:var(--ink)}
+
+/* Links rise in one after another when the panel opens. */
+.menu__links a,.menu__cta,.menu__foot{opacity:0; transform:translateY(10px)}
+.menu[data-open="true"] .menu__links a,
+.menu[data-open="true"] .menu__cta,
+.menu[data-open="true"] .menu__foot{
+  opacity:1; transform:none;
+  transition:opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out), color var(--dur-fast) var(--ease);
+  transition-delay:calc(var(--i, 0) * 45ms + 60ms);
+}
+.menu[data-open="true"] .menu__links a:hover{transform:translateX(6px); transition-delay:0s}
+
+@media (prefers-reduced-motion:reduce){
+  .menu,.menu__links a,.menu__cta,.menu__foot{transform:none !important}
+}

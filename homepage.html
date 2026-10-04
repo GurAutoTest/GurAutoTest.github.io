@@ -1,0 +1,1575 @@
+<title>Codemarca Homepage</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="site-menu.css">
+
+<style>
+/* ==========================================================================
+   CODEMARCA — HOMEPAGE
+   Section 0 is the token layer (mirrors web/tokens.css). Everything below
+   reads from it. No raw hex, radius or font-size past this block.
+   ========================================================================== */
+
+/* ── 0. TOKENS ─────────────────────────────────────────────────────────── */
+:root {
+  /* Brand — locked 2026-09-01 */
+  --brand-violet:#6E27E6; --brand-violet-lift:#A171F4; --brand-violet-press:#5A1DC4;
+  --brand-violet-tint:#F1E9FE; --brand-violet-edge:#DCC9FB;
+
+  /* Ink — neutrals carry a slight violet bias so they sit with the brand */
+  --ink:#101215; --ink-mid:#5B5D68; --ink-soft:#8C8E9C; --ink-faint:#B6B8C4;
+  --ink-invert:#FFFFFF;
+
+  /* Ground */
+  --ground:#FFFFFF; --ground-soft:#F4F3F7; --ground-sunk:#EDEBF2;
+  --ground-dark:#101215; --ground-dark-2:#1B1D24;
+
+  /* Closing band — black at the head, violet only at the foot. Black holds
+     most of the height on purpose; the violet is the arrival, not the field. */
+  --close-head:#000000; --close-body:#180A42; --close-foot:#4A22A8;
+
+  /* Line */
+  --line:rgba(16,18,21,.09); --line-strong:rgba(16,18,21,.16);
+  --line-invert:rgba(255,255,255,.14);
+
+  /* State — semantic, separate from the accent */
+  --ok:#17914F; --ok-tint:#E7F6ED; --bad:#C4342B;
+  /* Same two states read on a dark ground, where the solid pair goes muddy. */
+  --ok-lift:#4FD98C; --bad-lift:#FF8A80;
+  /* And a step down for green as small bold text on white, where --ok alone
+     sits at 3.8:1 and fails. */
+  --ok-deep:#0C7A41;
+
+  /* Type */
+  --font-sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+
+  --fs-display:clamp(2.75rem,7.4vw,5.75rem);
+  --fs-h2:clamp(2rem,4.8vw,3.75rem);
+  --fs-h3:clamp(1.375rem,2.3vw,1.875rem);
+  --fs-h4:clamp(1.125rem,1.5vw,1.3125rem);
+  --fs-lead:clamp(1.0625rem,1.5vw,1.3125rem);
+  --fs-body:1.0625rem; --fs-sm:.9375rem; --fs-label:.75rem;
+
+  --lh-tight:.98; --lh-snug:1.08; --lh-body:1.62;
+  --ls-display:-.042em; --ls-heading:-.032em; --ls-body:-.011em; --ls-label:.14em; --ls-soft:.14px;
+  --fw-medium:500; --fw-semibold:600; --fw-bold:700; --fw-black:800;
+
+  /* Space */
+  --s-1:.25rem; --s-2:.5rem; --s-3:.75rem; --s-4:1rem; --s-5:1.25rem;
+  --s-6:1.5rem; --s-8:2rem; --s-10:2.5rem; --s-12:3rem; --s-16:4rem; --s-20:5rem;
+  --section-y:clamp(5rem,10vw,10rem);
+  --section-y-tight:clamp(3.5rem,6vw,5.5rem);
+
+  /* Layout */
+  --shell:1200px; --shell-wide:1360px; --shell-text:680px;
+  --gutter:clamp(1.25rem,4vw,2.5rem); --nav-h:72px;
+  --logo-h:24px; --logo-h-footer:20px;   /* lockup 257x40 -> 154px / 129px wide */
+  --ticker-h:40px; --ticker-dur:20s;     /* ~60px/sec — moving, still readable */
+
+  /* Radius */
+  --r-xs:6px; --r-sm:10px; --r-md:16px; --r-lg:24px; --r-xl:32px;
+  --r-2xl:40px; --r-pill:999px;
+
+  /* Elevation — shallow by design; depth comes from ground changes */
+  --shadow-sm:0 1px 2px rgba(16,18,21,.05);
+  --shadow-md:0 6px 20px rgba(16,18,21,.07);
+  --shadow-lg:0 20px 56px rgba(16,18,21,.11);
+  --shadow-card:0 24px 64px rgba(16,18,21,.14);
+
+  /* Controls */
+  --control-h:68px; --btn-h:52px;
+  --focus-ring:0 0 0 3px var(--ground-sunk),0 0 0 5px var(--ink);
+  --focus-glow:0 0 0 4px rgba(16,18,21,.08);   /* soft — for controls whose own frame already shows focus */
+
+  /* Motion */
+  --dur-fast:140ms; --dur:260ms; --dur-slow:620ms;
+  --ease:cubic-bezier(.22,.61,.36,1); --ease-out:cubic-bezier(.16,1,.3,1);
+  --carousel-interval:3400ms;
+
+  --mini-scale:.6333;   /* hero cards: the mini profile is authored at 300px wide; the hero arc script resets it to the card width */
+}
+@media (max-width:760px){
+  :root{
+    --control-h:60px;
+    --ticker-h:34px;   /* 34 + 72 of nav is already a lot of chrome on a phone */
+  }
+  .ticker__set li{font-size:.75rem}
+}
+
+/* ── 1. BASE ───────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--font-sans); font-size:var(--fs-body); font-weight:var(--fw-medium);
+  line-height:var(--lh-body); letter-spacing:var(--ls-body);
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+h1,h2,h3,h4,p,ul,figure{margin:0}
+ul{padding:0; list-style:none}
+a{color:inherit; text-decoration:none}
+button,input{font:inherit; color:inherit}
+img,svg{display:block; max-width:100%}
+:focus-visible{outline:none; box-shadow:var(--focus-ring); border-radius:var(--r-xs)}
+
+h1,h2,h3{font-weight:var(--fw-black); text-wrap:balance}
+.h-display{font-size:var(--fs-display); line-height:var(--lh-tight); letter-spacing:var(--ls-display)}
+.h2{font-size:var(--fs-h2); line-height:var(--lh-snug); letter-spacing:var(--ls-heading)}
+.h3{font-size:var(--fs-h3); line-height:1.14; letter-spacing:var(--ls-heading)}
+.h4{font-size:var(--fs-h4); line-height:1.3; letter-spacing:-.02em; font-weight:var(--fw-bold)}
+.lead{font-size:var(--fs-lead); color:var(--ink-mid); line-height:1.5; font-weight:var(--fw-medium); text-wrap:pretty}
+.muted{color:var(--ink-mid)}
+
+.eyebrow{
+  font-family:var(--font-mono); font-size:var(--fs-label); font-weight:var(--fw-semibold);
+  letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--brand-violet);
+}
+.eyebrow--soft{color:var(--ink-soft)}
+.eyebrow--invert{color:var(--brand-violet-lift)}
+
+/* ── 2. LAYOUT ─────────────────────────────────────────────────────────── */
+.shell{width:100%; max-width:var(--shell); margin-inline:auto; padding-inline:var(--gutter)}
+.shell--wide{max-width:var(--shell-wide)}
+.section{padding-block:var(--section-y)}
+.section--tight{padding-block:var(--section-y-tight)}
+.section--soft{background:var(--ground-soft)}
+.section--dark{background:var(--ground-dark); color:var(--ink-invert)}
+.stack{display:flex; flex-direction:column}
+.gap-3{gap:var(--s-3)} .gap-4{gap:var(--s-4)} .gap-5{gap:var(--s-5)}
+.gap-6{gap:var(--s-6)} .gap-8{gap:var(--s-8)} .gap-10{gap:var(--s-10)} .gap-12{gap:var(--s-12)}
+.center{text-align:center; align-items:center}
+.measure{max-width:var(--shell-text)}
+
+/* ── 2b. TICKER ────────────────────────────────────────────────────────────
+   Sits above the nav in normal flow, so it simply scrolls away while the
+   sticky nav stays put. No JS, no scroll listener. */
+.ticker{
+  height:var(--ticker-h); background:var(--brand-violet); color:#fff;
+  display:flex; align-items:center; overflow:hidden;
+}
+.ticker__track{display:flex; width:max-content; animation:ticker var(--ticker-dur) linear infinite}
+.ticker:hover .ticker__track{animation-play-state:paused}
+.ticker__set{display:flex; align-items:center}
+.ticker__set li{
+  display:flex; align-items:center; gap:clamp(var(--s-4),3vw,var(--s-6));
+  padding-right:clamp(var(--s-4),3vw,var(--s-6));
+  font-size:.8125rem; font-weight:var(--fw-bold); letter-spacing:-.005em;
+  white-space:nowrap;
+}
+/* separator picks up the rounded-square geometry of the mark */
+.ticker__set li::after{
+  content:""; width:6px; height:6px; border-radius:2px;
+  background:rgba(255,255,255,.55); flex-shrink:0;
+}
+@keyframes ticker{from{transform:translateX(0)} to{transform:translateX(-25%)}}
+
+/* ── 3. NAV ────────────────────────────────────────────────────────────── */
+.nav{
+  position:sticky; top:0; z-index:50; height:var(--nav-h);
+  display:flex; align-items:center;
+  background:rgba(255,255,255,.72); backdrop-filter:blur(18px) saturate(180%);
+  -webkit-backdrop-filter:blur(18px) saturate(180%);
+  border-bottom:1px solid transparent; transition:border-color var(--dur) var(--ease);
+}
+.nav[data-scrolled="true"]{border-bottom-color:var(--line)}
+.nav__inner{display:flex; align-items:center; justify-content:space-between; width:100%}
+.nav__logo svg{height:var(--logo-h); width:auto}
+.nav__right{display:flex; align-items:center; gap:var(--s-6)}
+.nav__login{
+  font-weight:var(--fw-bold); font-size:var(--fs-sm); letter-spacing:.02em;
+  text-transform:uppercase; padding:var(--s-2) var(--s-1);
+  transition:color var(--dur-fast) var(--ease);
+}
+.nav__login:hover{color:var(--ink)}
+.nav__menu{
+  display:grid; gap:5px; width:44px; height:44px; padding:11px 8px;
+  place-content:center; background:none; border:0; cursor:pointer; border-radius:var(--r-sm);
+}
+.nav__menu span{display:block; width:26px; height:2.5px; background:var(--ink); border-radius:2px}
+
+/* ── 3b. PACKS-LEFT COUNT ──────────────────────────────────────
+   The scarcity number has to be readable before anyone scrolls, so it rides
+   in the nav to the left of Login. Green and unboxed: no frame means it reads
+   as a live status line rather than a second thing to click next to Login.
+   It still links — into the pack section, which is what someone who reads
+   "37 left" wants to see.
+
+   Numbers come from the same data-claimed / data-total on #offer that the
+   band uses, written once by the JS at the bottom. Nothing is hardcoded
+   here beyond the pre-JS fallback in the markup. */
+.packs{
+  display:inline-flex; align-items:center; gap:var(--s-2);
+  color:var(--ok-deep);
+  font-size:.8125rem; font-weight:var(--fw-bold); letter-spacing:-.005em;
+  white-space:nowrap; font-variant-numeric:tabular-nums;
+  transition:opacity var(--dur-fast) var(--ease);
+}
+.packs:hover{opacity:.7}
+.packs__dot{
+  width:7px; height:7px; border-radius:50%; flex-shrink:0;
+  background:var(--ok); box-shadow:0 0 0 0 rgba(23,145,79,.45);
+  animation:packs-pulse 2.4s var(--ease-out) infinite;
+}
+@keyframes packs-pulse{
+  0%,70%,100%{box-shadow:0 0 0 0 rgba(23,145,79,.45)}
+  35%{box-shadow:0 0 0 5px rgba(23,145,79,0)}
+}
+/* Sold out: the line stops selling and just states the fact. */
+.packs[data-state="out"]{color:var(--ink-soft)}
+.packs[data-state="out"] .packs__dot{background:var(--ink-faint); animation:none; box-shadow:none}
+
+/* Phones: keep the number, drop the sentence around it — "37 left" survives
+   next to the logo, the login link and the menu button on a 360px screen. */
+.packs__long{display:inline}
+.packs__short{display:none}
+@media (max-width:760px){
+  .packs{font-size:.75rem; gap:6px}
+  .packs__long{display:none}
+  .packs__short{display:inline}
+  .nav__right{gap:var(--s-4)}
+}
+@media (max-width:400px){
+  /* The count and Login cannot share this row, so they take turns. The count
+     holds the top of the page where it does its work; the first scroll hands
+     the slot back to Login, by which point the number has been read. */
+  .nav__login{display:none}
+  .nav[data-scrolled="true"] .packs{display:none}
+  .nav[data-scrolled="true"] .nav__login{display:inline}
+}
+
+/* Anchor targets clear the sticky nav instead of hiding under it. */
+#pack,#where,#faq{scroll-margin-top:calc(var(--nav-h) + var(--s-6))}
+
+/* ── 4. BUTTONS ────────────────────────────────────────────────────────── */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s-2);
+  height:var(--btn-h); padding-inline:var(--s-8); border:0; border-radius:var(--r-pill);
+  font-weight:var(--fw-bold); font-size:var(--fs-body); letter-spacing:-.01em;
+  cursor:pointer; white-space:nowrap;
+  transition:transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease),
+             color var(--dur-fast) var(--ease);
+}
+.btn:active{transform:scale(.975)}
+.btn--primary{background:var(--ink); color:var(--ink-invert)}
+.btn--primary:hover{background:var(--ink-strong, #33353D)}
+.btn--ghost{background:transparent; color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+.btn--ghost:hover{box-shadow:inset 0 0 0 1.5px var(--ink); background:var(--ink); color:var(--ink-invert)}
+.btn--invert{background:var(--ink-invert); color:var(--ink)}
+.btn--invert:hover{background:var(--ground-sunk, #EDEBF2); color:var(--ink)}
+
+/* ── 5. CLAIM FIELD — the most important control on the site ───────────── */
+.claim{width:100%; max-width:600px}
+.claim__field{
+  display:flex; align-items:center; height:var(--control-h);
+  background:var(--ground); border-radius:var(--r-pill);
+  box-shadow:inset 0 0 0 1.5px var(--line-strong), var(--shadow-md);
+  padding-left:clamp(var(--s-5),3vw,var(--s-8)); padding-right:6px;
+  transition:box-shadow var(--dur) var(--ease);
+}
+.claim__field:focus-within{
+  box-shadow:inset 0 0 0 1.5px var(--ink), var(--focus-glow), var(--shadow-md);
+}
+.claim__prefix{
+  font-family:var(--font-mono); font-size:clamp(.875rem,1.4vw,1.0625rem);
+  color:var(--ink-soft); white-space:nowrap; user-select:none; letter-spacing:-.02em;
+}
+.claim__input{
+  flex:1; min-width:0; border:0; background:none; outline:none;
+  font-family:var(--font-mono); font-size:clamp(.875rem,1.4vw,1.0625rem);
+  font-weight:var(--fw-semibold); letter-spacing:-.02em; padding-inline:2px;
+  color:var(--brand-violet);        /* the handle reads as already theirs while they type it */
+  caret-color:var(--brand-violet);
+}
+.claim__input::placeholder{color:var(--ink-faint); font-weight:400}
+/* The field frame turns violet on focus, so the input must not draw a second ring
+   inside it — text inputs match :focus-visible on plain mouse clicks too. */
+.claim__input:focus-visible{box-shadow:none}
+.claim__btn{
+  height:calc(var(--control-h) - 12px); padding-inline:clamp(var(--s-5),3vw,var(--s-8));
+  flex-shrink:0; font-size:clamp(.9375rem,1.3vw,var(--fs-body));
+}
+.claim__status{
+  display:flex; align-items:center; gap:var(--s-2); min-height:22px;
+  padding-left:var(--s-5); font-size:var(--fs-sm); font-weight:var(--fw-semibold);
+  opacity:0; transform:translateY(-3px); transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.claim__status[data-show="true"]{opacity:1; transform:none}
+.claim__status[data-state="ok"]{color:var(--ok)}
+.claim__status[data-state="bad"]{color:var(--bad)}
+.claim__status[data-state="idle"]{color:var(--ink-soft)}
+.claim__status b{font-family:var(--font-mono); font-weight:var(--fw-semibold)}
+
+/* Narrow phones: the prefix, the handle and the button cannot share one row
+   without clipping the field the user is actually typing into. Drop the button
+   to its own full-width row instead of shrinking the input. */
+@media (max-width:540px){
+  .claim__field{
+    flex-wrap:wrap; height:auto; border-radius:var(--r-lg);
+    padding:var(--s-4); gap:var(--s-3) 0;
+  }
+  .claim__prefix,.claim__input{font-size:1rem}
+  .claim__input{flex:1 1 0; min-width:0}
+  .claim__btn{flex:1 0 100%; height:var(--btn-h); padding-inline:var(--s-6)}
+  .claim__status{padding-left:var(--s-4)}
+}
+
+/* ── 6. HERO ───────────────────────────────────────────────────────────── */
+.hero{position:relative; padding-top:clamp(var(--s-10),6vw,var(--s-16)); padding-bottom:var(--section-y); overflow:hidden}
+.hero__head{display:flex; flex-direction:column; align-items:center; gap:var(--s-6); text-align:center}
+.chip{
+  display:inline-flex; align-items:center; gap:var(--s-2);
+  padding:7px var(--s-4) 7px var(--s-3); border-radius:var(--r-pill);
+  background:var(--brand-violet-tint); box-shadow:inset 0 0 0 1px var(--brand-violet-edge);
+  font-size:var(--fs-sm); font-weight:var(--fw-bold); color:var(--brand-violet-press);
+  letter-spacing:-.01em;
+}
+.chip__dot{width:7px; height:7px; border-radius:50%; background:var(--brand-violet); flex-shrink:0}
+
+/* Card arc — the cards ride the top of a very large circle, so the row
+   bows down at both ends (the reference Garry sent). About six sit on
+   screen at once, with a gap between every pair so no corners overlap;
+   the two at the edges run off the screen. The script at the bottom
+   moves them along the arc, left to right, and recycles them; it never
+   stops for a hover. No fading anywhere — every card is at full strength. */
+.arc{
+  position:relative; height:var(--arc-h,460px);
+  margin-top:clamp(var(--s-10),5vw,var(--s-12)); margin-bottom:var(--s-6);
+}
+.wcard{
+  position:absolute; top:0; left:50%; margin:0;
+  width:var(--cw,200px); height:var(--ch,272px);
+  border-radius:clamp(16px,2vw,24px); overflow:hidden; background:var(--ground);
+  box-shadow:var(--shadow-md), inset 0 0 0 1px var(--line);
+  will-change:transform;
+}
+.wcard img{width:100%; height:100%; object-fit:cover; display:block; transition:transform var(--dur) var(--ease-out)}
+.wcard:hover img{transform:scale(1.04)}
+
+/* Mini profile rendered inside a hero arc card */
+/* The mini profile is authored once at the 300x408 design size and scaled to
+   whatever the card is, so nothing reflows or clips at any arc size. */
+.mini{
+  width:300px; height:408px; flex-shrink:0;
+  display:flex; flex-direction:column; background:var(--ground);
+  padding:var(--s-6) var(--s-5);
+  transform:scale(var(--mini-scale)); transform-origin:0 0;
+}
+.mini__top{display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center}
+.mini__ava{
+  width:60px; height:60px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(150deg,var(--brand-violet),var(--brand-violet-lift));
+  display:grid; place-items:center; color:#fff; font-weight:var(--fw-black);
+  font-size:1.25rem; letter-spacing:-.03em;
+}
+.mini__name{font-size:1.0625rem; font-weight:var(--fw-black); letter-spacing:-.03em; line-height:1.2}
+.mini__handle{font-family:var(--font-mono); font-size:.6875rem; color:var(--ink-soft); letter-spacing:-.02em}
+.mini__links{display:flex; flex-direction:column; gap:7px; margin-top:var(--s-5); flex:1}
+.mini__link{
+  height:36px; border-radius:var(--r-sm); background:var(--ground-soft);
+  display:flex; align-items:center; padding-inline:12px; gap:9px;
+  font-size:.75rem; font-weight:var(--fw-bold); letter-spacing:-.01em;
+}
+.mini__link i{width:14px; height:14px; border-radius:4px; background:var(--ink-faint); flex-shrink:0; display:block}
+.mini__link--live{background:var(--brand-violet); color:#fff}
+.mini__link--live i{background:rgba(255,255,255,.6)}
+.mini__foot{
+  display:flex; align-items:center; justify-content:space-between; gap:var(--s-3);
+  margin-top:var(--s-4); padding-top:var(--s-3); border-top:1px solid var(--line);
+}
+.mini__foot span{font-family:var(--font-mono); font-size:.5625rem; color:var(--ink-soft); letter-spacing:.06em; text-transform:uppercase}
+
+/* QR block — drawn from tokens, stands in for the real generated code */
+.qr{display:grid; grid-template-columns:repeat(9,1fr); gap:1px; width:34px; height:34px; flex-shrink:0}
+.qr i{background:var(--ink); border-radius:.5px}
+.qr i.o{background:transparent}
+
+/* ── 7. PLACEHOLDERS ───────────────────────────────────────────────────── */
+.ph{
+  position:relative; display:flex; flex-direction:column; justify-content:flex-end;
+  gap:var(--s-2); padding:var(--s-5); background:var(--ground-soft);
+  border:1.5px dashed var(--line-strong); border-radius:var(--r-lg); overflow:hidden;
+}
+.ph--in-card{border:0; border-radius:0; height:100%; background:var(--ground-sunk)}
+.ph--dark{background:var(--ground-dark-2); border-color:var(--line-invert)}
+.ph__tag{
+  align-self:flex-start; font-family:var(--font-mono); font-size:.625rem;
+  font-weight:var(--fw-semibold); letter-spacing:var(--ls-label); text-transform:uppercase;
+  color:var(--brand-violet); background:var(--ground); padding:4px 9px; border-radius:var(--r-xs);
+  box-shadow:inset 0 0 0 1px var(--brand-violet-edge);
+}
+.ph--dark .ph__tag{background:rgba(255,255,255,.06); color:var(--brand-violet-lift); box-shadow:inset 0 0 0 1px var(--line-invert)}
+.ph__desc{font-size:var(--fs-sm); font-weight:var(--fw-semibold); color:var(--ink-mid); line-height:1.35; letter-spacing:-.015em}
+.ph--dark .ph__desc{color:rgba(255,255,255,.68)}
+.ph::before{
+  content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+.ph--dark::before{background-image:linear-gradient(var(--line-invert) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--line-invert) 1px,transparent 1px)}
+
+/* ── 7b. PHOTOS ─────────────────────────────────────────────────────────
+   Real shots from assets/photos/. Each frame crops with object-fit: cover
+   from the centre, and every photo was picked to be at least as tall as
+   its frame, so a crop only ever trims top and bottom and the product
+   stays in the middle. */
+.pic{position:relative; margin:0; overflow:hidden; border-radius:var(--r-lg); background:var(--ground-soft)}
+.pic img,.pic picture{position:absolute; inset:0; width:100%; height:100%}
+.pic img{object-fit:cover; transition:transform var(--dur-slow) var(--ease-out)}
+.pic:hover img{transform:scale(1.025)}
+
+/* ── 8. FACT STRIP ─────────────────────────────────────────────────────── */
+.strip{border-block:1px solid var(--line); background:var(--ground)}
+.strip__row{
+  display:flex; flex-wrap:wrap; justify-content:center; align-items:center;
+  gap:var(--s-4) clamp(var(--s-6),5vw,var(--s-16)); padding-block:var(--s-6);
+}
+.strip__item{
+  display:flex; align-items:center; gap:var(--s-3);
+  font-size:var(--fs-sm); font-weight:var(--fw-bold); letter-spacing:-.015em; color:var(--ink-mid);
+}
+.strip__item svg{width:17px; height:17px; flex-shrink:0; color:var(--brand-violet)}
+
+/* ── 9. PLACES (bento) ─────────────────────────────────────────────────── */
+.bento{display:grid; grid-template-columns:repeat(6,1fr); gap:clamp(var(--s-3),1.4vw,var(--s-5)); margin-top:clamp(var(--s-10),5vw,var(--s-16))}
+.bento > *{min-height:0}
+.bento__a{grid-column:span 4; aspect-ratio:16/10}
+.bento__b{grid-column:span 2; aspect-ratio:4/5}
+.bento__c{grid-column:span 2; aspect-ratio:4/5}
+.bento__d{grid-column:span 4; aspect-ratio:16/10}
+@media (max-width:760px){
+  .bento{grid-template-columns:repeat(2,1fr)}
+  .bento__a,.bento__b,.bento__c,.bento__d{grid-column:span 2; aspect-ratio:3/2}
+}
+.size-tag{
+  position:absolute; top:var(--s-4); right:var(--s-4); z-index:2;
+  font-family:var(--font-mono); font-size:.625rem; font-weight:var(--fw-semibold);
+  letter-spacing:.08em; color:var(--ink); background:var(--ground);
+  padding:5px 10px; border-radius:var(--r-pill); box-shadow:var(--shadow-sm), inset 0 0 0 1px var(--line)
+}
+
+/* ── 10. STEPS ─────────────────────────────────────────────────────────── */
+.steps{display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(var(--s-6),3vw,var(--s-12)); margin-top:clamp(var(--s-10),5vw,var(--s-16))}
+@media (max-width:760px){.steps{grid-template-columns:1fr; gap:var(--s-8)}}
+.step{display:flex; flex-direction:column; gap:var(--s-4)}
+.step__n{
+  display:grid; place-items:center; width:40px; height:40px; border-radius:50%;
+  background:var(--ink); color:var(--ink-invert);
+  font-family:var(--font-mono); font-size:.8125rem; font-weight:var(--fw-semibold);
+}
+.step__body{display:flex; flex-direction:column; gap:var(--s-2)}
+.video-frame{
+  position:relative; aspect-ratio:16/9; border-radius:clamp(var(--r-lg),2.5vw,var(--r-2xl));
+  overflow:hidden; margin-top:clamp(var(--s-10),5vw,var(--s-12)); box-shadow:var(--shadow-lg);
+}
+.video-frame .ph{height:100%; border:0; border-radius:0; justify-content:center; align-items:center; text-align:center}
+.video-frame .ph__desc{max-width:34ch}
+.play{
+  width:76px; height:76px; border-radius:50%; background:var(--ink); color:#fff;
+  display:grid; place-items:center; box-shadow:var(--shadow-lg); margin-bottom:var(--s-2);
+}
+.play svg{width:26px; height:26px; margin-left:4px}
+
+/* ── 11. FOREVER (split) ───────────────────────────────────────────────── */
+.split{display:grid; grid-template-columns:1.05fr .95fr; gap:clamp(var(--s-8),5vw,var(--s-20)); align-items:center}
+@media (max-width:900px){.split{grid-template-columns:1fr; gap:var(--s-12)}}
+/* Why a sticker beats a card, drawn: the printed card is struck through,
+   the one sticker never changes, and the page it opens already carries the
+   new number (in green — the only colour in the scene besides the red
+   strike). Everything is SVG coloured from tokens, so it follows any
+   token change without re-exporting a file. */
+.ill{
+  width:100%; max-width:540px; justify-self:center;
+  /* The stage is white on this section's grey ground, so it reads as a panel.
+     Radius matches the stage rect's own rx, or the shadow would square off
+     the corners the SVG has already rounded. */
+  border-radius:var(--r-xl); box-shadow:var(--shadow-md);
+}
+.ill svg{display:block; width:100%; height:auto}
+.ill text{font-family:var(--font-sans); font-weight:var(--fw-semibold)}
+.ill .ill__b{font-weight:var(--fw-bold)}
+.ill .ill__mono{font-family:var(--font-mono); font-weight:var(--fw-semibold)}
+.ill .ill__sm{letter-spacing:var(--ls-soft)}
+.ill__stage{fill:var(--ground)}
+.ill__paper{fill:var(--ground); stroke:var(--line-strong); stroke-width:1}
+.ill__screen{stroke:none}
+.ill__shade{fill:var(--ink); opacity:.06}
+.ill__ink{fill:var(--ink)}
+.ill__mid{fill:var(--ink-mid)}
+.ill__soft{fill:var(--ink-soft)}
+.ill__faint{fill:var(--ink-faint)}
+.ill__white{fill:var(--ink-invert)}
+.ill__row{fill:var(--ground-sunk)}
+.ill__bad{fill:var(--bad)}
+.ill__strike{stroke:var(--bad); stroke-width:2; stroke-linecap:round}
+.ill__stamp{fill:none; stroke:var(--bad); stroke-width:1.5}
+.ill__lift{fill:var(--ok-lift)}
+.ill__link{fill:none; stroke:var(--ink-faint); stroke-width:1.5; stroke-dasharray:4 5; stroke-linecap:round}
+.ill__fold{fill:var(--ground-sunk); stroke:var(--line-strong); stroke-linejoin:round}
+
+/* ── 12. BOX (dark) ────────────────────────────────────────────────────── */
+.section--dark .lead{color:rgba(255,255,255,.66)}
+.box-grid{display:grid; grid-template-columns:1.15fr .85fr; gap:clamp(var(--s-8),4vw,var(--s-16)); align-items:center; margin-top:clamp(var(--s-10),5vw,var(--s-16))}
+@media (max-width:900px){.box-grid{grid-template-columns:1fr}}
+.box-shot{aspect-ratio:4/3; border-radius:clamp(var(--r-lg),2.5vw,var(--r-2xl)); overflow:hidden}
+.box-shot .ph{height:100%; border-radius:0}
+.box-shot{position:relative}
+.box-track{position:absolute; inset:0; display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none}
+.box-track::-webkit-scrollbar{display:none}
+.box-slide{flex:0 0 100%; width:100%; height:100%; object-fit:cover; scroll-snap-align:start}
+.box-arw{
+  position:absolute; top:50%; transform:translateY(-50%); z-index:2;
+  display:grid; place-items:center; width:44px; height:44px; border:0; border-radius:50%;
+  background:rgba(255,255,255,.9); color:var(--ink); cursor:pointer; box-shadow:var(--shadow-md);
+  opacity:0; transition:opacity var(--dur) var(--ease), background var(--dur-fast) var(--ease);
+}
+.box-arw svg{width:20px; height:20px}
+.box-arw--p{left:var(--s-4)} .box-arw--n{right:var(--s-4)}
+.box-shot:hover .box-arw,.box-arw:focus-visible{opacity:1}
+.box-arw:hover{background:#fff}
+@media (hover:none){ .box-arw{display:none} }
+.box-dots{position:absolute; left:0; right:0; bottom:var(--s-4); z-index:2; display:flex; justify-content:center; gap:var(--s-2)}
+.box-dot{width:8px; height:8px; padding:0; border:0; border-radius:var(--r-pill); background:rgba(255,255,255,.55); cursor:pointer;
+  box-shadow:0 1px 4px rgba(0,0,0,.25); transition:width var(--dur) var(--ease), background var(--dur) var(--ease)}
+.box-dot[aria-current="true"]{width:22px; background:#fff}
+.spec{display:flex; flex-direction:column; gap:0; border-top:1px solid var(--line-invert)}
+.spec__row{display:flex; align-items:baseline; justify-content:space-between; gap:var(--s-5); padding-block:var(--s-5); border-bottom:1px solid var(--line-invert)}
+.spec__k{font-family:var(--font-mono); font-size:var(--fs-label); letter-spacing:var(--ls-label); text-transform:uppercase; color:rgba(255,255,255,.44); flex-shrink:0}
+.spec__v{font-size:var(--fs-body); font-weight:var(--fw-bold); letter-spacing:-.015em; text-align:right}
+.spec__v small{display:block; font-size:var(--fs-sm); font-weight:var(--fw-medium); color:rgba(255,255,255,.5); letter-spacing:-.01em; margin-top:2px}
+.price{display:flex; align-items:baseline; gap:var(--s-3); flex-wrap:wrap; margin-top:var(--s-8)}
+.price__big{font-size:clamp(2.5rem,5vw,3.5rem); font-weight:var(--fw-black); letter-spacing:var(--ls-display); line-height:1}
+.price__sub{font-size:var(--fs-body); font-weight:var(--fw-bold); color:rgba(255,255,255,.6)}
+.price__note{font-size:var(--fs-sm); color:rgba(255,255,255,.44); margin-top:var(--s-3); font-weight:var(--fw-medium)}
+
+/* ── 12b. THE OFFER BAND ───────────────────────────────────────────────────
+   Sits directly under the price, because that is the moment the two doubts
+   fire: "why is this free?" and "will there be one left for me?" */
+.offer{
+  display:grid; grid-template-columns:minmax(240px,.8fr) 1.2fr;
+  gap:clamp(var(--s-6),4vw,var(--s-16));
+  margin-top:clamp(var(--s-12),6vw,var(--s-20));
+  padding-top:clamp(var(--s-8),4vw,var(--s-12));
+  border-top:1px solid var(--line-invert);
+}
+@media (max-width:820px){.offer{grid-template-columns:1fr; gap:var(--s-8)}}
+
+.offer__meter{display:flex; flex-direction:column; gap:var(--s-3)}
+.offer__count{
+  display:flex; align-items:baseline; gap:var(--s-3); flex-wrap:wrap;
+  font-weight:var(--fw-black); letter-spacing:var(--ls-display); line-height:1;
+}
+.offer__n{font-size:clamp(2.75rem,6vw,4rem); color:var(--brand-violet-lift); font-variant-numeric:tabular-nums}
+.offer__of{font-size:var(--fs-body); font-weight:var(--fw-bold); letter-spacing:-.015em; color:rgba(255,255,255,.62)}
+.offer__bar{height:6px; border-radius:var(--r-pill); background:rgba(255,255,255,.12); overflow:hidden}
+.offer__fill{
+  display:block; height:100%; width:0; border-radius:inherit;
+  background:var(--brand-violet-lift);
+  transition:width var(--dur-slow) var(--ease-out);
+}
+.offer__meta{
+  font-family:var(--font-mono); font-size:var(--fs-label); letter-spacing:var(--ls-label);
+  text-transform:uppercase; color:rgba(255,255,255,.44);
+}
+.offer[data-state="out"] .offer__n{color:rgba(255,255,255,.5)}
+.offer[data-state="out"] .offer__fill{background:rgba(255,255,255,.3)}
+
+.offer__why{display:flex; flex-direction:column; gap:var(--s-4)}
+.offer__why p{color:rgba(255,255,255,.72); max-width:56ch; font-weight:var(--fw-medium)}
+.offer__why b{color:var(--ink-invert); font-weight:var(--fw-bold)}
+
+/* ── 13. FAQ ───────────────────────────────────────────────────────────── */
+.faq{display:flex; flex-direction:column; margin-top:clamp(var(--s-8),4vw,var(--s-12)); border-top:1px solid var(--line)}
+.qa{border-bottom:1px solid var(--line)}
+.qa__q{
+  display:flex; align-items:center; justify-content:space-between; gap:var(--s-6);
+  width:100%; padding-block:clamp(var(--s-5),2.5vw,var(--s-8)); background:none; border:0;
+  cursor:pointer; text-align:left; font-size:var(--fs-h4); font-weight:var(--fw-bold);
+  letter-spacing:-.022em; line-height:1.3;
+  transition:color var(--dur-fast) var(--ease);
+}
+.qa__q:hover{color:var(--ink)}
+.qa__ic{position:relative; width:22px; height:22px; flex-shrink:0}
+.qa__ic::before,.qa__ic::after{
+  content:""; position:absolute; left:50%; top:50%; width:14px; height:2px; border-radius:2px;
+  background:currentColor; transform:translate(-50%,-50%); transition:transform var(--dur) var(--ease);
+}
+.qa__ic::after{transform:translate(-50%,-50%) rotate(90deg)}
+.qa[data-open="true"] .qa__ic::after{transform:translate(-50%,-50%) rotate(0deg)}
+.qa__a{overflow:hidden; height:0; transition:height var(--dur) var(--ease)}
+.qa__a p{padding-bottom:clamp(var(--s-5),2.5vw,var(--s-8)); max-width:62ch; color:var(--ink-mid); font-weight:var(--fw-medium)}
+.qa__a a{color:var(--ink); font-weight:var(--fw-bold); text-decoration:underline; text-underline-offset:3px}
+
+/* ── 14. CLOSING CTA ───────────────────────────────────────────────────── */
+/* Black head, violet foot. The stops are weighted low — black runs a sixth of
+   the band before it starts moving at all, and the violet only lands in the
+   last stretch, so the section reads as dark with a violet floor rather than
+   as a purple gradient. */
+.close{
+  position:relative; color:var(--ink-invert);
+  background:linear-gradient(180deg,
+    var(--close-head) 0%,
+    var(--close-head) 16%,
+    var(--close-body) 58%,
+    var(--close-foot) 100%);
+}
+.close__inner{position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:var(--s-6); text-align:center}
+/* The white claim field stays white — it is the one bright object in the band.
+   Only the status line under it needs relighting. */
+.close .claim__status[data-state="idle"]{color:rgba(255,255,255,.62)}
+.close .claim__status[data-state="ok"]{color:var(--ok-lift)}
+.close .claim__status[data-state="bad"]{color:var(--bad-lift)}
+
+/* ── 15. FOOTER ────────────────────────────────────────────────────────── */
+.footer{background:var(--ground); border-top:1px solid var(--line); padding-block:var(--s-16) var(--s-8)}
+.footer__grid{display:grid; grid-template-columns:1.6fr repeat(3,1fr); gap:clamp(var(--s-8),4vw,var(--s-12))}
+@media (max-width:860px){.footer__grid{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.footer__grid{grid-template-columns:1fr}}
+.footer__logo svg{height:var(--logo-h-footer); width:auto; margin-bottom:var(--s-4)}
+.footer h4{
+  font-family:var(--font-mono); font-size:var(--fs-label); font-weight:var(--fw-semibold);
+  letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--ink-soft); margin-bottom:var(--s-4);
+}
+.footer__links{display:flex; flex-direction:column; gap:var(--s-3)}
+.footer__links a{font-size:var(--fs-sm); font-weight:var(--fw-semibold); color:var(--ink-mid); transition:color var(--dur-fast) var(--ease); width:fit-content}
+.footer__links a:hover{color:var(--ink)}
+.footer__base{
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--s-4);
+  margin-top:var(--s-16); padding-top:var(--s-6); border-top:1px solid var(--line);
+  font-size:var(--fs-sm); color:var(--ink-soft); font-weight:var(--fw-medium);
+}
+.social{display:flex; gap:var(--s-2)}
+.social a{
+  display:grid; place-items:center; width:38px; height:38px; border-radius:50%;
+  box-shadow:inset 0 0 0 1px var(--line); color:var(--ink-mid);
+  transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.social a:hover{background:var(--ink); color:var(--ink-invert); box-shadow:none}
+.social svg{width:17px; height:17px}
+
+/* ── 15b. PLAYFUL LAYER — 2026-09-29, Garry ─────────────────────────────
+   Pulls the homepage in line with about.html / how-it-works.html (fun.css):
+   grey eyebrows with a square, the lilac highlight, slapped sticker tags,
+   the photo river. Copied rather than linked, because fun.css owns a
+   .hero of its own that would fight this page's. */
+.eyebrow,.eyebrow--invert,.eyebrow--soft{display:inline-flex; align-items:center; gap:var(--s-2); color:var(--ink-soft)}
+.eyebrow::before{content:""; width:8px; height:8px; border-radius:2px; background:var(--ink); flex-shrink:0}
+.section--dark .eyebrow,.eyebrow--invert{color:rgba(255,255,255,.55)}
+.section--dark .eyebrow::before,.eyebrow--invert::before{background:#fff}
+
+.hl{position:relative; white-space:nowrap; z-index:0}
+.hl::after{
+  content:""; position:absolute; left:-.06em; right:-.06em; bottom:.06em; height:.3em; z-index:-1;
+  background:var(--brand-violet-tint); border-radius:.12em; transform:scaleX(0); transform-origin:left;
+  transition:transform .7s var(--ease-out) .35s;
+}
+.hl.in::after{transform:scaleX(1)}
+
+.tags{display:flex; flex-wrap:wrap; justify-content:center; gap:var(--s-4) var(--s-3)}
+.tag{
+  display:inline-flex; align-items:center; padding:.5em .9em;
+  background:#fff; color:var(--ink); border:2px solid var(--ink); border-radius:12px;
+  font-weight:var(--fw-black); font-size:.9375rem; letter-spacing:-.02em; white-space:nowrap;
+  box-shadow:3px 3px 0 var(--ink); transform:rotate(var(--r,-4deg));
+}
+.tag--ink{background:var(--ink); color:#fff; box-shadow:3px 3px 0 var(--ground-sunk)}
+.tag--live{background:var(--brand-violet); color:#fff}
+.slap{opacity:0; transform:scale(1.5) rotate(calc(var(--r,-4deg) * -3)); transition:opacity .25s ease, transform .5s cubic-bezier(.3,1.6,.5,1); transition-delay:var(--d,0s)}
+.slap.in{opacity:1; transform:rotate(var(--r,-4deg))}
+.close__tags{position:absolute; inset:0; pointer-events:none; z-index:0}
+.close__tags .tag{position:absolute}
+@media (max-width:879px){ .close__tags{display:none} }
+
+.river{display:flex; flex-direction:column; gap:var(--s-4); padding-block:var(--s-4); overflow:hidden}
+.river__row{display:flex; width:max-content; gap:var(--s-4); animation:river var(--t,60s) linear infinite}
+.river__row--back{animation-direction:reverse}
+.river figure{flex:0 0 auto; width:clamp(160px,18vw,240px); aspect-ratio:3/4; margin:0; border-radius:20px; overflow:hidden;
+  background:var(--ground-sunk); transition:transform .35s var(--ease-out); cursor:pointer}
+.river figure:hover{transform:scale(1.04)}
+.river img{width:100%; height:100%; object-fit:cover; display:block}
+@keyframes river{to{transform:translateX(-50%)}}
+
+/* ── 16. SCROLL REVEAL ─────────────────────────────────────────────────── */
+.rise{opacity:0; transform:translateY(22px); transition:opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out)}
+.rise.in{opacity:1; transform:none}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; transition-duration:.001ms !important}
+  .rise{opacity:1; transform:none}
+  .slap{opacity:1; transform:rotate(var(--r,-4deg))}
+  .river__row{animation:none !important}
+  /* the strip stops moving and becomes swipeable, rather than freezing
+     mid-slide with half its content cut off */
+  .ticker{overflow-x:auto}
+  .ticker__track{animation:none !important; transform:none !important}
+  .ticker__set[aria-hidden="true"]{display:none}
+  .ticker__set li:last-child::after{display:none}
+}
+
+/* ── SUPPORTING TEXT ───────────────────────────────────────────────────
+   Headings and body copy run on negative tracking. The small grey lines
+   under them — subtitles, help, notes, values — do not: at 13–14px the
+   letters need the air back instead. Any new small line on this page
+   belongs in this list. */
+.ph__desc,
+.strip__item,
+.price__note,
+.spec__v small,
+.footer__base,
+.footer__links a,
+.muted{ letter-spacing:var(--ls-soft) }
+
+/* Chrome paints its own pale-blue block behind anything it autofills, which
+   overrides the field's own ground. Parking the transition indefinitely keeps
+   our background and ink; it is the one fix that does not need to know the
+   field's colour. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+  -webkit-text-fill-color:var(--ink);
+  caret-color:var(--ink);
+  transition:background-color 600000s 0s, color 600000s 0s;
+}
+</style>
+
+<!-- ══ TICKER ═══════════════════════════════════════════════════════════ -->
+<div class="ticker">
+  <div class="ticker__track">
+    <ul class="ticker__set">
+      <li>Early bird &mdash; first 100 packs free</li>
+      <li>You only pay delivery</li>
+      <li>Sticks to anything: car, laptop, bottle, helmet</li>
+      <li>Weatherproof UV-laminated vinyl</li>
+      <li>One code, yours forever</li>
+    </ul>
+    <ul class="ticker__set" aria-hidden="true">
+      <li>Early bird &mdash; first 100 packs free</li>
+      <li>You only pay delivery</li>
+      <li>Sticks to anything: car, laptop, bottle, helmet</li>
+      <li>Weatherproof UV-laminated vinyl</li>
+      <li>One code, yours forever</li>
+    </ul>
+    <ul class="ticker__set" aria-hidden="true">
+      <li>Early bird &mdash; first 100 packs free</li>
+      <li>You only pay delivery</li>
+      <li>Sticks to anything: car, laptop, bottle, helmet</li>
+      <li>Weatherproof UV-laminated vinyl</li>
+      <li>One code, yours forever</li>
+    </ul>
+    <ul class="ticker__set" aria-hidden="true">
+      <li>Early bird &mdash; first 100 packs free</li>
+      <li>You only pay delivery</li>
+      <li>Sticks to anything: car, laptop, bottle, helmet</li>
+      <li>Weatherproof UV-laminated vinyl</li>
+      <li>One code, yours forever</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══ NAV ══════════════════════════════════════════════════════════════ -->
+<header class="nav" id="nav">
+  <div class="shell shell--wide nav__inner">
+    <a class="nav__logo" href="homepage.html" aria-label="Codemarca home">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 257 40" fill="none" role="img" aria-label="Codemarca"><g fill="#6E27E6"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></g><g fill="#101215"><path d="M245.956 14.0999H252.172V34.82H245.956V32.8723C244.589 34.447 242.558 35.4002 239.782 35.4002C234.353 35.4002 229.877 30.6345 229.877 24.46C229.877 18.2854 234.353 13.5198 239.782 13.5198C242.558 13.5198 244.589 14.4729 245.956 16.0476V14.0999ZM241.025 29.5157C243.884 29.5157 245.956 27.568 245.956 24.46C245.956 21.352 243.884 19.4043 241.025 19.4043C238.165 19.4043 236.093 21.352 236.093 24.46C236.093 27.568 238.165 29.5157 241.025 29.5157Z"/><path d="M220.695 35.4002C214.396 35.4002 209.713 30.6345 209.713 24.46C209.713 18.2854 214.396 13.5198 220.695 13.5198C224.714 13.5198 228.278 15.6332 230.06 18.8241L224.631 21.9736C223.927 20.5232 222.435 19.6529 220.612 19.6529C217.918 19.6529 215.929 21.6006 215.929 24.46C215.929 27.3193 217.918 29.267 220.612 29.267C222.435 29.267 223.968 28.3968 224.631 26.9464L230.06 30.0544C228.278 33.2867 224.756 35.4002 220.695 35.4002Z"/><path d="M203.477 17.7881C204.306 15.0116 207.083 13.6855 209.693 13.6855V20.7304C207.124 20.316 203.477 21.352 203.477 25.4545V34.82H197.261V14.1H203.477V17.7881Z"/><path d="M187.728 14.0999H193.944V34.82H187.728V32.8723C186.361 34.447 184.33 35.4002 181.554 35.4002C176.125 35.4002 171.649 30.6345 171.649 24.46C171.649 18.2854 176.125 13.5198 181.554 13.5198C184.33 13.5198 186.361 14.4729 187.728 16.0476V14.0999ZM182.797 29.5157C185.656 29.5157 187.728 27.568 187.728 24.46C187.728 21.352 185.656 19.4043 182.797 19.4043C179.937 19.4043 177.865 21.352 177.865 24.46C177.865 27.568 179.937 29.5157 182.797 29.5157Z"/><path d="M161.806 13.5198C166.571 13.5198 169.679 16.9179 169.679 22.0979V34.82H163.463V22.6366C163.463 20.5646 162.469 19.2385 160.479 19.2385C158.407 19.2385 157.247 20.6889 157.247 23.1339V34.82H151.031V22.6366C151.031 20.5646 150.037 19.2385 148.047 19.2385C145.975 19.2385 144.815 20.6889 144.815 23.1339V34.82H138.599V14.0999H144.815V16.0062C145.768 14.5972 147.592 13.5198 150.368 13.5198C152.813 13.5198 154.636 14.5143 155.797 16.2548C156.957 14.5972 158.863 13.5198 161.806 13.5198Z"/><path d="M121.357 26.9464C122.144 29.1013 124.051 29.8472 126.33 29.8472C128.029 29.8472 129.479 29.1841 130.308 28.2725L135.281 31.1318C133.25 33.9497 130.184 35.4002 126.247 35.4002C119.161 35.4002 114.768 30.6345 114.768 24.46C114.768 18.2854 119.244 13.5198 125.791 13.5198C131.841 13.5198 136.317 18.2025 136.317 24.46C136.317 25.3302 136.234 26.159 136.068 26.9464H121.357ZM121.233 22.3051H130.142C129.479 19.9016 127.614 19.0313 125.75 19.0313C123.388 19.0313 121.813 20.1916 121.233 22.3051Z"/><path d="M106.271 5.81201H112.487V34.8201H106.271V32.8724C104.903 34.4471 102.873 35.4002 100.096 35.4002C94.6674 35.4002 90.1919 30.6346 90.1919 24.4601C90.1919 18.2855 94.6674 13.5199 100.096 13.5199C102.873 13.5199 104.903 14.473 106.271 16.0477V5.81201ZM101.339 29.5158C104.199 29.5158 106.271 27.5681 106.271 24.4601C106.271 21.3521 104.199 19.4044 101.339 19.4044C98.4799 19.4044 96.4079 21.3521 96.4079 24.4601C96.4079 27.5681 98.4799 29.5158 101.339 29.5158Z"/><path d="M77.9738 35.4002C71.8821 35.4002 66.9922 30.6345 66.9922 24.46C66.9922 18.2854 71.8821 13.5198 77.9738 13.5198C84.0655 13.5198 88.9554 18.2854 88.9554 24.46C88.9554 30.6345 84.0655 35.4002 77.9738 35.4002ZM77.9738 29.3499C80.6674 29.3499 82.7394 27.4022 82.7394 24.46C82.7394 21.5177 80.6674 19.57 77.9738 19.57C75.2802 19.57 73.2082 21.5177 73.2082 24.46C73.2082 27.4022 75.2802 29.3499 77.9738 29.3499Z"/><path d="M57.8088 35.4002C51.5099 35.4002 46.8271 30.6345 46.8271 24.46C46.8271 18.2854 51.5099 13.5198 57.8088 13.5198C61.8285 13.5198 65.3923 15.6332 67.1742 18.8241L61.7456 21.9736C61.0411 20.5232 59.5493 19.6529 57.7259 19.6529C55.0323 19.6529 53.0432 21.6006 53.0432 24.46C53.0432 27.3193 55.0323 29.267 57.7259 29.267C59.5493 29.267 61.0825 28.3968 61.7456 26.9464L67.1742 30.0544C65.3923 33.2867 61.8699 35.4002 57.8088 35.4002Z"/></g></svg>
+    </a>
+    <div class="nav__right">
+      <a class="packs" id="packsPill" href="#pack">
+        <span class="packs__dot" aria-hidden="true"></span>
+        <span class="packs__txt"><span data-packs-n>37</span><span class="packs__long" data-packs-of> of 100 packs left</span><span class="packs__short"> left</span></span>
+      </a>
+      <a class="nav__login" href="signup.html?mode=login">Login</a>
+      <button class="nav__menu" type="button" aria-label="Open menu">
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ══ 1. HERO ════════════════════════════════════════════════════════ -->
+  <section class="hero">
+    <div class="shell">
+      <div class="hero__head">
+        <span class="chip"><span class="chip__dot"></span>Free — you only pay delivery</span>
+        <h1 class="h-display">One sticker.<br>Your <span class="hl">whole world.</span></h1>
+        <p class="lead measure">Every link, number and profile on a single page — printed as a QR you can stick anywhere. Change the page whenever you like. The sticker never changes.</p>
+        <div class="tags">
+          <span class="tag slap" style="--r:-5deg; --d:.3s">free page</span>
+          <span class="tag tag--ink slap" style="--r:4deg; --d:.42s">no app</span>
+          <span class="tag slap" style="--r:-3deg; --d:.54s">1 code for life</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- The arc: 18 cards — two studio product shots, then a profile, on
+         repeat — moving along a wide curve. Product photos open the lightbox. -->
+    <div class="arc" id="arc" data-lightbox aria-label="Codemarca stickers on everyday things, and the pages they open">
+        <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-helmet-studio-tall.jpg" alt="Codemarca QR sticker on a black motorcycle helmet" width="1536" height="2752"></figure>
+        <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-gift-box-studio-tall.jpg" alt="Codemarca QR sticker on a gift box" width="1536" height="2752"></figure>
+        <div class="wcard" aria-hidden="true">
+          <div class="mini">
+            <div class="mini__top">
+              <div class="mini__ava">GS</div>
+              <div>
+                <p class="mini__name">Gurdeep Singh</p>
+                <p class="mini__handle">codemarca.com/gurdeep</p>
+              </div>
+            </div>
+            <div class="mini__links">
+                <span class="mini__link mini__link--live"><i></i>Call me</span>
+                <span class="mini__link"><i></i>WhatsApp</span>
+                <span class="mini__link"><i></i>Instagram</span>
+                <span class="mini__link"><i></i>Save contact</span>
+            </div>
+            <div class="mini__foot">
+              <span>Scan · Live</span>
+              <div class="qr" data-qr aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+        <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-laptop-palm-rest-studio-tall.jpg" alt="Codemarca QR sticker on a laptop palm rest" width="1536" height="2752" loading="lazy"></figure>
+        <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-wallet-studio-tall.jpg" alt="Codemarca QR sticker on a leather wallet" width="1536" height="2752" loading="lazy"></figure>
+        <div class="wcard" aria-hidden="true">
+          <div class="mini">
+            <div class="mini__top">
+              <div class="mini__ava">NM</div>
+              <div>
+                <p class="mini__name">Nikk Martin</p>
+                <p class="mini__handle">codemarca.com/nikk</p>
+              </div>
+            </div>
+            <div class="mini__links">
+                <span class="mini__link mini__link--live"><i></i>Book a shoot</span>
+                <span class="mini__link"><i></i>Portfolio</span>
+                <span class="mini__link"><i></i>YouTube</span>
+                <span class="mini__link"><i></i>Email me</span>
+            </div>
+            <div class="mini__foot">
+              <span>Scan · Live</span>
+              <div class="qr" data-qr aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+        <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-plant-pot-studio-tall.jpg" alt="Codemarca QR sticker on a terracotta plant pot" width="1536" height="2752" loading="lazy"></figure>
+        <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-power-bank-studio-tall.jpg" alt="Codemarca QR sticker on a power bank" width="1536" height="2752" loading="lazy"></figure>
+        <div class="wcard" aria-hidden="true">
+          <div class="mini">
+            <div class="mini__top">
+              <div class="mini__ava">SK</div>
+              <div>
+                <p class="mini__name">Simran Kaur</p>
+                <p class="mini__handle">codemarca.com/simran</p>
+              </div>
+            </div>
+            <div class="mini__links">
+                <span class="mini__link mini__link--live"><i></i>Order a cake</span>
+                <span class="mini__link"><i></i>Menu</span>
+                <span class="mini__link"><i></i>Instagram</span>
+                <span class="mini__link"><i></i>Directions</span>
+            </div>
+            <div class="mini__foot">
+              <span>Scan · Live</span>
+              <div class="qr" data-qr aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+        <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-guitar-studio-tall.jpg" alt="Codemarca QR sticker on an acoustic guitar" width="1536" height="2752" loading="lazy"></figure>
+        <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-pet-collar-studio-tall.jpg" alt="Codemarca QR tag on a pet collar" width="1536" height="2752" loading="lazy"></figure>
+        <div class="wcard" aria-hidden="true">
+          <div class="mini">
+            <div class="mini__top">
+              <div class="mini__ava">AM</div>
+              <div>
+                <p class="mini__name">Arjun Mehta</p>
+                <p class="mini__handle">codemarca.com/arjun</p>
+              </div>
+            </div>
+            <div class="mini__links">
+                <span class="mini__link mini__link--live"><i></i>Book a ride</span>
+                <span class="mini__link"><i></i>WhatsApp</span>
+                <span class="mini__link"><i></i>Google review</span>
+                <span class="mini__link"><i></i>Save contact</span>
+            </div>
+            <div class="mini__foot">
+              <span>Scan · Live</span>
+              <div class="qr" data-qr aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+        <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-laptop-and-phone-studio-tall.jpg" alt="Codemarca QR stickers on a laptop and a phone" width="1536" height="2752" loading="lazy"></figure>
+        <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-notebook-flatlay-studio-tall.jpg" alt="Codemarca QR sticker on a black notebook" width="1536" height="2752" loading="lazy"></figure>
+        <div class="wcard" aria-hidden="true">
+          <div class="mini">
+            <div class="mini__top">
+              <div class="mini__ava">PS</div>
+              <div>
+                <p class="mini__name">Priya Sharma</p>
+                <p class="mini__handle">codemarca.com/priya</p>
+              </div>
+            </div>
+            <div class="mini__links">
+                <span class="mini__link mini__link--live"><i></i>Join a class</span>
+                <span class="mini__link"><i></i>Timetable</span>
+                <span class="mini__link"><i></i>Instagram</span>
+                <span class="mini__link"><i></i>Call me</span>
+            </div>
+            <div class="mini__foot">
+              <span>Scan · Live</span>
+              <div class="qr" data-qr aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+        <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-bottle-and-stickers-studio-tall.jpg" alt="Codemarca QR sticker on a water bottle" width="1536" height="2752" loading="lazy"></figure>
+        <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-notebook-flatlay-studio-tall-3.jpg" alt="Codemarca QR sticker on a diary cover" width="1536" height="2752"></figure>
+        <div class="wcard" aria-hidden="true">
+          <div class="mini">
+            <div class="mini__top">
+              <div class="mini__ava">RV</div>
+              <div>
+                <p class="mini__name">Dr. Rohan Verma</p>
+                <p class="mini__handle">codemarca.com/drrohan</p>
+              </div>
+            </div>
+            <div class="mini__links">
+                <span class="mini__link mini__link--live"><i></i>Book a visit</span>
+                <span class="mini__link"><i></i>Clinic hours</span>
+                <span class="mini__link"><i></i>Directions</span>
+                <span class="mini__link"><i></i>Call clinic</span>
+            </div>
+            <div class="mini__foot">
+              <span>Scan · Live</span>
+              <div class="qr" data-qr aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <div class="shell stack center gap-4">
+      <form class="claim stack gap-3" id="claimForm" autocomplete="off">
+        <div class="claim__field">
+          <span class="claim__prefix">codemarca.com/</span>
+          <input class="claim__input" id="handle" type="text" placeholder="yourname"
+                 spellcheck="false" aria-label="Choose your Codemarca link" maxlength="24">
+          <button class="btn btn--primary claim__btn" type="submit">Claim profile</button>
+        </div>
+        <p class="claim__status" id="claimStatus" data-state="idle" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ══ 2. FACT STRIP ══════════════════════════════════════════════════ -->
+  <section class="strip">
+    <div class="shell strip__row">
+      <span class="strip__item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Works with any phone camera
+      </span>
+      <span class="strip__item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18.36 6.64A9 9 0 1 1 5.64 6.64"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+        No app to download
+      </span>
+      <span class="strip__item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18M3 12h18"/></svg>
+        Weatherproof, UV-laminated vinyl
+      </span>
+      <span class="strip__item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13" rx="1.5"/><path d="M16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        Ships across India
+      </span>
+    </div>
+  </section>
+
+  <!-- ══ 3. PLACES ══════════════════════════════════════════════════════ -->
+  <section class="section" id="where">
+    <div class="shell shell--wide">
+      <div class="stack gap-5 rise">
+        <span class="eyebrow">Two sizes, one code</span>
+        <h2 class="h2 measure">Stick it wherever people already look.</h2>
+        <p class="lead measure">The big one is cut for glass and metal — car, bike, shop shutter. The small one is for the things you carry. Both point at the same page.</p>
+      </div>
+
+      <div class="bento" data-lightbox>
+        <figure class="pic bento__a rise">
+          <span class="size-tag">4″ × 4″</span>
+          <img src="assets/photos/codemarca-qr-sticker-car-rear-window-night-street.jpg" alt="Codemarca 4 inch QR sticker on the rear window of an SUV on a city street at night" width="2400" height="1792" loading="lazy">
+        </figure>
+        <figure class="pic bento__b rise">
+          <span class="size-tag">1.5″ × 1.5″</span>
+          <picture>
+            <source media="(max-width:760px)" srcset="assets/photos/codemarca-qr-sticker-laptop-palm-rest-studio.jpg">
+            <img src="assets/photos/codemarca-qr-sticker-laptop-palm-rest-studio-tall.jpg" alt="Codemarca 1.5 inch QR sticker on a laptop palm rest" width="1536" height="2750" loading="lazy">
+          </picture>
+        </figure>
+        <figure class="pic bento__c rise">
+          <span class="size-tag">1.5″ × 1.5″</span>
+          <picture>
+            <source media="(max-width:760px)" srcset="assets/photos/codemarca-qr-sticker-bottle-teal-studio.jpg">
+            <img src="assets/photos/codemarca-qr-sticker-bottle-and-stickers-studio-tall.jpg" alt="Codemarca 1.5 inch QR sticker on a water bottle, with spare stickers around it" width="1536" height="2752" loading="lazy">
+          </picture>
+        </figure>
+        <figure class="pic bento__d rise">
+          <span class="size-tag">4″ × 4″</span>
+          <img src="assets/photos/codemarca-qr-sticker-motorcycle-rider-city-street.jpg" alt="Codemarca 4 inch QR sticker on a motorcycle fuel tank, rider holding the pack on a city street" width="2400" height="1792" loading="lazy">
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 4. HOW IT WORKS — lives on its own page now, how-it-works.html
+       (2026-09-29). Nothing to restore here. ═════════════════════════════ -->
+
+  <!-- ══ 5. THE FOREVER PROMISE ═════════════════════════════════════════ -->
+  <section class="section section--soft">
+    <div class="shell split">
+      <div class="stack gap-6 rise">
+        <span class="eyebrow">Why a sticker beats a card</span>
+        <h2 class="h2">Everything on your page can change. The sticker stays put.</h2>
+        <p class="lead">A new number, a new Instagram, a new menu, a new address — a printed card is out of date the day any of it changes. Edit your Codemarca page from your phone and every sticker you've already stuck is showing the new version.</p>
+        <a class="btn btn--ghost" href="#claimForm">See what a page can hold</a>
+      </div>
+
+      <figure class="ill rise">
+        <svg viewBox="0 0 480 500" role="img" aria-labelledby="illTitle">
+          <title id="illTitle">An old visiting card with its job and number crossed out, next to one Codemarca sticker whose page on a phone already shows the new number</title>
+          <rect class="ill__stage" width="480" height="500" rx="32"/>
+
+          <!-- The card: printed once, wrong the day anything changes -->
+          <g transform="rotate(-6 133 108)">
+            <rect class="ill__shade" x="28" y="50" width="214" height="128" rx="12"/>
+            <rect class="ill__paper" x="26" y="44" width="214" height="128" rx="12"/>
+            <text class="ill__ink ill__b" x="46" y="80" font-size="15">Nikk Martin</text>
+            <text class="ill__mid ill__sm" x="46" y="104" font-size="13">Sales · Ludhiana</text>
+            <line class="ill__strike" x1="43" y1="99" x2="152" y2="99"/>
+            <text class="ill__mid ill__mono" x="46" y="128" font-size="12.5">+91 98140 22210</text>
+            <line class="ill__strike" x1="43" y1="124" x2="166" y2="124"/>
+            <text class="ill__soft ill__sm" x="46" y="156" font-size="11">nikk@oldfirm.in</text>
+            <rect class="ill__stamp" x="156" y="56" width="72" height="22" rx="6"/>
+            <text class="ill__bad ill__mono ill__b" x="192" y="71" font-size="9.5" text-anchor="middle" letter-spacing="1">OUTDATED</text>
+          </g>
+
+          <!-- The sticker: stuck once, never touched again -->
+          <g transform="rotate(5 128 324)">
+            <rect class="ill__shade" x="60" y="260" width="140" height="140" rx="18"/>
+            <path class="ill__paper" d="M76 254 H198 V372 L176 394 H76 A18 18 0 0 1 58 376 V272 A18 18 0 0 1 76 254 Z"/>
+            <g class="ill__ink ill__qr"><rect x="75.5" y="271.5" width="5.3" height="5.3"/><rect x="80.5" y="271.5" width="5.3" height="5.3"/><rect x="85.5" y="271.5" width="5.3" height="5.3"/><rect x="90.5" y="271.5" width="5.3" height="5.3"/><rect x="95.5" y="271.5" width="5.3" height="5.3"/><rect x="100.5" y="271.5" width="5.3" height="5.3"/><rect x="105.5" y="271.5" width="5.3" height="5.3"/><rect x="135.5" y="271.5" width="5.3" height="5.3"/><rect x="145.5" y="271.5" width="5.3" height="5.3"/><rect x="150.5" y="271.5" width="5.3" height="5.3"/><rect x="155.5" y="271.5" width="5.3" height="5.3"/><rect x="160.5" y="271.5" width="5.3" height="5.3"/><rect x="165.5" y="271.5" width="5.3" height="5.3"/><rect x="170.5" y="271.5" width="5.3" height="5.3"/><rect x="175.5" y="271.5" width="5.3" height="5.3"/><rect x="75.5" y="276.5" width="5.3" height="5.3"/><rect x="105.5" y="276.5" width="5.3" height="5.3"/><rect x="115.5" y="276.5" width="5.3" height="5.3"/><rect x="120.5" y="276.5" width="5.3" height="5.3"/><rect x="125.5" y="276.5" width="5.3" height="5.3"/><rect x="130.5" y="276.5" width="5.3" height="5.3"/><rect x="145.5" y="276.5" width="5.3" height="5.3"/><rect x="175.5" y="276.5" width="5.3" height="5.3"/><rect x="75.5" y="281.5" width="5.3" height="5.3"/><rect x="85.5" y="281.5" width="5.3" height="5.3"/><rect x="90.5" y="281.5" width="5.3" height="5.3"/><rect x="95.5" y="281.5" width="5.3" height="5.3"/><rect x="105.5" y="281.5" width="5.3" height="5.3"/><rect x="120.5" y="281.5" width="5.3" height="5.3"/><rect x="125.5" y="281.5" width="5.3" height="5.3"/><rect x="145.5" y="281.5" width="5.3" height="5.3"/><rect x="155.5" y="281.5" width="5.3" height="5.3"/><rect x="160.5" y="281.5" width="5.3" height="5.3"/><rect x="165.5" y="281.5" width="5.3" height="5.3"/><rect x="175.5" y="281.5" width="5.3" height="5.3"/><rect x="75.5" y="286.5" width="5.3" height="5.3"/><rect x="85.5" y="286.5" width="5.3" height="5.3"/><rect x="90.5" y="286.5" width="5.3" height="5.3"/><rect x="95.5" y="286.5" width="5.3" height="5.3"/><rect x="105.5" y="286.5" width="5.3" height="5.3"/><rect x="120.5" y="286.5" width="5.3" height="5.3"/><rect x="130.5" y="286.5" width="5.3" height="5.3"/><rect x="145.5" y="286.5" width="5.3" height="5.3"/><rect x="155.5" y="286.5" width="5.3" height="5.3"/><rect x="160.5" y="286.5" width="5.3" height="5.3"/><rect x="165.5" y="286.5" width="5.3" height="5.3"/><rect x="175.5" y="286.5" width="5.3" height="5.3"/><rect x="75.5" y="291.5" width="5.3" height="5.3"/><rect x="85.5" y="291.5" width="5.3" height="5.3"/><rect x="90.5" y="291.5" width="5.3" height="5.3"/><rect x="95.5" y="291.5" width="5.3" height="5.3"/><rect x="105.5" y="291.5" width="5.3" height="5.3"/><rect x="120.5" y="291.5" width="5.3" height="5.3"/><rect x="145.5" y="291.5" width="5.3" height="5.3"/><rect x="155.5" y="291.5" width="5.3" height="5.3"/><rect x="160.5" y="291.5" width="5.3" height="5.3"/><rect x="165.5" y="291.5" width="5.3" height="5.3"/><rect x="175.5" y="291.5" width="5.3" height="5.3"/><rect x="75.5" y="296.5" width="5.3" height="5.3"/><rect x="105.5" y="296.5" width="5.3" height="5.3"/><rect x="115.5" y="296.5" width="5.3" height="5.3"/><rect x="130.5" y="296.5" width="5.3" height="5.3"/><rect x="145.5" y="296.5" width="5.3" height="5.3"/><rect x="175.5" y="296.5" width="5.3" height="5.3"/><rect x="75.5" y="301.5" width="5.3" height="5.3"/><rect x="80.5" y="301.5" width="5.3" height="5.3"/><rect x="85.5" y="301.5" width="5.3" height="5.3"/><rect x="90.5" y="301.5" width="5.3" height="5.3"/><rect x="95.5" y="301.5" width="5.3" height="5.3"/><rect x="100.5" y="301.5" width="5.3" height="5.3"/><rect x="105.5" y="301.5" width="5.3" height="5.3"/><rect x="115.5" y="301.5" width="5.3" height="5.3"/><rect x="125.5" y="301.5" width="5.3" height="5.3"/><rect x="135.5" y="301.5" width="5.3" height="5.3"/><rect x="145.5" y="301.5" width="5.3" height="5.3"/><rect x="150.5" y="301.5" width="5.3" height="5.3"/><rect x="155.5" y="301.5" width="5.3" height="5.3"/><rect x="160.5" y="301.5" width="5.3" height="5.3"/><rect x="165.5" y="301.5" width="5.3" height="5.3"/><rect x="170.5" y="301.5" width="5.3" height="5.3"/><rect x="175.5" y="301.5" width="5.3" height="5.3"/><rect x="120.5" y="306.5" width="5.3" height="5.3"/><rect x="125.5" y="306.5" width="5.3" height="5.3"/><rect x="130.5" y="306.5" width="5.3" height="5.3"/><rect x="135.5" y="306.5" width="5.3" height="5.3"/><rect x="75.5" y="311.5" width="5.3" height="5.3"/><rect x="80.5" y="311.5" width="5.3" height="5.3"/><rect x="85.5" y="311.5" width="5.3" height="5.3"/><rect x="90.5" y="311.5" width="5.3" height="5.3"/><rect x="95.5" y="311.5" width="5.3" height="5.3"/><rect x="105.5" y="311.5" width="5.3" height="5.3"/><rect x="110.5" y="311.5" width="5.3" height="5.3"/><rect x="120.5" y="311.5" width="5.3" height="5.3"/><rect x="125.5" y="311.5" width="5.3" height="5.3"/><rect x="135.5" y="311.5" width="5.3" height="5.3"/><rect x="150.5" y="311.5" width="5.3" height="5.3"/><rect x="155.5" y="311.5" width="5.3" height="5.3"/><rect x="160.5" y="311.5" width="5.3" height="5.3"/><rect x="165.5" y="311.5" width="5.3" height="5.3"/><rect x="170.5" y="311.5" width="5.3" height="5.3"/><rect x="80.5" y="316.5" width="5.3" height="5.3"/><rect x="85.5" y="316.5" width="5.3" height="5.3"/><rect x="95.5" y="316.5" width="5.3" height="5.3"/><rect x="100.5" y="316.5" width="5.3" height="5.3"/><rect x="140.5" y="316.5" width="5.3" height="5.3"/><rect x="155.5" y="316.5" width="5.3" height="5.3"/><rect x="160.5" y="316.5" width="5.3" height="5.3"/><rect x="170.5" y="316.5" width="5.3" height="5.3"/><rect x="75.5" y="321.5" width="5.3" height="5.3"/><rect x="90.5" y="321.5" width="5.3" height="5.3"/><rect x="100.5" y="321.5" width="5.3" height="5.3"/><rect x="105.5" y="321.5" width="5.3" height="5.3"/><rect x="110.5" y="321.5" width="5.3" height="5.3"/><rect x="115.5" y="321.5" width="5.3" height="5.3"/><rect x="130.5" y="321.5" width="5.3" height="5.3"/><rect x="135.5" y="321.5" width="5.3" height="5.3"/><rect x="140.5" y="321.5" width="5.3" height="5.3"/><rect x="150.5" y="321.5" width="5.3" height="5.3"/><rect x="80.5" y="326.5" width="5.3" height="5.3"/><rect x="85.5" y="326.5" width="5.3" height="5.3"/><rect x="95.5" y="326.5" width="5.3" height="5.3"/><rect x="110.5" y="326.5" width="5.3" height="5.3"/><rect x="115.5" y="326.5" width="5.3" height="5.3"/><rect x="135.5" y="326.5" width="5.3" height="5.3"/><rect x="150.5" y="326.5" width="5.3" height="5.3"/><rect x="155.5" y="326.5" width="5.3" height="5.3"/><rect x="160.5" y="326.5" width="5.3" height="5.3"/><rect x="165.5" y="326.5" width="5.3" height="5.3"/><rect x="170.5" y="326.5" width="5.3" height="5.3"/><rect x="75.5" y="331.5" width="5.3" height="5.3"/><rect x="80.5" y="331.5" width="5.3" height="5.3"/><rect x="95.5" y="331.5" width="5.3" height="5.3"/><rect x="105.5" y="331.5" width="5.3" height="5.3"/><rect x="110.5" y="331.5" width="5.3" height="5.3"/><rect x="120.5" y="331.5" width="5.3" height="5.3"/><rect x="125.5" y="331.5" width="5.3" height="5.3"/><rect x="130.5" y="331.5" width="5.3" height="5.3"/><rect x="135.5" y="331.5" width="5.3" height="5.3"/><rect x="145.5" y="331.5" width="5.3" height="5.3"/><rect x="150.5" y="331.5" width="5.3" height="5.3"/><rect x="165.5" y="331.5" width="5.3" height="5.3"/><rect x="170.5" y="331.5" width="5.3" height="5.3"/><rect x="130.5" y="336.5" width="5.3" height="5.3"/><rect x="135.5" y="336.5" width="5.3" height="5.3"/><rect x="155.5" y="336.5" width="5.3" height="5.3"/><rect x="165.5" y="336.5" width="5.3" height="5.3"/><rect x="175.5" y="336.5" width="5.3" height="5.3"/><rect x="75.5" y="341.5" width="5.3" height="5.3"/><rect x="80.5" y="341.5" width="5.3" height="5.3"/><rect x="85.5" y="341.5" width="5.3" height="5.3"/><rect x="90.5" y="341.5" width="5.3" height="5.3"/><rect x="95.5" y="341.5" width="5.3" height="5.3"/><rect x="100.5" y="341.5" width="5.3" height="5.3"/><rect x="105.5" y="341.5" width="5.3" height="5.3"/><rect x="130.5" y="341.5" width="5.3" height="5.3"/><rect x="150.5" y="341.5" width="5.3" height="5.3"/><rect x="160.5" y="341.5" width="5.3" height="5.3"/><rect x="165.5" y="341.5" width="5.3" height="5.3"/><rect x="170.5" y="341.5" width="5.3" height="5.3"/><rect x="75.5" y="346.5" width="5.3" height="5.3"/><rect x="105.5" y="346.5" width="5.3" height="5.3"/><rect x="115.5" y="346.5" width="5.3" height="5.3"/><rect x="120.5" y="346.5" width="5.3" height="5.3"/><rect x="130.5" y="346.5" width="5.3" height="5.3"/><rect x="135.5" y="346.5" width="5.3" height="5.3"/><rect x="145.5" y="346.5" width="5.3" height="5.3"/><rect x="155.5" y="346.5" width="5.3" height="5.3"/><rect x="160.5" y="346.5" width="5.3" height="5.3"/><rect x="170.5" y="346.5" width="5.3" height="5.3"/><rect x="75.5" y="351.5" width="5.3" height="5.3"/><rect x="85.5" y="351.5" width="5.3" height="5.3"/><rect x="90.5" y="351.5" width="5.3" height="5.3"/><rect x="95.5" y="351.5" width="5.3" height="5.3"/><rect x="105.5" y="351.5" width="5.3" height="5.3"/><rect x="115.5" y="351.5" width="5.3" height="5.3"/><rect x="125.5" y="351.5" width="5.3" height="5.3"/><rect x="130.5" y="351.5" width="5.3" height="5.3"/><rect x="140.5" y="351.5" width="5.3" height="5.3"/><rect x="150.5" y="351.5" width="5.3" height="5.3"/><rect x="160.5" y="351.5" width="5.3" height="5.3"/><rect x="175.5" y="351.5" width="5.3" height="5.3"/><rect x="75.5" y="356.5" width="5.3" height="5.3"/><rect x="85.5" y="356.5" width="5.3" height="5.3"/><rect x="90.5" y="356.5" width="5.3" height="5.3"/><rect x="95.5" y="356.5" width="5.3" height="5.3"/><rect x="105.5" y="356.5" width="5.3" height="5.3"/><rect x="120.5" y="356.5" width="5.3" height="5.3"/><rect x="125.5" y="356.5" width="5.3" height="5.3"/><rect x="135.5" y="356.5" width="5.3" height="5.3"/><rect x="145.5" y="356.5" width="5.3" height="5.3"/><rect x="155.5" y="356.5" width="5.3" height="5.3"/><rect x="170.5" y="356.5" width="5.3" height="5.3"/><rect x="175.5" y="356.5" width="5.3" height="5.3"/><rect x="75.5" y="361.5" width="5.3" height="5.3"/><rect x="85.5" y="361.5" width="5.3" height="5.3"/><rect x="90.5" y="361.5" width="5.3" height="5.3"/><rect x="95.5" y="361.5" width="5.3" height="5.3"/><rect x="105.5" y="361.5" width="5.3" height="5.3"/><rect x="115.5" y="361.5" width="5.3" height="5.3"/><rect x="160.5" y="361.5" width="5.3" height="5.3"/><rect x="165.5" y="361.5" width="5.3" height="5.3"/><rect x="170.5" y="361.5" width="5.3" height="5.3"/><rect x="175.5" y="361.5" width="5.3" height="5.3"/><rect x="75.5" y="366.5" width="5.3" height="5.3"/><rect x="105.5" y="366.5" width="5.3" height="5.3"/><rect x="115.5" y="366.5" width="5.3" height="5.3"/><rect x="125.5" y="366.5" width="5.3" height="5.3"/><rect x="135.5" y="366.5" width="5.3" height="5.3"/><rect x="145.5" y="366.5" width="5.3" height="5.3"/><rect x="155.5" y="366.5" width="5.3" height="5.3"/><rect x="165.5" y="366.5" width="5.3" height="5.3"/><rect x="175.5" y="366.5" width="5.3" height="5.3"/><rect x="75.5" y="371.5" width="5.3" height="5.3"/><rect x="80.5" y="371.5" width="5.3" height="5.3"/><rect x="85.5" y="371.5" width="5.3" height="5.3"/><rect x="90.5" y="371.5" width="5.3" height="5.3"/><rect x="95.5" y="371.5" width="5.3" height="5.3"/><rect x="100.5" y="371.5" width="5.3" height="5.3"/><rect x="105.5" y="371.5" width="5.3" height="5.3"/><rect x="115.5" y="371.5" width="5.3" height="5.3"/><rect x="120.5" y="371.5" width="5.3" height="5.3"/><rect x="135.5" y="371.5" width="5.3" height="5.3"/><rect x="145.5" y="371.5" width="5.3" height="5.3"/><rect x="155.5" y="371.5" width="5.3" height="5.3"/><rect x="170.5" y="371.5" width="5.3" height="5.3"/></g>
+            <path class="ill__fold" d="M198 372 L176 394 L180 376 Z"/>
+          </g>
+          <text class="ill__ink ill__b" x="52" y="440" font-size="16">Stuck once.</text>
+          <text class="ill__soft ill__b" x="52" y="462" font-size="16">Never reprinted.</text>
+
+          <!-- scan -->
+          <path class="ill__link" d="M208 318 C232 318 238 300 256 300"/>
+          <circle class="ill__ink" cx="258" cy="300" r="3"/>
+
+          <!-- The page: edited from the phone, live on the same code -->
+          <rect class="ill__ink" x="262" y="64" width="190" height="412" rx="32"/>
+          <rect class="ill__paper ill__screen" x="269" y="71" width="176" height="398" rx="26"/>
+          <rect class="ill__ink" x="327" y="80" width="60" height="14" rx="7"/>
+
+          <circle class="ill__ink" cx="357" cy="134" r="24"/>
+          <text class="ill__white ill__b" x="357" y="139" font-size="13" text-anchor="middle">NM</text>
+          <text class="ill__ink ill__b" x="357" y="180" font-size="15" text-anchor="middle">Nikk Martin</text>
+          <text class="ill__soft ill__mono" x="357" y="197" font-size="9.5" text-anchor="middle">codemarca.com/nikk</text>
+
+          <rect class="ill__ink" x="281" y="220" width="152" height="38" rx="19"/>
+          <text class="ill__white ill__b ill__mono" x="357" y="243" font-size="11" text-anchor="middle">+91 98140 <tspan class="ill__lift">55887</tspan></text>
+          <rect class="ill__row" x="281" y="270" width="152" height="38" rx="19"/>
+          <text class="ill__ink ill__b ill__sm" x="357" y="293" font-size="12" text-anchor="middle">WhatsApp</text>
+          <rect class="ill__row" x="281" y="320" width="152" height="38" rx="19"/>
+          <text class="ill__ink ill__b ill__sm" x="357" y="343" font-size="12" text-anchor="middle">Instagram</text>
+          <rect class="ill__row" x="281" y="370" width="152" height="38" rx="19"/>
+          <text class="ill__ink ill__b ill__sm" x="357" y="393" font-size="12" text-anchor="middle">Save contact</text>
+          <rect class="ill__faint" x="327" y="452" width="60" height="4" rx="2"/>
+        </svg>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ══ 6. IN THE BOX ══════════════════════════════════════════════════ -->
+  <section class="section section--dark" id="pack">
+    <div class="shell">
+      <div class="stack gap-5 rise">
+        <span class="eyebrow eyebrow--invert">In the pack</span>
+        <h2 class="h2 measure">Two stickers. One code. Nothing else to buy.</h2>
+        <p class="lead measure">It arrives the way a SIM card does — a single printed card with both stickers still on it, ready to peel.</p>
+      </div>
+
+      <div class="box-grid">
+        <!-- Slider: swipe or scroll-snap on its own, dots and arrows jump,
+             moves itself every few seconds until a hand touches it. -->
+        <figure class="box-shot rise" id="boxShot">
+          <div class="box-track" data-lightbox>
+            <img class="box-slide" src="assets/photos/codemarca-qr-sticker-pack-on-wooden-desk-square.jpg" alt="The Codemarca pack on a wooden desk" width="2048" height="2048" loading="lazy">
+            <img class="box-slide" src="assets/photos/codemarca-qr-sticker-peel-from-pack-square.jpg" alt="Hand peeling a Codemarca QR sticker off the pack" width="2048" height="2048" loading="lazy">
+            <img class="box-slide" src="assets/photos/codemarca-qr-sticker-laptop-office-desk-square.jpg" alt="Codemarca 1.5 inch sticker on a laptop lid, the pack on the desk" width="2048" height="2048" loading="lazy">
+            <img class="box-slide" src="assets/photos/codemarca-qr-sticker-cafe-counter.jpg" alt="Codemarca 4 inch QR sticker on a café counter beside the pack" width="2400" height="1792" loading="lazy">
+            <img class="box-slide" src="assets/photos/codemarca-qr-sticker-wallet-studio.jpg" alt="The Codemarca pack next to a wallet with a QR sticker" width="2400" height="1792" loading="lazy">
+          </div>
+          <button class="box-arw box-arw--p" type="button" aria-label="Previous photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg></button>
+          <button class="box-arw box-arw--n" type="button" aria-label="Next photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg></button>
+          <div class="box-dots"><button class="box-dot" type="button" aria-label="Photo 1"></button><button class="box-dot" type="button" aria-label="Photo 2"></button><button class="box-dot" type="button" aria-label="Photo 3"></button><button class="box-dot" type="button" aria-label="Photo 4"></button><button class="box-dot" type="button" aria-label="Photo 5"></button></div>
+        </figure>
+
+        <div class="rise">
+          <dl class="spec">
+            <div class="spec__row">
+              <dt class="spec__k">Large</dt>
+              <dd class="spec__v">4″ × 4″</dd>
+            </div>
+            <div class="spec__row">
+              <dt class="spec__k">Small</dt>
+              <dd class="spec__v">1.5″ × 1.5″</dd>
+            </div>
+            <div class="spec__row">
+              <dt class="spec__k">Material</dt>
+              <dd class="spec__v">UV-laminated vinyl</dd>
+            </div>
+            <div class="spec__row">
+              <dt class="spec__k">Code</dt>
+              <dd class="spec__v">One, permanent<small>Both stickers open the same page</small></dd>
+            </div>
+          </dl>
+
+          <div class="price">
+            <span class="price__big">Free</span>
+            <span class="price__sub">+ from ₹<span data-placeholder="delivery">49</span> delivery</span>
+          </div>
+          <p class="price__note"><span data-placeholder="delivery-note">Delivery depends on your pincode — you see the exact amount at checkout.</span></p>
+          <a class="btn btn--invert" href="signup.html?next=order" style="margin-top:var(--s-6)">Get your pack</a>
+        </div>
+      </div>
+
+      <!-- Counter is driven entirely by data-claimed / data-total, so the
+           backend only ever writes one number. Sold-out state included. -->
+      <div class="offer rise" id="offer" data-claimed="63" data-total="100">
+        <div class="offer__meter">
+          <p class="offer__count">
+            <span class="offer__n" data-offer-n>37</span>
+            <span class="offer__of" data-offer-of>of 100 packs left</span>
+          </p>
+          <div class="offer__bar"><span class="offer__fill" data-offer-fill></span></div>
+          <p class="offer__meta" data-offer-meta>63 claimed so far</p>
+        </div>
+
+        <div class="offer__why">
+          <h3 class="h4">The early bird offer</h3>
+          <p>We have just started, so the first hundred packs go out free. You cover the courier and nothing else — <b>there is no margin in that charge</b>, it is what the courier bills us.</p>
+          <p>Once these hundred are gone, a pack is <b>&#8377;<span data-placeholder="pack-price">499</span></b>. Your page stays free either way.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 6b. SEEN IN THE WILD — the photo river (2026-09-29) ═══════════ -->
+  <section class="section section--soft" style="padding-bottom:var(--s-8)">
+    <div class="shell">
+      <div class="stack gap-5 center rise" style="margin-bottom:var(--s-10)">
+        <span class="eyebrow">Seen in the wild</span>
+        <h2 class="h2 measure">Stuck on <span class="hl">literally</span> everything.</h2>
+      </div>
+    </div>
+    <div class="river" data-lightbox><div class="river__row" style="--t:70s"><figure><img src="assets/photos/codemarca-qr-sticker-helmet-studio-tall.jpg" alt="Codemarca QR sticker on a bike helmet" loading="lazy" width="1536" height="2048"></figure><figure><img src="assets/photos/codemarca-qr-sticker-cafe-counter-tall.jpg" alt="Codemarca QR sticker on a café counter" loading="lazy" width="1536" height="2048"></figure><figure><img src="assets/photos/codemarca-qr-sticker-guitar-studio-tall.jpg" alt="Codemarca QR sticker on a guitar" loading="lazy" width="1536" height="2048"></figure><figure><img src="assets/photos/codemarca-qr-sticker-suitcase-airport-tall.jpg" alt="Codemarca QR sticker on a suitcase" loading="lazy" width="1536" height="2048"></figure><figure><img src="assets/photos/codemarca-qr-sticker-wallet-studio-tall.jpg" alt="Codemarca QR sticker on a wallet" loading="lazy" width="1536" height="2048"></figure><figure><img src="assets/photos/codemarca-qr-sticker-pet-collar-studio-tall.jpg" alt="Codemarca QR sticker on a dog collar" loading="lazy" width="1536" height="2048"></figure><figure><img src="assets/photos/codemarca-qr-sticker-headphones-studio-tall.jpg" alt="Codemarca QR sticker on a pair of headphones" loading="lazy" width="1536" height="2048"></figure><figure><img src="assets/photos/codemarca-qr-sticker-travel-bag-lobby-tall.jpg" alt="Codemarca QR sticker on a travel bag" loading="lazy" width="1536" height="2048"></figure><figure aria-hidden="true"><img src="assets/photos/codemarca-qr-sticker-helmet-studio-tall.jpg" alt="Codemarca QR sticker on a bike helmet" loading="lazy" width="1536" height="2048"></figure><figure aria-hidden="true"><img src="assets/photos/codemarca-qr-sticker-cafe-counter-tall.jpg" alt="Codemarca QR sticker on a café counter" loading="lazy" width="1536" height="2048"></figure><figure aria-hidden="true"><img src="assets/photos/codemarca-qr-sticker-guitar-studio-tall.jpg" alt="Codemarca QR sticker on a guitar" loading="lazy" width="1536" height="2048"></figure><figure aria-hidden="true"><img src="assets/photos/codemarca-qr-sticker-suitcase-airport-tall.jpg" alt="Codemarca QR sticker on a suitcase" loading="lazy" width="1536" height="2048"></figure><figure aria-hidden="true"><img src="assets/photos/codemarca-qr-sticker-wallet-studio-tall.jpg" alt="Codemarca QR sticker on a wallet" loading="lazy" width="1536" height="2048"></figure><figure aria-hidden="true"><img src="assets/photos/codemarca-qr-sticker-pet-collar-studio-tall.jpg" alt="Codemarca QR sticker on a dog collar" loading="lazy" width="1536" height="2048"></figure><figure aria-hidden="true"><img src="assets/photos/codemarca-qr-sticker-headphones-studio-tall.jpg" alt="Codemarca QR sticker on a pair of headphones" loading="lazy" width="1536" height="2048"></figure><figure aria-hidden="true"><img src="assets/photos/codemarca-qr-sticker-travel-bag-lobby-tall.jpg" alt="Codemarca QR sticker on a travel bag" loading="lazy" width="1536" height="2048"></figure></div><div class="river__row river__row--back" style="--t:80s"><figure><img src="assets/photos/codemarca-qr-sticker-laptop-palm-rest-studio-tall.jpg" alt="Codemarca QR sticker on a laptop" loading="lazy" width="1536" height="2048"></figure><figure><img src="assets/photos/codemarca-qr-sticker-plant-pot-studio-tall.jpg" alt="Codemarca QR sticker on a plant pot" loading="lazy" width="1536" height="2048"></figure><figure><img src="assets/photos/codemarca-qr-sticker-salon-mirror-scan-tall.jpg" alt="Codemarca QR sticker on a salon mirror" loading="lazy" width="1536" height="2048"></figure><figure><img src="assets/photos/codemarca-qr-sticker-power-bank-studio-tall.jpg" alt="Codemarca QR sticker on a power bank" loading="lazy" width="1536" height="2048"></figure><figure><img src="assets/photos/codemarca-qr-sticker-notebook-flatlay-studio-tall.jpg" alt="Codemarca QR sticker on a notebook" loading="lazy" width="1536" height="2048"></figure><figure><img src="assets/photos/codemarca-qr-sticker-gift-box-studio-tall.jpg" alt="Codemarca QR sticker on a gift box" loading="lazy" width="1536" height="2048"></figure><figure><img src="assets/photos/codemarca-qr-sticker-bottle-and-stickers-studio-tall.jpg" alt="Codemarca QR sticker on a water bottle" loading="lazy" width="1536" height="2048"></figure><figure><img src="assets/photos/codemarca-qr-sticker-laptop-and-phone-studio-tall.jpg" alt="Codemarca QR sticker on a laptop and phone" loading="lazy" width="1536" height="2048"></figure><figure aria-hidden="true"><img src="assets/photos/codemarca-qr-sticker-laptop-palm-rest-studio-tall.jpg" alt="Codemarca QR sticker on a laptop" loading="lazy" width="1536" height="2048"></figure><figure aria-hidden="true"><img src="assets/photos/codemarca-qr-sticker-plant-pot-studio-tall.jpg" alt="Codemarca QR sticker on a plant pot" loading="lazy" width="1536" height="2048"></figure><figure aria-hidden="true"><img src="assets/photos/codemarca-qr-sticker-salon-mirror-scan-tall.jpg" alt="Codemarca QR sticker on a salon mirror" loading="lazy" width="1536" height="2048"></figure><figure aria-hidden="true"><img src="assets/photos/codemarca-qr-sticker-power-bank-studio-tall.jpg" alt="Codemarca QR sticker on a power bank" loading="lazy" width="1536" height="2048"></figure><figure aria-hidden="true"><img src="assets/photos/codemarca-qr-sticker-notebook-flatlay-studio-tall.jpg" alt="Codemarca QR sticker on a notebook" loading="lazy" width="1536" height="2048"></figure><figure aria-hidden="true"><img src="assets/photos/codemarca-qr-sticker-gift-box-studio-tall.jpg" alt="Codemarca QR sticker on a gift box" loading="lazy" width="1536" height="2048"></figure><figure aria-hidden="true"><img src="assets/photos/codemarca-qr-sticker-bottle-and-stickers-studio-tall.jpg" alt="Codemarca QR sticker on a water bottle" loading="lazy" width="1536" height="2048"></figure><figure aria-hidden="true"><img src="assets/photos/codemarca-qr-sticker-laptop-and-phone-studio-tall.jpg" alt="Codemarca QR sticker on a laptop and phone" loading="lazy" width="1536" height="2048"></figure></div></div>
+  </section>
+
+  <!-- ══ 7. FAQ ═════════════════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="shell">
+      <div class="stack gap-5 rise">
+        <span class="eyebrow">Questions</span>
+        <h2 class="h2 measure">The things people ask before they stick it on.</h2>
+      </div>
+
+      <!-- Rewritten 2026-09-17 with Garry, after the dashboard flows settled:
+           a pack you order for yourself is yours from the moment you order it;
+           only a GIFT goes to whoever scans it and signs in first.
+           Gift answer rewritten 2026-09-18: the free pack is always for you,
+           and a gift is a separate paid order from the dashboard.
+           2026-09-29: gifts can start on select-pack too ("For someone
+           else"); no longer suggests printing the QR yourself; added "change
+           my link" and "delivery" questions. -->
+      <div class="faq" id="faq">
+        <div class="qa" data-open="false">
+          <button class="qa__q" type="button">Do I need to buy stickers to get a page?<span class="qa__ic" aria-hidden="true"></span></button>
+          <div class="qa__a"><p>No. Your page and your link are free, and they work the moment you publish — send the link on WhatsApp or put it in your Instagram bio. Stickers put the same page on the things you carry, so people can just scan.</p></div>
+        </div>
+        <div class="qa" data-open="false">
+          <button class="qa__q" type="button">If I change my number or links, does the QR change?<span class="qa__ic" aria-hidden="true"></span></button>
+          <div class="qa__a"><p>No, never. Edit your page as often as you like — number, links, photo, even your name — and every QR and sticker you already have shows the new version.</p></div>
+        </div>
+        <div class="qa" data-open="false">
+          <button class="qa__q" type="button">What does it cost?<span class="qa__ic" aria-hidden="true"></span></button>
+          <div class="qa__a"><p>The first hundred packs are free, one per account — you only pay delivery, from &#8377;<span data-placeholder="delivery">49</span> depending on your pincode. After that a pack is &#8377;<span data-placeholder="pack-price">499</span>. Your page stays free either way.</p></div>
+        </div>
+        <div class="qa" data-open="false">
+          <button class="qa__q" type="button">Can I change my link later?<span class="qa__ic" aria-hidden="true"></span></button>
+          <div class="qa__a"><p>Yes, from your dashboard. Your stickers keep working — the QR points at your page, not at the link, so nothing you have already stuck ever breaks.</p></div>
+        </div>
+        <div class="qa" data-open="false">
+          <button class="qa__q" type="button">How long does delivery take?<span class="qa__ic" aria-hidden="true"></span></button>
+          <div class="qa__a"><p>Usually 3–7 days anywhere in India, and we message you on WhatsApp when it ships. Orders are prepaid — no cash on delivery. Outside India or ordering in bulk? <a href="contact.html#bulk">Talk to us</a>.</p></div>
+        </div>
+        <div class="qa" data-open="false">
+          <button class="qa__q" type="button">Does the person scanning need an app?<span class="qa__ic" aria-hidden="true"></span></button>
+          <div class="qa__a"><p>No. Any phone camera opens your page in their browser, and one tap saves your contact to their phone. No app, no account.</p></div>
+        </div>
+        <div class="qa" data-open="false">
+          <button class="qa__q" type="button">Will it survive on a car?<span class="qa__ic" aria-hidden="true"></span></button>
+          <div class="qa__a"><p>Yes. The stickers are UV-laminated vinyl made for outdoors — rain, sun and car washes.</p></div>
+        </div>
+        <div class="qa" data-open="false">
+          <button class="qa__q" type="button">I lost a sticker. Do I get a new QR?<span class="qa__ic" aria-hidden="true"></span></button>
+          <div class="qa__a"><p>No — and you don't want one. We reprint the same QR and send it to you, so every sticker you still have keeps working. You only pay delivery.</p></div>
+        </div>
+        <div class="qa" data-open="false">
+          <button class="qa__q" type="button">Can I gift a pack to someone?<span class="qa__ic" aria-hidden="true"></span></button>
+          <div class="qa__a"><p>Yes — choose <b>For someone else</b> when you pick your pack, or use <b>Gift &amp; Refer</b> in your dashboard. Pick any sizes and as many stickers as you like; they all carry one code, and it becomes theirs when they scan one and sign in. Once their page is up, it counts as one of your referrals. Gifts are paid — your one free pack is always for you.</p></div>
+        </div>
+        <div class="qa" data-open="false">
+          <button class="qa__q" type="button">Do I get anything for inviting friends?<span class="qa__ic" aria-hidden="true"></span></button>
+          <div class="qa__a"><p>Yes — bring 50 friends who sign up and finish their page, and we send you a free black tee printed with your own QR. Nobody has to buy anything.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 8. CLOSE ═══════════════════════════════════════════════════════ -->
+  <section class="section section--dark close">
+    <div class="close__tags" aria-hidden="true">
+      <span class="tag slap" style="top:20%; left:6%; --r:-10deg">no app</span>
+      <span class="tag tag--live slap" style="top:62%; left:9%; --r:7deg; --d:.15s">free page</span>
+      <span class="tag slap" style="top:24%; right:7%; --r:9deg; --d:.3s">1 code for life</span>
+      <span class="tag slap" style="top:64%; right:9%; --r:-6deg; --d:.45s">first 100 free</span>
+    </div>
+    <div class="shell close__inner">
+      <h2 class="h2 measure">Your name is probably still free.</h2>
+      <p class="lead measure">Take it before someone else does. It costs nothing to find out.</p>
+      <form class="claim stack gap-3" id="claimForm2" autocomplete="off" style="margin-top:var(--s-4)">
+        <div class="claim__field">
+          <span class="claim__prefix">codemarca.com/</span>
+          <input class="claim__input" id="handle2" type="text" placeholder="yourname"
+                 spellcheck="false" aria-label="Choose your Codemarca link" maxlength="24">
+          <button class="btn btn--primary claim__btn" type="submit">Claim profile</button>
+        </div>
+        <p class="claim__status" id="claimStatus2" data-state="idle" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+
+</main>
+
+<!-- ══ FOOTER ═══════════════════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="shell">
+    <div class="footer__grid">
+      <div>
+        <div class="footer__logo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 257 40" fill="none" role="img" aria-label="Codemarca"><g fill="#6E27E6"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></g><g fill="#101215"><path d="M245.956 14.0999H252.172V34.82H245.956V32.8723C244.589 34.447 242.558 35.4002 239.782 35.4002C234.353 35.4002 229.877 30.6345 229.877 24.46C229.877 18.2854 234.353 13.5198 239.782 13.5198C242.558 13.5198 244.589 14.4729 245.956 16.0476V14.0999ZM241.025 29.5157C243.884 29.5157 245.956 27.568 245.956 24.46C245.956 21.352 243.884 19.4043 241.025 19.4043C238.165 19.4043 236.093 21.352 236.093 24.46C236.093 27.568 238.165 29.5157 241.025 29.5157Z"/><path d="M220.695 35.4002C214.396 35.4002 209.713 30.6345 209.713 24.46C209.713 18.2854 214.396 13.5198 220.695 13.5198C224.714 13.5198 228.278 15.6332 230.06 18.8241L224.631 21.9736C223.927 20.5232 222.435 19.6529 220.612 19.6529C217.918 19.6529 215.929 21.6006 215.929 24.46C215.929 27.3193 217.918 29.267 220.612 29.267C222.435 29.267 223.968 28.3968 224.631 26.9464L230.06 30.0544C228.278 33.2867 224.756 35.4002 220.695 35.4002Z"/><path d="M203.477 17.7881C204.306 15.0116 207.083 13.6855 209.693 13.6855V20.7304C207.124 20.316 203.477 21.352 203.477 25.4545V34.82H197.261V14.1H203.477V17.7881Z"/><path d="M187.728 14.0999H193.944V34.82H187.728V32.8723C186.361 34.447 184.33 35.4002 181.554 35.4002C176.125 35.4002 171.649 30.6345 171.649 24.46C171.649 18.2854 176.125 13.5198 181.554 13.5198C184.33 13.5198 186.361 14.4729 187.728 16.0476V14.0999ZM182.797 29.5157C185.656 29.5157 187.728 27.568 187.728 24.46C187.728 21.352 185.656 19.4043 182.797 19.4043C179.937 19.4043 177.865 21.352 177.865 24.46C177.865 27.568 179.937 29.5157 182.797 29.5157Z"/><path d="M161.806 13.5198C166.571 13.5198 169.679 16.9179 169.679 22.0979V34.82H163.463V22.6366C163.463 20.5646 162.469 19.2385 160.479 19.2385C158.407 19.2385 157.247 20.6889 157.247 23.1339V34.82H151.031V22.6366C151.031 20.5646 150.037 19.2385 148.047 19.2385C145.975 19.2385 144.815 20.6889 144.815 23.1339V34.82H138.599V14.0999H144.815V16.0062C145.768 14.5972 147.592 13.5198 150.368 13.5198C152.813 13.5198 154.636 14.5143 155.797 16.2548C156.957 14.5972 158.863 13.5198 161.806 13.5198Z"/><path d="M121.357 26.9464C122.144 29.1013 124.051 29.8472 126.33 29.8472C128.029 29.8472 129.479 29.1841 130.308 28.2725L135.281 31.1318C133.25 33.9497 130.184 35.4002 126.247 35.4002C119.161 35.4002 114.768 30.6345 114.768 24.46C114.768 18.2854 119.244 13.5198 125.791 13.5198C131.841 13.5198 136.317 18.2025 136.317 24.46C136.317 25.3302 136.234 26.159 136.068 26.9464H121.357ZM121.233 22.3051H130.142C129.479 19.9016 127.614 19.0313 125.75 19.0313C123.388 19.0313 121.813 20.1916 121.233 22.3051Z"/><path d="M106.271 5.81201H112.487V34.8201H106.271V32.8724C104.903 34.4471 102.873 35.4002 100.096 35.4002C94.6674 35.4002 90.1919 30.6346 90.1919 24.4601C90.1919 18.2855 94.6674 13.5199 100.096 13.5199C102.873 13.5199 104.903 14.473 106.271 16.0477V5.81201ZM101.339 29.5158C104.199 29.5158 106.271 27.5681 106.271 24.4601C106.271 21.3521 104.199 19.4044 101.339 19.4044C98.4799 19.4044 96.4079 21.3521 96.4079 24.4601C96.4079 27.5681 98.4799 29.5158 101.339 29.5158Z"/><path d="M77.9738 35.4002C71.8821 35.4002 66.9922 30.6345 66.9922 24.46C66.9922 18.2854 71.8821 13.5198 77.9738 13.5198C84.0655 13.5198 88.9554 18.2854 88.9554 24.46C88.9554 30.6345 84.0655 35.4002 77.9738 35.4002ZM77.9738 29.3499C80.6674 29.3499 82.7394 27.4022 82.7394 24.46C82.7394 21.5177 80.6674 19.57 77.9738 19.57C75.2802 19.57 73.2082 21.5177 73.2082 24.46C73.2082 27.4022 75.2802 29.3499 77.9738 29.3499Z"/><path d="M57.8088 35.4002C51.5099 35.4002 46.8271 30.6345 46.8271 24.46C46.8271 18.2854 51.5099 13.5198 57.8088 13.5198C61.8285 13.5198 65.3923 15.6332 67.1742 18.8241L61.7456 21.9736C61.0411 20.5232 59.5493 19.6529 57.7259 19.6529C55.0323 19.6529 53.0432 21.6006 53.0432 24.46C53.0432 27.3193 55.0323 29.267 57.7259 29.267C59.5493 29.267 61.0825 28.3968 61.7456 26.9464L67.1742 30.0544C65.3923 33.2867 61.8699 35.4002 57.8088 35.4002Z"/></g></svg>
+        </div>
+        <p class="muted" style="max-width:30ch; font-size:var(--fs-sm)">One page for everything you are — printed as a QR you can stick anywhere.</p>
+      </div>
+
+      <div>
+        <h4>Product</h4>
+        <div class="footer__links">
+          <a href="how-it-works.html">How it works</a>
+          <a href="#pack">What's in the pack</a>
+          <a href="signup.html?next=order">Get a pack</a>
+          <a href="signup.html?mode=login">Login</a>
+        </div>
+      </div>
+
+      <div>
+        <h4>Company</h4>
+        <div class="footer__links">
+          <a href="about.html">About</a>
+          <a href="contact.html">Contact</a>
+          <a href="contact.html#bulk">For campuses</a>
+          <a href="contact.html#bulk">Bulk &amp; business</a>
+        </div>
+      </div>
+
+      <div>
+        <h4>Legal</h4>
+        <div class="footer__links">
+          <a href="privacy.html">Privacy policy</a>
+          <a href="terms.html">Terms of use</a>
+          <a href="refund.html">Refund policy</a>
+          <a href="shipping.html">Shipping policy</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer__base">
+      <span>© <span data-placeholder="year">2026</span> Codemarca · hello@codemarca.com</span>
+      <div class="social">
+        <a href="https://www.instagram.com/codemarca/" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.6" cy="6.4" r="1.1" fill="currentColor" stroke="none"/></svg>
+        </a>
+        <a href="https://www.youtube.com/@codemarca" aria-label="YouTube">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.8-.5-5.6a2.9 2.9 0 0 0-2-2C18.7 4 12 4 12 4s-6.7 0-8.5.4a2.9 2.9 0 0 0-2 2C1 8.2 1 12 1 12s0 3.8.5 5.6a2.9 2.9 0 0 0 2 2C5.3 20 12 20 12 20s6.7 0 8.5-.4a2.9 2.9 0 0 0 2-2C23 15.8 23 12 23 12zM9.8 15.4V8.6l5.9 3.4z"/></svg>
+        </a>
+        <a href="https://www.facebook.com/codemarca/" aria-label="Facebook">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7h-2.5V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12z"/></svg>
+        </a>
+        <a href="https://x.com/codemarca" aria-label="X">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.2 2H21l-6.4 7.3L22.2 22h-5.9l-4.6-6-5.3 6H3.6l6.9-7.8L2.2 2h6l4.2 5.5zm-1 18h1.6L7.9 3.7H6.2z"/></svg>
+        </a>
+        <a href="#" aria-label="LinkedIn — page not created yet">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM10 9h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V21h-4v-5.4c0-1.29-.02-2.95-1.8-2.95-1.8 0-2.08 1.4-2.08 2.85V21h-4z"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="site-menu.js"></script>
+<script src="lightbox.js"></script>
+<script>
+(function () {
+  "use strict";
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ── Decorative QR blocks ────────────────────────────────────────────
+     A deterministic 9×9 pattern with finder squares in three corners, so
+     it reads as a real QR without pretending to encode anything. Replaced
+     at build time by the generated code for each profile. */
+  var PATTERN = [
+    1,1,1,0,1,0,1,1,1,
+    1,0,1,0,0,1,1,0,1,
+    1,1,1,1,0,1,1,1,1,
+    0,0,0,0,1,0,0,0,0,
+    1,0,1,1,0,1,1,0,1,
+    0,1,0,1,1,0,0,1,0,
+    1,1,1,0,1,1,0,1,1,
+    1,0,1,1,0,0,1,1,0,
+    1,1,1,0,1,1,0,0,1
+  ];
+  document.querySelectorAll("[data-qr]").forEach(function (host) {
+    var frag = document.createDocumentFragment();
+    PATTERN.forEach(function (on) {
+      var cell = document.createElement("i");
+      if (!on) cell.className = "o";
+      frag.appendChild(cell);
+    });
+    host.appendChild(frag);
+  });
+
+
+  /* ── Hero card arc ───────────────────────────────────────────────
+     Each card sits at an arc length s from the middle of the row; its
+     place on the circle is (R·sin θ, R·(1 − cos θ)) with θ = s/R, and it
+     tilts by θ. Spacing is card width plus a gap measured along the arc,
+     so neighbours never touch at any tilt. The row loops: a card leaving
+     one edge comes back in at the other, far out of sight. It keeps
+     moving under the pointer too (Garry). */
+  var arc = document.getElementById("arc");
+  if (arc) {
+    var acards = Array.prototype.slice.call(arc.querySelectorAll(".wcard"));
+    var AN = acards.length, off = 0, last = 0;
+    var G = {};
+    function measure() {
+      var vw = arc.clientWidth;
+      var seen = vw >= 1100 ? 5.5 : vw >= 761 ? 4.2 : 2.4;   /* 5 whole cards on a desktop, the two edge ones cut */
+      var step = vw / seen;
+      var gap = vw >= 761 ? 28 : 16;
+      G.vw = vw; G.step = step;
+      G.cw = Math.min(300, step - gap); G.ch = Math.round(G.cw * 1.36);
+      G.R = Math.max(vw * 1.15, 900);
+      var edge = Math.min(vw / 2 + G.cw, G.R * .9);
+      G.drop = G.R - Math.sqrt(G.R * G.R - edge * edge);
+      arc.style.setProperty("--cw", G.cw + "px");
+      arc.style.setProperty("--ch", G.ch + "px");
+      arc.style.setProperty("--arc-h", Math.round(G.ch + G.drop * .72) + "px");
+      document.documentElement.style.setProperty("--mini-scale", (G.cw / 300).toFixed(4));
+      G.speed = G.step / 4200;   /* one card-width every 4.2s */
+    }
+    function paint() {
+      var L = AN * G.step;
+      acards.forEach(function (card, i) {
+        var s = ((i * G.step + off) % L + L) % L;   /* + off: the row runs left to right, clockwise round the circle */
+        if (s > L / 2) s -= L;
+        var th = s / G.R;
+        var x = G.R * Math.sin(th), y = G.R * (1 - Math.cos(th));
+        var out = Math.abs(x) > G.vw / 2 + G.cw * 1.2;
+        card.style.visibility = out ? "hidden" : "visible";
+        if (!out) card.style.transform =
+          "translate(" + (x - G.cw / 2).toFixed(1) + "px," + y.toFixed(1) + "px) rotate(" + th.toFixed(4) + "rad)";
+      });
+    }
+    function tick(t) {
+      if (last && !document.hidden) off += (t - last) * G.speed;
+      last = t;
+      paint();
+      requestAnimationFrame(tick);
+    }
+    measure();
+    off = G.step * 1;   /* open on a centred card */
+    paint();
+    window.addEventListener("resize", function () { var k = off / G.step; measure(); off = k * G.step; paint(); });
+    if (!reduced) requestAnimationFrame(tick);
+  }
+
+  /* ── Pack slider ─────────────────────────────────────────────────── */
+  var box = document.getElementById("boxShot");
+  if (box) {
+    var btrack = box.querySelector(".box-track");
+    var bdots = [].slice.call(box.querySelectorAll(".box-dot"));
+    var bn = bdots.length, bauto = !reduced;
+    function bat() { return Math.round(btrack.scrollLeft / btrack.clientWidth); }
+    function bgo(i) { btrack.scrollTo({ left: ((i + bn) % bn) * btrack.clientWidth, behavior: "smooth" }); }
+    function bmark() { var i = bat(); bdots.forEach(function (d, k) { d.setAttribute("aria-current", k === i ? "true" : "false"); }); }
+    function bstop() { bauto = false; }
+    bdots.forEach(function (d, k) { d.addEventListener("click", function () { bstop(); bgo(k); }); });
+    box.querySelector(".box-arw--p").addEventListener("click", function () { bstop(); bgo(bat() - 1); });
+    box.querySelector(".box-arw--n").addEventListener("click", function () { bstop(); bgo(bat() + 1); });
+    ["pointerdown", "wheel", "touchstart"].forEach(function (e) { btrack.addEventListener(e, bstop, { passive: true }); });
+    btrack.addEventListener("scroll", bmark, { passive: true });
+    setInterval(function () { if (bauto && !document.hidden) bgo(bat() + 1); }, 4000);
+    bmark();
+  }
+
+  /* ── Claim field: live availability ──────────────────────────────────
+     Front-end demo only. On the real site this hits the handles endpoint,
+     debounced, and the reserved list lives server-side. */
+  var RESERVED = ["admin", "codemarca", "hello", "support", "help", "api",
+                  "about", "login", "signup", "app", "www", "shop", "blog"];
+  var TAKEN = ["gurdeep", "garry", "nikk", "nancy", "amit", "gill"];
+
+  function wireClaim(formId, inputId, statusId) {
+    var form = document.getElementById(formId);
+    var input = document.getElementById(inputId);
+    var status = document.getElementById(statusId);
+    if (!form || !input || !status) return;
+    var debounce = null;
+
+    function show(state, html) {
+      status.dataset.state = state;
+      status.dataset.show = "true";
+      status.innerHTML = html;
+    }
+    function hide() { status.dataset.show = "false"; }
+
+    input.addEventListener("input", function () {
+      var raw = input.value;
+      var clean = raw.toLowerCase().replace(/[^a-z0-9._-]/g, "");
+      if (clean !== raw) input.value = clean;
+      clearTimeout(debounce);
+
+      if (!clean) { hide(); return; }
+      if (clean.length < 3) { show("idle", "Keep going — 3 characters or more."); return; }
+
+      show("idle", "Checking…");
+      debounce = setTimeout(function () {
+        if (RESERVED.indexOf(clean) > -1) {
+          show("bad", "<b>" + clean + "</b> is reserved. Try another.");
+        } else if (TAKEN.indexOf(clean) > -1) {
+          show("bad", "<b>" + clean + "</b> is taken — <b>" + clean + "01</b> and <b>the" + clean + "</b> are free.");
+        } else {
+          show("ok", "<b>codemarca.com/" + clean + "</b> is yours. Claim it.");
+        }
+      }, 420);
+    });
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var clean = input.value.trim();
+      if (clean.length < 3) { input.focus(); show("bad", "Pick a link with at least 3 characters."); return; }
+      show("idle", "Opening signup\u2026");
+      // The handle rides along as a filled state; signup re-checks it on submit.
+      window.location.href = "signup.html?next=build&handle=" + encodeURIComponent(clean);
+    });
+  }
+  wireClaim("claimForm", "handle", "claimStatus");
+  wireClaim("claimForm2", "handle2", "claimStatus2");
+
+  /* ── Packs-left counter ──────────────────────────────────────────────
+     Reads data-claimed / data-total off the element, so wiring this to a
+     real number later means writing one attribute server-side. The count
+     must be genuine — a counter caught faking it costs more trust than it
+     ever buys. */
+  var offer = document.getElementById("offer");
+  if (offer) {
+    var total = Math.max(1, parseInt(offer.dataset.total, 10) || 100);
+    var claimed = Math.min(total, Math.max(0, parseInt(offer.dataset.claimed, 10) || 0));
+    var left = total - claimed;
+    var soldOut = left <= 0;
+
+    offer.dataset.state = soldOut ? "out" : "open";
+    offer.querySelector("[data-offer-n]").textContent = soldOut ? "0" : String(left);
+    offer.querySelector("[data-offer-of]").textContent =
+      soldOut ? "packs left — join the waitlist" : "of " + total + " packs left";
+    offer.querySelector("[data-offer-meta]").textContent =
+      claimed + " claimed so far";
+
+    /* The nav pill is the same two numbers, said shorter. Written from here
+       so there is one counter on the page, not two that can disagree. */
+    var pill = document.getElementById("packsPill");
+    if (pill) {
+      pill.dataset.state = soldOut ? "out" : "open";
+      pill.querySelector("[data-packs-n]").textContent = soldOut ? "All" : String(left);
+      pill.querySelector("[data-packs-of]").textContent =
+        soldOut ? " " + total + " packs claimed" : " of " + total + " packs left";
+      pill.querySelector(".packs__short").textContent = soldOut ? " claimed" : " left";
+      pill.setAttribute("aria-label",
+        soldOut ? "All " + total + " early bird packs claimed"
+                : left + " of " + total + " early bird packs left");
+    }
+
+    var fill = offer.querySelector("[data-offer-fill]");
+    var pct = Math.round((claimed / total) * 100);
+    if (reduced) {
+      fill.style.width = pct + "%";
+    } else {
+      requestAnimationFrame(function () {
+        setTimeout(function () { fill.style.width = pct + "%"; }, 220);
+      });
+    }
+  }
+
+  /* ── FAQ ─────────────────────────────────────────────────────────── */
+  document.querySelectorAll(".qa").forEach(function (qa) {
+    var btn = qa.querySelector(".qa__q");
+    var panel = qa.querySelector(".qa__a");
+    btn.setAttribute("aria-expanded", "false");
+    btn.addEventListener("click", function () {
+      var open = qa.dataset.open === "true";
+      qa.dataset.open = open ? "false" : "true";
+      btn.setAttribute("aria-expanded", open ? "false" : "true");
+      panel.style.height = open ? "0px" : panel.scrollHeight + "px";
+    });
+  });
+  window.addEventListener("resize", function () {
+    document.querySelectorAll('.qa[data-open="true"] .qa__a').forEach(function (p) {
+      p.style.height = p.scrollHeight + "px";
+    });
+  });
+
+  /* ── Nav hairline on scroll ──────────────────────────────────────── */
+  var nav = document.getElementById("nav");
+  function onScroll() { nav.dataset.scrolled = window.scrollY > 8 ? "true" : "false"; }
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  /* ── Scroll reveal ───────────────────────────────────────────────── */
+  var rises = document.querySelectorAll(".rise, .slap, .hl");
+  if (reduced || !("IntersectionObserver" in window)) {
+    rises.forEach(function (el) { el.classList.add("in"); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry, i) {
+        if (!entry.isIntersecting) return;
+        var el = entry.target;
+        setTimeout(function () { el.classList.add("in"); }, i * 70);
+        io.unobserve(el);
+      });
+    }, { rootMargin: "0px 0px -12% 0px", threshold: 0.08 });
+    rises.forEach(function (el) { io.observe(el); });
+  }
+})();
+</script>

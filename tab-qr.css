@@ -1,0 +1,194 @@
+/* CODEMARCA — QR TAB. Shared by every flow folder. */
+/* ── PAGE-ONLY COMPONENTS ───────────────────────────────────────────── */
+
+/* the one code */
+.code{gap:var(--s-5)}
+.code__top{display:flex; gap:var(--s-5); align-items:flex-start}
+.code__qr{flex-shrink:0; border:0; cursor:pointer;
+  background:var(--ground-sunk); box-shadow:inset 0 0 0 1px var(--line);
+  transition:transform var(--dur-fast) var(--ease)}
+.code__qr:hover{transform:scale(1.03)}
+.code__qr:active{transform:scale(.99)}
+.code__qr svg{max-width:104px}
+.code__meta{flex:1; min-width:0; display:flex; flex-direction:column; gap:var(--s-2);
+  justify-content:center; align-self:center}
+.code__name{display:flex; align-items:center; gap:var(--s-3); flex-wrap:wrap}
+.code__t{font-size:1.0625rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display);
+  line-height:1.2; min-width:0}
+.code__form{font-size:var(--fs-xs); color:var(--ink-soft)}
+.code__url{
+  display:flex; align-items:center; gap:var(--s-2);
+  padding:var(--s-2) var(--s-3); border-radius:var(--r-sm);
+  background:var(--ground-sunk); box-shadow:inset 0 0 0 1px var(--line);
+  font-family:var(--font-mono); font-size:var(--fs-xs); min-width:0;
+}
+.code__url span{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  color:var(--ink-soft)}
+.code__url b{color:var(--ink); font-weight:var(--fw-bold)}
+.code__url button{
+  flex-shrink:0; display:grid; place-items:center; width:26px; height:26px;
+  border:0; border-radius:var(--r-xs); background:none; cursor:pointer; color:var(--ink-soft);
+}
+.code__url button:hover{background:var(--ground); color:var(--ink)}
+.code__url button svg{width:15px; height:15px}
+.code__acts{display:flex; gap:var(--s-2); flex-wrap:wrap}
+
+/* a paused code reads as switched off without going grey-on-grey */
+.code[data-paused] .code__qr,
+.code[data-paused] .stk__sq{opacity:.4}
+.code[data-paused] .code__t{color:var(--ink-soft)}
+
+/* the two stickers the code is printed on. The little square is drawn to
+   scale against the other one — 4″ fills the frame, 1.5″ is 1.5/4 of it —
+   so the difference in size reads before the numbers do. */
+.stk__lbl{
+  font-size:var(--fs-label); font-weight:var(--fw-bold); letter-spacing:var(--ls-label);
+  text-transform:uppercase; font-family:var(--font-mono); color:var(--ink-faint);
+}
+.stks{display:flex; flex-direction:column; margin-top:var(--s-2)}
+.stk{display:flex; align-items:center; gap:var(--s-4); padding-block:var(--s-3)}
+.stk + .stk{box-shadow:inset 0 1px 0 var(--line)}
+.stk__fig{
+  flex-shrink:0; display:grid; place-items:center; width:52px; height:52px;
+  border-radius:var(--r-sm); background:var(--ground-sunk);
+}
+.stk__sq{
+  display:block; aspect-ratio:1; padding:2px; border-radius:3px; background:#fff;
+  box-shadow:0 0 0 1px var(--line), var(--shadow-sm);
+  transition:opacity var(--dur-fast) var(--ease);
+}
+.stk__sq svg{display:block; width:100%; height:auto}
+.stk__txt{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
+.stk__t{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.stk__t .mono{font-weight:var(--fw-medium); color:var(--ink-soft); margin-left:var(--s-2)}
+.stk__s{font-size:var(--fs-xs); color:var(--ink-soft)}
+
+/* ── SUPPORTING TEXT ───────────────────────────────────────────────────
+   Headings and body copy run on negative tracking. The small grey lines
+   under them — subtitles, help, notes, values — do not: at 13–14px the
+   letters need the air back instead. Any new small line on this page
+   belongs in this list. */
+.code__form,
+.stk__t .mono,
+.stk__s{ letter-spacing:var(--ls-soft) }
+
+/* ── THE ONE SQUARE ─────────────────────────────────────────────────────
+   Bigger than the code card used to be. It is the subject of the screen,
+   not a thumbnail next to some metadata. */
+.big{gap:var(--s-6); align-items:center; text-align:center}
+.big__qr{
+  /* Smaller than it was (Garry, 2026-09-29): at 260px the column beside
+     it was mostly empty space, and the line under it already says the
+     square opens full screen — nobody has to read it from here. */
+  border:0; cursor:pointer; padding:var(--s-4); width:min(200px, 52vw);
+  background:#fff; border-radius:var(--r-lg);
+  box-shadow:inset 0 0 0 1px var(--line), var(--shadow-md);
+  transition:transform var(--dur-fast) var(--ease);
+}
+.big__qr:hover{transform:scale(1.03)}
+.big__qr svg{display:block; width:100%; height:auto}
+.big__hint{font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:.14px}
+.big__url{
+  display:inline-flex; align-items:center; gap:var(--s-2); max-width:100%;
+  padding:var(--s-2) var(--s-2) var(--s-2) var(--s-4); border-radius:var(--r-pill);
+  background:var(--ground); font-family:var(--font-mono); font-size:var(--fs-xs);
+  color:var(--ink-mid); letter-spacing:.14px;
+}
+.big__url b{color:var(--ink); font-weight:var(--fw-bold)}
+.big__url button{
+  flex-shrink:0; display:grid; place-items:center; width:30px; height:30px;
+  border:0; border-radius:50%; background:var(--ground); color:var(--ink-mid);
+  cursor:pointer; box-shadow:var(--shadow-sm);
+}
+.big__url button:hover{color:var(--ink)}
+.big__url button svg{width:15px; height:15px}
+.big__acts{display:flex; flex-wrap:wrap; gap:var(--s-2); justify-content:center}
+
+/* where else to put it — the download's reason to exist */
+.put{display:grid; gap:var(--s-2); grid-template-columns:1fr}
+@media (min-width:560px){ .put{grid-template-columns:1fr 1fr} }
+.put__i{
+  display:flex; gap:var(--s-3); align-items:flex-start;
+  padding:var(--s-3); border-radius:var(--r-md); background:var(--ground);
+}
+.put__i svg{width:16px; height:16px; color:var(--brand-violet); flex-shrink:0; margin-top:2px}
+.put__i span{font-size:var(--fs-xs); color:var(--ink-mid); letter-spacing:.14px}
+.put__i b{color:var(--ink); font-weight:var(--fw-bold)}
+
+
+/* notes inside the centred QR card still read left-aligned */
+.big .note{text-align:left; align-self:stretch}
+
+/* ── ON / OFF ───────────────────────────────────────────────────────────
+   The switch sits with the square, not in a settings list, because this is
+   the screen someone opens when they want the sticker to stop working. */
+.onoff{
+  display:flex; align-items:center; gap:var(--s-4); align-self:stretch; text-align:left;
+  padding:var(--s-3) var(--s-4); border-radius:var(--r-md); background:var(--ground-soft);
+}
+.onoff__txt{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
+.onoff__t{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.onoff__s{font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:var(--ls-soft)}
+.onoff[data-off]{background:var(--caution-tint); box-shadow:inset 0 0 0 1px var(--caution-edge)}
+
+/* ── PREVIEW ────────────────────────────────────────────────────────────
+   The real page in an iframe. Phone is a 9:16 window because that is the
+   shape a scan happens in; Web widens the same frame rather than swapping
+   it, so the switch reads as a resize and not as a different page. */
+.pv{gap:var(--s-4)}
+.seg--sm .seg__b{height:34px; font-size:var(--fs-xs)}
+.pv__stage{
+  display:grid; place-items:center; padding:var(--s-4);
+  border-radius:var(--r-md); background:var(--ground-soft);
+}
+.pv__frame{
+  width:100%; max-width:300px; aspect-ratio:9/16; overflow:hidden;
+  border-radius:var(--r-lg); background:#fff; box-shadow:var(--shadow-md);
+  transition:max-width var(--dur) var(--ease);
+}
+.pv[data-view="web"] .pv__frame{max-width:none; aspect-ratio:4/3; border-radius:var(--r-md)}
+.pv__frame iframe{display:block; width:100%; height:100%; border:0}
+/* hidden page: the frame greys back so the switch has a visible effect */
+.pv[data-off] .pv__frame{opacity:.4; filter:grayscale(1)}
+
+/* ── THE SQUARE AND WHAT YOU DO WITH IT ─────────────────────────────────
+   Phone: stacked and centred, the square first. From 720px the card reads
+   left to right instead — the square on the left, and beside it the link,
+   the buttons and the on/off switch, left-aligned like a caption to it.
+   The "Show" button is gone: the line under the square already says the
+   square itself opens full screen (Garry, 2026-09-27). */
+.big__l{display:flex; flex-direction:column; align-items:center; gap:var(--s-3)}
+.big__r{display:flex; flex-direction:column; gap:var(--s-4); align-items:center; width:100%}
+/* ONLY the cards built with two columns get the two-column layout. The
+   flows with nothing to put beside the square (1-empty, 3-pack-coming)
+   keep the plain stacked card — before this was scoped, their content was
+   squeezed into a second column 0px wide. */
+@media (min-width:720px){
+  .big--split .big__qr{width:190px}
+  .big--split{
+    display:grid; grid-template-columns:auto minmax(0,1fr);
+    gap:var(--s-8); align-items:center; text-align:left;
+  }
+  .big--split .big__l{align-self:start}
+  .big--split .big__r{align-items:flex-start}
+  .big--split .big__acts{justify-content:flex-start}
+  .big--split .card__note{grid-column:1 / -1}
+}
+
+/* ── PREVIEW, SMALLER INSIDE ────────────────────────────────────────────
+   The iframe is rendered at 140% and scaled back down: the person only
+   needs the IDEA of the page, and at full size a phone frame shows three
+   buttons and nothing else. Same trick for both views. */
+.pv__frame{position:relative}
+.pv__frame iframe{
+  width:140%; height:140%;
+  transform:scale(.714); transform-origin:top left;
+}
+
+/* the photo strip sits on the dark pack card now, so its scroll bar has to
+   read on black rather than on paper */
+.card--dark .ps__bar{background:rgba(255,255,255,.14)}
+.card--dark .ps__bar i{background:var(--ink-invert)}
+
+/* the preview's two actions, in its header */
+.pv__acts{display:flex; gap:var(--s-2); flex-wrap:wrap; justify-content:flex-end}

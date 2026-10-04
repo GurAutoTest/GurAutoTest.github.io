@@ -1,0 +1,94 @@
+<title>Orders · Codemarca</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../dashboard.css">
+<link rel="stylesheet" href="../../tab-orders.css">
+
+<!-- ==========================================================================
+     CODEMARCA — ORDERS  ·  flow 4, active account
+     Two changes from the old single-order screen, both from 2026-09-16:
+
+       1. ORDERS ARE A LIST. "One pack per account" is gone. The reorder
+          button sits at the TOP of this screen, above the history, because
+          this is the screen someone lands on when they are already thinking
+          about buying again.
+
+       2. SAME CODE, SAID OUT LOUD. A second order reads like a second QR
+          unless the screen says otherwise, and a second QR reads like a
+          second page to keep up to date. So the line is in the card, not
+          in a tooltip.
+
+     A lost or damaged sticker is a reprint of the same code, ordered the
+     same way — which is why it points here rather than at a support form.
+     ========================================================================== -->
+
+<style>
+/* the ask, repeated from Home — same card, so the two screens read as one
+   product rather than two people's work */
+.ask2{gap:var(--s-4)}
+.ask2 .mono{color:var(--brand-violet); font-size:.9em; letter-spacing:.14px}
+</style>
+
+<div class="app">
+  <div class="app__main">
+    <main class="view">
+
+      <header class="head">
+        <div class="head__row">
+          <div>
+            <h1>Orders</h1>
+            <p>Every pack you have had, newest first. All of them carry the
+               same code.</p>
+          </div>
+          <div class="head__acts">
+            <a class="btn btn--go btn--sm" href="../../select-pack.html?pack=custom&amp;built=1&amp;free=used">Order more</a>
+          </div>
+        </div>
+      </header>
+
+      <!-- ── the ask, first ────────────────────────────────────────────── -->
+
+      <section class="card ask2" data-fold="card">
+        <span class="card__title">Order more stickers</span>
+        <p class="card__note" data-fold style="font-size:var(--fs-sm); color:var(--ink-mid)">
+          Any size, any number, and every one of them carries the same QR you
+          already have. Nothing new to set up. Put one on the
+          second car, the shop shutter, your bike, or hand it to someone who
+          keeps asking for your number.
+        </p>
+        <div class="card__foot">
+          <a class="btn btn--go btn--sm btn--grow" href="../../select-pack.html?pack=custom&amp;built=1&amp;free=used">
+            <span data-ic-in="plus"></span>Order more stickers
+          </a>
+          <a class="btn btn--ghost btn--sm btn--grow" href="qr.html">
+            <span data-ic-in="qr"></span>See my QR
+          </a>
+        </div>
+      </section>
+
+      <div data-orders></div>
+
+      <section class="card" data-fold="card">
+        <span class="card__title">Lost or damaged a sticker?</span>
+        <p class="card__note" data-fold style="font-size:var(--fs-sm); color:var(--ink-mid)">
+          Nothing breaks. We reprint the same code and send a new pair — every
+          sticker you still have keeps working, because your code never
+          changes. You only pay delivery.
+        </p>
+        <div style="display:flex; gap:var(--s-2); flex-wrap:wrap">
+          <a class="btn btn--ghost btn--sm" href="../../select-pack.html?built=1&amp;reason=lost">Send me a new pair</a>
+          <button class="btn btn--quiet btn--sm" type="button"
+                  data-soon="Support chat is not wired up yet">Message us</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="state.js"></script>
+<script src="../../dashboard.js"></script>
+<script src="../../tab-orders.js"></script>

@@ -1,0 +1,101 @@
+<title>My QR · Codemarca</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../dashboard.css">
+<link rel="stylesheet" href="../../tab-qr.css">
+
+<!-- ==========================================================================
+     CODEMARCA — MY QR  ·  flow 3, pack bought, no page
+     The code is PRINTED — on stickers that are in a van — but it is
+     live on a bare page (name + link, claimed at checkout). So the square is
+     shown large, exactly as it is on the stickers, with the one true thing
+     about it: right now it opens just a name. No pause and no lost-sticker
+     control; neither means anything for a code that has never been live.
+     ========================================================================== -->
+
+<div class="app">
+  <div class="app__main">
+    <main class="view">
+
+      <header class="head">
+        <h1>My QR</h1>
+        <p>This is the code printed on the stickers coming to you. It is yours
+           for good — it will never change, no matter how many you order
+           later.</p>
+      </header>
+
+
+      <!-- ══ PREVIEW ═════════════════════════════════════════════════════
+           What a scan opens, right now, in an iframe — the page itself when
+           there is one, and the "not set up yet" landing when there is not.
+           On this screen that second case is the whole argument. -->
+
+      <section class="card pv" data-pv data-view="phone" hidden>
+        <div class="card__head">
+          <span class="card__title">What a scan opens</span>
+          <span class="pv__acts">
+            <a class="btn btn--quiet btn--sm" href="#" data-view target="_blank" rel="noopener">
+              <span data-ic-in="share"></span>Open
+            </a>
+            <!-- the action belongs beside the thing it changes: Edit when
+                 there is a page, Build when there is not (Garry, 2026-09-28) -->
+            <a class="btn btn--ghost btn--sm" href="profile.html" data-pv-do>
+              <span data-ic-in="pen"></span>Edit page
+            </a>
+          </span>
+        </div>
+        <p class="card__note" data-pv-sub></p>
+
+        <div class="seg seg--sm" role="tablist" aria-label="Preview size">
+          <button class="seg__b" type="button" role="tab" aria-selected="true" data-pv-tab="phone">
+            <span data-ic-in="phone"></span>Phone
+          </button>
+          <button class="seg__b" type="button" role="tab" aria-selected="false" data-pv-tab="web">
+            <span data-ic-in="card"></span>Web
+          </button>
+        </div>
+
+        <div class="pv__stage">
+          <div class="pv__frame"><iframe data-pv-frame title="What a scan opens" loading="lazy"></iframe></div>
+        </div>
+
+        <div class="onoff" data-live-row hidden>
+          <span class="onoff__txt">
+            <span class="onoff__t" data-live-t>Page is live</span>
+            <span class="onoff__s" data-live-s>Anyone with the link can open it</span>
+          </span>
+          <label class="sw"><input type="checkbox" checked data-live aria-label="Page live or hidden"><span class="sw__track"></span></label>
+        </div>
+      </section>
+
+      <section class="card big">
+        <button class="big__qr" type="button" data-qr
+                aria-label="Show my QR full screen"></button>
+
+        <span class="chip chip--warn">Name only, for now</span>
+
+        <p class="note note--warn">
+          <span data-ic-in="help"></span>
+          <span data-when="placed shipped">Your stickers are printed with this
+            square already. Right now it opens a page with just your name —
+            add your number and links before they land.</span>
+          <span data-when="delivered">Your stickers are here and a scan still
+            shows just your name. Two minutes on your page and every sticker
+            you have shows the rest.</span>
+        </p>
+
+        <a class="btn btn--go btn--wide" href="../../onboarding.html?ordered=1">Build my page</a>
+      </section>
+
+
+
+    </main>
+  </div>
+</div>
+
+<script src="state.js"></script>
+<script src="../../dashboard.js"></script>
+<script src="../../tab-qr.js"></script>

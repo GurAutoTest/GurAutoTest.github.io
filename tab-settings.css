@@ -1,0 +1,74 @@
+/* CODEMARCA — SETTINGS TAB. Shared by every flow folder. */
+/* ── PAGE-ONLY COMPONENTS ───────────────────────────────────────────── */
+
+/* a settings line: label + current value on the left, action on the right */
+.set{display:flex; align-items:center; gap:var(--s-4); padding:var(--s-4) 0}
+.set + .set{box-shadow:inset 0 1px 0 var(--line)}
+.set:first-child{padding-top:0}
+.set:last-child{padding-bottom:0}
+.set__txt{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px}
+.set__t{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+/* these wrap rather than truncate — several of them are the only warning
+   a person gets before an irreversible action */
+.set__v{font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.45; overflow-wrap:anywhere}
+.set__v--mono{font-family:var(--font-mono)}
+.set__end{flex-shrink:0}
+
+/* support rows — the whole row is the link */
+.sup{color:inherit; text-decoration:none}
+.sup__ic{display:grid; place-items:center; width:40px; height:40px; flex-shrink:0;
+  border-radius:50%; background:var(--ground-sunk); color:var(--ink)}
+.sup__ic svg{width:20px; height:20px}
+.sup__ic--wa{background:none}
+.sup__ic--wa svg{width:40px; height:40px}
+.sup__go{color:var(--ink-faint); display:grid; place-items:center}
+.sup__go svg{width:18px; height:18px}
+.sup:hover .sup__go{color:var(--ink)}
+.sup:hover .set__t{text-decoration:underline; text-underline-offset:3px}
+
+/* support rows — the whole row is the link */
+.sup{color:inherit; text-decoration:none}
+.sup__ic{display:grid; place-items:center; width:40px; height:40px; flex-shrink:0;
+  border-radius:50%; background:var(--ground-sunk); color:var(--ink)}
+.sup__ic svg{width:20px; height:20px}
+.sup__ic--wa{background:none}
+.sup__ic--wa svg{width:40px; height:40px}
+.sup__go{color:var(--ink-faint); display:grid; place-items:center}
+.sup__go svg{width:18px; height:18px}
+.sup:hover .sup__go{color:var(--ink)}
+.sup:hover .set__t{text-decoration:underline; text-underline-offset:3px}
+
+/* the last card on the page — the one nobody should reach by accident */
+.danger{box-shadow:var(--shadow-sm), inset 0 0 0 1px rgba(196,52,43,.22)}
+.danger .card__title{color:var(--bad)}
+
+/* the small print under everything */
+.foot{
+  display:flex; flex-wrap:wrap; gap:var(--s-2) var(--s-5);
+  padding:var(--s-2) var(--s-1) 0; align-items:center;
+}
+.foot a{font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-soft)}
+.foot a:hover{color:var(--ink)}
+.foot__v{margin-left:auto; font-family:var(--font-mono); font-size:var(--fs-label);
+  letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--ink-faint)}
+
+/* ── SUPPORTING TEXT ───────────────────────────────────────────────────
+   Headings and body copy run on negative tracking. The small grey lines
+   under them — subtitles, help, notes, values — do not: at 13–14px the
+   letters need the air back instead. Any new small line on this page
+   belongs in this list. */
+.set__v,
+.foot a{ letter-spacing:var(--ls-soft) }
+
+/* Chrome paints its own pale-blue block behind anything it autofills, which
+   overrides the field's own ground. Parking the transition indefinitely keeps
+   our background and ink; it is the one fix that does not need to know the
+   field's colour. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+  -webkit-text-fill-color:var(--ink);
+  caret-color:var(--ink);
+  transition:background-color 600000s 0s, color 600000s 0s;
+}

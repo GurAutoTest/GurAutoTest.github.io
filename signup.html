@@ -1,0 +1,517 @@
+<title>Codemarca Signup</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* ==========================================================================
+   CODEMARCA — SIGNUP / LOGIN
+   One screen, three flows, switched by <body data-flow>:
+     build  — came from "Claim profile", handle carried into the headline
+     order  — came from "Get your pack", handle asked at onboarding step 2
+     login  — returning user
+
+   Content budget, set against the Linktree reference in moodboard/linktree/:
+   headline, one line under it, one button, one legal line, one link out.
+   Nothing else earns a place on an auth screen. The right panel is image only.
+   ========================================================================== */
+
+/* ── 0. TOKENS ─────────────────────────────────────────────────────────── */
+:root {
+  /* Brand — locked 2026-09-01 */
+  --brand-violet:#6E27E6; --brand-violet-lift:#A171F4; --brand-violet-press:#5A1DC4;
+  --brand-violet-tint:#F1E9FE; --brand-violet-edge:#DCC9FB;
+
+  /* Ink */
+  --ink:#101215; --ink-mid:#5B5D68; --ink-soft:#8C8E9C; --ink-faint:#B6B8C4;
+  --ink-invert:#FFFFFF;
+
+  /* Ground */
+  --ground:#FFFFFF; --ground-soft:#F4F3F7; --ground-sunk:#EDEBF2;
+
+  /* Line */
+  --line:rgba(16,18,21,.09); --line-strong:rgba(16,18,21,.16);
+
+  /* State */
+  --ok:#17914F; --bad:#C4342B;
+
+  /* Type */
+  --font-sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+
+  --fs-lead:clamp(1.0625rem,1.5vw,1.3125rem);
+  --fs-body:1.0625rem; --fs-sm:.9375rem; --fs-label:.75rem;
+
+  --lh-body:1.62;
+  --ls-display:-.042em; --ls-body:-.011em; --ls-label:.14em; --ls-soft:.14px;
+  --fw-medium:500; --fw-semibold:600; --fw-bold:700; --fw-black:800;
+
+  /* Space */
+  --s-1:.25rem; --s-2:.5rem; --s-3:.75rem; --s-4:1rem; --s-5:1.25rem;
+  --s-6:1.5rem; --s-8:2rem; --s-10:2.5rem; --s-12:3rem; --s-16:4rem;
+
+  /* Layout */
+  --gutter:clamp(1.25rem,4vw,2.5rem);
+  --logo-h:22px;
+  --auth-col:420px;          /* the form column — one thought wide, nothing more */
+
+  /* Radius */
+  --r-xs:6px; --r-sm:10px; --r-md:16px; --r-lg:24px; --r-pill:999px;
+
+  /* Elevation */
+  --shadow-md:0 6px 20px rgba(16,18,21,.07);
+  --shadow-lg:0 20px 56px rgba(16,18,21,.11);
+
+  /* Controls */
+  --control-h:64px;
+  --btn-h-lg:62px;
+  --focus-ring:0 0 0 3px var(--ground-sunk),0 0 0 5px var(--ink);
+  --focus-glow:0 0 0 4px rgba(16,18,21,.08);
+
+  /* Motion */
+  --dur-fast:140ms; --dur:260ms;
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+@media (max-width:760px){ :root{ --control-h:58px; --btn-h-lg:56px; } }
+
+/* ── 1. BASE ───────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--font-sans); font-size:var(--fs-body); font-weight:var(--fw-medium);
+  line-height:var(--lh-body); letter-spacing:var(--ls-body);
+  -webkit-font-smoothing:antialiased;
+}
+h1,p{margin:0}
+a{color:inherit; text-decoration:none}
+button,input{font:inherit; color:inherit}
+img,svg{display:block; max-width:100%}
+[hidden]{display:none !important}
+:focus-visible{outline:none; box-shadow:var(--focus-ring); border-radius:var(--r-xs)}
+
+/* ── 2. THE SPLIT ──────────────────────────────────────────────────────── */
+.auth{display:grid; grid-template-columns:1fr 1fr; min-height:100svh}
+
+.auth__panel{
+  display:flex; flex-direction:column;
+  padding:var(--s-8) var(--gutter) var(--s-10);
+  background:var(--ground);
+}
+.auth__logo{align-self:flex-start; padding:var(--s-1)}
+.auth__logo svg{height:var(--logo-h); width:auto}
+
+.auth__body{flex:1; display:flex; align-items:center; justify-content:center; padding-block:var(--s-12)}
+.auth__inner{
+  width:100%; max-width:var(--auth-col);
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  gap:var(--s-6);
+}
+
+/* ── 3. HEADLINE — the handle lives here, not in a card of its own ─────── */
+.h1{
+  font-size:clamp(2.125rem,3.6vw,2.875rem); font-weight:var(--fw-black);
+  line-height:1.04; letter-spacing:var(--ls-display); text-wrap:balance;
+}
+.h1 .handle{color:var(--brand-violet); overflow-wrap:anywhere}
+.sub{font-size:var(--fs-lead); color:var(--ink-mid); line-height:1.45; margin-top:var(--s-3)}
+.head{display:flex; flex-direction:column; align-items:center}
+
+/* the low-key change link, as decided — one word, under the line */
+.change{
+  margin-top:var(--s-3); background:none; border:0; cursor:pointer; padding:var(--s-2) var(--s-3);
+  font-size:var(--fs-sm); font-weight:var(--fw-bold); color:var(--ink-soft);
+  text-decoration:underline; text-underline-offset:3px; border-radius:var(--r-sm);
+}
+.change:hover{color:var(--ink)}
+
+/* ── 4. THE HANDLE FIELD — only on screen while they are changing it ───── */
+.edit{width:100%; display:flex; flex-direction:column; gap:var(--s-3)}
+.claim__field{
+  display:flex; align-items:center; height:var(--control-h);
+  background:var(--ground); border-radius:var(--r-pill);
+  box-shadow:inset 0 0 0 1.5px var(--line-strong), var(--shadow-md);
+  padding-inline:var(--s-5);
+  transition:box-shadow var(--dur) var(--ease);
+}
+.claim__field:focus-within{box-shadow:inset 0 0 0 1.5px var(--ink), var(--focus-glow), var(--shadow-md)}
+.claim__prefix{
+  font-family:var(--font-mono); font-size:clamp(.8125rem,1.3vw,1rem);
+  color:var(--ink-soft); white-space:nowrap; user-select:none; letter-spacing:-.02em;
+}
+.claim__input{
+  flex:1; min-width:0; border:0; background:none; outline:none;
+  font-family:var(--font-mono); font-size:clamp(.8125rem,1.3vw,1rem);
+  font-weight:var(--fw-semibold); letter-spacing:-.02em; padding-inline:2px;
+  color:var(--brand-violet); caret-color:var(--brand-violet);
+}
+.claim__input::placeholder{color:var(--ink-faint); font-weight:400}
+.claim__input:focus-visible{box-shadow:none}
+.claim__save{
+  flex-shrink:0; background:none; border:0; cursor:pointer; padding:var(--s-2);
+  font-size:var(--fs-sm); font-weight:var(--fw-bold); color:var(--ink-soft); border-radius:var(--r-sm);
+}
+.claim__save:hover{color:var(--ink)}
+.note{
+  min-height:20px; font-size:var(--fs-sm); font-weight:var(--fw-semibold);
+  opacity:0; transition:opacity var(--dur) var(--ease);
+}
+.note[data-show="true"]{opacity:1}
+.note[data-state="ok"]{color:var(--ok)}
+.note[data-state="bad"]{color:var(--bad)}
+.note[data-state="idle"]{color:var(--ink-soft)}
+.note b{font-family:var(--font-mono); font-weight:var(--fw-semibold)}
+
+/* ── 5. THE ONE ACTION ─────────────────────────────────────────────────── */
+.gbtn{
+  display:flex; align-items:center; justify-content:center; gap:var(--s-3);
+  width:100%; height:var(--btn-h-lg); border:0; border-radius:var(--r-pill);
+  background:var(--ink); color:var(--ink-invert); cursor:pointer;
+  font-weight:var(--fw-bold); font-size:var(--fs-body); letter-spacing:-.01em;
+  transition:transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.gbtn:hover{background:var(--ink-strong, #33353D)}
+.gbtn:active{transform:scale(.985)}
+.gbtn__g{display:grid; place-items:center; width:26px; height:26px; border-radius:50%; background:#fff; flex-shrink:0}
+.gbtn__g svg{width:15px; height:15px}
+.gbtn[data-busy="true"]{background:var(--ink-mid); pointer-events:none}
+
+.legal{font-size:var(--fs-sm); color:var(--ink-soft); line-height:1.5}
+.legal a{color:var(--ink-mid); font-weight:var(--fw-bold); text-decoration:underline; text-underline-offset:3px}
+.legal a:hover{color:var(--ink)}
+.alt{font-size:var(--fs-sm); color:var(--ink-mid); font-weight:var(--fw-semibold)}
+.alt a{color:var(--brand-violet); font-weight:var(--fw-bold); text-decoration:underline; text-underline-offset:3px}
+.alt a:hover{color:var(--ink)}
+
+.status{
+  width:100%; padding:var(--s-3) var(--s-5); border-radius:var(--r-md);
+  background:var(--ground-soft); font-size:var(--fs-sm); font-weight:var(--fw-semibold);
+  color:var(--ink-mid); text-align:left;
+}
+.status[data-state="bad"]{background:#FCEFEE; color:var(--bad)}
+
+/* ── 6. THE IMAGE PANEL — no copy of any kind ──────────────────────────── */
+.auth__aside{background:var(--brand-violet-tint); padding:var(--s-6); display:flex}
+.ph{
+  position:relative; flex:1; display:flex; flex-direction:column; justify-content:flex-end;
+  gap:var(--s-2); padding:var(--s-6); background:rgba(255,255,255,.5);
+  border:1.5px dashed var(--brand-violet-edge); border-radius:var(--r-lg); overflow:hidden;
+}
+.ph__tag{
+  align-self:flex-start; font-family:var(--font-mono); font-size:.625rem;
+  font-weight:var(--fw-semibold); letter-spacing:var(--ls-label); text-transform:uppercase;
+  color:var(--brand-violet); background:var(--ground); padding:4px 9px; border-radius:var(--r-xs);
+  box-shadow:inset 0 0 0 1px var(--brand-violet-edge);
+}
+.ph__desc{font-size:var(--fs-sm); font-weight:var(--fw-semibold); color:var(--ink-mid); line-height:1.35; max-width:42ch}
+.ph::before{
+  content:""; position:absolute; inset:0; pointer-events:none; opacity:.6;
+  background-image:linear-gradient(var(--brand-violet-edge) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--brand-violet-edge) 1px,transparent 1px);
+  background-size:32px 32px;
+}
+
+/* The photo fills the panel; tall shots, so only top and bottom crop. */
+.aside__pic{position:relative; flex:1; margin:0; overflow:hidden; border-radius:var(--r-lg); background:var(--ground-soft)}
+.aside__pic img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+
+/* ── 7. FLOW SWITCHING ─────────────────────────────────────────────────── */
+[data-only]{display:none}
+body[data-flow="build"] [data-only~="build"],
+body[data-flow="order"] [data-only~="order"],
+body[data-flow="login"] [data-only~="login"]{display:revert}
+
+/* ── 8. RESPONSIVE ─────────────────────────────────────────────────────────
+   Under 900 the image panel goes away entirely rather than stacking — an auth
+   screen on a phone is the form and nothing else. */
+@media (max-width:900px){
+  .auth{grid-template-columns:1fr}
+  .auth__aside{display:none}
+  .auth__panel{min-height:100svh}
+}
+@media (max-width:540px){
+  .claim__field{padding-inline:var(--s-4)}
+}
+
+/* ── 9. PREVIEW SWITCHER — review tool, delete before launch ─────────────
+   Log in is not one of the buttons: the link under the Google button already
+   goes there, so a second way in would just be the same control twice. */
+.preview{
+  position:fixed; right:var(--s-5); bottom:var(--s-5); z-index:80;
+  display:flex; align-items:center; gap:var(--s-1); padding:5px; border-radius:var(--r-pill);
+  background:var(--ground); box-shadow:var(--shadow-lg), inset 0 0 0 1px var(--line);
+}
+.preview button{
+  border:0; cursor:pointer; background:none; color:var(--ink-soft);
+  font-size:.8125rem; font-weight:var(--fw-bold); padding:7px var(--s-4);
+  border-radius:var(--r-pill); white-space:nowrap;
+  transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.preview button:hover{color:var(--ink)}
+.preview button[aria-pressed="true"]{background:var(--brand-violet); color:#fff}
+@media (max-width:900px){
+  .preview{right:auto; left:50%; transform:translateX(-50%)}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; transition-duration:.001ms !important}
+}
+
+/* ── SUPPORTING TEXT ───────────────────────────────────────────────────
+   Headings and body copy run on negative tracking. The small grey lines
+   under them — subtitles, help, notes, values — do not: at 13–14px the
+   letters need the air back instead. Any new small line on this page
+   belongs in this list. */
+.legal,
+.alt,
+.ph__desc,
+.note{ letter-spacing:var(--ls-soft) }
+
+/* Chrome paints its own pale-blue block behind anything it autofills, which
+   overrides the field's own ground. Parking the transition indefinitely keeps
+   our background and ink; it is the one fix that does not need to know the
+   field's colour. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+  -webkit-text-fill-color:var(--ink);
+  caret-color:var(--ink);
+  transition:background-color 600000s 0s, color 600000s 0s;
+}
+</style>
+
+
+<div class="auth">
+
+  <!-- ══ LEFT — the form ═══════════════════════════════════════════════ -->
+  <section class="auth__panel">
+
+    <a class="auth__logo" href="homepage.html" aria-label="Codemarca home">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 257 40" fill="none" role="img" aria-label="Codemarca"><g fill="#6E27E6"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></g><g fill="#101215"><path d="M245.956 14.0999H252.172V34.82H245.956V32.8723C244.589 34.447 242.558 35.4002 239.782 35.4002C234.353 35.4002 229.877 30.6345 229.877 24.46C229.877 18.2854 234.353 13.5198 239.782 13.5198C242.558 13.5198 244.589 14.4729 245.956 16.0476V14.0999ZM241.025 29.5157C243.884 29.5157 245.956 27.568 245.956 24.46C245.956 21.352 243.884 19.4043 241.025 19.4043C238.165 19.4043 236.093 21.352 236.093 24.46C236.093 27.568 238.165 29.5157 241.025 29.5157Z"/><path d="M220.695 35.4002C214.396 35.4002 209.713 30.6345 209.713 24.46C209.713 18.2854 214.396 13.5198 220.695 13.5198C224.714 13.5198 228.278 15.6332 230.06 18.8241L224.631 21.9736C223.927 20.5232 222.435 19.6529 220.612 19.6529C217.918 19.6529 215.929 21.6006 215.929 24.46C215.929 27.3193 217.918 29.267 220.612 29.267C222.435 29.267 223.968 28.3968 224.631 26.9464L230.06 30.0544C228.278 33.2867 224.756 35.4002 220.695 35.4002Z"/><path d="M203.477 17.7881C204.306 15.0116 207.083 13.6855 209.693 13.6855V20.7304C207.124 20.316 203.477 21.352 203.477 25.4545V34.82H197.261V14.1H203.477V17.7881Z"/><path d="M187.728 14.0999H193.944V34.82H187.728V32.8723C186.361 34.447 184.33 35.4002 181.554 35.4002C176.125 35.4002 171.649 30.6345 171.649 24.46C171.649 18.2854 176.125 13.5198 181.554 13.5198C184.33 13.5198 186.361 14.4729 187.728 16.0476V14.0999ZM182.797 29.5157C185.656 29.5157 187.728 27.568 187.728 24.46C187.728 21.352 185.656 19.4043 182.797 19.4043C179.937 19.4043 177.865 21.352 177.865 24.46C177.865 27.568 179.937 29.5157 182.797 29.5157Z"/><path d="M161.806 13.5198C166.571 13.5198 169.679 16.9179 169.679 22.0979V34.82H163.463V22.6366C163.463 20.5646 162.469 19.2385 160.479 19.2385C158.407 19.2385 157.247 20.6889 157.247 23.1339V34.82H151.031V22.6366C151.031 20.5646 150.037 19.2385 148.047 19.2385C145.975 19.2385 144.815 20.6889 144.815 23.1339V34.82H138.599V14.0999H144.815V16.0062C145.768 14.5972 147.592 13.5198 150.368 13.5198C152.813 13.5198 154.636 14.5143 155.797 16.2548C156.957 14.5972 158.863 13.5198 161.806 13.5198Z"/><path d="M121.357 26.9464C122.144 29.1013 124.051 29.8472 126.33 29.8472C128.029 29.8472 129.479 29.1841 130.308 28.2725L135.281 31.1318C133.25 33.9497 130.184 35.4002 126.247 35.4002C119.161 35.4002 114.768 30.6345 114.768 24.46C114.768 18.2854 119.244 13.5198 125.791 13.5198C131.841 13.5198 136.317 18.2025 136.317 24.46C136.317 25.3302 136.234 26.159 136.068 26.9464H121.357ZM121.233 22.3051H130.142C129.479 19.9016 127.614 19.0313 125.75 19.0313C123.388 19.0313 121.813 20.1916 121.233 22.3051Z"/><path d="M106.271 5.81201H112.487V34.8201H106.271V32.8724C104.903 34.4471 102.873 35.4002 100.096 35.4002C94.6674 35.4002 90.1919 30.6346 90.1919 24.4601C90.1919 18.2855 94.6674 13.5199 100.096 13.5199C102.873 13.5199 104.903 14.473 106.271 16.0477V5.81201ZM101.339 29.5158C104.199 29.5158 106.271 27.5681 106.271 24.4601C106.271 21.3521 104.199 19.4044 101.339 19.4044C98.4799 19.4044 96.4079 21.3521 96.4079 24.4601C96.4079 27.5681 98.4799 29.5158 101.339 29.5158Z"/><path d="M77.9738 35.4002C71.8821 35.4002 66.9922 30.6345 66.9922 24.46C66.9922 18.2854 71.8821 13.5198 77.9738 13.5198C84.0655 13.5198 88.9554 18.2854 88.9554 24.46C88.9554 30.6345 84.0655 35.4002 77.9738 35.4002ZM77.9738 29.3499C80.6674 29.3499 82.7394 27.4022 82.7394 24.46C82.7394 21.5177 80.6674 19.57 77.9738 19.57C75.2802 19.57 73.2082 21.5177 73.2082 24.46C73.2082 27.4022 75.2802 29.3499 77.9738 29.3499Z"/><path d="M57.8088 35.4002C51.5099 35.4002 46.8271 30.6345 46.8271 24.46C46.8271 18.2854 51.5099 13.5198 57.8088 13.5198C61.8285 13.5198 65.3923 15.6332 67.1742 18.8241L61.7456 21.9736C61.0411 20.5232 59.5493 19.6529 57.7259 19.6529C55.0323 19.6529 53.0432 21.6006 53.0432 24.46C53.0432 27.3193 55.0323 29.267 57.7259 29.267C59.5493 29.267 61.0825 28.3968 61.7456 26.9464L67.1742 30.0544C65.3923 33.2867 61.8699 35.4002 57.8088 35.4002Z"/></g></svg>
+    </a>
+
+    <div class="auth__body">
+      <div class="auth__inner">
+
+        <div class="head">
+          <h1 class="h1" data-only="build">Claim <span class="handle" id="handleOut">/gurdeep</span> today</h1>
+          <h1 class="h1" data-only="order">Get your pack</h1>
+          <h1 class="h1" data-only="login">Welcome back</h1>
+
+          <p class="sub" data-only="build order">Sign up free — you only pay delivery</p>
+          <p class="sub" data-only="login">Log in to your Codemarca</p>
+
+          <button class="change" type="button" id="changeBtn" data-only="build">Change link</button>
+        </div>
+
+        <div class="edit" id="edit" hidden>
+          <div class="claim__field">
+            <span class="claim__prefix">codemarca.com/</span>
+            <input class="claim__input" id="handleInput" type="text" spellcheck="false"
+                   autocapitalize="off" autocomplete="off" maxlength="24" aria-label="Your link">
+            <button class="claim__save" type="button" id="saveBtn">Done</button>
+          </div>
+          <p class="note" id="note" data-state="idle" role="status" aria-live="polite"></p>
+        </div>
+
+        <button class="gbtn" type="button" id="googleBtn">
+          <span class="gbtn__g" aria-hidden="true">
+            <svg viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.79 2.72v2.26h2.9c1.7-1.57 2.69-3.88 2.69-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.95-2.18l-2.9-2.26c-.81.54-1.84.86-3.05.86-2.34 0-4.33-1.58-5.04-3.71H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.96 10.71a5.41 5.41 0 0 1 0-3.42V4.96H.96a9 9 0 0 0 0 8.08l3-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.96l3 2.33C4.67 5.16 6.66 3.58 9 3.58z"/></svg>
+          </span>
+          Continue with Google
+        </button>
+
+        <div class="status" id="status" hidden></div>
+
+        <p class="legal" data-only="build order">By continuing you agree to our <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy policy</a>.</p>
+
+        <p class="alt" data-only="build order">Already have an account? <a href="signup.html?mode=login">Log in</a></p>
+        <p class="alt" data-only="login">New here? <a href="signup.html?next=build">Claim your link</a></p>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ RIGHT — image only. No copy lives on this side. ═══════════════ -->
+  <aside class="auth__aside">
+    <figure class="aside__pic">
+      <img data-only="build login" src="assets/photos/codemarca-qr-sticker-salon-mirror-scan-tall.jpg" alt="Customer scanning a Codemarca QR sticker on a salon mirror with a phone" width="1536" height="2752">
+      <img data-only="order" src="assets/photos/codemarca-qr-sticker-peel-from-pack-tall.jpg" alt="Hand peeling a Codemarca QR sticker off the Codemarca pack" width="1536" height="2752">
+    </figure>
+  </aside>
+
+</div>
+
+<!-- Review tool only — delete this block and its script loop before launch. -->
+<div class="preview" role="group" aria-label="Preview flow">
+  <button type="button" data-set="build" aria-pressed="true">Claim profile</button>
+  <button type="button" data-set="order" aria-pressed="false">Get your pack</button>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* Front-end demo data. On the real site the check hits the handles endpoint
+     and the reserved list lives server-side. */
+  var RESERVED = ["admin", "codemarca", "hello", "support", "help", "api",
+                  "about", "login", "signup", "app", "www", "shop", "blog"];
+  var TAKEN = ["gurdeep", "garry", "nikk", "nancy", "amit", "gill"];
+
+  var body      = document.body;
+  var edit      = document.getElementById("edit");
+  var input     = document.getElementById("handleInput");
+  var out       = document.getElementById("handleOut");
+  var note      = document.getElementById("note");
+  var changeBtn = document.getElementById("changeBtn");
+  var saveBtn   = document.getElementById("saveBtn");
+  var googleBtn = document.getElementById("googleBtn");
+  var status    = document.getElementById("status");
+
+  var params = new URLSearchParams(location.search);
+  var flow   = params.get("mode") === "login" ? "login"
+             : params.get("next") === "order" ? "order" : "build";
+  var handle = clean(params.get("handle") || "gurdeep");
+
+  setFlow(flow);
+  setHandle(handle);
+
+  function clean(v) { return String(v).toLowerCase().replace(/[^a-z0-9._-]/g, "").slice(0, 24); }
+  function getHandle() { return clean(out.textContent); }
+  function setHandle(v) { out.textContent = "/" + v; input.value = v; }
+
+  function setFlow(f) {
+    body.dataset.flow = f;
+    document.title = f === "login" ? "Codemarca — Log in" : "Codemarca — Sign up";
+    Array.prototype.forEach.call(document.querySelectorAll(".preview button"), function (b) {
+      b.setAttribute("aria-pressed", String(b.dataset.set === f));
+    });
+  }
+
+  function showNote(state, html) { note.dataset.state = state; note.dataset.show = "true"; note.innerHTML = html; }
+  function hideNote() { note.dataset.show = "false"; }
+
+  function check(v) {
+    if (v.length < 3) return { ok: false, why: "Pick a link with at least 3 characters." };
+    if (RESERVED.indexOf(v) > -1) return { ok: false, why: "<b>" + v + "</b> is reserved. Try another." };
+    if (TAKEN.indexOf(v) > -1) return { ok: false, why: "<b>" + v + "</b> went to someone else. <b>" + v + "01</b> is free." };
+    return { ok: true };
+  }
+
+  changeBtn.addEventListener("click", function () {
+    edit.hidden = false;
+    changeBtn.hidden = true;
+    input.focus();
+    input.setSelectionRange(input.value.length, input.value.length);
+  });
+
+  function closeEdit() {
+    var v = clean(input.value);
+    var r = check(v);
+    if (!r.ok) { showNote("bad", r.why); input.focus(); return false; }
+    setHandle(v);
+    edit.hidden = true;
+    changeBtn.hidden = false;
+    hideNote();
+    return true;
+  }
+  saveBtn.addEventListener("click", closeEdit);
+
+  var debounce = null;
+  input.addEventListener("input", function () {
+    var v = clean(input.value);
+    if (v !== input.value) input.value = v;
+    clearTimeout(debounce);
+    if (!v) { hideNote(); return; }
+    if (v.length < 3) { showNote("idle", "3 characters or more."); return; }
+    showNote("idle", "Checking…");
+    debounce = setTimeout(function () {
+      var r = check(v);
+      if (r.ok) showNote("ok", "<b>codemarca.com/" + v + "</b> is free.");
+      else showNote("bad", r.why);
+    }, 420);
+  });
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); closeEdit(); }
+    if (e.key === "Escape") { input.value = getHandle(); edit.hidden = true; changeBtn.hidden = false; hideNote(); }
+  });
+
+  function say(state, text) { status.hidden = false; status.dataset.state = state; status.textContent = text; }
+
+  /* The handle is re-checked here, on submit, rather than held by a timed
+     reservation — decided 2026-09-04. Whoever signs in first gets it. */
+  /* what the real Google sign-in hands back; ?name= overrides it so the
+     screen can be reviewed as somebody else */
+  var GOOGLE_NAME = new URLSearchParams(location.search).get("name") || "Garry Singh";
+
+  googleBtn.addEventListener("click", function () {
+    if (body.dataset.flow === "build") {
+      if (!edit.hidden && !closeEdit()) return;
+      var r = check(getHandle());
+      if (!r.ok) {
+        say("bad", "That link is gone. Pick another one and try again.");
+        edit.hidden = false; changeBtn.hidden = true;
+        showNote("bad", r.why);
+        input.focus();
+        return;
+      }
+    }
+    status.hidden = true;
+    googleBtn.dataset.busy = "true";
+    setTimeout(function () {
+      googleBtn.dataset.busy = "false";
+      /* Google itself is not wired yet; the hop it makes afterwards is.
+         The claim route carries the handle AND the Google account's name
+         into the builder (Garry, 2026-09-23) — sign-in is Google-only, so
+         the name is already known and asking for it again is asking a
+         question we have the answer to. GOOGLE_NAME stands in for what the
+         real sign-in hands back. The pack route
+         goes to select-pack.html, which is the first thing a buyer has to
+         answer — an address form for a pack nobody has chosen yet is a form
+         asking the second question first. No `built` flag on this route:
+         somebody arriving from the website has no page yet. The free pack
+         is always for themselves (2026-09-18) — gifts are ordered later,
+         from the dashboard. */
+      if (body.dataset.flow === "build") {
+        location.href = "onboarding.html?handle=" + encodeURIComponent(getHandle()) +
+          "&name=" + encodeURIComponent(GOOGLE_NAME);
+        return;
+      }
+      if (body.dataset.flow === "order") {
+        location.href = "select-pack.html";
+        return;
+      }
+      /* LOGIN — added 2026-09-16 with the flow folders.
+         In the real build this branches on what the account actually has,
+         and the four folders under dashboard/ are the four answers:
+
+           page + delivered pack   4-active
+           page, no pack           2-page-live
+           pack, no page           3-pack-coming
+           nothing yet             1-empty
+
+         1-empty is also the answer to the other gap Garry found: someone
+         who signs up without picking a lane. That screen leads with "build
+         my page" and keeps "see the pack" underneath, which is the fork
+         the homepage never gave them.
+
+         Here it goes to the finished account, because that is the one worth
+         landing on when reviewing. */
+      location.href = "dashboard/4-active/home.html";
+    }, 700);
+  });
+
+  /* Preview switcher — review tool, delete before launch. */
+  Array.prototype.forEach.call(document.querySelectorAll(".preview button"), function (b) {
+    b.addEventListener("click", function () {
+      setFlow(b.dataset.set);
+      status.hidden = true;
+      edit.hidden = true;
+      changeBtn.hidden = false;
+      hideNote();
+    });
+  });
+})();
+</script>

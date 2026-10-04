@@ -1,0 +1,1335 @@
+<title>Codemarca Profile</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Gurdeep Singh on Codemarca — call, WhatsApp, save contact.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+/* ==========================================================================
+   CODEMARCA — THE PUBLIC PROFILE PAGE
+   What a scan lands on. Three views, switched by <div class="pg" data-view>:
+     visitor    — a stranger who just scanned the code (the default)
+     owner      — the owner, logged in, gets a thin edit bar and nothing else
+     unclaimed  — a fresh code nobody has set up yet; the scan becomes the
+                  build moment
+
+   THE READER IS CURIOUS, NOT URGENT. Who is this, what do they do, let me
+   follow or save them. This page is not designed around an emergency.
+
+   HARD RULE: the core — photo, name, bio, top actions and the socials row —
+   must fit one 375px screen with no scroll. Extra links go below; the top of
+   the list never gets pushed down.
+
+   Order alone is the hierarchy. Every button is the same size. The owner
+   drags; this page renders exactly what it is given.
+
+   PERFORMANCE, because this page is the product: keep it under 100KB, fix
+   image dimensions so nothing shifts, webfont on swap so text paints first.
+   Before launch, self-host and subset both fonts rather than hitting Google.
+   ========================================================================== */
+
+/* ── 0. TOKENS ─────────────────────────────────────────────────────────── */
+:root {
+  --brand-violet:#6E27E6; --brand-violet-press:#5A1DC4;
+  --brand-violet-tint:#F1E9FE; --brand-violet-edge:#DCC9FB;
+  --ink:#101215; --ink-mid:#5B5D68; --ink-soft:#8C8E9C; --ink-faint:#B6B8C4;
+  --ground:#FFFFFF; --ground-soft:#F4F3F7;
+  --line:rgba(16,18,21,.09); --line-strong:rgba(16,18,21,.16);
+  --ok:#17914F;
+
+  --font-sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --ls-display:-.038em; --ls-body:-.011em; --ls-label:.13em; --ls-soft:.14px;
+  --fw-medium:500; --fw-semibold:600; --fw-bold:700; --fw-black:800;
+
+  --s-1:.25rem; --s-2:.5rem; --s-3:.75rem; --s-4:1rem; --s-5:1.25rem; --s-6:1.5rem; --s-8:2rem;
+  --r-xs:6px; --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px; --r-pill:999px;
+  --shadow-lg:0 20px 56px rgba(16,18,21,.11);
+  --dur-fast:140ms; --dur:240ms; --ease:cubic-bezier(.22,.61,.36,1);
+
+  --page:400px;          /* the column; a phone is the design target */
+  --btn-h:52px;
+}
+
+/* ── 1. BASE ───────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; font-family:var(--font-sans); font-weight:var(--fw-medium);
+  letter-spacing:var(--ls-body); -webkit-font-smoothing:antialiased;
+  background:var(--ground-soft);
+}
+h1,p,figure{margin:0}
+a{color:inherit; text-decoration:none}
+button{font:inherit; color:inherit; border:0; background:none; cursor:pointer}
+img,svg{display:block; max-width:100%}
+[hidden]{display:none !important}
+:focus-visible{outline:none; box-shadow:0 0 0 3px var(--ground),0 0 0 5px var(--ink); border-radius:var(--r-sm)}
+
+/* ── 2. THEMES ─────────────────────────────────────────────────────────────
+   A theme changes ground, ink, button fill and button radius. It must NOT
+   change the layout, the order, or the social icons' own brand colours.
+
+   Every pair here clears 4.5:1. The first gradient draft ran white text down
+   to a pale orange (~1.9:1) — unreadable on a phone held in sun, which is
+   exactly where this page gets read. The stops are darker for that reason. */
+.pg[data-theme="light"]   {--mark:#6E27E6; --av-bg:#6E27E6; --av-fg:#FFFFFF; --bg:#FFFFFF; --fg:#101215; --mid:#5B5D68; --btn:#F4F3F7; --btn-fg:#101215; --edge:rgba(16,18,21,.10); --r-btn:14px}
+.pg[data-theme="dark"]    {--av-bg:#6E27E6; --av-fg:#FFFFFF; --bg:#101215; --fg:#FFFFFF; --mid:#9A9CA8; --btn:#1D2026; --btn-fg:#FFFFFF; --edge:rgba(255,255,255,.12); --r-btn:14px}
+.pg[data-theme="violet"]  {--mark:currentColor; --av-bg:#FFFFFF; --av-fg:#6E27E6; --bg:#6E27E6; --fg:#FFFFFF; --mid:#EDE3FE; --btn:rgba(255,255,255,.17); --btn-fg:#FFFFFF; --edge:rgba(255,255,255,.26); --r-btn:999px}
+.pg[data-theme="cream"]   {--mark:#6E27E6; --av-bg:#6E27E6; --av-fg:#FFFFFF; --bg:#F6EFE4; --fg:#2A2118; --mid:#6B5B47; --btn:#FFFFFF; --btn-fg:#2A2118; --edge:rgba(42,33,24,.13); --r-btn:999px}
+.pg[data-theme="gradient"]{--mark:currentColor; --av-bg:#FFFFFF; --av-fg:#6E27E6; --bg:linear-gradient(168deg,#6E27E6,#B32E6E 55%,#C2452E); --fg:#FFFFFF; --mid:#FFF0E6; --btn:rgba(255,255,255,.19); --btn-fg:#FFFFFF; --edge:rgba(255,255,255,.28); --r-btn:999px}
+
+/* The two glass themes. The scene is one of the two wallpapers Garry put in
+   assets/profile-bg/ — a real image, not a CSS mesh, because the mesh could
+   never give the soft ribbon falloff these have.
+
+   It is painted by a POSITION:FIXED layer, not as a background on .pg. A
+   background on a 2000px-tall column would have to cover that height and
+   would crop to a narrow vertical sliver of a 1920x1280 photo. Fixed pins it
+   to the viewport, so the composition survives — and it then behaves like a
+   phone wallpaper, sitting still while the page scrolls over it.
+
+   The scrim over the image is LIGHT. The heavy darkening lives in the
+   panel's own tint, so it only dims what is behind the glass: the wallpaper
+   you see raw around the panel stays as saturated as Garry drew it, and the
+   text still gets its contrast. */
+/* 3.jpg and 4.jpg are both far brighter than the first pair — a pale cyan
+   streak in one, a yellow-orange petal in the other. So the smoke is set per
+   theme (--tint-a): that is the one number that decides whether the bio
+   line clears 4.5:1 over the brightest part of the wallpaper. */
+.pg[data-theme="glass-ember"]{
+  --mark:currentColor; --av-fg:#FFFFFF; --av-bg:rgba(255,255,255,.14);
+  --fg:#FFFFFF; --mid:rgba(255,255,255,.88);
+  --btn:rgba(255,255,255,.10); --btn-fg:#FFFFFF; --edge:rgba(255,255,255,.24); --r-btn:14px;
+  --glass-tint:34,10,6;                /* the smoke inside the glass — warm */
+  --tint-a:.62;
+  --glass-warm:rgba(255,196,140,.30);  /* what the rim catches */
+  --scene:url("assets/profile-bg/4.jpg");
+  --scene-pos:40% 50%;
+  --bg:#1A0806;
+}
+.pg[data-theme="glass-violet"]{
+  --mark:currentColor; --av-fg:#FFFFFF; --av-bg:rgba(255,255,255,.14);
+  --fg:#FFFFFF; --mid:rgba(255,255,255,.88);
+  --btn:rgba(255,255,255,.10); --btn-fg:#FFFFFF; --edge:rgba(255,255,255,.24); --r-btn:14px;
+  --glass-tint:14,6,46;
+  --tint-a:.56;
+  --glass-warm:rgba(190,200,255,.30);
+  --scene:url("assets/profile-bg/3.jpg");
+  --scene-pos:44% 50%;
+  --bg:#0C0630;
+}
+
+/* isolation makes .pg the backdrop root, so the fixed wallpaper below still
+   counts as backdrop for every backdrop-filter inside it */
+.pg[data-theme^="glass-"]{isolation:isolate}
+.pg[data-theme^="glass-"]::before{
+  content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background:
+    linear-gradient(180deg, rgba(7,4,16,.26), rgba(7,4,16,.34) 50%, rgba(7,4,16,.46)),
+    var(--scene) var(--scene-pos) / cover no-repeat,
+    var(--bg);
+}
+
+.pg{
+  min-height:100svh; background:var(--bg); color:var(--fg);
+  display:flex; flex-direction:column; align-items:center;
+}
+
+/* ── 2b. GLASS ─────────────────────────────────────────────────────────────
+   Only the glass themes get this. The layout, the order, the copy and the
+   socials' own brand colours are untouched, so a profile reads the same
+   whichever theme its owner picked.
+
+   What makes glass look like glass is NOT the blur — a blur on its own is
+   the frosted-bathroom-window look, and that was the first draft. It is the
+   EDGE. Real glass gathers light around its rim and throws a highlight where
+   the light hits it, so every glass surface here is built from four layers:
+
+     1. backdrop-filter   blur, plus a saturation and brightness push, so the
+                          scene behind stays colourful instead of going grey
+     2. a smoked tint     dark enough to hold white text at 4.5:1
+     3. ::before          a specular rim — a gradient border, bright at the
+                          top-left and bottom-right, gone at the other two
+                          corners, so the edge reads as a curve catching
+                          light rather than as a drawn outline
+     4. ::after           the gloss — a soft sheen off the top edge and one
+                          diagonal streak, the highlight a lens actually has
+
+   Layers 3 and 4 are the same recipe at three sizes: panel, row, tile. They
+   live in one place, .glassy, and the three selectors below opt in. */
+.pg[data-theme^="glass-"] .card,
+.pg[data-theme^="glass-"] .btn,
+.pg[data-theme^="glass-"] .share,
+.pg[data-theme^="glass-"] .brand button,
+.pg[data-theme^="glass-"] .avatar,
+.pg[data-theme^="glass-"] .socials a{
+  isolation:isolate;   /* keeps the two layers inside their own surface */
+}
+/* .card and .share are already positioned by the layout above — setting
+   position here would drop the share control out of its corner. */
+.pg[data-theme^="glass-"] .btn,
+.pg[data-theme^="glass-"] .brand button,
+.pg[data-theme^="glass-"] .avatar,
+.pg[data-theme^="glass-"] .socials a{
+  position:relative;
+}
+.pg[data-theme^="glass-"] .card::before,   .pg[data-theme^="glass-"] .card::after,
+.pg[data-theme^="glass-"] .btn::before,    .pg[data-theme^="glass-"] .btn::after,
+.pg[data-theme^="glass-"] .share::before,  .pg[data-theme^="glass-"] .share::after,
+.pg[data-theme^="glass-"] .brand button::before, .pg[data-theme^="glass-"] .brand button::after,
+.pg[data-theme^="glass-"] .avatar::before, .pg[data-theme^="glass-"] .avatar::after{
+  content:""; position:absolute; inset:0; border-radius:inherit;
+  pointer-events:none;
+}
+
+/* 3 — the specular rim. A gradient painted into a 1.2px ring: the mask
+   punches the middle out so only the border survives. Two bright arcs, two
+   dark ones; that asymmetry is the whole trick. A uniform 1px white line
+   looks like a stroke, not like glass. */
+.pg[data-theme^="glass-"] .card::before,
+.pg[data-theme^="glass-"] .btn::before,
+.pg[data-theme^="glass-"] .share::before,
+.pg[data-theme^="glass-"] .brand button::before,
+.pg[data-theme^="glass-"] .avatar::before{
+  padding:1.2px;
+  background:var(--rim, linear-gradient(145deg,
+    rgba(255,255,255,1) 0%, rgba(255,255,255,.78) 8%, var(--glass-warm) 19%,
+    rgba(255,255,255,.06) 40%, rgba(255,255,255,.03) 55%,
+    rgba(255,255,255,.38) 71%, rgba(255,255,255,.88) 89%, rgba(255,255,255,1) 100%));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+  z-index:-1;
+}
+
+/* 4 — the gloss. One pool of light spilling over the top edge and one
+   diagonal streak across the upper third, both clipped to the shape. */
+.pg[data-theme^="glass-"] .card::after,
+.pg[data-theme^="glass-"] .btn::after,
+.pg[data-theme^="glass-"] .share::after,
+.pg[data-theme^="glass-"] .brand button::after,
+.pg[data-theme^="glass-"] .avatar::after{
+  background:
+    radial-gradient(26% 15% at 21% 0%,    rgba(255,255,255,.52), transparent 72%),
+    radial-gradient(96% 26% at 34% -10%,  rgba(255,255,255,.11), transparent 66%),
+    linear-gradient(197deg, rgba(255,255,255,.14) 0 7%, rgba(255,255,255,.03) 20%, rgba(255,255,255,0) 38%);
+  z-index:-2;
+}
+
+/* The avatar is the one exception: its content is a photo, and glass in
+   front of a photo is the whole point — so there the two layers go over it. */
+.pg[data-theme^="glass-"] .avatar::before{z-index:2}
+.pg[data-theme^="glass-"] .avatar::after{
+  z-index:1;
+  background:radial-gradient(38% 24% at 30% 4%, rgba(255,255,255,.40), transparent 72%);
+}
+
+/* 1 + 2 — the panel itself. brightness() is what stops smoked glass from
+   going muddy: the tint takes light out, the filter puts some back. */
+.pg[data-theme^="glass-"] .card{
+  align-self:center;
+  width:calc(100% - var(--s-5) * 2);
+  margin-block:var(--s-5) var(--s-6);
+  border-radius:var(--r-lg);
+  background:
+    linear-gradient(168deg, rgba(255,255,255,.13), rgba(255,255,255,.02) 46%, rgba(255,255,255,.08)),
+    rgba(var(--glass-tint),var(--tint-a));
+  -webkit-backdrop-filter:blur(24px) saturate(215%) brightness(1.18);
+          backdrop-filter:blur(24px) saturate(215%) brightness(1.18);
+  box-shadow:
+    inset 0 0 26px rgba(255,255,255,.10),    /* light pooling inside the edge */
+    inset 0 -34px 56px rgba(0,0,0,.24),
+    0 34px 74px rgba(0,0,0,.55);
+}
+
+/* Every row is its own lozenge of glass, not a flat fill on the panel —
+   that second surface is what gives the page depth when you tilt it. */
+.pg[data-theme^="glass-"] .btn,
+.pg[data-theme^="glass-"] .share,
+.pg[data-theme^="glass-"] .brand button{
+  /* Read off the Figma CTA (node 69:358). The light there comes from BELOW:
+     the inside of the top-left corner is in shadow and the bottom lip is
+     what glows. That is the opposite of the panel, so the rim runs the other
+     way round — hence --rim. Getting this backwards is what made the first
+     build's buttons look like flat grey pills. */
+  --rim:linear-gradient(145deg,
+    rgba(255,255,255,.30) 0%, rgba(255,255,255,.10) 22%,
+    rgba(255,255,255,.06) 46%, var(--glass-warm) 66%,
+    rgba(255,255,255,.90) 86%, rgba(255,255,255,1) 100%);
+  background:
+    linear-gradient(170deg, rgba(255,255,255,.07), rgba(255,255,255,.02) 46%, rgba(255,255,255,.14)),
+    rgba(255,255,255,.03);
+  -webkit-backdrop-filter:blur(13px) saturate(205%) brightness(1.16);
+          backdrop-filter:blur(13px) saturate(205%) brightness(1.16);
+  box-shadow:
+    inset 6px 6px 15px rgba(0,0,0,.38),        /* the shade cast in from top-left */
+    inset 0 -12px 22px rgba(255,255,255,.10),  /* the lip catching the light */
+    0 12px 26px rgba(0,0,0,.30);
+}
+/* the row's sheen sits low, where its light comes from */
+.pg[data-theme^="glass-"] .btn::after,
+.pg[data-theme^="glass-"] .brand button::after{
+  background:
+    radial-gradient(40% 70% at 24% 104%, rgba(255,255,255,.40), transparent 70%),
+    linear-gradient(0deg, rgba(255,255,255,.14) 0 14%, rgba(255,255,255,0) 46%);
+}
+
+/* the hover ring the other themes get would fight the rim, so here the
+   glass simply brightens, the way a lens does when it catches more light */
+.pg[data-theme^="glass-"] .btn:hover,
+.pg[data-theme^="glass-"] .share:hover,
+.pg[data-theme^="glass-"] .brand button:hover{
+  background:
+    linear-gradient(170deg, rgba(255,255,255,.10), rgba(255,255,255,.03) 46%, rgba(255,255,255,.19)),
+    rgba(255,255,255,.06);
+  box-shadow:
+    inset 6px 6px 15px rgba(0,0,0,.30),
+    inset 0 -12px 22px rgba(255,255,255,.15),
+    0 14px 30px rgba(0,0,0,.32);
+}
+.pg[data-theme^="glass-"] .btn:active{transform:scale(.985)}
+
+.pg[data-theme^="glass-"] .avatar{
+  background:
+    linear-gradient(160deg, rgba(255,255,255,.10), rgba(255,255,255,0) 50%, rgba(255,255,255,.06)),
+    rgba(var(--glass-tint),.46);
+  -webkit-backdrop-filter:blur(7px) saturate(220%) brightness(.94);
+          backdrop-filter:blur(7px) saturate(220%) brightness(.94);
+  box-shadow:
+    inset 0 0 16px rgba(255,255,255,.10),
+    0 16px 34px rgba(0,0,0,.48);
+}
+/* Socials keep the circle every other theme uses — same shapes as Light
+   and Dark, only the surface changes. They keep their brand colours, so
+   they get gloss over the top rather than glass behind: a lit disc, not a
+   window. (The disc is a rect with a CSS rx, so a theme could still turn
+   them into tiles by setting --soc-r and --disc-rx.) */
+.pg[data-theme^="glass-"] .socials a{
+  box-shadow:0 10px 22px rgba(0,0,0,.48);
+}
+.pg[data-theme^="glass-"] .socials a::after{
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:
+    linear-gradient(168deg, rgba(255,255,255,.42), rgba(255,255,255,.05) 46%, rgba(0,0,0,.14)),
+    radial-gradient(120% 58% at 30% -12%, rgba(255,255,255,.34), transparent 62%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.28);
+}
+
+/* Without backdrop-filter there is nothing to see through, so the tint
+   carries the whole surface on its own and the gloss comes down — a bright
+   sheen over an opaque plate reads as plastic, not glass. */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .pg[data-theme^="glass-"] .card{background:rgba(var(--glass-tint),.90)}
+  .pg[data-theme^="glass-"] .btn,
+  .pg[data-theme^="glass-"] .share,
+  .pg[data-theme^="glass-"] .brand button{background:rgba(255,255,255,.13)}
+  .pg[data-theme^="glass-"] .card::after,
+  .pg[data-theme^="glass-"] .btn::after,
+  .pg[data-theme^="glass-"] .share::after,
+  .pg[data-theme^="glass-"] .brand button::after{opacity:.55}
+}
+
+/* ── 3. OWNER BAR — thin, and that is the whole point ──────────────────── */
+.bar{
+  position:sticky; top:0; z-index:20; width:100%;
+  display:flex; align-items:center; justify-content:center; gap:var(--s-3);
+  padding:10px var(--s-4);
+  background:var(--ink); color:#fff;
+  font-size:.8125rem; font-weight:var(--fw-semibold);
+}
+.bar__dot{width:7px; height:7px; border-radius:50%; background:#4ADE80; flex-shrink:0}
+.bar__txt{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.bar__edit{
+  flex-shrink:0; padding:6px var(--s-4); border-radius:var(--r-pill);
+  background:#fff; color:var(--ink); font-weight:var(--fw-bold); font-size:.8125rem;
+}
+.bar__edit:hover{background:var(--ink-strong, #33353D); color:#fff}
+
+/* ── 4. THE COLUMN ─────────────────────────────────────────────────────── */
+.card{
+  position:relative;
+  width:100%; max-width:var(--page); flex:1;
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  padding:var(--s-8) var(--s-5) var(--s-6);
+}
+
+/* photo — the default is the first letter on brand violet, never a broken
+   grey avatar; dimensions are fixed so nothing below it shifts on load */
+.avatar{
+  width:88px; height:88px; flex-shrink:0; border-radius:50%; overflow:hidden;
+  background:var(--av-bg); color:var(--av-fg); display:grid; place-items:center;
+  font-size:2.125rem; font-weight:var(--fw-black); letter-spacing:-.03em;
+  user-select:none;
+}
+.avatar img{width:88px; height:88px; object-fit:cover}
+
+.name{margin-top:var(--s-4); font-size:1.625rem; font-weight:var(--fw-black);
+  line-height:1.12; letter-spacing:var(--ls-display); text-wrap:balance}
+.handle{margin-top:6px; font-family:var(--font-mono); font-size:.8125rem;
+  color:var(--mid); letter-spacing:-.02em}
+.bio{margin-top:var(--s-3); font-size:.9375rem; line-height:1.5; color:var(--mid); max-width:30ch}
+
+/* ── 5. THE LIST — one model for everything ────────────────────────────── */
+.list{width:100%; margin-top:var(--s-5); display:flex; flex-direction:column; gap:10px}
+
+.btn{
+  display:flex; align-items:center; gap:var(--s-3);
+  width:100%; min-height:var(--btn-h); padding:var(--s-3) var(--s-4);
+  border-radius:var(--r-btn); background:var(--btn); color:var(--btn-fg);
+  box-shadow:inset 0 0 0 1px var(--edge);
+  font-size:.9375rem; font-weight:var(--fw-bold); text-align:left;
+  transition:transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.btn:hover{box-shadow:inset 0 0 0 1.5px var(--fg)}
+/* Save contact hands over a file instead of opening an app, so it cannot
+   read as a third Call/Email row (Garry, 2026-09-24): it takes the page's
+   ink as its ground, in whatever theme is on. */
+.btn--save{background:var(--fg); color:var(--bg); box-shadow:none}
+.btn--save:hover{box-shadow:none; opacity:.9}
+.btn--save svg{opacity:1}
+.btn:active{transform:scale(.985)}
+.btn svg{width:19px; height:19px; flex-shrink:0; opacity:.9}
+.btn span{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+/* a share control per link, as on the reference. It sits inside the row
+   rather than after it, so the buttons stay one size and the order stays the
+   only hierarchy. */
+.row{position:relative; width:100%}
+.row .btn{padding-right:46px}
+.rowshare{
+  position:absolute; top:50%; right:7px; transform:translateY(-50%);
+  width:32px; height:32px; display:grid; place-items:center;
+  border-radius:var(--r-sm); color:var(--btn-fg); opacity:.42;
+  transition:opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.rowshare:hover{opacity:1; box-shadow:inset 0 0 0 1px var(--edge)}
+.rowshare svg{width:16px; height:16px}
+
+/* socials are a round icon row in their own brand colours — never
+   full-width buttons, which push the page down and read as Linktree */
+.socials{
+  display:flex; flex-wrap:wrap; justify-content:center; gap:var(--s-3);
+  width:100%; padding-block:var(--s-1);
+}
+.socials a{border-radius:var(--soc-r,50%); transition:transform var(--dur-fast) var(--ease)}
+.socials a:hover{transform:translateY(-2px)}
+.socials .ic{width:42px; height:42px}
+/* 12 of a 24-unit box is a circle; a theme that wants tiles lowers it */
+.socials .ic .disc{rx:var(--disc-rx,12px); ry:var(--disc-rx,12px)}
+
+/* the parked emergency block lands here without a redesign */
+.slot{width:100%}
+
+.brand{margin-top:auto; padding-top:var(--s-8)}
+.brand a{
+  font-size:.75rem; font-weight:var(--fw-bold); color:var(--mid);
+  letter-spacing:-.005em;
+}
+.brand a:hover{color:var(--fg)}
+
+/* ── 5b. SHARE, COPY AND THE BRAND CTA ─────────────────────────────────────
+   Read off linktr.ee/ziminit, which Garry gave as the reference. Two sheets,
+   not one: a share sheet from the icon top-right, and a claim sheet from the
+   brand button at the bottom. The brand button never navigates away — losing
+   a reader mid-scan to a marketing page is the one thing it must not do. */
+.share{
+  position:absolute; top:var(--s-5); right:var(--s-5); z-index:5;
+  width:40px; height:40px; display:grid; place-items:center; border-radius:50%;
+  background:var(--btn); color:var(--btn-fg); box-shadow:inset 0 0 0 1px var(--edge);
+  transition:transform var(--dur-fast) var(--ease);
+}
+.share:hover{transform:translateY(-1px); box-shadow:inset 0 0 0 1.5px var(--fg)}
+.share svg{width:19px; height:19px}
+
+/* the handle doubles as the copy control — it is the one string on the page
+   a reader might want to keep */
+.handle{
+  display:inline-flex; align-items:center; gap:6px; margin-top:6px;
+  padding:4px var(--s-2); border-radius:var(--r-sm);
+  font-family:var(--font-mono); font-size:.8125rem; color:var(--mid); letter-spacing:-.02em;
+  transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.handle:hover{background:var(--btn); color:var(--fg)}
+.handle svg{width:13px; height:13px; opacity:.75; flex-shrink:0}
+.handle .tick{display:none}
+.handle[data-copied="true"]{color:var(--fg)}
+.handle[data-copied="true"] .tick{display:block}
+.handle[data-copied="true"] .cp{display:none}
+
+/* the brand CTA — a button now, not a grey line. Every scan is an impression
+   and this is where that impression is cashed. */
+.brand{margin-top:auto; padding-top:var(--s-8)}
+.brand button{
+  display:inline-flex; align-items:center; gap:9px;
+  padding:11px var(--s-5); border-radius:var(--r-pill);
+  background:var(--btn); color:var(--btn-fg); box-shadow:inset 0 0 0 1px var(--edge);
+  font-size:.875rem; font-weight:var(--fw-bold);
+  transition:transform var(--dur-fast) var(--ease);
+}
+.brand button:hover{transform:translateY(-1px); box-shadow:inset 0 0 0 1.5px var(--fg)}
+.brand button svg{width:19px; height:19px; color:var(--mark); flex-shrink:0}
+
+/* ── 5c. SHEETS ────────────────────────────────────────────────────────────
+   Deliberately NOT themed. The page belongs to the owner; a sheet belongs to
+   Codemarca, and it should look like it wherever it opens. */
+.sheet{position:fixed; inset:0; z-index:70; display:flex; align-items:flex-end; justify-content:center}
+.sheet[hidden]{display:none}
+.sheet__scrim{position:absolute; inset:0; background:rgba(16,18,21,.52); animation:fade var(--dur) var(--ease)}
+.sheet__panel{
+  position:relative; width:100%; max-width:440px;
+  max-height:90svh; overflow:auto;
+  background:var(--ground); color:var(--ink);
+  border-radius:var(--r-xl) var(--r-xl) 0 0;
+  padding:var(--s-3) var(--s-5) var(--s-6);
+  display:flex; flex-direction:column; align-items:center; text-align:center; gap:var(--s-4);
+  animation:rise var(--dur) var(--ease);
+}
+@keyframes fade{from{opacity:0}}
+@keyframes rise{from{transform:translateY(24px)}}
+.sheet__grip{width:38px; height:4px; border-radius:var(--r-pill); background:var(--line-strong); flex-shrink:0}
+.sheet__x{
+  position:absolute; top:var(--s-4); right:var(--s-4);
+  width:32px; height:32px; display:grid; place-items:center; border-radius:50%;
+  background:var(--ground-soft); color:var(--ink-mid);
+}
+.sheet__x:hover{background:var(--line); color:var(--ink)}
+.sheet__x svg{width:15px; height:15px}
+.sheet h2{font-size:1.25rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display); margin:0}
+.sheet p{font-size:.875rem; color:var(--ink-mid); line-height:1.5; max-width:34ch}
+
+.copyrow{
+  display:flex; align-items:center; gap:var(--s-3); width:100%;
+  padding:var(--s-3) var(--s-4); border-radius:var(--r-md); background:var(--ground-soft);
+}
+.copyrow span{flex:1; min-width:0; text-align:left; font-family:var(--font-mono);
+  font-size:.8125rem; font-weight:var(--fw-semibold); letter-spacing:-.02em;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.copyrow button{
+  flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  min-width:94px; min-height:28px; padding:6px var(--s-3); border-radius:var(--r-sm);
+  transition:min-width .2s var(--ease);
+  font-size:.8125rem; font-weight:var(--fw-bold); color:var(--brand-violet);
+}
+.copyrow button:hover{background:var(--ground-sunk, #EDEBF2)}
+.copyrow button[data-state="busy"]{color:var(--ink-soft); cursor:default; background:none}
+.copyrow button[data-state="done"]{color:var(--ok); background:none; min-width:128px}
+.copyrow button svg{width:14px; height:14px}
+/* three dots. The ring this replaced was a bare <span>: inline boxes take
+   neither width/height nor transform, so it rendered as an oval spilling out
+   of the button. Flex here blockifies the dots, so they size and move. */
+.dots{display:inline-flex; align-items:center; justify-content:center; gap:4px; height:14px}
+.dots i{
+  width:5px; height:5px; border-radius:50%; background:currentColor;
+  opacity:.28; animation:dot 1s var(--ease) infinite;
+}
+.dots i:nth-child(2){animation-delay:.16s}
+.dots i:nth-child(3){animation-delay:.32s}
+@keyframes dot{
+  0%,62%,100%{opacity:.28; transform:translateY(0)}
+  31%{opacity:1; transform:translateY(-3px)}
+}
+@media (prefers-reduced-motion:reduce){
+  @keyframes dot{0%,100%{opacity:.3}50%{opacity:1}}
+}
+
+/* one row that scrolls rather than a grid that orphans the last tile —
+   the count changes with what the browser supports */
+.targets{
+  display:flex; flex-wrap:nowrap; gap:6px; width:100%;
+  overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;
+}
+.targets::-webkit-scrollbar{display:none}
+.targets a,.targets button{
+  flex:0 0 auto; width:64px;
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  padding:var(--s-2) 2px; border-radius:var(--r-md);
+  font-size:.625rem; font-weight:var(--fw-bold); color:var(--ink-mid); line-height:1.2;
+}
+.targets a:hover,.targets button:hover{background:var(--ground-soft); color:var(--ink)}
+.targets svg{width:38px; height:38px}
+
+/* the promo block, as on the reference — the moment someone shares is the
+   best moment to tell them they can have one too */
+.promo{
+  display:flex; flex-direction:column; align-items:center; gap:var(--s-3);
+  width:100%; margin-top:var(--s-1); padding-top:var(--s-5);
+  border-top:1px solid var(--line);
+}
+.promo__go{
+  width:100%; min-height:52px; display:flex; align-items:center; justify-content:center; gap:9px;
+  border-radius:var(--r-pill); background:var(--ink); color:#fff; font-weight:var(--fw-bold);
+}
+.promo__go:hover{background:var(--ink-strong, #33353D)}
+.promo__go svg{width:19px; height:19px}
+
+/* the claim field, same shape as the homepage and signup */
+.field{
+  display:flex; align-items:center; width:100%; height:56px;
+  padding-inline:var(--s-5); border-radius:var(--r-pill); background:var(--ground);
+  box-shadow:inset 0 0 0 1.5px var(--line-strong);
+  transition:box-shadow var(--dur) var(--ease);
+}
+.field:focus-within{box-shadow:inset 0 0 0 1.5px var(--ink),0 0 0 4px rgba(16,18,21,.08)}
+.field__pre{font-family:var(--font-mono); font-size:.875rem; color:var(--ink-soft);
+  letter-spacing:-.02em; white-space:nowrap; user-select:none}
+.field input{
+  flex:1; min-width:0; border:0; background:none; outline:none; padding-inline:2px;
+  font-family:var(--font-mono); font-size:.875rem; font-weight:var(--fw-semibold);
+  letter-spacing:-.02em; color:var(--brand-violet); caret-color:var(--brand-violet);
+}
+.field input::placeholder{color:var(--ink-faint); font-weight:400}
+.field input:focus-visible{box-shadow:none}
+.sheet__wordmark svg{height:20px; width:auto}
+.sheet__small{font-size:.8125rem; font-weight:var(--fw-bold); color:var(--ink-soft);
+  text-decoration:underline; text-underline-offset:3px}
+.sheet__small:hover{color:var(--ink)}
+
+/* ── 6. UNCLAIMED — a fresh code, and the scan is the build moment ─────── */
+.claim{
+  width:100%; max-width:var(--page); flex:1;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; gap:var(--s-4); padding:var(--s-8) var(--s-5);
+}
+.claim__logo svg{height:22px; width:auto}
+/* An empty code, drawn. The screen was telling the reader its state in words
+   only; this shows it. The three corner squares stay crisp because they are
+   what the eye reads as "QR" — the data area is blurred and faded, so it
+   lands as *not filled in yet* rather than as loading or broken. Muted
+   enough that nobody tries to scan it. */
+.ghost{
+  width:132px; height:132px; padding:11px; flex-shrink:0;
+  border-radius:var(--r-md); background:#fff;
+  box-shadow:0 6px 20px rgba(16,18,21,.10);
+}
+.ghost svg{width:100%; height:100%}
+.ghost__data{filter:blur(1.15px); opacity:.34}
+.ghost__fix{opacity:.52}
+.claim__code{
+  font-family:var(--font-mono); font-size:.75rem; font-weight:var(--fw-medium);
+  letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--mid);
+  padding:6px var(--s-3); border-radius:var(--r-xs);
+  box-shadow:inset 0 0 0 1px var(--edge);
+}
+.claim h1{font-size:1.75rem; font-weight:var(--fw-black); line-height:1.1;
+  letter-spacing:var(--ls-display); text-wrap:balance}
+.claim p{font-size:.9375rem; color:var(--mid); line-height:1.5; max-width:32ch}
+.claim__go{
+  width:100%; min-height:var(--btn-h); display:flex; align-items:center; justify-content:center;
+  border-radius:var(--r-pill); background:var(--ink); color:#fff;
+  font-weight:var(--fw-bold); margin-top:var(--s-2);
+}
+.claim__go:hover{background:var(--ink-strong, #33353D)}
+.claim__no{font-size:.8125rem; color:var(--mid)}
+
+/* Switch views with explicit display values, never `display:revert` — revert
+   rolls back the whole author cascade for that property, so it was quietly
+   throwing away the bar's own `display:flex` and leaving it a block. */
+.bar{display:none}
+.pg[data-view="owner"] .bar{display:flex}
+.claim{display:none}
+.bare{font-size:var(--fs-sm); color:var(--ink-soft); text-align:center;
+  letter-spacing:var(--ls-soft); padding-block:var(--s-6)}
+.pg[data-view="unclaimed"] .card{display:none}
+.pg[data-view="unclaimed"] .claim{display:flex}
+
+/* The owner already owns a code. Both places that sell one — the footer under
+   the links, and the promo inside the share sheet — exist for strangers, so
+   the owner view drops them. The footer's `margin-top:auto` was the only thing
+   holding the card open to full height, so the list takes that job over. */
+.pg[data-view="owner"] .brand,
+.pg[data-view="owner"] .promo{display:none}
+.pg[data-view="owner"] .list{margin-bottom:auto}
+
+/* ── 7. WIDER SCREENS ──────────────────────────────────────────────────────
+   The page does not become a desktop layout — it is a phone page that
+   happens to be open on a laptop. It only gets a little more air. */
+@media (min-width:640px){
+  :root{ --page:420px }
+  .card{padding-top:var(--s-8)}
+
+  /* a panel sliding up from the bottom edge is a phone gesture; on a desktop
+     it just looks like it fell off the screen */
+  .sheet{align-items:center}
+  .sheet__panel{
+    max-width:420px; border-radius:var(--r-xl);
+    padding:var(--s-6) var(--s-6) var(--s-6);
+    animation:pop var(--dur) var(--ease);
+  }
+  .sheet__grip{display:none}
+}
+@keyframes pop{from{transform:scale(.965); opacity:0}}
+
+/* ── 8. REVIEW TOOL — delete this block, its CSS and its script loop ───── */
+/* the panel floats over the column, so the page gets room to clear it —
+   this padding goes when the panel goes */
+.pg{padding-bottom:104px}
+.rev{
+  position:fixed; right:var(--s-4); bottom:var(--s-4); z-index:60;
+  display:flex; flex-direction:column; gap:var(--s-2); padding:var(--s-2);
+  border-radius:var(--r-lg); background:#fff; box-shadow:var(--shadow-lg), inset 0 0 0 1px var(--line);
+}
+.rev__row{display:flex; gap:4px}
+/* scoped to the view row by id — these also matched the swatches, which are
+   buttons in a row of their own, and the pressed rule was painting the
+   selected swatch violet over its own colour */
+#revView button{
+  color:var(--ink-soft); font-size:.75rem; font-weight:var(--fw-bold);
+  padding:6px var(--s-3); border-radius:var(--r-pill); white-space:nowrap;
+}
+#revView button:hover{color:var(--ink)}
+#revView button[aria-pressed="true"]{background:var(--brand-violet); color:#fff}
+.rev__sw{width:30px; height:30px; border-radius:var(--r-sm); box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+.rev__sw[aria-pressed="true"]{box-shadow:0 0 0 2px #fff,0 0 0 3px var(--ink)}
+.rev__sw[data-t="light"]{background:#fff}
+.rev__sw[data-t="dark"]{background:#101215}
+.rev__sw[data-t="violet"]{background:#6E27E6}
+.rev__sw[data-t="cream"]{background:#F6EFE4}
+.rev__sw[data-t="gradient"]{background:linear-gradient(150deg,#6E27E6,#B32E6E 55%,#C2452E)}
+.rev__sw[data-t="glass-ember"]{background:linear-gradient(180deg, rgba(7,4,16,.26), rgba(7,4,16,.46)), url("assets/profile-bg/4.jpg") 40% 50% / cover no-repeat, #1A0806}
+.rev__sw[data-t="glass-violet"]{background:linear-gradient(180deg, rgba(7,4,16,.20), rgba(7,4,16,.42)), url("assets/profile-bg/3.jpg") 44% 50% / cover no-repeat, #0C0630}
+    radial-gradient(96% 44% at 16% -6%,  rgba(178,132,255,.95), transparent 62%),
+    radial-gradient(90% 42% at 28% 106%, rgba(226,114,226,.82),transparent 62%),
+    #0A0616}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.001ms !important}
+}
+
+/* ── SUPPORTING TEXT ───────────────────────────────────────────────────
+   Headings and body copy run on negative tracking. The small grey lines
+   under them — subtitles, help, notes, values — do not: at 13–14px the
+   letters need the air back instead. Any new small line on this page
+   belongs in this list. */
+.bar,
+.bio,
+.claim p,
+.claim__no,
+.sheet__small{ letter-spacing:var(--ls-soft) }
+
+/* Chrome paints its own pale-blue block behind anything it autofills, which
+   overrides the field's own ground. Parking the transition indefinitely keeps
+   our background and ink; it is the one fix that does not need to know the
+   field's colour. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+  -webkit-text-fill-color:var(--ink);
+  caret-color:var(--ink);
+  transition:background-color 600000s 0s, color 600000s 0s;
+}
+</style>
+
+<svg style="position:absolute;width:0;height:0" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="igGrad" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#FEDA75"/><stop offset=".35" stop-color="#FA7E1E"/>
+      <stop offset=".62" stop-color="#D62976"/><stop offset="1" stop-color="#962FBF"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="pg" data-theme="light" data-view="visitor">
+
+  <!-- ══ OWNER BAR — only when the owner is logged in and looking ═════ -->
+  <div class="bar">
+    <span class="bar__dot" aria-hidden="true"></span>
+    <span class="bar__txt">This is your page</span>
+    <a class="bar__edit" href="dashboard/4-active/profile.html">Edit</a>
+  </div>
+
+  <!-- ══ THE PAGE ════════════════════════════════════════════════════ -->
+  <main class="card">
+    <button class="share" type="button" id="shareBtn" aria-label="Share this page">
+      <svg viewBox="0 0 20 20" fill="none"><path d="M10 13V3m0 0L6.6 6.4M10 3l3.4 3.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 11.5v4.2c0 .7.6 1.3 1.3 1.3h8.4c.7 0 1.3-.6 1.3-1.3v-4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+    <figure class="avatar" id="avatar" aria-hidden="true">G</figure>
+    <h1 class="name" id="name">Gurdeep Singh</h1>
+    <button class="handle" type="button" id="handle" aria-label="Copy this page's link">
+      <span id="handleTxt">codemarca.com/gurdeep</span>
+      <svg class="cp" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="5.4" y="5.4" width="8.2" height="8.2" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M10.6 5.4V4.4a2 2 0 0 0-2-2H4.4a2 2 0 0 0-2 2v4.2a2 2 0 0 0 2 2h1" stroke="currentColor" stroke-width="1.5"/></svg>
+      <svg class="tick" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.4 6.5 12 13 4.6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <p class="bio" id="bio"></p>
+
+    <div class="list" id="list"></div>
+
+    <!-- Reserved for the parked emergency block. Leave it here so that
+         block can land later without moving anything above it. -->
+    <div class="slot" hidden></div>
+
+    <footer class="brand">
+      <button type="button" id="brandBtn"><svg viewBox="0 0 40 40" fill="currentColor" aria-hidden="true"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></svg>Get your own Codemarca</button>
+    </footer>
+  </main>
+
+  <!-- ══ UNCLAIMED — the scan becomes the build moment ═══════════════ -->
+  <section class="claim">
+    <a class="claim__logo" href="homepage.html" aria-label="Codemarca">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 257 40" fill="none" role="img" aria-label="Codemarca"><g fill="#6E27E6"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></g><g fill="#101215"><path d="M245.956 14.0999H252.172V34.82H245.956V32.8723C244.589 34.447 242.558 35.4002 239.782 35.4002C234.353 35.4002 229.877 30.6345 229.877 24.46C229.877 18.2854 234.353 13.5198 239.782 13.5198C242.558 13.5198 244.589 14.4729 245.956 16.0476V14.0999ZM241.025 29.5157C243.884 29.5157 245.956 27.568 245.956 24.46C245.956 21.352 243.884 19.4043 241.025 19.4043C238.165 19.4043 236.093 21.352 236.093 24.46C236.093 27.568 238.165 29.5157 241.025 29.5157Z"/><path d="M220.695 35.4002C214.396 35.4002 209.713 30.6345 209.713 24.46C209.713 18.2854 214.396 13.5198 220.695 13.5198C224.714 13.5198 228.278 15.6332 230.06 18.8241L224.631 21.9736C223.927 20.5232 222.435 19.6529 220.612 19.6529C217.918 19.6529 215.929 21.6006 215.929 24.46C215.929 27.3193 217.918 29.267 220.612 29.267C222.435 29.267 223.968 28.3968 224.631 26.9464L230.06 30.0544C228.278 33.2867 224.756 35.4002 220.695 35.4002Z"/><path d="M203.477 17.7881C204.306 15.0116 207.083 13.6855 209.693 13.6855V20.7304C207.124 20.316 203.477 21.352 203.477 25.4545V34.82H197.261V14.1H203.477V17.7881Z"/><path d="M187.728 14.0999H193.944V34.82H187.728V32.8723C186.361 34.447 184.33 35.4002 181.554 35.4002C176.125 35.4002 171.649 30.6345 171.649 24.46C171.649 18.2854 176.125 13.5198 181.554 13.5198C184.33 13.5198 186.361 14.4729 187.728 16.0476V14.0999ZM182.797 29.5157C185.656 29.5157 187.728 27.568 187.728 24.46C187.728 21.352 185.656 19.4043 182.797 19.4043C179.937 19.4043 177.865 21.352 177.865 24.46C177.865 27.568 179.937 29.5157 182.797 29.5157Z"/><path d="M161.806 13.5198C166.571 13.5198 169.679 16.9179 169.679 22.0979V34.82H163.463V22.6366C163.463 20.5646 162.469 19.2385 160.479 19.2385C158.407 19.2385 157.247 20.6889 157.247 23.1339V34.82H151.031V22.6366C151.031 20.5646 150.037 19.2385 148.047 19.2385C145.975 19.2385 144.815 20.6889 144.815 23.1339V34.82H138.599V14.0999H144.815V16.0062C145.768 14.5972 147.592 13.5198 150.368 13.5198C152.813 13.5198 154.636 14.5143 155.797 16.2548C156.957 14.5972 158.863 13.5198 161.806 13.5198Z"/><path d="M121.357 26.9464C122.144 29.1013 124.051 29.8472 126.33 29.8472C128.029 29.8472 129.479 29.1841 130.308 28.2725L135.281 31.1318C133.25 33.9497 130.184 35.4002 126.247 35.4002C119.161 35.4002 114.768 30.6345 114.768 24.46C114.768 18.2854 119.244 13.5198 125.791 13.5198C131.841 13.5198 136.317 18.2025 136.317 24.46C136.317 25.3302 136.234 26.159 136.068 26.9464H121.357ZM121.233 22.3051H130.142C129.479 19.9016 127.614 19.0313 125.75 19.0313C123.388 19.0313 121.813 20.1916 121.233 22.3051Z"/><path d="M106.271 5.81201H112.487V34.8201H106.271V32.8724C104.903 34.4471 102.873 35.4002 100.096 35.4002C94.6674 35.4002 90.1919 30.6346 90.1919 24.4601C90.1919 18.2855 94.6674 13.5199 100.096 13.5199C102.873 13.5199 104.903 14.473 106.271 16.0477V5.81201ZM101.339 29.5158C104.199 29.5158 106.271 27.5681 106.271 24.4601C106.271 21.3521 104.199 19.4044 101.339 19.4044C98.4799 19.4044 96.4079 21.3521 96.4079 24.4601C96.4079 27.5681 98.4799 29.5158 101.339 29.5158Z"/><path d="M77.9738 35.4002C71.8821 35.4002 66.9922 30.6345 66.9922 24.46C66.9922 18.2854 71.8821 13.5198 77.9738 13.5198C84.0655 13.5198 88.9554 18.2854 88.9554 24.46C88.9554 30.6345 84.0655 35.4002 77.9738 35.4002ZM77.9738 29.3499C80.6674 29.3499 82.7394 27.4022 82.7394 24.46C82.7394 21.5177 80.6674 19.57 77.9738 19.57C75.2802 19.57 73.2082 21.5177 73.2082 24.46C73.2082 27.4022 75.2802 29.3499 77.9738 29.3499Z"/><path d="M57.8088 35.4002C51.5099 35.4002 46.8271 30.6345 46.8271 24.46C46.8271 18.2854 51.5099 13.5198 57.8088 13.5198C61.8285 13.5198 65.3923 15.6332 67.1742 18.8241L61.7456 21.9736C61.0411 20.5232 59.5493 19.6529 57.7259 19.6529C55.0323 19.6529 53.0432 21.6006 53.0432 24.46C53.0432 27.3193 55.0323 29.267 57.7259 29.267C59.5493 29.267 61.0825 28.3968 61.7456 26.9464L67.1742 30.0544C65.3923 33.2867 61.8699 35.4002 57.8088 35.4002Z"/></g></svg>
+    </a>
+    <div class="ghost" aria-hidden="true"><svg id="ghost" viewBox="0 0 29 29" shape-rendering="crispEdges"></svg></div>
+    <span class="claim__code" id="code">CM-7F3K9</span>
+    <h1>This code is not set up yet</h1>
+    <p>If this sticker came in your pack, claim it now — your page takes about two minutes.</p>
+    <a class="claim__go" href="signup.html?next=build">This is mine — set it up</a>
+    <p class="claim__no">Not yours? Then nothing to see here yet.</p>
+  </section>
+
+  <!-- ══ SHARE SHEET ═════════════════════════════════════════════════ -->
+  <div class="sheet" id="shareSheet" hidden role="dialog" aria-modal="true" aria-label="Share this page">
+    <div class="sheet__scrim" data-close></div>
+    <div class="sheet__panel">
+      <button class="sheet__x" type="button" data-close aria-label="Close">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <div class="sheet__grip" aria-hidden="true"></div>
+      <h2 id="shareTitle">Share this page</h2>
+
+      <div class="copyrow">
+        <span id="shareUrl">codemarca.com/gurdeep</span>
+        <button type="button" id="shareCopy">Copy</button>
+      </div>
+
+      <div class="targets" id="targets"></div>
+
+      <div class="promo">
+        <p>Anyone can have one. Two stickers, one page you keep changing.</p>
+        <button class="promo__go" type="button" id="promoBtn"><svg viewBox="0 0 40 40" fill="currentColor" aria-hidden="true"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></svg>Get your own Codemarca</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CLAIM SHEET — the brand CTA opens this, it never navigates away ═ -->
+  <div class="sheet" id="claimSheet" hidden role="dialog" aria-modal="true" aria-label="Claim your link">
+    <div class="sheet__scrim" data-close></div>
+    <div class="sheet__panel">
+      <button class="sheet__x" type="button" data-close aria-label="Close">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <div class="sheet__grip" aria-hidden="true"></div>
+      <span class="sheet__wordmark">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 257 40" fill="none" role="img" aria-label="Codemarca"><g fill="#6E27E6"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></g><g fill="#101215"><path d="M245.956 14.0999H252.172V34.82H245.956V32.8723C244.589 34.447 242.558 35.4002 239.782 35.4002C234.353 35.4002 229.877 30.6345 229.877 24.46C229.877 18.2854 234.353 13.5198 239.782 13.5198C242.558 13.5198 244.589 14.4729 245.956 16.0476V14.0999ZM241.025 29.5157C243.884 29.5157 245.956 27.568 245.956 24.46C245.956 21.352 243.884 19.4043 241.025 19.4043C238.165 19.4043 236.093 21.352 236.093 24.46C236.093 27.568 238.165 29.5157 241.025 29.5157Z"/><path d="M220.695 35.4002C214.396 35.4002 209.713 30.6345 209.713 24.46C209.713 18.2854 214.396 13.5198 220.695 13.5198C224.714 13.5198 228.278 15.6332 230.06 18.8241L224.631 21.9736C223.927 20.5232 222.435 19.6529 220.612 19.6529C217.918 19.6529 215.929 21.6006 215.929 24.46C215.929 27.3193 217.918 29.267 220.612 29.267C222.435 29.267 223.968 28.3968 224.631 26.9464L230.06 30.0544C228.278 33.2867 224.756 35.4002 220.695 35.4002Z"/><path d="M203.477 17.7881C204.306 15.0116 207.083 13.6855 209.693 13.6855V20.7304C207.124 20.316 203.477 21.352 203.477 25.4545V34.82H197.261V14.1H203.477V17.7881Z"/><path d="M187.728 14.0999H193.944V34.82H187.728V32.8723C186.361 34.447 184.33 35.4002 181.554 35.4002C176.125 35.4002 171.649 30.6345 171.649 24.46C171.649 18.2854 176.125 13.5198 181.554 13.5198C184.33 13.5198 186.361 14.4729 187.728 16.0476V14.0999ZM182.797 29.5157C185.656 29.5157 187.728 27.568 187.728 24.46C187.728 21.352 185.656 19.4043 182.797 19.4043C179.937 19.4043 177.865 21.352 177.865 24.46C177.865 27.568 179.937 29.5157 182.797 29.5157Z"/><path d="M161.806 13.5198C166.571 13.5198 169.679 16.9179 169.679 22.0979V34.82H163.463V22.6366C163.463 20.5646 162.469 19.2385 160.479 19.2385C158.407 19.2385 157.247 20.6889 157.247 23.1339V34.82H151.031V22.6366C151.031 20.5646 150.037 19.2385 148.047 19.2385C145.975 19.2385 144.815 20.6889 144.815 23.1339V34.82H138.599V14.0999H144.815V16.0062C145.768 14.5972 147.592 13.5198 150.368 13.5198C152.813 13.5198 154.636 14.5143 155.797 16.2548C156.957 14.5972 158.863 13.5198 161.806 13.5198Z"/><path d="M121.357 26.9464C122.144 29.1013 124.051 29.8472 126.33 29.8472C128.029 29.8472 129.479 29.1841 130.308 28.2725L135.281 31.1318C133.25 33.9497 130.184 35.4002 126.247 35.4002C119.161 35.4002 114.768 30.6345 114.768 24.46C114.768 18.2854 119.244 13.5198 125.791 13.5198C131.841 13.5198 136.317 18.2025 136.317 24.46C136.317 25.3302 136.234 26.159 136.068 26.9464H121.357ZM121.233 22.3051H130.142C129.479 19.9016 127.614 19.0313 125.75 19.0313C123.388 19.0313 121.813 20.1916 121.233 22.3051Z"/><path d="M106.271 5.81201H112.487V34.8201H106.271V32.8724C104.903 34.4471 102.873 35.4002 100.096 35.4002C94.6674 35.4002 90.1919 30.6346 90.1919 24.4601C90.1919 18.2855 94.6674 13.5199 100.096 13.5199C102.873 13.5199 104.903 14.473 106.271 16.0477V5.81201ZM101.339 29.5158C104.199 29.5158 106.271 27.5681 106.271 24.4601C106.271 21.3521 104.199 19.4044 101.339 19.4044C98.4799 19.4044 96.4079 21.3521 96.4079 24.4601C96.4079 27.5681 98.4799 29.5158 101.339 29.5158Z"/><path d="M77.9738 35.4002C71.8821 35.4002 66.9922 30.6345 66.9922 24.46C66.9922 18.2854 71.8821 13.5198 77.9738 13.5198C84.0655 13.5198 88.9554 18.2854 88.9554 24.46C88.9554 30.6345 84.0655 35.4002 77.9738 35.4002ZM77.9738 29.3499C80.6674 29.3499 82.7394 27.4022 82.7394 24.46C82.7394 21.5177 80.6674 19.57 77.9738 19.57C75.2802 19.57 73.2082 21.5177 73.2082 24.46C73.2082 27.4022 75.2802 29.3499 77.9738 29.3499Z"/><path d="M57.8088 35.4002C51.5099 35.4002 46.8271 30.6345 46.8271 24.46C46.8271 18.2854 51.5099 13.5198 57.8088 13.5198C61.8285 13.5198 65.3923 15.6332 67.1742 18.8241L61.7456 21.9736C61.0411 20.5232 59.5493 19.6529 57.7259 19.6529C55.0323 19.6529 53.0432 21.6006 53.0432 24.46C53.0432 27.3193 55.0323 29.267 57.7259 29.267C59.5493 29.267 61.0825 28.3968 61.7456 26.9464L67.1742 30.0544C65.3923 33.2867 61.8699 35.4002 57.8088 35.4002Z"/></g></svg>
+      </span>
+      <h2>Get your own Codemarca</h2>
+      <p>Pick your link, print it on two stickers, change the page whenever you like.</p>
+      <div class="field">
+        <span class="field__pre">codemarca.com/</span>
+        <input id="claimInput" type="text" spellcheck="false" autocapitalize="off"
+               autocomplete="off" maxlength="24" placeholder="yourname" aria-label="Your link">
+      </div>
+      <button class="promo__go" type="button" id="claimGo">Claim your link</button>
+      <a class="sheet__small" href="homepage.html">See how it works</a>
+    </div>
+  </div>
+</div>
+
+<!-- Review tool only — delete this block, its CSS section and its script loop. -->
+<div class="rev" role="group" aria-label="Review controls">
+  <div class="rev__row" id="revView">
+    <button type="button" data-v="visitor" aria-pressed="true">Visitor</button>
+    <button type="button" data-v="owner" aria-pressed="false">Owner</button>
+    <button type="button" data-v="unclaimed" aria-pressed="false">Unclaimed</button>
+  </div>
+  <div class="rev__row" id="revTheme"></div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  };
+
+  /* ══ 1. THE PAYLOAD ══════════════════════════════════════════════════
+     This object IS the API response, and its shape matches the builder's
+     state one for one. A field the owner switched the eye off is simply
+     ABSENT here — never sent and CSS-hidden, or the number is readable in
+     the page source. `order` decides the whole layout; the page renders
+     what it is given and makes no hierarchy decisions of its own. */
+  var P = {
+    handle : "gurdeep",
+    name   : "Gurdeep Singh",
+    bio    : "Small business owner. Everything you need to reach us, in one place.",
+    photo  : null,
+    phone  : "9876543210",
+    wa     : "9876543210",
+    email  : "hello@gurdeep.in",
+    links  : {
+      instagram : "@gurdeep",
+      youtube   : "@gurdeep",
+      telegram  : "@gurdeep",
+      website   : "gurdeep.in",
+      review    : "g.page/gurdeep",
+      directions: "maps.app.goo.gl/xyz"
+    },
+    customs: [ { id:"c1", title:"Our catalogue", url:"https://gurdeep.in/catalogue" } ],
+    theme  : "light",
+    order  : ["socials","call","wa","email","vcard","website","directions","review","c1"],
+    socialOrder: ["instagram","youtube","telegram"]
+  };
+
+  /* ══ 2. ICONS ════════════════════════════════════════════════════════
+     Socials keep their own brand colours in every theme — that is what
+     makes the row read as socials rather than as more buttons. Row glyphs
+     are monochrome so they take the theme's ink. Swap these simplified
+     glyphs for the official brand marks before launch. */
+  var GLYPH = {
+    instagram : '<rect x="5" y="5" width="14" height="14" rx="4.2" fill="none" stroke="#fff" stroke-width="1.9"/><circle cx="12" cy="12" r="3.3" fill="none" stroke="#fff" stroke-width="1.9"/><circle cx="16.5" cy="7.6" r="1.15" fill="#fff"/>',
+    youtube   : '<path d="M9.9 8.4 16.2 12l-6.3 3.6z" fill="#fff"/>',
+    facebook  : '<path d="M13.4 20v-7.1h2.4l.36-2.78H13.4V8.34c0-.8.23-1.35 1.39-1.35h1.48V4.5a19.7 19.7 0 0 0-2.16-.11c-2.13 0-3.59 1.3-3.59 3.69v2.04H8.1v2.78h2.42V20z" fill="#fff"/>',
+    snapchat  : '<path d="M12 4.7c2.16 0 3.83 1.68 3.83 3.83 0 .6-.05 1.27-.1 1.77.2.1.5.15.79.05.3-.1.6-.05.74.2.15.3 0 .64-.34.79-.3.15-.99.34-1.19.74-.15.3.15.89.69 1.53.5.6 1.19 1.04 1.83 1.19.25.05.35.25.3.5-.1.44-.99.74-1.83.89-.15.25-.2.6-.3.89-.05.2-.2.3-.44.25-.35-.05-.79-.15-1.34-.05-.5.1-.99.54-1.68.89-.44.2-.94.3-1.39.3s-.94-.1-1.39-.3c-.69-.35-1.19-.79-1.68-.89-.54-.1-.99 0-1.34.05-.25.05-.4-.05-.44-.25-.1-.3-.15-.64-.3-.89-.84-.15-1.73-.45-1.83-.89-.05-.25.05-.45.3-.5.64-.15 1.34-.6 1.83-1.19.54-.64.84-1.24.69-1.53-.2-.4-.89-.6-1.19-.74-.35-.15-.5-.5-.34-.79.15-.25.44-.3.74-.2.3.1.6.05.79-.05-.05-.5-.1-1.17-.1-1.77C8.17 6.38 9.84 4.7 12 4.7z" fill="#101215"/>',
+    telegram  : '<path d="M19.2 6.2 5.5 11.5c-.7.28-.7.78.02.98l3.44 1.07 7.98-5.03c.38-.23.72-.11.44.14l-6.46 5.84-.25 3.5c.29 0 .42-.13.58-.29l1.4-1.35 2.9 2.14c.53.3.92.14 1.05-.5l1.9-8.94c.19-.86-.31-1.25-.9-1.02z" fill="#fff"/>',
+    linkedin  : '<rect x="6" y="9.9" width="2.6" height="8.1" rx=".5" fill="#fff"/><circle cx="7.3" cy="7" r="1.55" fill="#fff"/><path d="M10.7 18v-8.1h2.5v1.1c.42-.72 1.24-1.3 2.44-1.3 2 0 3.06 1.24 3.06 3.5V18h-2.6v-4.2c0-1.1-.42-1.76-1.4-1.76-1 0-1.5.68-1.5 1.76V18z" fill="#fff"/>',
+    x         : '<path d="M6 5.4h3.3l3 4.1 3.5-4.1h2.9l-5 5.8 5.4 7.4h-3.3l-3.3-4.5-3.8 4.5H5.8l5.3-6.2z" fill="#fff"/>',
+    threads   : '<path d="M15.9 11.4c-.13-2-1.36-3.16-3.42-3.16-1.4 0-2.5.5-3.16 1.5l1.2.83c.44-.64 1.08-.93 1.96-.93 1.13 0 1.78.58 1.94 1.72-.5-.1-1.05-.13-1.64-.08-1.98.15-3.22 1.24-3.08 2.82.13 1.4 1.35 2.28 2.93 2.18 1.44-.1 2.42-.85 2.92-2.13.5.5.7 1.14.55 1.83-.3 1.34-1.68 2.18-3.8 2.18-3.03 0-4.66-1.93-4.66-5.55 0-3.62 1.63-5.55 4.66-5.55 2.08 0 3.52.84 4.3 2.48l1.54-.74C16.98 6.5 15.06 5.2 12.2 5.2 7.94 5.2 5.7 7.78 5.7 12.54s2.24 7.34 6.5 7.34c2.97 0 4.95-1.39 5.45-3.47.4-1.73-.4-3.31-1.75-4.02zm-3.27 3.32c-.74.05-1.24-.3-1.29-.84-.05-.6.5-1.04 1.49-1.11.5-.04.99 0 1.44.1-.2 1.09-.85 1.78-1.64 1.85z" fill="#fff"/>',
+    spotify   : '<path d="M7.9 15.4c2.4-.7 4.9-.5 7 .6" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><path d="M7.3 12.5c3-1 6.3-.7 8.9.9" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><path d="M6.8 9.5c3.6-1.2 7.7-.8 10.7 1.1" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/>',
+    pinterest : '<path d="M12.3 5.4c-3.7 0-5.7 2.4-5.7 5 0 1.2.45 2.28 1.44 2.68.16.07.3 0 .35-.18l.14-.55c.05-.18.03-.25-.1-.4-.3-.36-.5-.83-.5-1.5 0-1.9 1.44-3.6 3.78-3.6 2.06 0 3.19 1.25 3.19 2.9 0 2.2-.97 4.05-2.42 4.05-.8 0-1.4-.66-1.2-1.47.23-.97.68-2 .68-2.7 0-.62-.34-1.14-1.03-1.14-.82 0-1.47.84-1.47 1.97 0 .72.24 1.2.24 1.2l-.97 4.1c-.29 1.2-.04 2.7-.02 2.85.01.09.13.11.18.04.08-.1 1.1-1.36 1.45-2.6.1-.36.57-2.2.57-2.2.28.53 1.1.99 1.97.99 2.6 0 4.36-2.37 4.36-5.54 0-2.4-2.03-4.64-5.12-4.64z" fill="#fff"/>',
+    soundcloud: '<rect x="5" y="12.2" width="1.4" height="4.6" rx=".7" fill="#fff"/><rect x="7.4" y="10.8" width="1.4" height="6" rx=".7" fill="#fff"/><rect x="9.8" y="9.7" width="1.4" height="7.1" rx=".7" fill="#fff"/><path d="M12.7 16.8V9.4c.5-.45 1.16-.72 1.9-.72 1.63 0 2.97 1.24 3.15 2.85.95.2 1.65.98 1.65 1.93 0 1.13-.98 2.04-2.15 2.04z" fill="#fff"/>'
+  };
+  var DISC = {
+    instagram:"url(#igGrad)", youtube:"#FF0000", facebook:"#1877F2", snapchat:"#FFFC00",
+    telegram:"#229ED9", linkedin:"#0A66C2", x:"#101215", threads:"#101215",
+    spotify:"#1DB954", pinterest:"#E60023", soundcloud:"#FF5500"
+  };
+  /* The disc is a rect, not a circle, so its corners are a CSS property the
+     theme can drive. rx="12" in the attribute is the circle every theme but
+     glass wants, and it is also the fallback where CSS rx is not supported. */
+  function ic(k) {
+    return '<svg class="ic" viewBox="0 0 24 24" role="img" aria-hidden="true">' +
+           '<rect class="disc" width="24" height="24" rx="12" fill="' + DISC[k] + '"/>' +
+           GLYPH[k] + "</svg>";
+  }
+
+  var ROWIC = {
+    call      : '<path d="M4.4 3.6h3l1.2 3-1.7 1.3a9.5 9.5 0 0 0 4.2 4.2l1.3-1.7 3 1.2v3c0 .7-.6 1.3-1.3 1.2A13.4 13.4 0 0 1 3.2 4.9c-.1-.7.5-1.3 1.2-1.3z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+    wa        : '<path d="M3.4 16.6 4.5 13a6.6 6.6 0 1 1 2.5 2.4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+    email     : '<rect x="2.6" y="4.4" width="14.8" height="11.2" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m3.4 6 6.6 4.6L16.6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+    vcard     : '<rect x="2.4" y="3.6" width="15.2" height="12.8" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="7.6" cy="8.8" r="1.9" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4.6 13.6c.5-1.4 1.7-2.1 3-2.1s2.5.7 3 2.1M12.4 8.4h3.2M12.4 11.4h3.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+    website   : '<circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.6"/><ellipse cx="10" cy="10" rx="2.8" ry="6.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.7 8h12.6M3.7 12h12.6" stroke="currentColor" stroke-width="1.6"/>',
+    directions: '<path d="M10 2.6a5.1 5.1 0 0 0-5.1 5.1c0 3.8 5.1 9.7 5.1 9.7s5.1-5.9 5.1-9.7A5.1 5.1 0 0 0 10 2.6z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="10" cy="7.6" r="1.9" fill="none" stroke="currentColor" stroke-width="1.5"/>',
+    review    : '<path d="m10 2.6 2.3 4.7 5.2.75-3.75 3.65.9 5.15L10 14.4l-4.65 2.45.9-5.15L2.5 8.05l5.2-.75z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+    custom    : '<path d="M8.6 11.4a2.9 2.9 0 0 0 4.3.3l2-2a2.9 2.9 0 1 0-4.1-4.1l-1 1M11.4 8.6a2.9 2.9 0 0 0-4.3-.3l-2 2a2.9 2.9 0 1 0 4.1 4.1l1-1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'
+  };
+  function rowIc(k) { return '<svg viewBox="0 0 20 20" aria-hidden="true">' + (ROWIC[k] || ROWIC.custom) + "</svg>"; }
+
+  /* ══ 3. LABELS AND LINKS ═════════════════════════════════════════════
+     Buttons are named by the ACTION, not the platform — "Call" not
+     "Phone", "Directions" not "Maps". */
+  var SOCIALS = ["instagram","youtube","facebook","snapchat","telegram",
+                 "linkedin","x","threads","spotify","pinterest","soundcloud"];
+
+  var LABEL = { call:"Call", wa:"WhatsApp", email:"Email", vcard:"Save contact",
+                website:"Website", directions:"Directions", review:"Review on Google" };
+
+  function http(v) { return /^https?:\/\//i.test(v) ? v : "https://" + v; }
+  function user(v) { return String(v).replace(/^@/, "").replace(/\/+$/, ""); }
+  function tel(v)  { return "+91" + String(v).replace(/[^0-9]/g, ""); }
+
+  var SOCIAL_URL = {
+    instagram : function (v) { return "https://instagram.com/" + user(v); },
+    youtube   : function (v) { return "https://youtube.com/@" + user(v); },
+    facebook  : function (v) { return http(v); },
+    snapchat  : function (v) { return "https://snapchat.com/add/" + user(v); },
+    telegram  : function (v) { return "https://t.me/" + user(v); },
+    linkedin  : function (v) { return http(v); },
+    x         : function (v) { return "https://x.com/" + user(v); },
+    threads   : function (v) { return "https://threads.net/@" + user(v); },
+    spotify   : function (v) { return http(v); },
+    pinterest : function (v) { return "https://pinterest.com/" + user(v); },
+    soundcloud: function (v) { return "https://soundcloud.com/" + user(v); }
+  };
+
+  /* The icon row's order is the OWNER'S, set in the builder and carried on
+     the page as `socialOrder` (Garry, 2026-09-24). SOCIALS is only the
+     fallback for a page saved before that existed, and the guard at the end
+     catches anything the owner's list does not mention. */
+  function liveSocials() {
+    var want = (P.socialOrder && P.socialOrder.length) ? P.socialOrder : SOCIALS;
+    var seen = {}, out = [];
+    want.concat(SOCIALS).forEach(function (k) {
+      if (!seen[k] && SOCIAL_URL[k] && P.links[k]) { seen[k] = 1; out.push(k); }
+    });
+    return out;
+  }
+  function custom(id) {
+    for (var i = 0; i < P.customs.length; i++) if (P.customs[i].id === id) return P.customs[i];
+    return null;
+  }
+
+  /* one row -> one href, or null when the payload has nothing for it */
+  function href(k) {
+    if (k === "call")   return P.phone ? "tel:" + tel(P.phone) : null;
+    if (k === "wa")     return P.wa ? "https://wa.me/" + tel(P.wa).replace("+", "") : null;
+    if (k === "email")  return P.email ? "mailto:" + P.email : null;
+    if (k === "vcard")  return "#vcard";
+    if (LABEL[k])       return P.links[k] ? http(P.links[k]) : null;
+    var c = custom(k);
+    return c && c.title && c.url ? http(c.url) : null;
+  }
+
+  /* ══ 4. RENDER ═══════════════════════════════════════════════════════
+     Straight down the order array. No sorting, no promoting, no special
+     case for the first item — order alone is the hierarchy. */
+  function render() {
+    $("avatar").innerHTML = P.photo
+      ? '<img src="' + esc(P.photo) + '" width="88" height="88" alt="">'
+      : esc((P.name.trim()[0] || P.handle[0] || "?").toUpperCase());
+    $("name").textContent = P.name;
+    $("handleTxt").textContent = "codemarca.com/" + P.handle;
+    $("bio").textContent = P.bio;
+    $("bio").hidden = !P.bio;
+    document.title = P.name + " — Codemarca";
+
+    var html = P.order.map(function (k) {
+      if (k === "socials") {
+        var s = liveSocials();
+        if (!s.length) return "";
+        return '<div class="socials">' + s.map(function (x) {
+          return '<a href="' + esc(SOCIAL_URL[x](P.links[x])) + '" target="_blank" rel="noopener" aria-label="' +
+                 esc(x) + '">' + ic(x) + "</a>";
+        }).join("") + "</div>";
+      }
+      var h = href(k); if (!h) return "";
+      var c = custom(k);
+      var label = LABEL[k] || (c ? c.title : "");
+      var isLocal = (k === "call" || k === "wa" || k === "email" || k === "vcard");
+      var tag = k === "vcard" ? "button" : "a";
+      var attrs = k === "vcard"
+        ? ' type="button" id="vcardBtn"'
+        : ' href="' + esc(h) + '"' + (isLocal ? "" : ' target="_blank" rel="noopener"');
+      var row = "<" + tag + ' class="btn' + (k === "vcard" ? " btn--save" : "") + '"' + attrs + ">" +
+                rowIc(LABEL[k] ? k : "custom") +
+                "<span>" + esc(label) + "</span></" + tag + ">";
+
+      /* Only rows that point at a real web address get one. tel: and mailto:
+         are not links a person can pass on — Facebook and X reject them
+         outright — and Save contact has no address at all, it builds a file. */
+      if (!/^https?:/i.test(h)) return row;
+      return '<div class="row">' + row +
+             '<button class="rowshare" type="button" data-u="' + esc(h) +
+             '" data-l="' + esc(label) + '" aria-label="Share ' + esc(label) + '">' +
+             SHARE_ICON + "</button></div>";
+    }).join("");
+
+    $("list").innerHTML = html || (document.querySelector(".pg").dataset.bare === "1"
+      ? '<p class="bare">This page is still being set up.</p>'
+      : "");
+    var vb = $("vcardBtn"); if (vb) vb.addEventListener("click", saveContact);
+  }
+
+  /* ══ 5. SAVE CONTACT ═════════════════════════════════════════════════
+     The one thing Linktree cannot do: one tap and the owner is in the
+     scanner's phonebook. Built here rather than fetched, so it works with
+     whatever the page was already given. */
+  function saveContact() {
+    var lines = ["BEGIN:VCARD", "VERSION:3.0", "FN:" + P.name, "N:;" + P.name + ";;;"];
+    if (P.phone) lines.push("TEL;TYPE=CELL:" + tel(P.phone));
+    if (P.wa && P.wa !== P.phone) lines.push("TEL;TYPE=WORK:" + tel(P.wa));
+    if (P.email) lines.push("EMAIL;TYPE=INTERNET:" + P.email);
+    if (P.links.website) lines.push("URL:" + http(P.links.website));
+    lines.push("URL:https://codemarca.com/" + P.handle);
+    if (P.bio) lines.push("NOTE:" + P.bio.replace(/[\n,;]/g, " "));
+    lines.push("END:VCARD");
+
+    var blob = new Blob([lines.join("\r\n")], { type: "text/vcard;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = P.handle + ".vcf";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  }
+
+  /* ══ 6. SCAN COUNT ═══════════════════════════════════════════════════
+     Recorded from day one even though the dashboard only shows it in
+     phase 2 — this data cannot be backfilled later. Fire and forget, and
+     never let it block the paint. */
+  function recordScan() {
+    var body = JSON.stringify({ handle: P.handle, at: Date.now(), ref: document.referrer || null });
+    if (navigator.sendBeacon) { /* navigator.sendBeacon("/api/scan", body); */ }
+  }
+
+  /* ══ 6b. SHARE, COPY AND THE SHEETS ══════════════════════════════════
+     Custom sheet rather than only navigator.share, for one reason: the
+     native sheet cannot carry the "get your own code" block, and that block
+     is why sharing is worth building at all. Native share is offered as one
+     extra tile where the browser has it, since on a phone it reaches apps we
+     cannot link to directly. */
+  function pageUrl() { return "https://codemarca.com/" + P.handle; }
+  function bare(u) { return u.replace(/^https?:\/\//i, "").replace(/\/$/, ""); }
+
+  var SHARE_ICON = '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true">' +
+    '<path d="M10 12.6V3.4m0 0L7.1 6.3M10 3.4l2.9 2.9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<path d="M5 11v5.1c0 .6.5 1.1 1.1 1.1h7.8c.6 0 1.1-.5 1.1-1.1V11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+
+  /* whatever the sheet is currently pointed at — the page, or one row */
+  var shared = { url: "", display: "" };
+
+  var SHARE = [
+    { k:"whatsapp", n:"WhatsApp", c:"#25D366",
+      g:'<path d="M6.2 18 7.3 14.6a6.7 6.7 0 1 1 2.5 2.4z" fill="none" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.9 9.4c.35 1.7 1.7 3 3.4 3.4l.7-1.1 1.6.75-.25 1.4c-2.8.4-6-2.8-5.6-5.6l1.4-.25.75 1.6z" fill="#fff"/>',
+      u:function (v) { return "https://wa.me/?text=" + encodeURIComponent(v); } },
+    { k:"x", n:"X", c:"#101215",
+      g:'<path d="M6 5.4h3.3l3 4.1 3.5-4.1h2.9l-5 5.8 5.4 7.4h-3.3l-3.3-4.5-3.8 4.5H5.8l5.3-6.2z" fill="#fff"/>',
+      u:function (v) { return "https://x.com/intent/tweet?url=" + encodeURIComponent(v); } },
+    { k:"facebook", n:"Facebook", c:"#1877F2",
+      g:'<path d="M13.4 20v-7.1h2.4l.36-2.78H13.4V8.34c0-.8.23-1.35 1.39-1.35h1.48V4.5a19.7 19.7 0 0 0-2.16-.11c-2.13 0-3.59 1.3-3.59 3.69v2.04H8.1v2.78h2.42V20z" fill="#fff"/>',
+      u:function (v) { return "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(v); } },
+    { k:"telegram", n:"Telegram", c:"#229ED9",
+      g:'<path d="M19.2 6.2 5.5 11.5c-.7.28-.7.78.02.98l3.44 1.07 7.98-5.03c.38-.23.72-.11.44.14l-6.46 5.84-.25 3.5c.29 0 .42-.13.58-.29l1.4-1.35 2.9 2.14c.53.3.92.14 1.05-.5l1.9-8.94c.19-.86-.31-1.25-.9-1.02z" fill="#fff"/>',
+      u:function (v) { return "https://t.me/share/url?url=" + encodeURIComponent(v); } },
+    { k:"email", n:"Email", c:"#5B5D68",
+      g:'<rect x="5" y="7.4" width="14" height="9.2" rx="2" fill="none" stroke="#fff" stroke-width="1.6"/><path d="m5.8 8.6 6.2 4.3 6.2-4.3" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>',
+      u:function (v) { return "mailto:?subject=" + encodeURIComponent(P.name + " on Codemarca") + "&body=" + encodeURIComponent(v); } }
+  ];
+
+  function paintTargets() {
+    var html = SHARE.map(function (t) {
+      return '<a href="' + esc(t.u(shared.url)) + '" target="_blank" rel="noopener">' +
+             '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="' + t.c + '"/>' +
+             t.g + "</svg><span>" + esc(t.n) + "</span></a>";
+    }).join("");
+    if (navigator.share) {
+      html += '<button type="button" id="nativeShare">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#6E27E6"/>' +
+        '<circle cx="8.4" cy="12" r="1.6" fill="#fff"/><circle cx="15.6" cy="12" r="1.6" fill="#fff"/><circle cx="12" cy="12" r="1.6" fill="#fff"/></svg>' +
+        "<span>More</span></button>";
+    }
+    $("targets").innerHTML = html;
+    var nb = $("nativeShare");
+    if (nb) nb.addEventListener("click", function () {
+      navigator.share({ title: P.name + " on Codemarca", url: shared.url }).catch(function () {});
+    });
+  }
+
+  /* clipboard, with the old fallback — this page runs on whatever phone
+     scanned it, not on a browser we picked */
+  function copy(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text).catch(legacy);
+    }
+    return Promise.resolve(legacy());
+    function legacy() {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.cssText = "position:fixed;top:-1000px;opacity:0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+  }
+
+  var flash = null;
+
+  /* Opening the sheet copies the link straight away — the write has to happen
+     inside the click itself, since Safari ties clipboard access to the gesture
+     and would refuse it a second later from a timer. The spinner sits on top
+     of that: one second of loading, then "Link copied", then back to "Copy"
+     two seconds later. Pressing Copy by hand runs the same thing. */
+  var SPIN = '<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>';
+  var TICK = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.4 6.5 12 13 4.6" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var copySeq = null;
+
+  function runCopy() {
+    var b = $("shareCopy");
+    copy(shared.url);
+    clearTimeout(copySeq);
+
+    b.dataset.state = "busy";
+    b.innerHTML = SPIN;
+    b.setAttribute("aria-label", "Copying link");
+
+    copySeq = setTimeout(function () {
+      b.dataset.state = "done";
+      b.innerHTML = TICK + "<span>Link copied</span>";
+      b.setAttribute("aria-label", "Link copied");
+      copySeq = setTimeout(function () {
+        b.dataset.state = "";
+        b.textContent = "Copy";
+        b.setAttribute("aria-label", "Copy link");
+      }, 2000);
+    }, 1000);
+  }
+
+  function openShare(url, title, display) {
+    shared.url = url;
+    shared.display = display;
+    $("shareUrl").textContent = display;
+    $("shareTitle").textContent = title;
+    paintTargets();
+    openSheet("shareSheet");
+    runCopy();
+  }
+
+  function openSheet(id) {
+    $(id).hidden = false;
+    document.body.style.overflow = "hidden";
+    if (id === "claimSheet") setTimeout(function () { $("claimInput").focus(); }, 60);
+  }
+  function closeSheets() {
+    clearTimeout(copySeq);
+    $("shareSheet").hidden = true;
+    $("claimSheet").hidden = true;
+    document.body.style.overflow = "";
+  }
+
+  function wireSheets() {
+    $("shareBtn").addEventListener("click", function () {
+      openShare(pageUrl(), "Share " + (P.name.split(" ")[0] || "this page"),
+                "codemarca.com/" + P.handle);
+    });
+
+    $("list").addEventListener("click", function (e) {
+      var b = e.target.closest(".rowshare"); if (!b) return;
+      e.preventDefault();
+      openShare(b.dataset.u, "Share " + b.dataset.l, bare(b.dataset.u));
+    });
+
+    $("handle").addEventListener("click", function () {
+      var b = this;
+      copy(pageUrl()).then(function () {
+        b.dataset.copied = "true";
+        clearTimeout(flash);
+        flash = setTimeout(function () { b.dataset.copied = "false"; }, 1500);
+      });
+    });
+
+    $("shareCopy").addEventListener("click", function () {
+      if (this.dataset.state === "busy") return;
+      runCopy();
+    });
+
+    /* the brand button opens the claim sheet — it must not navigate away */
+    $("brandBtn").addEventListener("click", function () { openSheet("claimSheet"); });
+    $("promoBtn").addEventListener("click", function () { closeSheets(); openSheet("claimSheet"); });
+
+    $("claimGo").addEventListener("click", function () {
+      var v = $("claimInput").value.toLowerCase().replace(/[^a-z0-9._-]/g, "").slice(0, 24);
+      location.href = "signup.html?next=build" + (v ? "&handle=" + encodeURIComponent(v) : "");
+    });
+    $("claimInput").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); $("claimGo").click(); }
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll("[data-close]"), function (el) {
+      el.addEventListener("click", closeSheets);
+    });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeSheets(); });
+  }
+
+  /* ══ 7. THE EMPTY CODE ═══════════════════════════════════════════════
+     Finder squares and the alignment block are drawn exactly; the data area
+     is noise, since there is no data. The CSS blurs only the data group. */
+  function drawEmpty(seedStr) {
+    var N = 29, i, x, y, seed = 2166136261;
+    for (i = 0; i < seedStr.length; i++) { seed ^= seedStr.charCodeAt(i); seed = (seed * 16777619) >>> 0; }
+    function rnd() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+    function rect(x, y) { return '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>'; }
+    function reserved(px, py) {
+      return (px < 8 && py < 8) || (px > N - 9 && py < 8) || (px < 8 && py > N - 9) ||
+             (px >= N - 9 && px <= N - 5 && py >= N - 9 && py <= N - 5);
+    }
+
+    var data = "", fix = "";
+    for (y = 0; y < N; y++) for (x = 0; x < N; x++) {
+      if (!reserved(x, y) && rnd() > .52) data += rect(x, y);
+    }
+    [[0, 0], [N - 7, 0], [0, N - 7]].forEach(function (o) {
+      for (y = 0; y < 7; y++) for (x = 0; x < 7; x++) {
+        var edge = (x === 0 || x === 6 || y === 0 || y === 6);
+        var core = (x >= 2 && x <= 4 && y >= 2 && y <= 4);
+        if (edge || core) fix += rect(o[0] + x, o[1] + y);
+      }
+    });
+    for (y = 0; y < 5; y++) for (x = 0; x < 5; x++) {
+      var e = (x === 0 || x === 4 || y === 0 || y === 4);
+      if (e || (x === 2 && y === 2)) fix += rect(N - 9 + x, N - 9 + y);
+    }
+
+    $("ghost").innerHTML = '<g class="ghost__data" fill="#101215">' + data + "</g>" +
+                           '<g class="ghost__fix" fill="#101215">' + fix + "</g>";
+  }
+
+  /* ══ 8. BOOT ═════════════════════════════════════════════════════════ */
+  var pg = document.querySelector(".pg");
+  var q  = new URLSearchParams(location.search);
+  if (q.get("handle")) P.handle = q.get("handle").toLowerCase().replace(/[^a-z0-9._-]/g, "");
+  if (q.get("theme"))  P.theme  = q.get("theme");
+  if (q.get("view"))   pg.dataset.view = q.get("view");
+
+  /* ?bare=1 — the page a Google sign-up produces before anyone edits it:
+     a name, a handle, and nothing else. This is what the code of a claimed
+     gift sticker actually opens, and the dashboard previews it with this
+     flag. Without it the preview showed the full demo page while the
+     profile tab said "no page yet" — two screens contradicting each other
+     (Garry, 2026-09-28). */
+  if (q.get("bare") === "1") {
+    if (q.get("name")) { P.name = q.get("name").slice(0, 40); }
+    P.bio = ""; P.photo = null;
+    P.phone = ""; P.wa = ""; P.email = "";
+    P.links = {}; P.customs = []; P.socialOrder = [];
+    P.order = [];
+    pg.dataset.bare = "1";
+  }
+
+  /* ?chrome=0 — the page as the dashboard embeds it in a preview. It is
+     the OWNER looking at their own page, so three things come off: the
+     review switcher, the "This is your page / Edit" bar (they are already
+     in the dashboard), and anything that sells Codemarca to a stranger.
+     Never show the owner "Get your own Codemarca" — Garry, repeatedly. */
+  if (q.get("chrome") === "0") {
+    /* hidden, not removed — the review script still fills these in below
+       and would trip over a missing node */
+    [".rev", ".bar", "#brandBtn"].forEach(function (sel) {
+      var el = document.querySelector(sel);
+      if (el) { el.hidden = true; }
+    });
+  }
+
+  pg.dataset.theme = P.theme;
+  render();
+
+  /* an unclaimed code has no owner yet, so it must not carry one in the
+     tab title either — on the real site the payload simply does not exist */
+  if (q.get("code")) $("code").textContent = q.get("code").toUpperCase();
+  drawEmpty($("code").textContent);
+  wireSheets();
+  if (pg.dataset.view === "unclaimed") document.title = "Codemarca";
+  else recordScan();
+
+  /* Review tool — delete this block and the .rev markup before launch. */
+  var THEMES = ["light", "dark", "violet", "cream", "gradient",
+                "glass-ember", "glass-violet"];
+  $("revTheme").innerHTML = THEMES.map(function (t) {
+    return '<button class="rev__sw" type="button" data-t="' + t + '" aria-pressed="' +
+           (t === P.theme) + '" aria-label="' + t + ' theme"></button>';
+  }).join("");
+  $("revTheme").addEventListener("click", function (e) {
+    var b = e.target.closest(".rev__sw"); if (!b) return;
+    pg.dataset.theme = b.dataset.t;
+    Array.prototype.forEach.call($("revTheme").children, function (x) {
+      x.setAttribute("aria-pressed", String(x === b));
+    });
+  });
+  Array.prototype.forEach.call($("revView").children, function (x) {
+    x.setAttribute("aria-pressed", String(x.dataset.v === pg.dataset.view));
+  });
+  $("revView").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-v]"); if (!b) return;
+    pg.dataset.view = b.dataset.v;
+    Array.prototype.forEach.call($("revView").children, function (x) {
+      x.setAttribute("aria-pressed", String(x === b));
+    });
+  });
+})();
+</script>

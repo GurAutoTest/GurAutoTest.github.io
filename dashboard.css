@@ -1,0 +1,1410 @@
+/* ==========================================================================
+   CODEMARCA — DASHBOARD SHELL
+   Shared by every page under dashboard/<flow>/. Each flow folder holds the
+   same five tabs, drawn for a different kind of account:
+
+     home.html      what this person should do next
+     profile.html   edit the contact page (or the empty state, in the
+                    folders where nobody has one)
+     orders.html    what was bought — a list, not a single order
+     qr.html        the one code, large, and what to do with it
+     settings.html  account
+
+   The folders are 1-empty · 2-page-live · 3-pack-coming · 4-active.
+
+   THIS IS A UI HANDOFF FILE. There is no data layer, no API, no auth.
+   Every value on screen is dummy content from DEMO in dashboard.js.
+   The markup here maps 1:1 onto a React <DashboardLayout> + page body.
+
+   Layout rule, same as the rest of the product: mobile is the base,
+   min-width queries add the desktop.
+     < 1024   top bar + fixed bottom tab bar
+     >= 1024  left sidebar, no top bar, no tabs
+   ========================================================================== */
+
+/* ── 0. TOKENS — same set as signup / onboarding / checkout ─────────────── */
+:root {
+  /* Brand — locked 2026-09-01 */
+  --brand-violet:#6E27E6; --brand-violet-lift:#A171F4; --brand-violet-press:#5A1DC4;
+  --brand-violet-tint:#F1E9FE; --brand-violet-edge:#DCC9FB;
+
+  /* Ink */
+  --ink:#101215; --ink-strong:#33353D; --ink-mid:#5B5D68;
+  --ink-soft:#8C8E9C; --ink-faint:#B6B8C4;
+  --ink-invert:#FFFFFF;
+
+  /* Ground */
+  --ground:#FFFFFF; --ground-soft:#F4F3F7; --ground-sunk:#EDEBF2;
+  --ground-dark:#101215; --ground-dark-2:#1B1D24;
+
+  /* Closing band — the same three stops as the homepage close. Black holds
+     most of the height; the violet is the arrival, not the field. */
+  --close-head:#000000; --close-body:#180A42; --close-foot:#4A22A8;
+
+  /* Line */
+  --line:rgba(16,18,21,.09); --line-strong:rgba(16,18,21,.16);
+  --line-invert:rgba(255,255,255,.14);
+
+  /* State */
+  --ok:#17914F; --ok-tint:#E7F6ED; --ok-lift:#4ADE80;   /* lift = on dark grounds */
+  --warn:#B2600A; --warn-tint:#FBF0E2;
+  --caution:#D99A00; --caution-tint:#FFF9EB; --caution-edge:#F6E3B4;   /* "action needed" notes */
+  --info:#2F6FE4; --info-tint:#EFF5FF; --info-edge:#D3E3FD;             /* "for your information" notes */
+  --bad:#C4342B;  --bad-tint:#FBEBEA;
+
+  /* Type */
+  --font-sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+
+  --fs-body:1rem; --fs-sm:.875rem; --fs-xs:.8125rem; --fs-label:.6875rem;
+  --lh-body:1.55;
+  --ls-display:-.038em; --ls-body:-.011em; --ls-label:.13em;
+  --ls-soft:.14px;       /* the small grey lines — see section 26 */
+  --fw-medium:500; --fw-semibold:600; --fw-bold:700; --fw-black:800;
+
+  /* Space */
+  --s-1:.25rem; --s-2:.5rem; --s-3:.75rem; --s-4:1rem; --s-5:1.25rem;
+  --s-6:1.5rem; --s-8:2rem; --s-10:2.5rem; --s-12:3rem;
+
+  /* Layout */
+  --gutter:1.25rem;
+  --logo-h:20px;
+  --bar-h:56px;          /* mobile top bar */
+  --tabs-h:60px;         /* mobile bottom tabs */
+  --side-w:248px;        /* desktop sidebar */
+  --view:880px;          /* content column ceiling */
+
+  /* Radius */
+  --r-xs:6px; --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px; --r-pill:999px;
+
+  /* Elevation */
+  --shadow-sm:0 2px 8px rgba(16,18,21,.06);
+  --shadow-md:0 6px 20px rgba(16,18,21,.07);
+  --shadow-lg:0 20px 56px rgba(16,18,21,.11);
+
+  /* Controls */
+  --control-h:52px; --btn-h:52px; --btn-h-sm:40px;
+  --focus-ring:0 0 0 3px var(--ground-sunk),0 0 0 5px var(--ink);
+  --focus-glow:0 0 0 4px rgba(16,18,21,.08);
+
+  /* Motion */
+  --dur-fast:140ms; --dur:240ms; --dur-slow:420ms;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --ease-out:cubic-bezier(.16,1,.3,1);
+}
+@media (min-width:1024px){
+  :root{ --gutter:2.5rem; --control-h:56px; --btn-h:56px; }
+}
+
+/* ── 1. BASE ───────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground-soft); color:var(--ink);
+  font-family:var(--font-sans); font-size:var(--fs-body); font-weight:var(--fw-medium);
+  line-height:var(--lh-body); letter-spacing:var(--ls-body);
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,p,ul,ol,li,dl,dd,dt,figure{margin:0; padding:0}
+ul,ol{list-style:none}
+a{color:inherit; text-decoration:none}
+button,input,textarea,select{font:inherit; color:inherit}
+img,svg{display:block; max-width:100%}
+[hidden]{display:none !important}
+:focus-visible{outline:none; box-shadow:var(--focus-ring); border-radius:var(--r-xs)}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+.mono{font-family:var(--font-mono)}
+
+/* ── 2. APP SHELL ──────────────────────────────────────────────────────── */
+.app{min-height:100svh}
+@media (min-width:1024px){
+  .app{display:grid; grid-template-columns:var(--side-w) minmax(0,1fr)}
+}
+
+.app__main{display:flex; flex-direction:column; min-width:0}
+
+/* the content column — everything a page writes goes in here */
+.view{
+  flex:1; width:100%; max-width:var(--view); margin-inline:auto;
+  padding:var(--s-5) var(--gutter) calc(var(--tabs-h) + var(--s-10));
+  display:flex; flex-direction:column; gap:var(--s-5);
+}
+@media (min-width:1024px){
+  .view{padding:var(--s-10) var(--gutter) var(--s-12); gap:var(--s-6)}
+}
+
+/* ── 3. SIDEBAR — desktop only ─────────────────────────────────────────── */
+.side{display:none}
+@media (min-width:1024px){
+  .side{
+    display:flex; flex-direction:column; gap:var(--s-2);
+    position:sticky; top:0; height:100svh; padding:var(--s-6) var(--s-4);
+    background:var(--ground); box-shadow:1px 0 0 var(--line);
+  }
+}
+.side__logo{padding:var(--s-2) var(--s-3) var(--s-6)}
+.side__logo svg{height:var(--logo-h); width:auto}
+
+.side__nav{display:flex; flex-direction:column; gap:2px; flex:1}
+.side__link{
+  display:flex; align-items:center; gap:var(--s-3);
+  padding:var(--s-3); border-radius:var(--r-md);
+  font-size:var(--fs-sm); font-weight:var(--fw-bold); color:var(--ink-strong);
+  transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.side__link svg{width:20px; height:20px; flex-shrink:0}
+.side__link:hover{background:var(--ground-soft); color:var(--ink)}
+/* A nav item for a thing the account does not have yet. It reads the same
+   as every other item — the page behind it does the explaining — so the
+   attribute is here for the markup, not for a colour. */
+.side__link[data-locked]:hover{background:var(--ground-soft); color:var(--ink-strong)}
+.side__link[aria-current="page"]{background:var(--brand-violet-tint); color:var(--brand-violet)}
+.side__dot{
+  margin-left:auto; width:7px; height:7px; border-radius:50%;
+  background:var(--brand-violet); flex-shrink:0;
+}
+
+/* the account block, pinned to the bottom of the rail */
+.side__me{
+  display:flex; align-items:center; gap:var(--s-3);
+  padding:var(--s-3); border-radius:var(--r-md); margin-top:var(--s-4);
+  box-shadow:inset 0 0 0 1px var(--line);
+}
+.side__me:hover{background:var(--ground-soft)}
+.side__me .avatar{width:34px; height:34px; font-size:var(--fs-sm)}
+.side__me__txt{min-width:0; flex:1; display:flex; flex-direction:column; gap:1px}
+.side__me__name{display:block; font-size:var(--fs-sm); font-weight:var(--fw-bold);
+  line-height:1.25; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.side__me__mail{display:block; font-size:var(--fs-xs); color:var(--ink-soft);
+  line-height:1.25; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+/* ── 4. TOP BAR — mobile only ──────────────────────────────────────────── */
+.top{
+  position:sticky; top:0; z-index:30;
+  display:flex; align-items:center; gap:var(--s-3);
+  height:var(--bar-h); padding-inline:var(--gutter);
+  /* the homepage header's glass: see-through white, blurred, and a hairline
+     only once the page has actually scrolled under it */
+  background:rgba(255,255,255,.72);
+  backdrop-filter:blur(18px) saturate(180%); -webkit-backdrop-filter:blur(18px) saturate(180%);
+  box-shadow:0 1px 0 transparent; transition:box-shadow var(--dur) var(--ease);
+}
+.top[data-scrolled="true"]{box-shadow:0 1px 0 var(--line)}
+@media (min-width:1024px){ .top{display:none} }
+.top__logo svg{height:var(--logo-h); width:auto}
+.top__title{
+  font-size:var(--fs-body); font-weight:var(--fw-black); letter-spacing:var(--ls-display);
+}
+.top__end{margin-left:auto; display:flex; align-items:center; gap:var(--s-2)}
+/* The bell, where the avatar used to be. Same 36px target as the back
+   arrow beside it, so the two corners of the bar weigh the same. */
+.top__bell{
+  display:grid; place-items:center; width:36px; height:36px;
+  border:0; background:none; border-radius:50%; cursor:pointer; color:var(--ink);
+  transition:background var(--dur-fast) var(--ease);
+}
+.top__bell:hover{background:var(--ground-soft)}
+.top__bell svg{width:21px; height:21px}
+
+/* ── 4b. THE BELL + NOTIFICATIONS (2026-09-27, Garry) ─────────────────────
+   Phone: the bell above, opening a bottom sheet. Desktop: .dbar, a strip
+   the width of the content column sitting over the page head, with the
+   bell at its right end and a dropdown hanging off it. One count badge
+   style for both. */
+.bell{position:relative}
+.bell__n{
+  position:absolute; top:3px; right:1px;
+  min-width:17px; height:17px; padding-inline:4px; border-radius:var(--r-pill);
+  display:grid; place-items:center;
+  background:var(--brand-violet); color:var(--ink-invert);
+  box-shadow:0 0 0 2px var(--ground);
+  font-size:.625rem; font-weight:var(--fw-black); line-height:1; letter-spacing:0;
+}
+.bell__n[hidden]{display:none}
+
+.dbar{display:none}
+@media (min-width:1024px){
+  .dbar{
+    display:flex; justify-content:flex-end; position:relative; z-index:40;
+    width:100%; max-width:var(--view); margin-inline:auto;
+    padding:var(--s-5) var(--gutter) 0;
+  }
+  /* the strip takes the room the view used to open with */
+  .dbar + .view{padding-top:var(--s-2)}
+}
+.dbar__bell{
+  display:grid; place-items:center; width:42px; height:42px;
+  border:0; border-radius:50%; cursor:pointer; color:var(--ink);
+  background:var(--ground); box-shadow:var(--shadow-sm), inset 0 0 0 1px var(--line);
+  transition:background var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.dbar__bell:hover,
+.dbar__bell[aria-expanded="true"]{background:var(--ground-soft)}
+.dbar__bell svg{width:20px; height:20px}
+.dbar__bell .bell__n{top:-2px; right:-3px}
+
+/* the desktop dropdown */
+.npop{
+  position:absolute; top:calc(100% + var(--s-2)); right:var(--gutter);
+  width:400px; max-height:min(620px, calc(100svh - 110px));
+  display:flex; flex-direction:column; gap:var(--s-4);
+  padding:var(--s-5) var(--s-5) 0;
+  background:var(--ground); border-radius:var(--r-lg);
+  box-shadow:var(--shadow-lg), inset 0 0 0 1px var(--line);
+  animation:npopIn var(--dur) var(--ease-out);
+  overflow:hidden;
+}
+@keyframes npopIn{from{opacity:0; transform:translateY(-6px)}}
+.npop__t{font-size:1.125rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display)}
+.npop__body{min-height:0; display:flex; flex-direction:column}
+.npop .nt{min-height:0}
+.npop .nt__list{min-height:0; overflow:auto; margin-inline:calc(var(--s-5) * -1); padding-bottom:var(--s-2); scrollbar-width:thin}
+.npop .nt__empty{margin-bottom:var(--s-5)}
+
+/* the panel's inside — same in the sheet and the dropdown */
+.nt{display:flex; flex-direction:column; gap:var(--s-3)}
+.nt__tabs{
+  display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:4px;
+  padding:4px; border-radius:var(--r-pill); background:var(--ground-sunk);
+}
+.nt__tab{
+  border:0; cursor:pointer; height:36px; border-radius:var(--r-pill);
+  background:none; color:var(--ink-mid);
+  font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-bold);
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.nt__tab:hover{color:var(--ink)}
+.nt__tab[aria-selected="true"]{background:var(--ground); color:var(--ink); box-shadow:var(--shadow-sm)}
+.nt__n{
+  min-width:18px; height:18px; padding-inline:5px; border-radius:var(--r-pill);
+  display:grid; place-items:center; background:var(--ink-faint); color:var(--ink-invert);
+  font-size:.625rem; font-weight:var(--fw-black); letter-spacing:0;
+}
+.nt__tab[aria-selected="true"] .nt__n{background:var(--ink)}
+
+.nt__meta{
+  display:flex; align-items:center; justify-content:space-between; gap:var(--s-3);
+  font-size:var(--fs-xs); color:var(--ink-soft);
+}
+.nt__meta button{
+  border:0; background:none; cursor:pointer; padding:4px 0;
+  font:inherit; font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink);
+}
+.nt__meta button:hover{text-decoration:underline; text-underline-offset:3px}
+
+.nt__list{display:flex; flex-direction:column; margin-inline:calc(var(--s-5) * -1)}
+.nt__row{
+  display:flex; align-items:flex-start; gap:var(--s-3);
+  padding:var(--s-3) var(--s-5); color:inherit; text-decoration:none;
+  transition:background var(--dur-fast) var(--ease);
+}
+.nt__row:hover{background:var(--ground-soft)}
+.nt__row + .nt__row{box-shadow:inset 0 1px 0 var(--line)}
+.nt__ic{
+  flex-shrink:0; display:grid; place-items:center; width:36px; height:36px;
+  border-radius:var(--r-md); background:var(--ground-soft); color:var(--ink-mid);
+}
+.nt__row[data-new] .nt__ic{background:var(--ground-sunk); color:var(--ink)}
+.nt__ic svg{width:18px; height:18px}
+.nt__txt{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px}
+.nt__t{font-size:var(--fs-sm); font-weight:var(--fw-semibold); color:var(--ink-strong); line-height:1.35}
+.nt__row[data-new] .nt__t{font-weight:var(--fw-bold); color:var(--ink)}
+.nt__b{font-size:var(--fs-xs); color:var(--ink-mid); line-height:1.45}
+.nt__w{font-size:.75rem; color:var(--ink-soft); margin-top:2px}
+.nt__dot{flex-shrink:0; width:8px; height:8px; margin-top:6px; border-radius:50%; background:transparent}
+.nt__row[data-new] .nt__dot{background:var(--brand-violet)}
+.nt__empty{font-size:var(--fs-sm); color:var(--ink-mid); line-height:1.5; padding:var(--s-2) 0}
+
+/* on a phone the sheet holds one height while the tabs switch, so the
+   grip does not jump under the thumb */
+.shs__panel:has(.nt){min-height:min(560px, 78svh)}
+@media (min-width:640px){ .shs__panel:has(.nt){min-height:0} }
+.top__back{
+  display:grid; place-items:center; width:36px; height:36px; margin-left:calc(var(--s-2) * -1);
+  border-radius:var(--r-sm); color:var(--ink-mid);
+}
+.top__back svg{width:20px; height:20px}
+
+/* ── 5. BOTTOM TABS — mobile only ──────────────────────────────────────── */
+.tabs{
+  position:fixed; inset:auto 0 0 0; z-index:30;
+  display:grid; grid-template-columns:repeat(5,1fr);
+  height:calc(var(--tabs-h) + env(safe-area-inset-bottom));
+  padding-bottom:env(safe-area-inset-bottom);
+  background:var(--ground); box-shadow:0 -1px 0 var(--line);
+}
+@media (min-width:1024px){ .tabs{display:none} }
+.tabs__link{
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+  color:var(--ink-strong); font-size:.625rem; font-weight:var(--fw-bold);
+  letter-spacing:0; position:relative;
+}
+.tabs__link svg{width:22px; height:22px}
+/* every tab sits on the same dark grey, locked or not; only the tab you are
+   standing on is violet */
+.tabs__link[aria-current="page"]{color:var(--brand-violet)}
+.tabs__dot{
+  position:absolute; top:8px; left:calc(50% + 8px);
+  width:6px; height:6px; border-radius:50%; background:var(--brand-violet);
+}
+/* More is a button, not a link, so it has to be told to look like one */
+.tabs__link[data-more]{border:0; background:none; cursor:pointer; font-family:inherit}
+
+/* ── 5b. THE MORE SHEET ────────────────────────────────────────────────
+   Gift & Refer and Settings, the two tabs that came off the phone bar
+   (2026-09-24). Rows run edge to edge inside the sheet, the way the
+   checklist rows do on Home. */
+.more{display:flex; flex-direction:column; margin-inline:calc(var(--s-5) * -1)}
+.more__row{
+  display:flex; align-items:center; gap:var(--s-3); padding:var(--s-3) var(--s-5);
+  color:inherit; text-decoration:none; transition:background var(--dur-fast) var(--ease);
+}
+.more__row:hover{background:var(--ground-soft)}
+.more__row + .more__row{box-shadow:inset 0 1px 0 var(--line)}
+.more__ic{
+  flex-shrink:0; display:grid; place-items:center; width:38px; height:38px;
+  border-radius:var(--r-md); background:var(--ground-soft); color:var(--ink);
+}
+.more__row[aria-current="page"] .more__ic{background:var(--brand-violet-tint); color:var(--brand-violet)}
+.more__ic svg{width:19px; height:19px}
+.more__txt{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
+.more__l{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.more__s{font-size:var(--fs-xs); color:var(--ink-soft)}
+.more__empty{font-size:var(--fs-sm); color:var(--ink-mid); max-width:44ch}
+.more__go{flex-shrink:0; display:grid; width:16px; height:16px; color:var(--ink-faint)}
+.more__go svg{width:100%; height:100%}
+
+/* ── 5c. A FOLDED NOTE ─────────────────────────────────────────────────
+   Two lines on a phone with a More toggle, open on a desktop. Same words
+   either way — see CM.fold in dashboard.js for why. */
+.fold[data-open="false"]{
+  display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden;
+}
+.fold__btn{
+  align-self:flex-start; margin-top:calc(var(--s-2) * -1);
+  padding:0; border:0; background:none; cursor:pointer; font-family:inherit;
+  font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink);
+  letter-spacing:var(--ls-soft); text-decoration:underline; text-underline-offset:3px;
+}
+.fold__btn:hover{color:var(--ink-mid)}
+/* an empty state centres everything it holds, including this */
+.empty .fold__btn{align-self:center}
+@media (min-width:1024px){ .fold__btn{display:none} }
+
+/* a whole supporting card, folded to its title on a phone */
+.foldc{gap:0}
+.foldc__head{
+  display:flex; align-items:center; gap:var(--s-3); width:100%;
+  padding:0; border:0; background:none; color:inherit; text-align:left; cursor:pointer;
+}
+.foldc__head:disabled{cursor:default}          /* desktop: it is just a title */
+.foldc__head .card__title{flex:1; min-width:0}
+.foldc__chev{
+  flex-shrink:0; display:grid; place-items:center; width:32px; height:32px;
+  border-radius:50%; color:var(--ink-soft); transition:transform var(--dur-fast) var(--ease);
+}
+.foldc__chev svg{width:18px; height:18px; transform:rotate(90deg)}
+.foldc__head[aria-expanded="true"] .foldc__chev{transform:rotate(180deg)}
+.foldc__head:disabled .foldc__chev{display:none}
+.foldc__body{display:flex; flex-direction:column; gap:var(--s-4); margin-top:var(--s-4)}
+
+/* ── 6. PAGE HEAD ──────────────────────────────────────────────────────── */
+.head{display:flex; flex-direction:column; gap:var(--s-2)}
+.head__row{display:flex; align-items:flex-start; gap:var(--s-4)}
+.head h1{
+  font-size:clamp(1.625rem,5.5vw,2.125rem); font-weight:var(--fw-black);
+  line-height:1.06; letter-spacing:var(--ls-display); text-wrap:balance;
+}
+.head p{color:var(--ink-mid); font-size:var(--fs-sm); max-width:52ch}
+/* title → subtext: 12px on every page. Most heads wrap the pair in a div
+   inside .head__row, where the .head gap never reaches, so the space is
+   set on the pair itself. When h1 and p sit straight in .head, the 8px
+   gap is already there and only the remaining 4px is added. */
+.head h1 + p{margin-top:var(--s-3)}
+.head > h1 + p{margin-top:var(--s-1)}
+.head__acts{margin-left:auto; display:flex; gap:var(--s-2); flex-shrink:0}
+
+.eyebrow{
+  font-size:var(--fs-label); font-weight:var(--fw-bold); letter-spacing:var(--ls-label);
+  text-transform:uppercase; color:var(--ink-soft); font-family:var(--font-mono);
+}
+
+/* ── 7. CARD ───────────────────────────────────────────────────────────── */
+.card{
+  background:var(--ground); border-radius:var(--r-lg); padding:var(--s-5);
+  box-shadow:var(--shadow-sm), inset 0 0 0 1px var(--line);
+  display:flex; flex-direction:column; gap:var(--s-4);
+}
+@media (min-width:1024px){ .card{padding:var(--s-6)} }
+.card--flat{box-shadow:inset 0 0 0 1px var(--line)}
+.card--dark{
+  background:var(--ground-dark); color:var(--ink-invert);
+  box-shadow:var(--shadow-lg), inset 0 0 0 1px var(--line-invert);
+}
+.card--dark .card__title,.card--dark .card__note{color:rgba(255,255,255,.62)}
+/* the foot's hairline is drawn in --line, which vanishes on black */
+.card--dark .card__foot{box-shadow:inset 0 1px 0 var(--line-invert)}
+.card--tint{background:var(--brand-violet-tint); box-shadow:inset 0 0 0 1px var(--brand-violet-edge)}
+.card--pad0{padding:0; overflow:hidden}
+
+.card__title{
+  font-size:var(--fs-label); font-weight:var(--fw-bold); letter-spacing:var(--ls-label);
+  text-transform:uppercase; color:var(--ink-soft); font-family:var(--font-mono);
+}
+.card__head{display:flex; align-items:center; gap:var(--s-3)}
+.card__head .card__title{flex:1; min-width:0}
+.card__h{font-size:1.0625rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display)}
+.card__note{font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.45}
+.card__foot{
+  display:flex; gap:var(--s-2); padding-top:var(--s-4);
+  box-shadow:inset 0 1px 0 var(--line);
+}
+
+/* a card whose whole body is the call to action */
+.card--act{gap:var(--s-5)}
+.card--act .card__h{font-size:clamp(1.25rem,4vw,1.5rem); line-height:1.14}
+
+/* ── 8. BUTTONS ────────────────────────────────────────────────────────── */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s-2);
+  height:var(--btn-h); padding-inline:var(--s-6); border:0; border-radius:var(--r-pill);
+  background:none; cursor:pointer; font-size:var(--fs-sm);
+  font-weight:var(--fw-bold); letter-spacing:-.01em; white-space:nowrap;
+  transition:transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease),
+             color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.btn:active{transform:scale(.985)}
+.btn svg{width:18px; height:18px; flex-shrink:0}
+.btn--go{background:var(--ink); color:var(--ink-invert)}
+.btn--go:hover{background:var(--ink-strong, #33353D)}
+.btn--brand{background:var(--brand-violet); color:var(--ink-invert)}
+.btn--brand:hover{background:var(--brand-violet-press)}
+.btn--ghost{background:var(--ground); color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+.btn--ghost:hover{color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--ink)}
+.btn--quiet{color:var(--ink-mid); padding-inline:var(--s-4)}
+.btn--quiet:hover{background:var(--ground-sunk); color:var(--ink)}
+/* confirming a saved change — green, the one place a save reads as done */
+.btn--ok{background:var(--ok); color:var(--ink-invert)}
+.btn--ok:hover{background:#127A42}
+.btn--bad{color:var(--bad); box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+.btn--bad:hover{background:var(--bad-tint); box-shadow:inset 0 0 0 1.5px var(--bad)}
+.btn--sm{height:var(--btn-h-sm); padding-inline:var(--s-4); font-size:var(--fs-xs)}
+.btn--icon{padding-inline:0; width:var(--btn-h); flex-shrink:0}
+.btn--sm.btn--icon{width:var(--btn-h-sm)}
+.btn--wide{width:100%}
+.btn--grow{flex:1}
+.btn:disabled{background:var(--ground-sunk); color:var(--ink-faint); box-shadow:none;
+  cursor:not-allowed; transform:none}
+.card--dark .btn--ghost{background:transparent; color:var(--ink-invert);
+  box-shadow:inset 0 0 0 1.5px var(--line-invert)}
+.card--dark .btn--ghost:hover{color:var(--ink); background:var(--ink-invert)}
+.card--dark .btn--go{background:var(--ink-invert); color:var(--ink)}
+.card--dark .btn--go:hover{background:var(--ground-sunk, #EDEBF2); color:var(--ink)}
+
+/* ── 9. CHIP / STATUS ──────────────────────────────────────────────────── */
+.chip{
+  display:inline-flex; align-items:center; gap:6px; flex-shrink:0;
+  padding:5px var(--s-3); border-radius:var(--r-pill);
+  font-size:var(--fs-label); font-weight:var(--fw-bold); letter-spacing:.04em;
+  text-transform:uppercase; background:var(--ground-sunk); color:var(--ink-mid);
+}
+.chip::before{content:""; width:6px; height:6px; border-radius:50%; background:currentColor}
+.chip--ok{background:var(--ok-tint); color:var(--ok)}
+.chip--live{background:var(--ok-tint); color:var(--ok)}
+.chip--live::before{animation:pulse 2s var(--ease) infinite}
+.chip--warn{background:var(--warn-tint); color:var(--warn)}
+.chip--bad{background:var(--bad-tint); color:var(--bad)}
+.chip--brand{background:var(--brand-violet-tint); color:var(--brand-violet)}
+.chip--flat::before{display:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.28}}
+
+/* ── 10. AVATAR ────────────────────────────────────────────────────────── */
+.avatar{
+  display:grid; place-items:center; flex-shrink:0;
+  width:44px; height:44px; border-radius:50%;
+  background:var(--ink-mid); color:#fff;   /* grey, not black — Garry 2026-09-16 */
+  font-weight:var(--fw-black); font-size:var(--fs-body); letter-spacing:0;
+}
+.avatar--lg{width:64px; height:64px; font-size:1.375rem}
+
+/* ── 11. ROW LIST — orders, codes, settings all use this ───────────────── */
+.rows{display:flex; flex-direction:column}
+.row{
+  display:flex; align-items:center; gap:var(--s-4);
+  padding:var(--s-4) var(--s-5); text-align:left; width:100%;
+  background:none; border:0; cursor:pointer; min-width:0;
+  transition:background var(--dur-fast) var(--ease);
+}
+.row + .row{box-shadow:inset 0 1px 0 var(--line)}
+.row:hover{background:var(--ground-soft)}
+.row--static{cursor:default}
+.row--static:hover{background:none}
+.row__ic{
+  display:grid; place-items:center; flex-shrink:0;
+  width:40px; height:40px; border-radius:var(--r-md);
+  background:var(--ground-sunk); color:var(--ink-mid);
+}
+.row__ic svg{width:20px; height:20px}
+.row__ic--brand{background:var(--brand-violet-tint); color:var(--brand-violet)}
+.row__txt{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
+.row__t{font-size:var(--fs-sm); font-weight:var(--fw-bold); overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap}
+.row__s{font-size:var(--fs-xs); color:var(--ink-soft); overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap}
+.row__end{margin-left:auto; display:flex; align-items:center; gap:var(--s-3); flex-shrink:0}
+.row__chev{width:18px; height:18px; color:var(--ink-faint)}
+
+/* ── 12. EMPTY STATE ───────────────────────────────────────────────────── */
+.empty{
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  gap:var(--s-3); padding:var(--s-10) var(--s-5);
+}
+.empty__ic{
+  display:grid; place-items:center; width:56px; height:56px; border-radius:var(--r-lg);
+  background:var(--ground-sunk); color:var(--ink-faint); margin-bottom:var(--s-1);
+}
+.empty__ic svg{width:26px; height:26px}
+.empty__t{font-size:1.0625rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display)}
+.empty__p{font-size:var(--fs-sm); color:var(--ink-mid); max-width:38ch}
+
+/* ── 13. LOCKED / PHASE-2 TEASER ───────────────────────────────────────
+   Scan counts are recorded from day one (see profile.html) but are not
+   surfaced until phase 2. The card ships now, greyed, so the layout does
+   not move when the number arrives. */
+.locked{position:relative; overflow:hidden}
+.locked__body{filter:grayscale(1); opacity:.42; pointer-events:none; user-select:none}
+.locked__tag{
+  position:absolute; top:var(--s-4); right:var(--s-4);
+  display:inline-flex; align-items:center; gap:6px;
+  padding:5px var(--s-3); border-radius:var(--r-pill);
+  background:var(--ground-sunk); color:var(--ink-soft);
+  font-size:var(--fs-label); font-weight:var(--fw-bold);
+  letter-spacing:var(--ls-label); text-transform:uppercase;
+}
+.locked__tag svg{width:12px; height:12px}
+
+/* ── 14. STAT ──────────────────────────────────────────────────────────── */
+.stats{display:grid; grid-template-columns:repeat(3,1fr); gap:var(--s-3)}
+.stat{display:flex; flex-direction:column; gap:2px}
+.stat__n{font-size:clamp(1.5rem,6vw,1.875rem); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display); line-height:1.05}
+.stat__l{font-size:var(--fs-xs); color:var(--ink-soft); font-weight:var(--fw-bold)}
+
+/* ── 15. TIMELINE — order progress ─────────────────────────────────────── */
+.tl{display:flex; flex-direction:column}
+.tl__step{display:flex; gap:var(--s-4); min-height:56px}
+.tl__step:last-child{min-height:auto}
+.tl__mark{display:flex; flex-direction:column; align-items:center; flex-shrink:0}
+.tl__dot{
+  width:22px; height:22px; border-radius:50%; display:grid; place-items:center;
+  background:var(--ground-sunk); color:var(--ink-faint); flex-shrink:0;
+}
+.tl__dot svg{width:12px; height:12px}
+.tl__line{flex:1; width:2px; background:var(--ground-sunk); margin-block:4px}
+.tl__step:last-child .tl__line{display:none}
+.tl__txt{display:flex; flex-direction:column; gap:2px; padding-bottom:var(--s-5); min-width:0}
+.tl__t{font-size:var(--fs-sm); font-weight:var(--fw-bold); color:var(--ink-faint)}
+.tl__s{font-size:var(--fs-xs); color:var(--ink-faint)}
+.tl__step[data-done] .tl__dot{background:var(--ok); color:#fff}
+.tl__step[data-done] .tl__line{background:var(--ok)}
+.tl__step[data-done] .tl__t{color:var(--ink)}
+.tl__step[data-done] .tl__s{color:var(--ink-soft)}
+.tl__step[data-now] .tl__dot{background:var(--brand-violet); color:#fff;
+  box-shadow:0 0 0 4px var(--brand-violet-tint)}
+.tl__step[data-now] .tl__t{color:var(--ink)}
+.tl__step[data-now] .tl__s{color:var(--brand-violet); font-weight:var(--fw-bold)}
+
+/* ── 16. LINK FIELD — the share row ────────────────────────────────────── */
+.linkbox{
+  display:flex; align-items:center; gap:var(--s-2);
+  padding:var(--s-2) var(--s-2) var(--s-2) var(--s-4);
+  border-radius:var(--r-pill); background:var(--ground-sunk);
+  box-shadow:inset 0 0 0 1px var(--line);
+}
+.linkbox__url{
+  flex:1; min-width:0; font-family:var(--font-mono); font-size:var(--fs-xs);
+  font-weight:var(--fw-medium); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.linkbox__url b{font-weight:var(--fw-bold); color:var(--ink)}
+.linkbox__url span{color:var(--ink-soft)}
+.card--dark .linkbox{background:var(--ground-dark-2); box-shadow:inset 0 0 0 1px var(--line-invert)}
+.card--dark .linkbox__url b{color:var(--ink-invert)}
+.card--dark .linkbox__url span{color:rgba(255,255,255,.5)}
+
+/* ── 17. QR BLOCK ──────────────────────────────────────────────────────── */
+.qr{
+  display:grid; place-items:center; padding:var(--s-4);
+  background:#fff; border-radius:var(--r-md); flex-shrink:0;
+}
+.qr svg{width:100%; height:auto; max-width:160px}
+.qr--sm svg{max-width:88px}
+
+/* ── 18. FIELDS ────────────────────────────────────────────────────────── */
+.fld{display:flex; flex-direction:column; gap:var(--s-2); min-width:0}
+.fld__lbl{font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-mid)}
+.fld__in{
+  height:var(--control-h); width:100%; padding-inline:var(--s-4);
+  border:0; border-radius:var(--r-md); background:var(--ground-sunk);
+  box-shadow:inset 0 0 0 1px var(--line); font-size:var(--fs-sm); font-weight:var(--fw-semibold);
+  transition:box-shadow var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.fld__in::placeholder{color:var(--ink-faint); font-weight:var(--fw-medium)}
+.fld__in:hover{background:var(--ground)}
+.fld__in:focus{outline:none; background:var(--ground);
+  box-shadow:inset 0 0 0 1.5px var(--ink)}
+textarea.fld__in{height:auto; min-height:96px; padding-block:var(--s-3);
+  line-height:var(--lh-body); resize:vertical}
+.fld__help{font-size:var(--fs-xs); color:var(--ink-soft)}
+.grid2{display:grid; gap:var(--s-4); grid-template-columns:1fr}
+@media (min-width:560px){ .grid2{grid-template-columns:1fr 1fr} }
+
+/* ── 19. TOAST ─────────────────────────────────────────────────────────── */
+.toast{
+  position:fixed; z-index:60; left:50%; transform:translate(-50%,14px);
+  bottom:calc(var(--tabs-h) + var(--s-4) + env(safe-area-inset-bottom));
+  display:flex; align-items:center; gap:var(--s-2);
+  padding:var(--s-3) var(--s-5); border-radius:var(--r-pill);
+  background:var(--ink); color:var(--ink-invert);
+  font-size:var(--fs-sm); font-weight:var(--fw-bold);
+  box-shadow:var(--shadow-lg); opacity:0; pointer-events:none;
+  transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.toast[data-on]{opacity:1; transform:translate(-50%,0)}
+.toast svg{width:16px; height:16px; color:var(--brand-violet-lift)}
+@media (min-width:1024px){ .toast{bottom:var(--s-6)} }
+
+/* ── 20. DEMO STATE SWITCHER ───────────────────────────────────────────
+   NOT PART OF THE PRODUCT. It exists so this handoff can be clicked
+   through in all four account states without a backend. In React the
+   state comes from the session — delete this whole block. */
+.demo{
+  position:fixed; z-index:50; right:var(--s-4);
+  bottom:calc(var(--tabs-h) + var(--s-4) + env(safe-area-inset-bottom));
+  display:flex; align-items:center; gap:var(--s-2);
+  padding:var(--s-2) var(--s-2) var(--s-2) var(--s-4); border-radius:var(--r-pill);
+  background:var(--ground-dark); color:var(--ink-invert); box-shadow:var(--shadow-lg);
+}
+@media (min-width:1024px){ .demo{bottom:var(--s-6)} }
+.demo__lbl{
+  font-family:var(--font-mono); font-size:var(--fs-label); font-weight:var(--fw-bold);
+  letter-spacing:var(--ls-label); text-transform:uppercase; color:rgba(255,255,255,.5);
+}
+.demo__sel{
+  height:36px; padding-inline:var(--s-3); border:0; border-radius:var(--r-pill);
+  background:var(--ground-dark-2); color:var(--ink-invert); cursor:pointer;
+  font-size:var(--fs-xs); font-weight:var(--fw-bold);
+  box-shadow:inset 0 0 0 1px var(--line-invert);
+}
+.demo__sel:focus-visible{box-shadow:0 0 0 2px var(--brand-violet-lift)}
+/* the save bar owns the bottom of the screen while it is up */
+.demo{transition:opacity var(--dur) var(--ease)}
+body[data-editing] .demo{opacity:0; pointer-events:none}
+@media (max-width:400px){ .demo__lbl{display:none} }
+
+/* ── 21. TOGGLE ────────────────────────────────────────────────────────
+   Used by the profile page (show/hide a row) and by settings. */
+.sw{display:inline-flex; align-items:center; flex-shrink:0; cursor:pointer}
+.sw input{position:absolute; opacity:0; width:0; height:0}
+.sw__track{
+  position:relative; width:44px; height:26px; border-radius:var(--r-pill);
+  background:var(--ground-sunk); box-shadow:inset 0 0 0 1px var(--line);
+  transition:background var(--dur-fast) var(--ease);
+}
+.sw__track::after{
+  content:""; position:absolute; top:3px; left:3px; width:20px; height:20px;
+  border-radius:50%; background:var(--ground); box-shadow:var(--shadow-sm);
+  transition:transform var(--dur-fast) var(--ease);
+}
+/* on is green, not brand purple — Garry, 2026-09-27 */
+.sw input:checked + .sw__track{background:var(--ok); box-shadow:none}
+.sw input:checked + .sw__track::after{transform:translateX(18px)}
+.sw input:focus-visible + .sw__track{box-shadow:var(--focus-ring)}
+.sw input:disabled + .sw__track{opacity:.45; cursor:not-allowed}
+
+/* ── 22. SAVE BAR ──────────────────────────────────────────────────────
+   Sits above the mobile tab bar, and at the foot of the column on
+   desktop. Only appears once something has actually changed. */
+.savebar{
+  position:sticky; z-index:20;
+  bottom:calc(var(--tabs-h) + var(--s-3) + env(safe-area-inset-bottom));
+  display:flex; align-items:center; gap:var(--s-3);
+  margin-top:var(--s-2); padding:var(--s-3) var(--s-3) var(--s-3) var(--s-5);
+  border-radius:var(--r-pill); background:var(--ground-dark); color:var(--ink-invert);
+  box-shadow:var(--shadow-lg);
+  transform:translateY(12px); opacity:0; pointer-events:none;
+  transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.savebar[data-on]{transform:none; opacity:1; pointer-events:auto}
+.savebar__t{flex:1; min-width:0; font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+@media (min-width:1024px){ .savebar{bottom:var(--s-6)} }
+
+/* ── 23. SECTION SPLIT ─────────────────────────────────────────────────
+   A titled block inside a card, separated by a rule rather than by
+   another box — keeps a long settings page from turning into a stack
+   of forty cards. */
+.split{display:flex; flex-direction:column; gap:var(--s-4)}
+.split + .split{padding-top:var(--s-5); box-shadow:inset 0 1px 0 var(--line)}
+
+/* ── 24. NOTE — an inline explanation, not an error ────────────────────── */
+/* Notes are yellow — "worth reading before you go on" — never brand purple
+   (Garry, 2026-09-16). --quiet is the grey aside. */
+.note{
+  display:flex; gap:var(--s-3); padding:var(--s-3) var(--s-4);
+  border-radius:var(--r-md); background:var(--caution-tint);
+  box-shadow:inset 0 0 0 1px var(--caution-edge);
+  color:var(--ink-mid); font-size:var(--fs-xs); line-height:1.5; letter-spacing:.14px;
+}
+.note svg{width:16px; height:16px; flex-shrink:0; margin-top:2px; color:var(--caution)}
+/* a folded note: icon and text share row one, the toggle drops under the
+   text rather than squeezing in beside it */
+.note{flex-wrap:wrap}
+.note > [data-fold]{flex:1; min-width:0}
+.note .fold__btn{margin-top:var(--s-1); margin-left:calc(16px + var(--s-3))}
+.note--quiet{background:var(--ground-sunk); box-shadow:none; color:var(--ink-mid)}
+.note--quiet svg{color:currentColor}
+/* a friendly check-in, nothing is wrong — blue, from the same reference sheet */
+.note--info{background:var(--info-tint); box-shadow:inset 0 0 0 1px var(--info-edge); color:var(--ink-mid)}
+.note--info svg{color:var(--info)}
+/* something the person still has to do — yellow, not brand purple */
+.note--warn{background:var(--caution-tint); box-shadow:inset 0 0 0 1px var(--caution-edge);
+  color:var(--ink-mid); letter-spacing:.14px}
+.note--warn svg{color:var(--caution)}
+.note b{font-weight:var(--fw-bold)}
+
+/* ── 25. SHOW MY CODE ──────────────────────────────────────────────────
+   The screen you hold up in front of another person.
+
+   This is the only full-bleed moment in the dashboard, and everything
+   about it is in service of a phone camera two feet away:
+
+     · pure white ground, no tint — a themed background costs contrast,
+       and contrast is the whole job here
+     · the QR is as big as the shorter side allows, nothing competes
+     · the chrome (tabs, sidebar, demo pill) is covered, not dimmed —
+       a half-visible dashboard behind it reads as a dialog, and this is
+       not a dialog, it is a mode
+
+   Screen brightness cannot be raised from the web. The white ground gets
+   most of the way there on its own; the wake lock in dashboard.js keeps
+   the screen from sleeping mid-scan. A real brightness bump is a
+   Capacitor call for later. */
+
+.show{
+  position:fixed; inset:0; z-index:80;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:var(--s-6); padding:var(--s-6) var(--gutter);
+  background:#FFFFFF;
+  opacity:0; pointer-events:none;
+  transition:opacity var(--dur) var(--ease);
+}
+.show[data-on]{opacity:1; pointer-events:auto}
+
+.show__close{
+  position:absolute; top:var(--s-4); right:var(--s-4);
+  display:grid; place-items:center; width:44px; height:44px;
+  border:0; border-radius:50%; background:var(--ground-soft); color:var(--ink-mid);
+  cursor:pointer; transition:background var(--dur-fast) var(--ease);
+}
+.show__close:hover{background:var(--ground-sunk); color:var(--ink)}
+.show__close svg{width:20px; height:20px}
+
+.show__hint{
+  font-size:var(--fs-label); font-weight:var(--fw-bold); letter-spacing:var(--ls-label);
+  text-transform:uppercase; color:var(--ink-faint); font-family:var(--font-mono);
+  text-align:center;
+}
+
+/* the square itself — sized off the shorter viewport side so it never
+   pushes the name off a short landscape screen */
+.show__qr{
+  width:min(78vw, 56vh, 420px);
+  transform:scale(.94);
+  transition:transform var(--dur-slow) var(--ease-out);
+}
+.show[data-on] .show__qr{transform:none}
+.show__qr svg{width:100%; height:auto; max-width:none; border-radius:var(--r-sm)}
+
+.show__id{display:flex; flex-direction:column; align-items:center; gap:var(--s-2); text-align:center}
+.show__name{
+  font-size:clamp(1.375rem,5vw,1.75rem); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display); line-height:1.1;
+}
+.show__sub{
+  font-family:var(--font-mono); font-size:var(--fs-sm); color:var(--ink-soft);
+  overflow-wrap:anywhere;
+}
+/* download / share / copy — three equal, quiet actions under the code.
+   They wrap rather than shrink on a narrow phone. */
+.show__acts{
+  display:flex; flex-wrap:wrap; justify-content:center;
+  gap:var(--s-2); margin-top:var(--s-2);
+}
+.show__acts .btn{padding-inline:var(--s-3)}
+
+/* while the mode is up, nothing behind it should be reachable */
+body[data-showing]{overflow:hidden}
+
+/* ── 25b. DIALOG ───────────────────────────────────────────────────────
+   A sheet that rises from the bottom on a phone, where the thumb already
+   is; a centred card from 560px up. It sits above the tab bar and the
+   save bar, and the ground behind it dims rather than disappears — unlike
+   Show my code, this one IS a dialog: a question about the page behind. */
+.dlg{
+  position:fixed; inset:0; z-index:90;
+  display:flex; align-items:flex-end; justify-content:center;
+  padding:var(--s-3); padding-bottom:calc(var(--s-3) + env(safe-area-inset-bottom));
+  background:rgba(16,18,21,.42);
+  opacity:0; transition:opacity var(--dur) var(--ease);
+}
+.dlg[data-on]{opacity:1}
+.dlg__box{
+  width:100%; max-width:420px;
+  display:flex; flex-direction:column; gap:var(--s-2);
+  padding:var(--s-6) var(--s-5) var(--s-4);
+  background:var(--ground); border-radius:var(--r-xl); box-shadow:var(--shadow-lg);
+  transform:translateY(24px); transition:transform var(--dur) var(--ease-out);
+}
+.dlg[data-on] .dlg__box{transform:none}
+@media (min-width:560px){
+  .dlg{align-items:center; padding:var(--s-6)}
+  .dlg__box{padding:var(--s-8) var(--s-6) var(--s-5); transform:scale(.96)}
+}
+.dlg__t{font-size:1.25rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display); line-height:1.15}
+.dlg__b{font-size:var(--fs-sm); color:var(--ink-mid); line-height:1.5}
+.dlg__acts{display:flex; flex-direction:column; gap:var(--s-2); margin-top:var(--s-4)}
+
+/* ── 25c. SHARE SHEET ──────────────────────────────────────────────────
+   profile.html's share sheet, one for one: rises from the bottom on a
+   phone, a centred card from 640px up. */
+.shs{position:fixed; inset:0; z-index:95; display:flex; align-items:flex-end; justify-content:center}
+.shs__scrim{position:absolute; inset:0; background:rgba(16,18,21,.52); animation:shsFade var(--dur) var(--ease)}
+.shs__panel{
+  position:relative; width:100%; max-width:440px; max-height:90svh; overflow:auto;
+  background:var(--ground); color:var(--ink);
+  border-radius:var(--r-xl) var(--r-xl) 0 0;
+  padding:var(--s-3) var(--s-5) calc(var(--s-6) + env(safe-area-inset-bottom));
+  display:flex; flex-direction:column; align-items:center; text-align:center; gap:var(--s-4);
+  animation:shsRise var(--dur) var(--ease);
+}
+@keyframes shsFade{from{opacity:0}}
+@keyframes shsRise{from{transform:translateY(24px)}}
+@keyframes shsPop{from{transform:scale(.965); opacity:0}}
+.shs__grip{width:38px; height:4px; border-radius:var(--r-pill); background:var(--line-strong); flex-shrink:0}
+.shs__x{
+  position:absolute; top:var(--s-4); right:var(--s-4);
+  width:32px; height:32px; display:grid; place-items:center; border:0; border-radius:50%;
+  background:var(--ground-soft); color:var(--ink-mid); cursor:pointer;
+}
+.shs__x:hover{background:var(--line); color:var(--ink)}
+.shs__x svg{width:15px; height:15px}
+.shs__t{font-size:1.25rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display)}
+
+.shs__row{
+  display:flex; align-items:center; gap:var(--s-3); width:100%;
+  padding:var(--s-3) var(--s-4); border-radius:var(--r-md); background:var(--ground-soft);
+}
+.shs__url{flex:1; min-width:0; text-align:left; font-family:var(--font-mono);
+  font-size:.8125rem; font-weight:var(--fw-semibold); letter-spacing:-.02em;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.shs__row button{
+  flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  min-width:94px; min-height:28px; padding:6px var(--s-3); border:0; border-radius:var(--r-sm);
+  background:none; cursor:pointer; transition:min-width .2s var(--ease);
+  font-size:.8125rem; font-weight:var(--fw-bold); color:var(--brand-violet);
+}
+.shs__row button:hover{background:var(--ground-sunk, #EDEBF2)}
+.shs__row button[data-state="busy"]{color:var(--ink-soft); cursor:default; background:none}
+.shs__row button[data-state="done"]{color:var(--ok); background:none; min-width:128px}
+.shs__row button svg{width:14px; height:14px}
+.dots{display:inline-flex; align-items:center; justify-content:center; gap:4px; height:14px}
+.dots i{width:5px; height:5px; border-radius:50%; background:currentColor; opacity:.28; animation:shsDot 1s var(--ease) infinite}
+.dots i:nth-child(2){animation-delay:.16s}
+.dots i:nth-child(3){animation-delay:.32s}
+@keyframes shsDot{0%,62%,100%{opacity:.28; transform:translateY(0)} 31%{opacity:1; transform:translateY(-3px)}}
+
+.shs__targets{
+  display:flex; flex-wrap:nowrap; gap:6px; width:100%;
+  overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;
+}
+.shs__targets::-webkit-scrollbar{display:none}
+.shs__targets a,.shs__targets button{
+  flex:0 0 auto; width:64px; border:0; background:none; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  padding:var(--s-2) 2px; border-radius:var(--r-md);
+  font-size:.625rem; font-weight:var(--fw-bold); color:var(--ink-mid); line-height:1.2;
+}
+.shs__targets a:hover,.shs__targets button:hover{background:var(--ground-soft); color:var(--ink)}
+.shs__targets svg{width:38px; height:38px}
+
+@media (min-width:640px){
+  .shs{align-items:center}
+  .shs__panel{max-width:420px; border-radius:var(--r-xl); padding:var(--s-6); animation:shsPop var(--dur) var(--ease)}
+  .shs__grip{display:none}
+}
+
+/* the general sheet (CM.sheet) — same shell, content left-aligned */
+.shs--list .shs__panel{align-items:stretch; text-align:left; max-width:480px}
+.shs--list .shs__t{padding-right:40px}
+.shs--list .shs__grip{align-self:center}
+.shs__body{display:flex; flex-direction:column; gap:var(--s-4); min-width:0}
+@media (min-width:640px){ .shs--list .shs__panel{max-width:480px} }
+
+/* ── 25c-bis. WHAT IS STILL MISSING ───────────────────────────────────
+   Onboarding's Save & exit lets people leave with half a page on purpose
+   (Garry, 2026-09-23), so the dashboard carries the same checklist: what is
+   not filled in yet, each row opening the Profile tab at that field. It is
+   not rendered at all when nothing is missing. */
+.todo__head{display:flex; align-items:baseline; gap:var(--s-3)}
+.todo__n{margin-left:auto; font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:var(--ls-soft)}
+.todo__rows{display:flex; flex-direction:column; margin-inline:calc(var(--s-5) * -1)}
+.todo__row{
+  display:flex; align-items:center; gap:var(--s-3); width:100%; padding:var(--s-3) var(--s-5);
+  border:0; background:none; cursor:pointer; text-align:left; color:inherit; text-decoration:none;
+  transition:background var(--dur-fast) var(--ease);
+}
+.todo__row:hover{background:var(--ground-soft)}
+.todo__row + .todo__row{box-shadow:inset 0 1px 0 var(--line)}
+/* every row is something worth doing, so none of them is greyed out */
+.todo__ic{flex-shrink:0; display:grid; place-items:center; width:34px; height:34px;
+  border-radius:var(--r-sm); background:var(--brand-violet-tint); color:var(--brand-violet)}
+.todo__ic svg{width:17px; height:17px}
+.todo__txt{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
+.todo__l{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.todo__s{font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:var(--ls-soft)}
+.todo__go{flex-shrink:0; display:grid; width:16px; height:16px; color:var(--ink-faint)}
+.todo__go svg{width:100%; height:100%}
+/* the last row sits against the card's rounded bottom, so its hover has to
+   round off too or the tint squares off the corner */
+.todo__row:last-child{border-radius:0 0 calc(var(--r-lg) - 5px) calc(var(--r-lg) - 5px)}
+
+/* ── 25d. THE "ME" CARD ────────────────────────────────────────────────
+   Who you are, your QR, your link — and the link IS the share button, the
+   way Linktree puts its link in a pill with a share icon (Garry,
+   2026-09-17). Two skins of one card:
+     .me            light — top of Home (2-page-live, 4-active), so the
+                    dark Refer friends card below stays the one dark object
+     .me.me--dark   black — top of the Profile tab, replacing LIVE AT */
+.me{position:relative; overflow:hidden; gap:var(--s-5); padding:var(--s-6) var(--s-5)}
+@media (min-width:640px){ .me{padding:var(--s-8)} }
+.me > *{position:relative}
+.me > .me__mark{position:absolute; right:-70px; bottom:-95px; width:170px;
+  color:var(--ink); opacity:.035; pointer-events:none}
+.me__mark svg{width:100%; height:auto}
+
+.me__top{display:flex; align-items:center; gap:var(--s-4)}
+.me__av img{width:100%; height:100%; object-fit:cover}
+.me__av{flex-shrink:0; display:grid; place-items:center; width:64px; height:64px; border-radius:50%; overflow:hidden;
+  background:var(--ground-sunk); color:var(--ink); font-size:1.5rem; font-weight:var(--fw-black)}
+.me__who{flex:1; min-width:0; display:flex; flex-direction:column; align-items:flex-start; gap:var(--s-2)}
+.me__name{font-size:clamp(1.25rem,4.6vw,1.625rem); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display); line-height:1.1; overflow-wrap:anywhere}
+.me__live{display:inline-flex; align-items:center; gap:var(--s-2);
+  padding:4px 10px 4px 8px; border-radius:var(--r-pill);
+  background:var(--ok-tint); color:var(--ok); font-family:var(--font-mono); font-size:var(--fs-label);
+  font-weight:var(--fw-bold); letter-spacing:var(--ls-label); text-transform:uppercase}
+.me__live i{width:6px; height:6px; border-radius:50%; background:currentColor}
+.me__qr{flex-shrink:0; width:84px; padding:6px; border:0; border-radius:var(--r-md);
+  background:#fff; cursor:pointer; box-shadow:var(--shadow-sm);
+  transition:transform var(--dur-fast) var(--ease)}
+.me__qr:hover{transform:scale(1.04)}
+.me__qr svg{display:block; width:100%; height:auto}
+@media (min-width:640px){ .me__qr{width:104px} .me__av{width:76px; height:76px} }
+
+/* The link IS the share button. Grey with a hairline round it read as a
+   disabled input, so on the light skin it takes the same green wash as the
+   LIVE chip beside it and drops the border — the card is a live page, and
+   the link is the live part of it (Garry, 2026-09-23). The dark skin below
+   keeps its own white-on-black treatment. */
+.me__link{
+  display:flex; align-items:center; gap:var(--s-3); width:100%;
+  padding:var(--s-2) var(--s-2) var(--s-2) var(--s-4); border:0; border-radius:var(--r-pill);
+  background:var(--ok-tint); box-shadow:none;
+  color:var(--ink); cursor:pointer; text-align:left;
+  transition:background var(--dur-fast) var(--ease);
+}
+.me__link:hover{background:rgba(23,145,79,.16)}
+.me__url{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  font-family:var(--font-mono); font-size:var(--fs-sm)}
+.me__url span{color:var(--ink-soft)}
+.me__url b{font-weight:var(--fw-bold)}
+.me__share{flex-shrink:0; display:inline-flex; align-items:center; gap:var(--s-2);
+  height:36px; padding-inline:var(--s-4); border-radius:var(--r-pill);
+  background:var(--ink); color:var(--ink-invert); font-size:var(--fs-xs); font-weight:var(--fw-bold)}
+.me__share svg{width:16px; height:16px}
+/* on a phone the link gets the room — the share control drops to its icon */
+@media (max-width:479px){
+  .me__share{width:40px; height:40px; padding:0; justify-content:center}
+  .me__share .me__share-t{display:none}
+}
+
+.me__acts{display:grid; grid-template-columns:1fr 1fr; gap:var(--s-2)}
+.me__btn{display:flex; align-items:center; justify-content:center; gap:var(--s-2);
+  height:44px; border:0; border-radius:var(--r-md); cursor:pointer;
+  background:var(--ground); box-shadow:inset 0 0 0 1.5px var(--line-strong); color:var(--ink);
+  font-size:var(--fs-xs); font-weight:var(--fw-bold)}
+.me__btn:hover{background:var(--ground-soft)}
+.me__btn svg{width:16px; height:16px}
+
+/* the black skin */
+.me--dark > .me__mark{color:#fff}
+.me--dark .me__av{background:rgba(255,255,255,.1); box-shadow:inset 0 0 0 1px var(--line-invert); color:var(--ink-invert)}
+.me--dark .me__name{color:var(--ink-invert)}
+.me--dark .me__live{background:rgba(74,222,128,.10); box-shadow:inset 0 0 0 1px rgba(74,222,128,.26); color:var(--ok-lift)}
+.me--dark .me__qr{box-shadow:none}
+.me--dark .me__link{background:rgba(255,255,255,.08); box-shadow:inset 0 0 0 1px var(--line-invert); color:var(--ink-invert)}
+.me--dark .me__link:hover{background:rgba(255,255,255,.13)}
+.me--dark .me__url span{color:rgba(255,255,255,.55)}
+.me--dark .me__share{background:var(--ink-invert); color:var(--ink)}
+.me--dark .me__btn{background:rgba(255,255,255,.07); box-shadow:inset 0 0 0 1px var(--line-invert); color:var(--ink-invert)}
+.me--dark .me__btn:hover{background:rgba(255,255,255,.13)}
+
+/* ── 25e. PHOTO STRIP ──────────────────────────────────────────────────
+   Product photos and nothing else — no caption, no heading inside a shot
+   (Garry, 2026-09-24). A swipe row on a phone with its own bar underneath,
+   because a real scrollbar is hidden on phones and the row has to say
+   "there is more to the side"; four across from 720px and no bar.
+   Each .ps__ph is an <img> from assets/photos/, 4:3. */
+.ps{display:flex; flex-direction:column; gap:var(--s-3)}
+.ps__row{
+  display:grid; grid-auto-flow:column; grid-auto-columns:74%; gap:var(--s-3);
+  overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none;
+  margin-inline:calc(var(--s-5) * -1); padding-inline:var(--s-5); scroll-padding-inline:var(--s-5);
+}
+.ps__row::-webkit-scrollbar{display:none}
+.ps__ph{
+  scroll-snap-align:start; position:relative; overflow:hidden; aspect-ratio:4/3;
+  border-radius:var(--r-md); background:var(--ground-soft);
+  box-shadow:inset 0 0 0 1.5px var(--line);
+}
+.ps__ph::before{
+  content:""; position:absolute; inset:0; opacity:.6;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+/* the real photo in the same frame */
+img.ps__ph{display:block; width:100%; height:auto; object-fit:cover; cursor:pointer}
+.ps__bar{position:relative; height:4px; border-radius:var(--r-pill); background:var(--line); overflow:hidden}
+.ps__bar i{position:absolute; top:0; bottom:0; left:0; width:40%;
+  border-radius:inherit; background:var(--ink); transition:left .12s linear}
+@media (min-width:720px){
+  .ps__row{grid-auto-flow:row; grid-template-columns:repeat(4,1fr); grid-auto-columns:auto;
+    overflow:visible; margin-inline:0; padding-inline:0}
+  .ps__bar{display:none}
+}
+@media (min-width:1024px){
+  .ps__row{margin-inline:0}
+}
+
+/* ── 25f. LIGHTBOX ─────────────────────────────────────────────────────
+   A tapped photo, full screen, with the rest of its row beside it. The
+   track scroll-snaps, so a phone swipes it and the arrows scroll it. */
+.lb{position:fixed; inset:0; z-index:100; display:grid; place-items:center}
+.lb__scrim{position:absolute; inset:0; background:rgba(8,9,11,.88); animation:shsFade var(--dur) var(--ease)}
+.lb__track{
+  position:relative; width:100%; height:100%;
+  display:flex; overflow-x:auto; scroll-snap-type:x mandatory;
+  scrollbar-width:none; overscroll-behavior:contain;
+}
+.lb__track::-webkit-scrollbar{display:none}
+.lb__slide{
+  flex:0 0 100%; scroll-snap-align:center; display:grid; place-items:center;
+  padding:calc(var(--s-12) + var(--s-6) + env(safe-area-inset-top)) var(--s-5)
+          calc(var(--s-10) + env(safe-area-inset-bottom));
+}
+/* THE WHOLE PHOTO, WHATEVER SHAPE IT IS (fixed 2026-09-29, Garry).
+   This used to force a 4:3 box, and the thumbnail's own `object-fit:cover`
+   — which wins on any page that loads home.css after dashboard.css — then
+   cropped a portrait photo in half. Now the image keeps its own ratio and
+   is only bounded, and these rules are written .lb .lb__ph so they outrank
+   every img.<thumbnail> rule wherever they land. */
+.lb .lb__ph{
+  width:auto; height:auto; aspect-ratio:auto;
+  max-width:min(92vw, 1000px); max-height:80svh;
+  object-fit:contain; background:none;
+  border-radius:24px;   /* THE lightbox radius — same literal in lightbox.js */
+  animation:shsPop var(--dur) var(--ease);
+  box-shadow:0 30px 80px -20px rgba(0,0,0,.6);
+}
+.lb img.lb__ph{box-shadow:none}
+.lb__x{
+  position:absolute; top:calc(var(--s-4) + env(safe-area-inset-top)); right:var(--s-4); z-index:2;
+  width:42px; height:42px; display:grid; place-items:center; border:0; border-radius:50%;
+  background:rgba(255,255,255,.12); color:#fff; cursor:pointer;
+}
+.lb__x:hover{background:rgba(255,255,255,.22)}
+.lb__x svg{width:18px; height:18px}
+.lb__go{
+  position:absolute; top:50%; transform:translateY(-50%); z-index:2;
+  width:44px; height:44px; display:none; place-items:center; border:0; border-radius:50%;
+  background:rgba(255,255,255,.12); color:#fff; cursor:pointer;
+}
+.lb__go:hover{background:rgba(255,255,255,.22)}
+.lb__go svg{width:20px; height:20px}
+.lb__go--prev{left:var(--s-4); transform:translateY(-50%) rotate(180deg)}
+.lb__go--next{right:var(--s-4)}
+@media (min-width:720px){ .lb__go{display:grid} }
+.lb__count{
+  position:absolute; left:var(--s-4); z-index:2;
+  top:calc(var(--s-4) + env(safe-area-inset-top)); display:grid; place-items:center; height:42px;
+  padding:6px var(--s-4); border-radius:var(--r-pill);
+  background:rgba(255,255,255,.12); color:#fff;
+  font-family:var(--font-mono); font-size:var(--fs-xs); font-weight:var(--fw-bold);
+}
+
+/* ── 26. SUPPORTING TEXT ───────────────────────────────────────────────
+   Headings and body copy run on negative tracking, which is right at
+   16px and up. The small grey lines under them are 13px and mostly set
+   in a lighter ink, so they need the air put back instead — every one of
+   them, in one place, so the whole product tracks the same way.
+   Home-only classes (.step__s, .live__role) do this in each home.html. */
+.head p,
+.card__note,
+.row__s,
+.tl__s,
+.fld__lbl,
+.fld__help,
+.stat__l,
+.empty__p,
+.note,
+.dlg__b,
+.side__me__mail,
+.more__s,
+.more__empty,
+.nt__b,
+.nt__w,
+.nt__meta,
+.nt__empty{ letter-spacing:var(--ls-soft) }
+
+
+/* Chrome paints its own pale-blue block behind anything it autofills, which
+   overrides the field's own ground. Parking the transition indefinitely keeps
+   our background and ink; it is the one fix that does not need to know the
+   field's colour. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+  -webkit-text-fill-color:var(--ink);
+  caret-color:var(--ink);
+  transition:background-color 600000s 0s, color 600000s 0s;
+}
+
+/* ── WHAT WAS IN THE BOX ────────────────────────────────────────────────
+   An icon, a title and a grey line under it. Moved here from the orders
+   tab on 2026-09-16: the QR tab uses it for a gifted pack too, and a
+   component that two tabs draw is not a page component any more. */
+.item{display:flex; align-items:center; gap:var(--s-4)}
+.item__ic{
+  display:grid; place-items:center; flex-shrink:0; width:52px; height:52px;
+  border-radius:var(--r-md); background:var(--brand-violet-tint); color:var(--brand-violet);
+}
+.item__ic svg{width:24px; height:24px}
+.item__txt{flex:1; min-width:0}
+.item__t{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.item__s{font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:var(--ls-soft)}
+
+/* address block */
+.addr{font-size:var(--fs-sm); line-height:1.55; color:var(--ink-mid); letter-spacing:var(--ls-soft)}
+.addr b{display:block; color:var(--ink); font-weight:var(--fw-bold)}
+
+/* ══ SCAN SCENE ══════════════════════════════════════════════════════════
+   Sticker → scan → page, on a loop. Built by CM.scanScene() in
+   dashboard.js, so the markup and these styles move together.
+
+   THE TIMELINE is one 9s loop shared by every layer, each with its own
+   keyframes on the same clock:
+
+     0.0s  the sticker lands
+     1.3s  the phone comes up, camera open
+     1.6s  the beam sweeps it, twice
+     4.0s  it catches — tick
+     4.6s  the page is open, and stays open long enough to read
+     8.4s  everything clears for the next pass
+
+   The phone is the same drawing that used to sit here statically, so
+   nothing moved — it just arrives now instead of being there already.
+   ======================================================================== */
+
+.scene{position:relative; display:grid; place-items:center}
+
+/* ── the phone ─────────────────────────────────────────────────────────
+   ONE SCALE FOR EVERYTHING INSIDE. --u is the drawing's unit: 1 on a
+   desktop, .72 on a phone, where the frame is 150px instead of 210px.
+   Every size below is written against it, so the little page keeps the
+   same proportions and the same air around its buttons at both sizes —
+   it shrinks, it does not re-layout. Change --u, nothing else. */
+.scene .phone{
+  --u:.72;
+  position:relative; width:150px; aspect-ratio:9/17;
+  padding:calc(10px * var(--u)); border-radius:calc(34px * var(--u)); background:#1B1D22;
+  /* a rim light, or the phone disappears into the dark card behind it */
+  box-shadow:0 0 0 1px rgba(255,255,255,.16), 0 0 0 5px rgba(255,255,255,.04),
+             0 30px 60px -20px rgba(0,0,0,.7);
+  transform:rotate(-4deg);
+  animation:sc-phone 9s var(--ease) infinite;
+}
+.scene .phone__screen{
+  position:relative; height:100%; border-radius:calc(25px * var(--u)); overflow:hidden;
+  background:#fff; color:var(--ink);
+}
+.scene .phone__screen::before{ /* the notch */
+  content:""; position:absolute; top:calc(8px * var(--u)); left:50%; transform:translateX(-50%);
+  width:calc(56px * var(--u)); height:calc(14px * var(--u));
+  border-radius:calc(10px * var(--u)); background:#1B1D22; z-index:3;
+}
+
+/* ── 2 · the camera ────────────────────────────────────────────────────── */
+.cam{
+  position:absolute; inset:0; display:grid; place-items:center;
+  background:#20242B; animation:sc-cam 9s var(--ease) infinite;
+}
+.cam__qr{width:62%; padding:calc(7px * var(--u)); border-radius:calc(8px * var(--u)); background:#fff}
+.cam__qr svg{display:block; width:100%; height:auto}
+/* the four corner brackets, drawn with one element and two gradients */
+.cam__frame{
+  position:absolute; width:74%; aspect-ratio:1; border-radius:calc(12px * var(--u));
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.9);
+  --c:calc(14px * var(--u));
+  -webkit-mask:
+    linear-gradient(#000 0 0) top left    / var(--c) var(--c) no-repeat,
+    linear-gradient(#000 0 0) top right   / var(--c) var(--c) no-repeat,
+    linear-gradient(#000 0 0) bottom left / var(--c) var(--c) no-repeat,
+    linear-gradient(#000 0 0) bottom right/ var(--c) var(--c) no-repeat;
+  mask:
+    linear-gradient(#000 0 0) top left    / var(--c) var(--c) no-repeat,
+    linear-gradient(#000 0 0) top right   / var(--c) var(--c) no-repeat,
+    linear-gradient(#000 0 0) bottom left / var(--c) var(--c) no-repeat,
+    linear-gradient(#000 0 0) bottom right/ var(--c) var(--c) no-repeat;
+}
+.cam__beam{
+  position:absolute; left:10%; width:80%; height:2px; border-radius:2px;
+  background:linear-gradient(90deg, transparent, var(--ok-lift), transparent);
+  box-shadow:0 0 12px 2px rgba(74,222,128,.55); opacity:0;
+  animation:sc-beam 9s var(--ease-out) infinite;
+}
+.cam__tick{
+  position:absolute; display:grid; place-items:center;
+  width:calc(42px * var(--u)); height:calc(42px * var(--u));
+  border-radius:50%; background:var(--ok-lift); color:#0B2E1A; opacity:0;
+  animation:sc-tick 9s var(--ease-out) infinite;
+}
+.cam__tick svg{width:calc(24px * var(--u)); height:calc(24px * var(--u)); stroke-width:2.6}
+
+/* ── 3 · the page it opens ─────────────────────────────────────────────── */
+.pm{
+  position:absolute; inset:0; z-index:2; opacity:0;
+  display:flex; flex-direction:column; align-items:center;
+  gap:calc(6px * var(--u)); text-align:center;
+  padding:calc(28px * var(--u)) calc(12px * var(--u)) calc(12px * var(--u));
+  background:#fff;
+  animation:sc-page 9s var(--ease) infinite;
+}
+.pm__av{
+  width:calc(54px * var(--u)); height:calc(54px * var(--u));
+  border-radius:50%; display:grid; place-items:center;
+  background:var(--ink-mid); color:#fff; font-weight:var(--fw-black);
+  font-size:calc(1.25rem * var(--u));
+}
+.pm__name{font-size:calc(.8125rem * var(--u)); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display); line-height:1.1}
+.pm__url{font-family:var(--font-mono); font-size:calc(.5625rem * var(--u)); color:var(--ink-soft)}
+.pm__soc{display:flex; gap:calc(6px * var(--u)); margin-block:calc(2px * var(--u))}
+.pm__soc svg{width:calc(22px * var(--u)); height:calc(22px * var(--u)); display:block}
+.pm__btns{display:flex; flex-direction:column; gap:calc(5px * var(--u)); width:100%; margin-top:auto}
+.pm__btn{display:flex; align-items:center; justify-content:center; gap:calc(5px * var(--u));
+  height:calc(28px * var(--u)); border-radius:var(--r-pill);
+  font-size:calc(.625rem * var(--u)); font-weight:var(--fw-bold); color:#fff}
+.pm__btn svg{width:calc(12px * var(--u)); height:calc(12px * var(--u))}
+.pm__btn--call{background:var(--ink)}
+.pm__btn--wa{background:#25D366}
+.pm__btn--save{background:var(--brand-violet)}
+
+/* ── 1 · the printed sticker ───────────────────────────────────────────── */
+.scene__sticker{
+  position:absolute; bottom:10px; left:calc(50% - 96px); width:64px;
+  padding:5px; background:#fff; border-radius:var(--r-md);
+  box-shadow:0 14px 30px -10px rgba(0,0,0,.6);
+  transform:rotate(-8deg);
+  animation:sc-sticker 9s var(--ease) infinite;
+}
+.scene__sticker svg{display:block; width:100%; height:auto}
+
+@media (min-width:720px){
+  .scene .phone{--u:1; width:210px}
+  .scene__sticker{width:78px; left:calc(50% - 128px); bottom:22px}
+}
+
+/* ── the clock ─────────────────────────────────────────────────────────── */
+@keyframes sc-sticker{
+  0%       {opacity:0; transform:translateY(16px) rotate(-8deg) scale(.9)}
+  7%,88%   {opacity:1; transform:translateY(0)    rotate(-8deg) scale(1)}
+  96%,100% {opacity:0; transform:translateY(10px) rotate(-8deg) scale(.96)}
+}
+@keyframes sc-phone{
+  0%,8%    {opacity:0; transform:translateY(34px) rotate(-4deg)}
+  20%,88%  {opacity:1; transform:translateY(0)    rotate(-4deg)}
+  96%,100% {opacity:0; transform:translateY(20px) rotate(-4deg)}
+}
+@keyframes sc-cam{
+  0%,44%   {opacity:1}
+  50%,100% {opacity:0}
+}
+@keyframes sc-beam{
+  0%,17%   {opacity:0; transform:translateY(-38px)}
+  19%      {opacity:1}
+  29%      {opacity:1; transform:translateY(38px)}
+  31%      {opacity:0; transform:translateY(-38px)}
+  33%      {opacity:1}
+  42%      {opacity:1; transform:translateY(38px)}
+  44%,100% {opacity:0}
+}
+@keyframes sc-tick{
+  0%,42%   {opacity:0; transform:scale(.4)}
+  46%      {opacity:1; transform:scale(1)}
+  50%,100% {opacity:0; transform:scale(1)}
+}
+@keyframes sc-page{
+  0%,46%   {opacity:0; transform:scale(.97)}
+  52%,90%  {opacity:1; transform:scale(1)}
+  96%,100% {opacity:0; transform:scale(.99)}
+}
+
+/* Someone who has asked for less movement gets the end of the story —
+   the page, open, with the sticker beside it. No loop, nothing flashing. */
+@media (prefers-reduced-motion:reduce){
+  .scene .phone,
+  .scene__sticker,
+  .pm{animation:none; opacity:1; transform:none}
+  .scene .phone{transform:rotate(-4deg)}
+  .scene__sticker{transform:rotate(-8deg)}
+  .cam,
+  .cam__beam,
+  .cam__tick{animation:none; opacity:0}
+}
+
+/* ══ SEGMENTED CONTROL ═══════════════════════════════════════════════════
+   Two or three views of one thing, switched in place: Refer / Gift on the
+   gift tab, Phone / Web on the QR preview. Moved here from tab-gift.css on
+   2026-09-27, when the second screen wanted it. */
+
+.seg{
+  display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:4px;
+  padding:4px; border-radius:var(--r-pill); background:var(--ground-sunk);
+}
+.seg__b{
+  border:0; cursor:pointer; height:38px; border-radius:var(--r-pill);
+  background:none; color:var(--ink-mid);
+  font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-bold);
+  display:flex; align-items:center; justify-content:center; gap:var(--s-2);
+  transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.seg__b svg{width:16px; height:16px}
+.seg__b:hover{color:var(--ink)}
+.seg__b[aria-selected="true"]{background:var(--ground); color:var(--ink); box-shadow:var(--shadow-sm)}
+.seg__n{
+  min-width:20px; height:20px; padding-inline:6px; border-radius:var(--r-pill);
+  display:grid; place-items:center; background:var(--ground-sunk); color:var(--ink-mid);
+  font-size:var(--fs-label); font-weight:var(--fw-bold); letter-spacing:0;
+}
+.seg__b[aria-selected="true"] .seg__n{background:var(--ink); color:var(--ink-invert)}

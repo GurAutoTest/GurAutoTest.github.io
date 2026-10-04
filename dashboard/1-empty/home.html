@@ -1,0 +1,287 @@
+<title>Home · Codemarca</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../dashboard.css">
+<link rel="stylesheet" href="../../home.css">
+
+<!-- ==========================================================================
+     CODEMARCA — HOME  ·  flow 1, empty account
+     Signed up, did nothing. One job: get the page built.
+
+     REDONE 2026-09-16 after Garry's review. What he said was wrong with v1:
+       · the one-step card was right, but it was a wall of words
+       · "what you get" read like a feature list — content, content, content
+       · the sticker section was the most boring card on the screen, and it
+        is the product — people look at the picture before they read
+       · this becomes an app, so: less text, more to look at
+       · no UPI mention — there is no UPI field
+
+     So every section now leads with a picture and says one line:
+
+       HERO      the finished page, drawn on a phone — it IS the product,
+                 so it is drawn live, not a placeholder
+       3 TILES   one link · your own QR · saves to their phone — a visual
+                 each, a title each, nothing more
+       STICKERS  product photos first (placeholders named after the files
+                 in assets/product/), then one line and a quiet button.
+                 Still second to the page — priority is the customer.
+
+     STATES
+       fresh      just signed up
+       returning  came back, still nothing
+       scanned    gifted a sticker and claimed it — their QR sits on the
+                  phone in the hero, and the sticker section is gone
+                  because they are already holding one
+     ========================================================================== -->
+
+<style>
+/* ── HERO ───────────────────────────────────────────────────────────────
+   Picture first on a phone, words beside it on a desktop. */
+.hero{display:grid; gap:var(--s-5); align-items:center}
+@media (min-width:720px){
+  .hero{grid-template-columns:minmax(0,3fr) minmax(0,2fr)}
+  .hero__art{order:2}
+}
+.hero__say{display:flex; flex-direction:column; gap:var(--s-3)}
+.hero__eyebrow{align-self:flex-start; background:rgba(255,255,255,.1); color:var(--ink-invert)}
+.hero__h{font-size:clamp(1.75rem,6vw,2.5rem); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display); line-height:1.05; text-wrap:balance}
+.hero__p{font-size:var(--fs-sm); color:rgba(255,255,255,.72); letter-spacing:.14px; max-width:34ch}
+.hero__say .btn{margin-top:var(--s-2)}
+@media (min-width:720px){ .hero__say .btn{align-self:flex-start; min-width:14rem} }
+
+/* the scan scene sits where the static phone used to — styles for it are
+   in dashboard.css, because other screens will want the same drawing */
+.hero__art{position:relative; display:grid; place-items:center}
+
+/* ── THREE TILES ────────────────────────────────────────────────────────
+   A picture and a title. Swipe row on a phone, three across on desktop. */
+.get{margin-block:var(--s-3)}
+.tiles{
+  display:grid; grid-auto-flow:column; grid-auto-columns:72%;
+  gap:var(--s-3); overflow-x:auto; scroll-snap-type:x mandatory;
+  margin:var(--s-4) calc(var(--gutter) * -1) 0; padding:var(--s-1) var(--gutter) var(--s-2);
+  scroll-padding-inline:var(--gutter); scrollbar-width:none;
+}
+.tiles::-webkit-scrollbar{display:none}
+
+/* SWIPE BAR — the row's own scrollbar. A real one is no use here: iOS
+   Safari and most phone browsers hide it and ignore its styling, and this
+   bar exists only to say "there is more to the side". Thumb width is the
+   visible share of the row, its position follows the swipe. */
+.tiles__bar{position:relative; height:4px; margin-top:var(--s-3);
+  border-radius:var(--r-pill); background:var(--line); overflow:hidden}
+.tiles__bar i{position:absolute; top:0; bottom:0; left:0; width:40%;
+  border-radius:inherit; background:var(--ink)}
+
+@media (min-width:720px){
+  .get{margin-block:0}
+  .tiles{grid-auto-flow:row; grid-template-columns:repeat(3,1fr); grid-auto-columns:auto;
+    overflow:visible; margin:var(--s-3) 0 0; padding:0}
+  .tiles__bar{display:none}
+}
+.tile{scroll-snap-align:start; display:flex; flex-direction:column; gap:var(--s-3);
+  padding:var(--s-3); border-radius:var(--r-lg); background:var(--ground); box-shadow:var(--shadow-sm)}
+.tile__art{height:128px; border-radius:var(--r-md); background:var(--brand-violet-tint);
+  display:grid; place-items:center; overflow:hidden}
+.tile__t{padding-inline:var(--s-1); font-size:var(--fs-sm); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display)}
+.tile__s{padding-inline:var(--s-1); margin-top:calc(var(--s-2) * -1);
+  font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:.14px}
+
+.art-link{display:flex; align-items:center; gap:8px; padding:8px 8px 8px 14px;
+  border-radius:var(--r-pill); background:#fff; box-shadow:var(--shadow-md);
+  font-family:var(--font-mono); font-size:.75rem; color:var(--ink-mid)}
+.art-link b{color:var(--brand-violet)}
+.art-link span:last-child{display:grid; place-items:center; width:26px; height:26px;
+  border-radius:50%; background:var(--brand-violet); color:#fff}
+.art-link svg{width:13px; height:13px}
+
+.art-qr{width:92px; padding:7px; border-radius:var(--r-md); background:#fff;
+  box-shadow:var(--shadow-md); transform:rotate(-3deg)}
+.art-qr svg{display:block; width:100%; height:auto}
+
+.art-save{display:flex; flex-direction:column; align-items:center; gap:6px; width:132px;
+  padding:12px; border-radius:var(--r-md); background:#fff; box-shadow:var(--shadow-md)}
+.art-save i{width:34px; height:34px; border-radius:50%; background:var(--ink);
+  color:#fff; display:grid; place-items:center; font-style:normal; font-weight:var(--fw-black); font-size:.875rem}
+.art-save b{font-size:.75rem}
+.art-save span{display:flex; align-items:center; gap:4px; height:24px; padding:0 10px;
+  border-radius:var(--r-pill); background:var(--ok); color:#fff; font-size:.625rem; font-weight:var(--fw-bold)}
+.art-save svg{width:11px; height:11px}
+
+/* ── STICKERS ───────────────────────────────────────────────────────────
+   Photos first. Light version of the placeholder frame the pack card uses
+   on the dark band, so it reads on white. */
+.stk2{gap:var(--s-4)}
+.stk2__top{display:flex; align-items:center; justify-content:space-between; gap:var(--s-3)}
+.stk2 .shot__ph{background:var(--ground-soft); border-color:var(--line-strong)}
+.stk2 .shot__ph::before{background-image:linear-gradient(var(--line) 1px,transparent 1px),
+  linear-gradient(90deg,var(--line) 1px,transparent 1px)}
+.stk2 .shot__tag{color:var(--brand-violet); background:#fff; box-shadow:inset 0 0 0 1px var(--line)}
+.stk2 .shot__desc{color:var(--ink-mid)}
+.stk2 .shot__dot{background:var(--line-strong)}
+.stk2 .shot__dot[data-on]{background:var(--ink)}
+.stk2__h{font-size:1.25rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display); line-height:1.15}
+.stk2__foot{display:flex; align-items:center; justify-content:space-between; gap:var(--s-3); flex-wrap:wrap}
+.stk2__foot p{font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:.14px}
+</style>
+
+<div class="app">
+  <div class="app__main">
+    <main class="view">
+
+      <!-- ══ HEAD — one line each ═══════════════════════════════════════ -->
+
+      <header class="head" data-when="fresh">
+        <h1>Welcome, <span data-fill="user.first">Garry</span>.</h1>
+        <p>One step and you're live.</p>
+      </header>
+
+      <header class="head" data-when="returning">
+        <h1>Hey <span data-fill="user.first">Garry</span>, one step left.</h1>
+        <p>Still takes two minutes.</p>
+      </header>
+
+      <header class="head" data-when="scanned">
+        <h1>That sticker is yours now.</h1>
+        <p>A gift from <span data-fill="giftedBy.name">Arjun M.</span> — give it a page.</p>
+      </header>
+
+
+      <!-- ══ HERO — the one ask ═════════════════════════════════════════ -->
+
+      <section class="card card--dark card--close card--act hero">
+
+        <div class="hero__art" data-scene></div>
+
+        <div class="hero__say">
+          <span class="chip hero__eyebrow">1 step · 2 min</span>
+          <p class="hero__h" data-when="fresh returning">Build your page.</p>
+          <p class="hero__h" data-when="scanned">Make your sticker work.</p>
+          <p class="hero__p" data-when="fresh returning">Your number, WhatsApp and socials — one page, one tap.</p>
+          <p class="hero__p" data-when="scanned">It works already — it just opens a page with only your name on it.</p>
+          <a class="btn btn--go btn--wide" href="../../onboarding.html">Build my page</a>
+        </div>
+      </section>
+
+
+      <!-- ══ WHAT YOU GET — three pictures ══════════════════════════════ -->
+
+      <section class="get">
+        <span class="card__title">What you get</span>
+        <div class="tiles">
+
+          <div class="tile">
+            <div class="tile__art">
+              <span class="art-link"><span>codemarca.com/<b data-fill="handle">garry</b></span><span data-ic="share"></span></span>
+            </div>
+            <span class="tile__t">One link</span>
+            <span class="tile__s">Share it anywhere</span>
+          </div>
+
+          <div class="tile">
+            <div class="tile__art">
+              <span class="art-qr" data-qr-preview></span>
+            </div>
+            <span class="tile__t">Your own QR</span>
+            <span class="tile__s">Yours for good</span>
+          </div>
+
+          <div class="tile">
+            <div class="tile__art">
+              <span class="art-save">
+                <i data-fill="user.initial">G</i>
+                <b data-fill="user.first">Garry</b>
+                <span data-ic="check">Saved</span>
+              </span>
+            </div>
+            <span class="tile__t">Saves to their phone</span>
+            <span class="tile__s">One tap, no typing</span>
+          </div>
+
+        </div>
+        <div class="tiles__bar" aria-hidden="true"><i></i></div>
+      </section>
+
+
+      <!-- ══ STICKERS — photos first ════════════════════════════════════
+           Quiet on purpose: a page is the priority, but nobody who only
+           wants stickers is stopped. Tags are the filenames the real
+           photos go under in assets/product/. -->
+
+      <section class="card stk2" data-when="fresh returning">
+        <div class="stk2__top">
+          <span class="card__title">Stickers</span>
+          <span class="chip chip--ok">Free pack</span>
+        </div>
+
+        <div class="shot" data-shots>
+          <div class="shot__track">
+            <div class="shot__slide"><img class="shot__ph" src="../../assets/photos/codemarca-qr-sticker-car-rear-window.jpg" alt="Codemarca 4 inch QR sticker on a car's rear window" width="2400" height="1792" loading="lazy"></div>
+            <div class="shot__slide"><img class="shot__ph" src="../../assets/photos/codemarca-qr-sticker-phone-case-studio.jpg" alt="Codemarca 1.5 inch QR sticker on a phone case" width="2400" height="1792" loading="lazy"></div>
+            <div class="shot__slide"><img class="shot__ph" src="../../assets/photos/codemarca-qr-sticker-pack-on-wooden-desk-square.jpg" alt="The Codemarca pack as it arrives" width="2048" height="2048" loading="lazy"></div>
+          </div>
+          <div class="shot__dots">
+            <button class="shot__dot" type="button" aria-label="Photo 1"></button>
+            <button class="shot__dot" type="button" aria-label="Photo 2"></button>
+            <button class="shot__dot" type="button" aria-label="Photo 3"></button>
+          </div>
+        </div>
+
+        <p class="stk2__h">Put your page on things.</p>
+
+        <div class="stk2__foot">
+          <p>You only pay delivery</p>
+          <a class="btn btn--ghost btn--sm" href="../../select-pack.html">See the pack</a>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="state.js"></script>
+<script src="../../dashboard.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var a = CM.shell({ page: "home", title: "Home" });
+
+  /* the handle they will probably pick — only for the drawings */
+  var handle = (a.user.name || "you").split(" ")[0].toLowerCase();
+
+  /* THE SCENE — sticker, scan, page. Seeded on their real code when they
+     have one (the gifted-sticker state), otherwise on a made-up one, since
+     no code exists until a page does. */
+  document.querySelector("[data-scene]").innerHTML =
+    CM.scanScene(a, { seed: a.code ? a.code.id : "preview-" + handle });
+  /* the tile's square is illustration only — no code exists yet */
+  var prev = document.querySelector("[data-qr-preview]");
+  if (prev) { prev.innerHTML = CM.qr(a.code ? a.code.id : "preview-" + handle); }
+
+  /* swipe bar under the tiles — hidden by CSS from 720px up */
+  var row = document.querySelector(".tiles");
+  var thumb = document.querySelector(".tiles__bar i");
+  if (row && thumb) {
+    var paint = function () {
+      var max = row.scrollWidth, vis = row.clientWidth;
+      var w = Math.min(100, vis / max * 100);
+      var at = max > vis ? row.scrollLeft / (max - vis) : 0;
+      thumb.style.width = w + "%";
+      thumb.style.left = (at * (100 - w)) + "%";
+    };
+    row.addEventListener("scroll", paint, { passive: true });
+    window.addEventListener("resize", paint);
+    paint();
+  }
+
+  CM.carousel(document.querySelector("[data-shots]"));
+
+  CM.draw(a, CM.assign(CM.derived(a), { handle: handle }));
+})();
+</script>
