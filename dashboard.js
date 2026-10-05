@@ -199,18 +199,32 @@
       acc.profile.photo = customPhoto;
       acc.profile.links = customLinks;
       acc.profile.customs = customCustoms;
+      acc.profile.email = customEmail;
       if (customAccount && customAccount.profile) {
         if (customAccount.profile.theme) acc.profile.theme = customAccount.profile.theme;
         if (customAccount.profile.order) acc.profile.order = customAccount.profile.order;
         if (customAccount.profile.socialOrder) acc.profile.socialOrder = customAccount.profile.socialOrder;
         if (customAccount.profile.live !== undefined) acc.profile.live = customAccount.profile.live;
+        if (customAccount.profile.phone !== undefined) acc.profile.phone = customAccount.profile.phone;
+        if (customAccount.profile.phoneOn !== undefined) acc.profile.phoneOn = customAccount.profile.phoneOn;
+        if (customAccount.profile.waSame !== undefined) acc.profile.waSame = customAccount.profile.waSame;
+        if (customAccount.profile.wa !== undefined) acc.profile.wa = customAccount.profile.wa;
+        if (customAccount.profile.waOn !== undefined) acc.profile.waOn = customAccount.profile.waOn;
+        if (customAccount.profile.email !== undefined) acc.profile.email = customAccount.profile.email;
+        if (customAccount.profile.emailOn !== undefined) acc.profile.emailOn = customAccount.profile.emailOn;
+      }
+      if (acc.profile.emailOn === undefined && acc.profile.email) {
+        acc.profile.emailOn = true;
+      }
+      if (customUsername && acc.referrals) {
+        acc.referrals.link = "codemarca.com/r/" + customUsername;
       }
 
       acc.user.name = customName || customUsername || "My Account";
       acc.user.email = customEmail;
       if (rawPhone) {
         acc.user.phone = "+91 " + rawPhone.replace(/\D/g, "");
-        acc.profile.phone = rawPhone.replace(/\D/g, "");
+        if (!acc.profile.phone) acc.profile.phone = rawPhone.replace(/\D/g, "");
       }
 
       try {
@@ -1035,9 +1049,9 @@
 
         /* 3 — and what it opens */
         '<div class="pm">' +
-        '<span class="pm__av" data-fill="user.initial">G</span>' +
-        '<span class="pm__name" data-fill="user.name">Garry</span>' +
-        '<span class="pm__url">codemarca.com/<span data-fill="handle">garry</span></span>' +
+        '<span class="pm__av" data-fill="user.initial"></span>' +
+        '<span class="pm__name" data-fill="user.name"></span>' +
+        '<span class="pm__url">codemarca.com/<span data-fill="profile.handle"></span></span>' +
         '<span class="pm__soc">' + SOCIALS + "</span>" +
         '<span class="pm__btns">' +
         '<span class="pm__btn pm__btn--call" data-ic="phone">Call</span>' +
