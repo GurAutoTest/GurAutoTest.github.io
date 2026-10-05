@@ -62,10 +62,11 @@
                   data-copy="https://codemarca.com/yourname" data-copy-msg="Profile link copied">
             <span data-ic-in="copy"></span>Copy link
           </button>
-          <a class="me__btn" id="meView" href="../profile.html?view=owner&amp;handle=yourname&amp;theme=violet"
+          <a class="me__btn" id="meView" href="../profile.html?view=owner"
              target="_blank" rel="noopener"><span data-ic-in="eye"></span>View page</a>
         </div>
       </section>
+
 
       <!-- ── BASICS ──────────────────────────────────────────────────────── -->
 
@@ -73,105 +74,88 @@
         <span class="card__title">Basics</span>
 
         <div class="photo">
-          <div class="photo__disc" id="photoDisc">U</div>
+          <div class="photo__disc" id="photoDisc" aria-hidden="true">U</div>
           <div class="photo__acts">
-            <label class="btn btn--ghost btn--sm">
-              <span data-ic-in="pen"></span>Change photo
-              <input type="file" id="photoInput" accept="image/*" hidden>
-            </label>
-            <button class="btn btn--quiet btn--sm" type="button" id="removePhoto">Remove</button>
+            <div class="photo__row">
+              <button class="photo__btn" type="button" id="photoBtn">Change photo</button>
+              <button class="photo__clear" type="button" id="photoClear" hidden>Remove</button>
+            </div>
+            <p class="photo__hint">Square works best. JPG or PNG.</p>
           </div>
+          <input class="sr" type="file" id="photoInput" accept="image/*" hidden>
         </div>
 
         <div class="fld">
-          <label class="lbl" for="name">Your name</label>
-          <input class="inp" type="text" id="name" maxlength="50" autocomplete="name" placeholder="Your name" required>
+          <div class="fld__top"><label class="fld__lbl" for="name">Your name</label></div>
+          <div class="inp"><input id="name" type="text" maxlength="40" autocomplete="name" placeholder="Your name"></div>
         </div>
 
         <div class="fld">
-          <label class="lbl" for="bio">Bio <span class="lbl__opt">Optional</span></label>
-          <textarea class="inp" id="bio" rows="2" maxlength="160" placeholder="A line about what you do"></textarea>
-          <span class="fld__hint"><span id="bioCount">0</span>/160</span>
-        </div>
-
-        <div class="fld">
-          <label class="lbl" for="handle">Codemarca link</label>
-          <div class="inp-pfx">
-            <span class="inp-pfx__t">codemarca.com/</span>
-            <input class="inp" type="text" id="handle" maxlength="24" autocomplete="off" spellcheck="false" required>
+          <div class="fld__top">
+            <label class="fld__lbl" for="bio">Bio <span class="fld__opt">— optional</span></label>
+            <span class="fld__count" id="bioCount">0/100</span>
           </div>
-          <span class="fld__hint">Changing this does not break existing stickers — your printed code stays the same.</span>
+          <div class="inp inp--area"><textarea id="bio" maxlength="100" rows="2" placeholder="One line about what you do."></textarea></div>
         </div>
       </section>
 
-      <!-- ── CONTACT ─────────────────────────────────────────────────────── -->
+
+      <!-- ── CONTACT ───────────────────────────────────────────────────── -->
 
       <section class="card" data-when="fresh settled coming active reorder tee">
         <span class="card__title">Contact</span>
 
         <div class="fld">
-          <div class="row">
-            <span class="row__txt">
-              <span class="row__t">Phone</span>
-              <span class="row__s">Call button on your page</span>
-            </span>
-            <label class="sw"><input type="checkbox" id="phoneOn"><span class="sw__track"></span></label>
-          </div>
-          <div class="inp-pfx" id="phoneBox">
-            <span class="inp-pfx__t">+91</span>
-            <input class="inp" type="tel" id="phone" placeholder="10-digit mobile number" maxlength="12">
+          <div class="fld__top"><label class="fld__lbl" for="phone">Phone</label></div>
+          <div class="inp">
+            <span class="inp__pre">+91</span>
+            <input id="phone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="98765 43210">
+            <button class="eye" type="button" id="phoneEye" aria-pressed="true" aria-label="Hide phone on your page"></button>
           </div>
         </div>
 
         <div class="fld">
-          <div class="row">
-            <span class="row__txt">
-              <span class="row__t">WhatsApp</span>
-              <span class="row__s">Chat button on your page</span>
-            </span>
-            <label class="sw"><input type="checkbox" id="waOn"><span class="sw__track"></span></label>
-          </div>
-          <div id="waBox">
-            <label class="chk">
-              <input type="checkbox" id="waSame">
-              <span class="chk__box"></span>
-              <span class="chk__t">Same as phone</span>
-            </label>
-            <div class="inp-pfx" id="waCustomBox" style="margin-top:var(--s-2)">
-              <span class="inp-pfx__t">+91</span>
-              <input class="inp" type="tel" id="wa" placeholder="10-digit mobile number" maxlength="12">
-            </div>
+          <div class="fld__top"><label class="fld__lbl" for="wa">WhatsApp</label></div>
+          <label class="chk">
+            <input type="checkbox" id="waSame">
+            <span class="chk__box"><svg viewBox="0 0 12 12" fill="none"><path d="M1.8 6.2 4.5 9l5.7-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            Same as phone
+          </label>
+          <div class="inp" id="waWrap">
+            <span class="inp__pre">+91</span>
+            <input id="wa" type="tel" inputmode="numeric" maxlength="10" placeholder="Business number">
+            <button class="eye" type="button" id="waEye" aria-pressed="true" aria-label="Hide WhatsApp on your page"></button>
           </div>
         </div>
 
         <div class="fld">
-          <div class="row">
-            <span class="row__txt">
-              <span class="row__t">Email</span>
-              <span class="row__s">Email button on your page</span>
-            </span>
-            <label class="sw"><input type="checkbox" id="emailOn"><span class="sw__track"></span></label>
+          <div class="fld__top"><label class="fld__lbl" for="email">Email</label></div>
+          <div class="inp">
+            <input id="email" type="email" autocomplete="email" placeholder="you@example.com">
+            <button class="eye" type="button" id="emailEye" aria-pressed="true" aria-label="Hide email on your page"></button>
           </div>
-          <input class="inp" type="email" id="email" placeholder="you@example.com" maxlength="80">
         </div>
+
+        <p class="card__note">Save contact is on every page — one tap and you are in their phonebook.</p>
       </section>
 
-      <!-- ── LINKS ───────────────────────────────────────────────────────── -->
+
+      <!-- ── LINKS ─────────────────────────────────────────────────────── -->
 
       <section class="card" data-when="fresh settled coming active reorder tee" id="linksCard">
         <div class="card__head">
           <span class="card__title">Links</span>
-          <span class="chip chip--flat" id="linkCount">5 shown</span>
+          <span class="chip chip--flat" id="linkCount">0 shown</span>
         </div>
-
-        <p class="card__note">Tap a platform to add it. You can reorder them below.</p>
-        <div class="picks" id="picks" role="toolbar" aria-label="Add links"></div>
-        <div class="rows" id="rows"></div>
-
-        <button class="btn btn--ghost btn--wide" type="button" id="addCustom" style="margin-top:var(--s-3)">
-          <span data-ic-in="plus"></span>Add custom link
+        <div class="picks" id="picks"></div>
+        <div class="added" id="added"></div>
+        <button class="addcustom" type="button" id="addCustom">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Custom link
         </button>
+        <div class="custom" id="customs"></div>
       </section>
+
 
       <!-- ── ORDER ───────────────────────────────────────────────────────── -->
 
@@ -181,6 +165,7 @@
         <ul class="order" id="order"></ul>
       </section>
 
+
       <!-- ── THEME ───────────────────────────────────────────────────────── -->
 
       <section class="card" data-when="fresh settled coming active reorder tee">
@@ -188,31 +173,23 @@
         <div class="themes" role="group" aria-label="Page theme">
           <button class="theme" type="button" aria-pressed="false" data-theme="light">
             <span class="theme__sw" data-t="light"><i></i><i></i><i></i></span>
-            <span class="theme__n">Clean white</span>
+            <span class="theme__n">Light</span>
           </button>
           <button class="theme" type="button" aria-pressed="false" data-theme="dark">
             <span class="theme__sw" data-t="dark"><i></i><i></i><i></i></span>
-            <span class="theme__n">Pure black</span>
+            <span class="theme__n">Dark</span>
           </button>
-          <button class="theme" type="button" aria-pressed="false" data-theme="stone">
-            <span class="theme__sw" data-t="stone"><i></i><i></i><i></i></span>
-            <span class="theme__n">Warm stone</span>
-          </button>
-          <button class="theme" type="button" aria-pressed="false" data-theme="violet">
+          <button class="theme" type="button" aria-pressed="true" data-theme="violet">
             <span class="theme__sw" data-t="violet"><i></i><i></i><i></i></span>
-            <span class="theme__n">Codemarca</span>
+            <span class="theme__n">Violet</span>
           </button>
-          <button class="theme" type="button" aria-pressed="false" data-theme="amber">
-            <span class="theme__sw" data-t="amber"><i></i><i></i><i></i></span>
-            <span class="theme__n">Warm amber</span>
+          <button class="theme" type="button" aria-pressed="false" data-theme="cream">
+            <span class="theme__sw" data-t="cream"><i></i><i></i><i></i></span>
+            <span class="theme__n">Cream</span>
           </button>
-          <button class="theme" type="button" aria-pressed="false" data-theme="glass-dark">
-            <span class="theme__sw" data-t="glass-dark"><i></i><i></i><i></i></span>
-            <span class="theme__n">Dark glass</span>
-          </button>
-          <button class="theme" type="button" aria-pressed="false" data-theme="glass-light">
-            <span class="theme__sw" data-t="glass-light"><i></i><i></i><i></i></span>
-            <span class="theme__n">Light glass</span>
+          <button class="theme" type="button" aria-pressed="false" data-theme="gradient">
+            <span class="theme__sw" data-t="gradient"><i></i><i></i><i></i></span>
+            <span class="theme__n">Gradient</span>
           </button>
           <button class="theme" type="button" aria-pressed="false" data-theme="glass-ember">
             <span class="theme__sw" data-t="glass-ember"><i></i><i></i><i></i></span>
@@ -224,6 +201,7 @@
           </button>
         </div>
       </section>
+
 
       <!-- ── VISIBILITY ────────────────────────────────────────────────── -->
 
@@ -238,6 +216,7 @@
         </div>
       </section>
 
+
       <!-- ── SAVE BAR ──────────────────────────────────────────────────── -->
 
       <div class="savebar" id="savebar" role="status">
@@ -249,6 +228,7 @@
     </main>
   </div>
 </div>
+
 
 <script src="state.js"></script>
 <script src="../dashboard.js"></script>

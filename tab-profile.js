@@ -156,6 +156,13 @@
     socialOrder:[]
   }, a.profile || {});
 
+  if (SAVED.name === "Garry Singh" || SAVED.name === "Garry" || SAVED.name === "Gurdeep Singh" || SAVED.name === "Your Name" || SAVED.name === "User") {
+    SAVED.name = (a.user && a.user.name && a.user.name !== "Garry Singh" && a.user.name !== "Garry") ? a.user.name : (SAVED.handle && SAVED.handle !== "garry" ? SAVED.handle : "");
+  }
+  if (!SAVED.name && a.user && a.user.name && a.user.name !== "Garry Singh" && a.user.name !== "Garry") {
+    SAVED.name = a.user.name;
+  }
+
   function merge(base, extra) {
     var out = JSON.parse(JSON.stringify(base)), k;
     for (k in extra) { if (extra[k] !== undefined) { out[k] = extra[k]; } }
@@ -173,36 +180,47 @@
   function initial() { return (S.name.trim()[0] || S.handle[0] || "?").toUpperCase(); }
 
   function paintPhoto() {
-    $("photoDisc").innerHTML = S.photo ? '<img src="' + S.photo + '" alt="">' : esc(initial());
-    $("photoClear").hidden = !S.photo;
-    $("photoBtn").textContent = S.photo ? "Change photo" : "Add photo";
+    var disc = $("photoDisc");
+    if (disc) disc.innerHTML = S.photo ? '<img src="' + S.photo + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">' : esc(initial());
+    var clear = $("photoClear");
+    if (clear) clear.hidden = !S.photo;
+    var btn = $("photoBtn");
+    if (btn) btn.textContent = S.photo ? "Change photo" : "Add photo";
   }
   function paintBasics() {
-    $("name").value     = S.name;
-    $("bio").value      = S.bio;
-    $("bioCount").textContent  = S.bio.length + "/100";
-    $("bioCount").dataset.over = String(S.bio.length >= 100);
+    if ($("name")) $("name").value = S.name;
+    if ($("bio")) $("bio").value = S.bio;
+    if ($("bioCount")) {
+      $("bioCount").textContent  = S.bio.length + "/100";
+      $("bioCount").dataset.over = String(S.bio.length >= 100);
+    }
     paintPhoto();
   }
 
-  $("photoBtn").addEventListener("click", function () { $("photoInput").click(); });
-  $("photoInput").addEventListener("change", function (e) {
+  var photoBtn = $("photoBtn");
+  if (photoBtn) photoBtn.addEventListener("click", function () { var pi = $("photoInput"); if (pi) pi.click(); });
+  var photoInput = $("photoInput");
+  if (photoInput) photoInput.addEventListener("change", function (e) {
     var f = e.target.files && e.target.files[0];
     if (!f) return;
     var r = new FileReader();
     r.onload = function () { S.photo = r.result; paintPhoto(); dirty(); };
     r.readAsDataURL(f);
   });
-  $("photoClear").addEventListener("click", function () {
-    S.photo = null; $("photoInput").value = ""; paintPhoto(); dirty();
+  var photoClear = $("photoClear");
+  if (photoClear) photoClear.addEventListener("click", function () {
+    S.photo = null; var pi = $("photoInput"); if (pi) pi.value = ""; paintPhoto(); dirty();
   });
 
   /* the name feeds the initial in the disc and whether Save contact is live */
-  $("name").addEventListener("input",     function () { S.name = this.value; paintPhoto(); paintOrder(); });
-  $("bio").addEventListener("input", function () {
+  if ($("name")) $("name").addEventListener("input", function () { S.name = this.value; paintPhoto(); paintOrder(); dirty(); });
+  if ($("bio")) $("bio").addEventListener("input", function () {
     S.bio = this.value.slice(0, 100);
-    $("bioCount").textContent  = S.bio.length + "/100";
-    $("bioCount").dataset.over = String(S.bio.length >= 100);
+    if ($("bioCount")) {
+      $("bioCount").textContent  = S.bio.length + "/100";
+      $("bioCount").dataset.over = String(S.bio.length >= 100);
+    }
+    dirty();
   });
 
   /* — handle. Same check as the builder, with one difference: the handle
@@ -256,14 +274,15 @@
   function digits(v) { return v.replace(/[^0-9]/g, "").slice(0, 10); }
 
   function paintContact() {
-    $("phone").value = S.phone;
-    $("wa").value    = S.wa;
-    $("email").value = S.email;
-    $("waSame").checked = S.waSame;
-    $("waWrap").hidden  = S.waSame;
+    if ($("phone")) $("phone").value = S.phone;
+    if ($("wa")) $("wa").value    = S.wa;
+    if ($("email")) $("email").value = S.email;
+    if ($("waSame")) $("waSame").checked = S.waSame;
+    if ($("waWrap")) $("waWrap").hidden  = S.waSame;
     [["phoneEye","phoneOn","phone"],["waEye","waOn","WhatsApp"],["emailEye","emailOn","email"]]
       .forEach(function (e) {
         var b = $(e[0]);
+        if (!b) return;
         b.innerHTML = EYE;
         b.setAttribute("aria-pressed", String(S[e[1]]));
         b.setAttribute("aria-label", (S[e[1]] ? "Hide " : "Show ") + e[2] + " on your page");
@@ -272,7 +291,9 @@
 
   [["phoneEye","phoneOn","phone"],["waEye","waOn","WhatsApp"],["emailEye","emailOn","email"]]
     .forEach(function (e) {
-      $(e[0]).addEventListener("click", function () {
+      var b = $(e[0]);
+      if (!b) return;
+      b.addEventListener("click", function () {
         S[e[1]] = !S[e[1]];
         this.setAttribute("aria-pressed", String(S[e[1]]));
         this.setAttribute("aria-label", (S[e[1]] ? "Hide " : "Show ") + e[2] + " on your page");
@@ -280,20 +301,18 @@
       });
     });
 
-  $("phone").addEventListener("input", function () { this.value = digits(this.value); S.phone = this.value; changed(); });
-  $("wa").addEventListener("input",    function () { this.value = digits(this.value); S.wa = this.value; changed(); });
-  $("email").addEventListener("input", function () { S.email = this.value.trim(); changed(); });
-
-  /* business WhatsApp numbers are often different — so the box is a
-     checkbox, not an assumption */
-  $("waSame").addEventListener("change", function () {
+  if ($("phone")) $("phone").addEventListener("input", function () { this.value = digits(this.value); S.phone = this.value; changed(); });
+  if ($("wa")) $("wa").addEventListener("input",    function () { this.value = digits(this.value); S.wa = this.value; changed(); });
+  if ($("email")) $("email").addEventListener("input", function () { S.email = this.value.trim(); changed(); });
+  if ($("waSame")) $("waSame").addEventListener("change", function () {
     S.waSame = this.checked;
-    $("waWrap").hidden = this.checked;
+    if ($("waWrap")) $("waWrap").hidden = this.checked;
     changed();
   });
 
   /* — the grid — */
   function paintPicks() {
+    if (!$("picks")) return;
     $("picks").innerHTML = LINKS.map(function (l) {
       var on = !!S.links[l.k];
       return '<button class="pick" type="button" data-k="' + l.k + '" data-on="' + on + '" aria-pressed="' + on + '">' +
@@ -301,7 +320,7 @@
     }).join("");
   }
 
-  $("picks").addEventListener("click", function (e) {
+  if ($("picks")) $("picks").addEventListener("click", function (e) {
     var b = e.target.closest(".pick"); if (!b) return;
     var k = b.dataset.k;
     if (S.links[k]) { delete S.links[k]; }
@@ -312,13 +331,7 @@
     var added = !!S.links[k];
     paintPicks(); paintAdded(); changed();
 
-    /* The row a chip opens takes the cursor, same as onboarding (Garry,
-       2026-09-23) — tap the icon, start typing. Only where there is a real
-       pointer, though: on a phone focus opens the keyboard between taps and
-       pushes the grid away. preventScroll keeps the browser from jumping
-       there; the row is moved into view only when it is actually off screen,
-       so picking several in a row leaves the grid where the finger is. */
-    if (added) {
+    if (added && $("added")) {
       var row = $("added").querySelector('[data-k="' + k + '"]');
       if (row) {
         var field = row.querySelector("input");
@@ -336,8 +349,7 @@
   var MV_DOWN = '<svg viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
   function paintAdded() {
-    /* socials first, in the row's own order and with the arrows that set
-       it; the full-width rows after, arranged in "Order on your page" */
+    if (!$("added")) return;
     var socialKeys = socialsAdded();
     var rowKeys = LINKS.filter(function (l) { return l.kind !== "social"; })
                        .map(function (l) { return l.k; })
@@ -361,28 +373,30 @@
     }).join("");
   }
 
-  $("added").addEventListener("input", function (e) {
-    var row = e.target.closest(".lrow"); if (!row) return;
-    S.links[row.dataset.k].v = e.target.value.trim();
-    changed();
-  });
-  $("added").addEventListener("click", function (e) {
-    var row = e.target.closest(".lrow"); if (!row) return;
-    var k = row.dataset.k;
-    var mv = e.target.closest("[data-smv]");
-    if (mv) { moveSocial(k, mv.dataset.smv === "up" ? -1 : 1); return; }
-    if (e.target.closest(".kill")) { delete S.links[k]; paintPicks(); paintAdded(); changed(); return; }
-    var b = e.target.closest(".eye");
-    if (b) {
-      S.links[k].on = !S.links[k].on;
-      b.setAttribute("aria-pressed", String(S.links[k].on));
-      b.setAttribute("aria-label", (S.links[k].on ? "Hide " : "Show ") + BY[k].n + " on your page");
+  if ($("added")) {
+    $("added").addEventListener("input", function (e) {
+      var row = e.target.closest(".lrow"); if (!row) return;
+      S.links[row.dataset.k].v = e.target.value.trim();
       changed();
-    }
-  });
+    });
+    $("added").addEventListener("click", function (e) {
+      var row = e.target.closest(".lrow"); if (!row) return;
+      var k = row.dataset.k;
+      var mv = e.target.closest("[data-smv]");
+      if (mv) { moveSocial(k, mv.dataset.smv === "up" ? -1 : 1); return; }
+      if (e.target.closest(".kill")) { delete S.links[k]; paintPicks(); paintAdded(); changed(); return; }
+      var b = e.target.closest(".eye");
+      if (b) {
+        S.links[k].on = !S.links[k].on;
+        b.setAttribute("aria-pressed", String(S.links[k].on));
+        b.setAttribute("aria-label", (S.links[k].on ? "Hide " : "Show ") + BY[k].n + " on your page");
+        changed();
+      }
+    });
+  }
 
   /* — custom links, capped at five so the page stays a page, not a list — */
-  $("addCustom").addEventListener("click", function () {
+  if ($("addCustom")) $("addCustom").addEventListener("click", function () {
     if (S.customs.length >= 5) return;
     var id = "c" + (++cid);
     S.customs.push({ id:id, title:"", url:"", on:true });
@@ -392,7 +406,8 @@
   });
 
   function paintCustoms() {
-    $("addCustom").hidden = S.customs.length >= 5;
+    if (!$("customs")) return;
+    if ($("addCustom")) $("addCustom").hidden = S.customs.length >= 5;
     $("customs").innerHTML = S.customs.map(function (c) {
       return '<div class="lrow" data-c="' + c.id + '">' + ic("custom") +
         '<div class="inp"><input type="text" data-f="title" value="' + esc(c.title) + '" placeholder="Button text" aria-label="Custom link text"></div>' +
@@ -407,23 +422,25 @@
     for (var i = 0; i < S.customs.length; i++) if (S.customs[i].id === id) return S.customs[i];
     return null;
   }
-  $("customs").addEventListener("input", function (e) {
-    var row = e.target.closest("[data-c]"); if (!row) return;
-    var c = findCustom(row.dataset.c); if (!c) return;
-    c[e.target.dataset.f] = e.target.value;
-    changed();
-  });
-  $("customs").addEventListener("click", function (e) {
-    var row = e.target.closest("[data-c]"); if (!row) return;
-    var id = row.dataset.c, c = findCustom(id); if (!c) return;
-    if (e.target.closest(".kill")) {
-      S.customs = S.customs.filter(function (x) { return x.id !== id; });
-      S.order = S.order.filter(function (x) { return x !== id; });
-      paintCustoms(); changed(); return;
-    }
-    var b = e.target.closest(".eye");
-    if (b) { c.on = !c.on; b.setAttribute("aria-pressed", String(c.on)); changed(); }
-  });
+  if ($("customs")) {
+    $("customs").addEventListener("input", function (e) {
+      var row = e.target.closest("[data-c]"); if (!row) return;
+      var c = findCustom(row.dataset.c); if (!c) return;
+      c[e.target.dataset.f] = e.target.value;
+      changed();
+    });
+    $("customs").addEventListener("click", function (e) {
+      var row = e.target.closest("[data-c]"); if (!row) return;
+      var id = row.dataset.c, c = findCustom(id); if (!c) return;
+      if (e.target.closest(".kill")) {
+        S.customs = S.customs.filter(function (x) { return x.id !== id; });
+        S.order = S.order.filter(function (x) { return x !== id; });
+        paintCustoms(); changed(); return;
+      }
+      var b = e.target.closest(".eye");
+      if (b) { c.on = !c.on; b.setAttribute("aria-pressed", String(c.on)); changed(); }
+    });
+  }
 
   /* — what is live on the page. The eye being off must OMIT the field from
        the response on the real page, never CSS-hide it. — */
@@ -480,8 +497,9 @@
     return c ? (c.title || "Custom link") : "";
   }
 
-  var linkCount = $("linkCount");
   function recount() {
+    var linkCount = $("linkCount");
+    if (!linkCount) return;
     var n = Object.keys(S.links).filter(function (k) { return S.links[k].v && S.links[k].on; }).length +
             S.customs.filter(function (c) { return c.title && c.on; }).length;
     linkCount.textContent = n + " shown";
@@ -493,12 +511,14 @@
   var DOWN = '<svg viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
   function paintOrder() {
+    var orderEl = $("order");
+    if (!orderEl) return;
     var live = S.order.filter(rowLive);
     if (!live.length) {
-      $("order").innerHTML = '<li class="order__empty">Fill something in above and it shows up here.</li>';
+      orderEl.innerHTML = '<li class="order__empty">Fill something in above and it shows up here.</li>';
       return;
     }
-    $("order").innerHTML = live.map(function (k, i) {
+    orderEl.innerHTML = live.map(function (k, i) {
       var n = esc(rowName(k));
       return '<li class="ord" draggable="true" data-k="' + k + '">' +
         '<span class="ord__grip" aria-hidden="true">' + GRIP + "</span>" +
@@ -525,48 +545,50 @@
     writeBack(live);
   }
 
-  $("order").addEventListener("click", function (e) {
-    var b = e.target.closest("[data-mv]"); if (!b) return;
-    var k = b.closest(".ord").dataset.k, dir = b.dataset.mv;
-    move(k, dir === "up" ? -1 : 1);
-    /* the list was rebuilt — hand focus to the new copy of the button */
-    var again = document.querySelector('.ord[data-k="' + k + '"] [data-mv="' + dir + '"]');
-    if (again && !again.disabled) {
-      try { again.focus({ preventScroll:true }); } catch (err) { again.focus(); }
-    }
-  });
+  if ($("order")) {
+    $("order").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-mv]"); if (!b) return;
+      var k = b.closest(".ord").dataset.k, dir = b.dataset.mv;
+      move(k, dir === "up" ? -1 : 1);
+      /* the list was rebuilt — hand focus to the new copy of the button */
+      var again = document.querySelector('.ord[data-k="' + k + '"] [data-mv="' + dir + '"]');
+      if (again && !again.disabled) {
+        try { again.focus({ preventScroll:true }); } catch (err) { again.focus(); }
+      }
+    });
 
-  var dragKey = null;
-  $("order").addEventListener("dragstart", function (e) {
-    var li = e.target.closest(".ord"); if (!li) return;
-    dragKey = li.dataset.k; li.dataset.drag = "true";
-    e.dataTransfer.effectAllowed = "move";
-    try { e.dataTransfer.setData("text/plain", dragKey); } catch (err) {}
-  });
-  $("order").addEventListener("dragover", function (e) {
-    var li = e.target.closest(".ord"); if (!li || !dragKey) return;
-    e.preventDefault(); li.dataset.over = "true";
-  });
-  $("order").addEventListener("dragleave", function (e) {
-    var li = e.target.closest(".ord"); if (li) li.dataset.over = "false";
-  });
-  $("order").addEventListener("drop", function (e) {
-    var li = e.target.closest(".ord"); if (!li || !dragKey) return;
-    e.preventDefault();
-    var live = S.order.filter(rowLive);
-    var from = live.indexOf(dragKey), to = live.indexOf(li.dataset.k);
-    if (from > -1 && to > -1 && from !== to) {
-      live.splice(to, 0, live.splice(from, 1)[0]);
-      writeBack(live);
-    }
-    dragKey = null;
-  });
-  $("order").addEventListener("dragend", function () { dragKey = null; paintOrder(); });
+    var dragKey = null;
+    $("order").addEventListener("dragstart", function (e) {
+      var li = e.target.closest(".ord"); if (!li) return;
+      dragKey = li.dataset.k; li.dataset.drag = "true";
+      e.dataTransfer.effectAllowed = "move";
+      try { e.dataTransfer.setData("text/plain", dragKey); } catch (err) {}
+    });
+    $("order").addEventListener("dragover", function (e) {
+      var li = e.target.closest(".ord"); if (!li || !dragKey) return;
+      e.preventDefault(); li.dataset.over = "true";
+    });
+    $("order").addEventListener("dragleave", function (e) {
+      var li = e.target.closest(".ord"); if (li) li.dataset.over = "false";
+    });
+    $("order").addEventListener("drop", function (e) {
+      var li = e.target.closest(".ord"); if (!li || !dragKey) return;
+      e.preventDefault();
+      var live = S.order.filter(rowLive);
+      var from = live.indexOf(dragKey), to = live.indexOf(li.dataset.k);
+      if (from > -1 && to > -1 && from !== to) {
+        live.splice(to, 0, live.splice(from, 1)[0]);
+        writeBack(live);
+      }
+      dragKey = null;
+    });
+    $("order").addEventListener("dragend", function () { dragKey = null; paintOrder(); });
+  }
 
-  $("pageLive").addEventListener("change", function () { S.live = this.checked; });
+  if ($("pageLive")) $("pageLive").addEventListener("change", function () { S.live = this.checked; });
 
   function paintAll() {
-    $("pageLive").checked = S.live;
+    if ($("pageLive")) $("pageLive").checked = S.live;
     paintTheme();
     paintHandle(); paintBasics(); paintContact(); paintPicks(); paintAdded(); paintCustoms(); paintOrder(); recount();
   }
@@ -602,6 +624,71 @@
     SAVED = JSON.parse(JSON.stringify(S));
     paintLive();
     clean();
+
+    try {
+      var customAccount = JSON.parse(window.localStorage.getItem("cm.account.custom") || "{}");
+      customAccount.profile = customAccount.profile || {};
+      customAccount.user = customAccount.user || {};
+
+      customAccount.profile.handle = S.handle;
+      customAccount.profile.name = S.name;
+      customAccount.profile.title = S.name || S.handle;
+      customAccount.profile.bio = S.bio;
+      customAccount.profile.photo = S.photo;
+      customAccount.profile.theme = S.theme;
+      customAccount.profile.phone = S.phone;
+      customAccount.profile.phoneOn = S.phoneOn;
+      customAccount.profile.waSame = S.waSame;
+      customAccount.profile.wa = S.wa;
+      customAccount.profile.waOn = S.waOn;
+      customAccount.profile.email = S.email;
+      customAccount.profile.emailOn = S.emailOn;
+      customAccount.profile.links = S.links;
+      customAccount.profile.customs = S.customs;
+      customAccount.profile.order = S.order;
+      customAccount.profile.socialOrder = S.socialOrder;
+      customAccount.profile.live = S.live;
+
+      customAccount.user.name = S.name || S.handle;
+      customAccount.user.email = S.email || (S.handle ? S.handle + "@gmail.com" : "");
+      if (S.phone) customAccount.user.phone = "+91 " + S.phone;
+
+      window.localStorage.setItem("cm.account.custom", JSON.stringify(customAccount));
+      if (S.handle) window.localStorage.setItem("cm.username", S.handle);
+      if (S.name && S.name !== "Garry Singh" && S.name !== "Gurdeep Singh") {
+        window.localStorage.setItem("cm.name", S.name);
+      } else {
+        window.localStorage.removeItem("cm.name");
+      }
+      if (S.phone) window.localStorage.setItem("cm.phone", S.phone);
+      if (S.email) window.localStorage.setItem("cm.email", S.email);
+      if (S.photo) {
+        try { window.localStorage.setItem("cm.photo", S.photo); } catch(e) {}
+      } else {
+        try { window.localStorage.removeItem("cm.photo"); } catch(e) {}
+      }
+    } catch(e) {}
+
+    try {
+      fetch("/api/auth/claim-username", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: S.handle,
+          display_name: S.name.trim() || S.handle,
+          bio: S.bio,
+          avatar_url: S.photo,
+          phone: S.phone,
+          whatsapp: S.wa,
+          email: S.email,
+          theme: S.theme,
+          links: S.links,
+          customs: S.customs,
+          is_live: S.live
+        })
+      }).catch(function () {});
+    } catch(e) {}
+
     CM.toast("Page updated");
     return true;
   }
@@ -628,7 +715,12 @@
   function paintLive() {
     $("meHandle").textContent = SAVED.handle;
     $("meName").textContent = SAVED.name || SAVED.handle;
-    $("meAv").textContent = (SAVED.name.trim()[0] || SAVED.handle[0] || "?").toUpperCase();
+    var init = (SAVED.name.trim()[0] || SAVED.handle[0] || "?").toUpperCase();
+    if (SAVED.photo) {
+      $("meAv").innerHTML = '<img src="' + SAVED.photo + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">';
+    } else {
+      $("meAv").textContent = init;
+    }
     $("meCopy").setAttribute("data-copy", liveUrl());
     $("meView").setAttribute("href", ownerUrl());
   }

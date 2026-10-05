@@ -1268,6 +1268,62 @@ input:-webkit-autofill:active{
   if (q.get("theme"))  P.theme  = q.get("theme");
   if (q.get("view"))   pg.dataset.view = q.get("view");
 
+  try {
+    var rawCustom = localStorage.getItem("cm.account.custom");
+    var customAcc = rawCustom ? JSON.parse(rawCustom) : null;
+    var stHandle = localStorage.getItem("cm.username") || (customAcc && customAcc.profile && customAcc.profile.handle) || "";
+    var isOwner = q.get("view") === "owner" || (stHandle && P.handle && stHandle.toLowerCase() === P.handle.toLowerCase());
+    if (isOwner) {
+      if (customAcc && customAcc.profile) {
+        var cp = customAcc.profile;
+        if (cp.handle) P.handle = cp.handle;
+        if (cp.title || cp.name) P.name = cp.title || cp.name;
+        else if (cp.handle) P.name = cp.handle;
+        if (cp.bio !== undefined) P.bio = cp.bio;
+        if (cp.photo !== undefined) P.photo = cp.photo;
+        if (cp.phone !== undefined) P.phone = cp.phone;
+        if (cp.wa !== undefined) P.wa = cp.wa;
+        if (cp.email !== undefined) P.email = cp.email;
+        if (cp.links !== undefined) P.links = cp.links;
+        if (cp.customs !== undefined) P.customs = cp.customs;
+        if (cp.theme && !q.get("theme")) P.theme = cp.theme;
+        if (cp.order) P.order = cp.order;
+        if (cp.socialOrder) P.socialOrder = cp.socialOrder;
+      } else {
+        var stName = localStorage.getItem("cm.name");
+        if (stName && stName !== "Garry Singh" && stName !== "Gurdeep Singh" && stName !== "Your Name") {
+          P.name = stName;
+        } else if (stHandle) {
+          P.name = stHandle;
+        }
+        var stBio = localStorage.getItem("cm.bio");
+        if (stBio) P.bio = stBio;
+        var stPhone = localStorage.getItem("cm.phone");
+        if (stPhone && stPhone !== "9876543210") { P.phone = stPhone; P.wa = stPhone; }
+        else { P.phone = ""; P.wa = ""; }
+        var stEmail = localStorage.getItem("cm.email");
+        if (stEmail && stEmail !== "garry@example.com") P.email = stEmail;
+        else { P.email = ""; }
+        var stPhoto = localStorage.getItem("cm.photo");
+        if (stPhoto) P.photo = stPhoto;
+        P.links = {};
+        P.customs = [];
+        P.socialOrder = [];
+      }
+    }
+  } catch(e) {}
+
+  if (P.name === "Gurdeep Singh" || P.name === "Garry Singh" || P.name === "Your Name" || P.name === "User") {
+    P.name = P.handle || "My Page";
+  }
+  if (P.phone === "9876543210" && (!customAcc || !customAcc.profile || !customAcc.profile.phone)) {
+    P.phone = "";
+    P.wa = "";
+  }
+  if (P.email === "hello@gurdeep.in" && (!customAcc || !customAcc.profile || !customAcc.profile.email)) {
+    P.email = "";
+  }
+
   /* ?bare=1 — the page a Google sign-up produces before anyone edits it:
      a name, a handle, and nothing else. This is what the code of a claimed
      gift sticker actually opens, and the dashboard previews it with this

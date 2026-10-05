@@ -116,7 +116,7 @@
       <header class="head" data-flow="page-live" data-when="settled">
         <div class="head__row">
           <div>
-            <h1>Hey, <span data-fill="user.first">Garry</span>.</h1>
+            <h1>Hey, <span data-fill="user.first">there</span>.</h1>
             <p>Your page has been live a while and you have sent the link
                <b data-fill="shares">31</b> times. A sticker is that link,
                already on the thing you were holding.</p>
@@ -128,7 +128,7 @@
       <header class="head" data-flow="active">
         <div class="head__row">
           <div>
-            <h1>Hey, <span data-fill="user.first">Garry</span>.</h1>
+            <h1>Hey, <span data-fill="user.first">there</span>.</h1>
             <p>Your code is live, both stickers are working, and people have
                saved your details <b data-fill="shares">59</b> times.</p>
           </div>
@@ -156,7 +156,7 @@
 
         <div class="me__acts">
           <a class="me__btn" href="profile.html"><span data-ic-in="pen"></span>Edit page</a>
-          <a class="me__btn" href="../profile.html?view=owner&amp;handle=garry"
+          <a class="me__btn" href="../profile.html?view=owner"
              target="_blank" rel="noopener" data-owner-view><span data-ic-in="eye"></span>View page</a>
         </div>
       </section>
@@ -240,7 +240,7 @@
 
         <div class="rf__share">
           <div class="linkbox">
-            <span class="linkbox__url"><span>codemarca.com/r/</span><b data-fill="profile.handle">garry</b></span>
+            <span class="linkbox__url"><span>codemarca.com/r/</span><b data-fill="profile.handle">yourname</b></span>
             <button type="button" data-ic-btn="copy" aria-label="Copy my invite link" data-copy-ref></button>
           </div>
           <button class="btn btn--go" type="button" data-share-ref>
@@ -335,7 +335,7 @@
     CM.mountTodo(a);
   }
 
-  var handle = (a.profile && a.profile.handle) || (a.code && a.code.id) || "garry";
+  var handle = (a.profile && a.profile.handle) || (a.code && a.code.id) || "yourname";
   var pageUrl = "https://" + CM.url(handle);
   var codeId = (a.code && a.code.id) || handle.slice(0, 8);
   var pattern = CM.qr(codeId);

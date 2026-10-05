@@ -1771,6 +1771,9 @@ input:-webkit-autofill:active{
             (customAccount && customAccount.user && customAccount.user.name) ||
             (customAccount && customAccount.profile && customAccount.profile.title) ||
             "";
+  if (who === "Garry Singh" || who === "Garry" || who === "Gurdeep Singh" || who === "Your Name" || who === "User") {
+    who = "";
+  }
 
   var whoNo = q.get("phone") ||
               localStorage.getItem("cm.phone") ||

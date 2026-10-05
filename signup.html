@@ -447,7 +447,16 @@ input:-webkit-autofill:active{
      screen can be reviewed as somebody else */
   var queryName = new URLSearchParams(location.search).get("name");
   var savedName = "";
-  try { savedName = localStorage.getItem("cm.name") || ""; } catch(e) {}
+  try {
+    savedName = localStorage.getItem("cm.name") || "";
+    if (savedName === "Garry Singh" || savedName === "Garry" || savedName === "Gurdeep Singh" || savedName === "Your Name") {
+      savedName = "";
+      localStorage.removeItem("cm.name");
+    }
+  } catch(e) {}
+  if (queryName === "Garry Singh" || queryName === "Garry" || queryName === "Gurdeep Singh" || queryName === "Your Name") {
+    queryName = "";
+  }
   var GOOGLE_NAME = queryName || savedName || "";
 
   googleBtn.addEventListener("click", function () {

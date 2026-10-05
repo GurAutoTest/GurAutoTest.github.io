@@ -87,7 +87,10 @@
         try { window.localStorage.setItem("cm.username", q.get("username").toLowerCase().trim()); } catch (e) {}
       }
       if (q.get("name")) {
-        try { window.localStorage.setItem("cm.name", q.get("name").trim()); } catch (e) {}
+        var qName = q.get("name").trim();
+        if (qName && qName !== "Garry Singh" && qName !== "Garry" && qName !== "Gurdeep Singh" && qName !== "Your Name") {
+          try { window.localStorage.setItem("cm.name", qName); } catch (e) {}
+        }
       }
 
       // Automatically strip ugly query parameters from the address bar so user sees only clean clean URL
@@ -112,59 +115,121 @@
         if (raw) customAccount = JSON.parse(raw);
       } catch (e) {}
 
+      // Username / Handle
       var customUsername = window.localStorage.getItem("cm.username") ||
                            (customAccount && customAccount.profile && customAccount.profile.handle) ||
-                           (acc.profile && acc.profile.handle);
-      var customName = window.localStorage.getItem("cm.name") ||
-                       (customAccount && customAccount.user && customAccount.user.name) ||
-                       (customUsername && customUsername !== "garry" ? customUsername : (acc.user && acc.user.name));
+                           "";
+      if (!customUsername || customUsername === "garry" || customUsername === "yourname") {
+        customUsername = (acc.profile && acc.profile.handle) || "";
+        if (customUsername === "garry" || customUsername === "yourname") customUsername = "";
+      }
+      if (customUsername) customUsername = customUsername.toLowerCase().trim();
+
+      // Name
+      var rawName = window.localStorage.getItem("cm.name") ||
+                    (customAccount && customAccount.user && customAccount.user.name) ||
+                    (customAccount && customAccount.profile && customAccount.profile.title) ||
+                    (customAccount && customAccount.profile && customAccount.profile.name) ||
+                    "";
+
+      var isDummy = (
+        rawName === "Garry Singh" || rawName === "Garry" || rawName === "Gurdeep Singh" ||
+        rawName === "Your Name" || rawName === "Simran Kaur" || rawName === "User" ||
+        rawName === "My Account"
+      );
+      if (isDummy) {
+        rawName = "";
+        try { window.localStorage.removeItem("cm.name"); } catch(e) {}
+        if (customAccount) {
+          if (customAccount.user) delete customAccount.user.name;
+          if (customAccount.profile) {
+            delete customAccount.profile.name;
+            delete customAccount.profile.title;
+          }
+          try { window.localStorage.setItem("cm.account.custom", JSON.stringify(customAccount)); } catch(e) {}
+        }
+      }
+
+      var customName = rawName || customUsername;
+
+      // Email
+      var rawEmail = window.localStorage.getItem("cm.email") ||
+                     (customAccount && customAccount.user && customAccount.user.email) ||
+                     (customAccount && customAccount.profile && customAccount.profile.email) ||
+                     "";
+      if (rawEmail === "garry@example.com" || rawEmail === "you@example.com" || rawEmail === "garry@gmail.com") {
+        rawEmail = "";
+        try { window.localStorage.removeItem("cm.email"); } catch(e) {}
+      }
+      var customEmail = rawEmail || (customUsername ? (customUsername + "@gmail.com") : "");
+
+      // Phone
+      var rawPhone = window.localStorage.getItem("cm.phone") ||
+                     (customAccount && customAccount.profile && customAccount.profile.phone) ||
+                     (customAccount && customAccount.user && customAccount.user.phone) ||
+                     "";
+      if (rawPhone === "9876543210" || rawPhone === "98765 43210") {
+        rawPhone = "";
+        try { window.localStorage.removeItem("cm.phone"); } catch(e) {}
+      }
+
+      // Photo
+      var customPhoto = (customAccount && customAccount.profile && customAccount.profile.photo) || null;
+      if (!customPhoto) {
+        try { customPhoto = window.localStorage.getItem("cm.photo"); } catch(e) {}
+      }
+
+      // Links & Customs
+      var customBio = (customAccount && customAccount.profile && customAccount.profile.bio) || "";
+      var customLinks = (customAccount && customAccount.profile && customAccount.profile.links) || {};
+      var customCustoms = (customAccount && customAccount.profile && customAccount.profile.customs) || [];
+
+      acc.profile = acc.profile || {};
+      acc.user = acc.user || {};
+      acc.code = acc.code || {};
 
       if (customUsername) {
-        customUsername = customUsername.toLowerCase().trim();
-        acc.profile = acc.profile || {};
-        acc.user = acc.user || {};
-        acc.code = acc.code || {};
-
         acc.profile.handle = customUsername;
-        acc.profile.title = customName || customUsername;
-        acc.user.name = customName || customUsername;
-        acc.user.email = window.localStorage.getItem("cm.email") ||
-                         (customAccount && customAccount.user && customAccount.user.email) ||
-                         (customUsername + "@gmail.com");
-        var customPhone = window.localStorage.getItem("cm.phone") ||
-                          (customAccount && customAccount.profile && customAccount.profile.phone);
-        if (customPhone) {
-          acc.user.phone = "+91 " + customPhone.replace(/\D/g, "");
-          acc.profile.phone = customPhone.replace(/\D/g, "");
-        }
         acc.code.id = (customAccount && customAccount.code && customAccount.code.id) || customUsername.slice(0, 8);
         acc.code.url = "codemarca.com/c/" + acc.code.id;
-
-        if (customAccount && customAccount.profile) {
-          if (customAccount.profile.photo) acc.profile.photo = customAccount.profile.photo;
-          if (customAccount.profile.bio) acc.profile.bio = customAccount.profile.bio;
-          if (customAccount.profile.links) acc.profile.links = customAccount.profile.links;
-          if (customAccount.profile.theme) acc.profile.theme = customAccount.profile.theme;
-        }
-
-        try {
-          var savedOrders = JSON.parse(window.localStorage.getItem("cm.orders") || "null");
-          if (savedOrders && savedOrders.length) {
-            acc.orders = savedOrders;
-            acc.order = savedOrders[0];
-          } else {
-            var savedAddr = JSON.parse(window.localStorage.getItem("cm.address") || "null");
-            if (savedAddr && acc.order) {
-              acc.order.address = savedAddr.full || (savedAddr.addr + ", " + savedAddr.city + ", " + savedAddr.state + " " + savedAddr.pin);
-            }
-          }
-        } catch (e) {}
-
-        try {
-          window.localStorage.setItem("cm.username", customUsername);
-          if (customName) window.localStorage.setItem("cm.name", customName);
-        } catch (e) {}
       }
+      acc.profile.title = customName || customUsername || "My Account";
+      acc.profile.name = customName || customUsername || "My Account";
+      acc.profile.bio = customBio;
+      acc.profile.photo = customPhoto;
+      acc.profile.links = customLinks;
+      acc.profile.customs = customCustoms;
+      if (customAccount && customAccount.profile) {
+        if (customAccount.profile.theme) acc.profile.theme = customAccount.profile.theme;
+        if (customAccount.profile.order) acc.profile.order = customAccount.profile.order;
+        if (customAccount.profile.socialOrder) acc.profile.socialOrder = customAccount.profile.socialOrder;
+        if (customAccount.profile.live !== undefined) acc.profile.live = customAccount.profile.live;
+      }
+
+      acc.user.name = customName || customUsername || "My Account";
+      acc.user.email = customEmail;
+      if (rawPhone) {
+        acc.user.phone = "+91 " + rawPhone.replace(/\D/g, "");
+        acc.profile.phone = rawPhone.replace(/\D/g, "");
+      }
+
+      try {
+        var savedOrders = JSON.parse(window.localStorage.getItem("cm.orders") || "null");
+        if (savedOrders && savedOrders.length) {
+          acc.orders = savedOrders;
+          acc.order = savedOrders[0];
+        } else {
+          var savedAddr = JSON.parse(window.localStorage.getItem("cm.address") || "null");
+          if (savedAddr && acc.order) {
+            acc.order.address = savedAddr.full || (savedAddr.addr + ", " + savedAddr.city + ", " + savedAddr.state + " " + savedAddr.pin);
+          }
+        }
+      } catch (e) {}
+
+      try {
+        if (customUsername) window.localStorage.setItem("cm.username", customUsername);
+        if (rawName) window.localStorage.setItem("cm.name", rawName);
+      } catch (e) {}
 
       return acc;
     };
@@ -402,10 +467,10 @@
         }).join("") +
         "</nav>" +
         '<a class="side__me" href="settings.html">' +
-        '<span class="avatar">' + initial + "</span>" +
+        '<span class="avatar">' + (a.profile && a.profile.photo ? '<img src="' + a.profile.photo + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">' : initial) + "</span>" +
         '<span class="side__me__txt">' +
         '<span class="side__me__name">' + a.user.name + "</span>" +
-        '<span class="side__me__mail">' + a.user.email + "</span>" +
+        '<span class="side__me__mail">' + (a.user.email || "") + "</span>" +
         "</span>" +
         "</a>";
       app.insertBefore(side, app.firstChild);
@@ -750,8 +815,10 @@
     function paintAvatar(a) {
       if (!a || !a.profile || !a.profile.photo) { return; }
       Array.prototype.forEach.call(document.querySelectorAll(".me__av"), function (el) {
-        if (el.querySelector("img")) { return; }
-        el.innerHTML = '<img src="' + a.profile.photo + '" alt="">';
+        el.innerHTML = '<img src="' + a.profile.photo + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">';
+      });
+      Array.prototype.forEach.call(document.querySelectorAll(".avatar"), function (el) {
+        el.innerHTML = '<img src="' + a.profile.photo + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">';
       });
     }
 

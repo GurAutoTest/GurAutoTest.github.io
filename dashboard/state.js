@@ -53,54 +53,60 @@
     ]
   };
 
-  /* Default user */
-  /* Dynamic or fallback user */
+  /* Dynamic user from real storage */
   var storedUsername = "";
   var storedName = "";
   var storedPhone = "";
   var storedEmail = "";
+  var storedPhoto = null;
+  var customAcc = null;
   try {
-    storedUsername = window.localStorage.getItem("cm.username") || "";
-    storedName = window.localStorage.getItem("cm.name") || "";
-    storedPhone = window.localStorage.getItem("cm.phone") || "";
-    storedEmail = window.localStorage.getItem("cm.email") || "";
+    var rawAcc = window.localStorage.getItem("cm.account.custom");
+    if (rawAcc) customAcc = JSON.parse(rawAcc);
+    storedUsername = window.localStorage.getItem("cm.username") || (customAcc && customAcc.profile && customAcc.profile.handle) || "";
+    storedName = window.localStorage.getItem("cm.name") || (customAcc && customAcc.user && customAcc.user.name) || (customAcc && customAcc.profile && customAcc.profile.title) || "";
+    if (storedName === "Garry Singh" || storedName === "Garry" || storedName === "Gurdeep Singh" || storedName === "Your Name" || storedName === "Simran Kaur" || storedName === "User") {
+      storedName = "";
+      window.localStorage.removeItem("cm.name");
+    }
+    storedPhone = window.localStorage.getItem("cm.phone") || (customAcc && customAcc.profile && customAcc.profile.phone) || "";
+    if (storedPhone === "9876543210" || storedPhone === "98765 43210") storedPhone = "";
+    storedEmail = window.localStorage.getItem("cm.email") || (customAcc && customAcc.user && customAcc.user.email) || "";
+    if (storedEmail === "garry@example.com" || storedEmail === "you@example.com") storedEmail = "";
+    storedPhoto = (customAcc && customAcc.profile && customAcc.profile.photo) || window.localStorage.getItem("cm.photo") || null;
   } catch(e) {}
 
+  var defaultDisplayName = storedName || storedUsername || "My Account";
+  var defaultEmail = storedEmail || (storedUsername ? (storedUsername + "@gmail.com") : "");
+
   var USER_DEFAULT = {
-    name: storedName || (storedUsername ? storedUsername : "Your Name"),
-    email: storedEmail || (storedUsername ? (storedUsername + "@gmail.com") : "you@example.com"),
+    name: defaultDisplayName,
+    email: defaultEmail,
     phone: storedPhone ? ("+91 " + storedPhone) : "",
-    joined: "Just now"
+    joined: "Recently"
   };
 
   /* Default profile */
   var PROFILE_DEFAULT = {
     live: true,
-    theme: "violet",
+    theme: (customAcc && customAcc.profile && customAcc.profile.theme) || "light",
     updated: "just now",
     handle: storedUsername || "yourname",
-    name: storedName || (storedUsername ? storedUsername : "Your Name"),
-    title: storedName || (storedUsername ? storedUsername : "Your Name"),
-    bio: "",
-    photo: null,
+    name: defaultDisplayName,
+    title: defaultDisplayName,
+    bio: (customAcc && customAcc.profile && customAcc.profile.bio) || "",
+    photo: storedPhoto,
     phone: storedPhone || "",
     phoneOn: true,
     waSame: true,
     wa: storedPhone || "",
     waOn: true,
-    email: storedEmail || (storedUsername ? (storedUsername + "@gmail.com") : "you@example.com"),
+    email: defaultEmail,
     emailOn: true,
-    links: {
-      instagram: { v: "@garry.designs",              on: true  },
-      linkedin:  { v: "linkedin.com/in/garrysingh",  on: true  },
-      x:         { v: "@garrymakes",                 on: true  },
-      threads:   { v: "@garry.designs",              on: true  },
-      website:   { v: "garry.design",                on: true  },
-      spotify:   { v: "open.spotify.com/user/garry", on: false }
-    },
-    customs: [],
-    order: ["call","wa","email","vcard","socials","website","directions","review"],
-    socialOrder: ["instagram","linkedin","x","threads","spotify"]
+    links: (customAcc && customAcc.profile && customAcc.profile.links) || {},
+    customs: (customAcc && customAcc.profile && customAcc.profile.customs) || [],
+    order: (customAcc && customAcc.profile && customAcc.profile.order) || ["call","wa","email","vcard","socials","website","directions","review"],
+    socialOrder: (customAcc && customAcc.profile && customAcc.profile.socialOrder) || ["instagram","linkedin","x","threads","spotify"]
   };
 
   /* Default code */

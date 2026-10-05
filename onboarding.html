@@ -1455,8 +1455,14 @@ body[data-showing]{overflow:hidden}
 
   var qN = q.get("name");
   var storedN = "";
-  try { storedN = localStorage.getItem("cm.name") || (customAccount && customAccount.user && customAccount.user.name) || (customAccount && customAccount.profile && customAccount.profile.title) || ""; } catch(e) {}
-  if (qN) S.name = qN.slice(0, 40);
+  try {
+    storedN = localStorage.getItem("cm.name") || (customAccount && customAccount.user && customAccount.user.name) || (customAccount && customAccount.profile && customAccount.profile.title) || "";
+    if (storedN === "Garry Singh" || storedN === "Garry" || storedN === "Gurdeep Singh" || storedN === "Your Name" || storedN === "User") {
+      storedN = "";
+      localStorage.removeItem("cm.name");
+    }
+  } catch(e) {}
+  if (qN && qN !== "Garry Singh" && qN !== "Garry" && qN !== "Gurdeep Singh" && qN !== "Your Name") S.name = qN.slice(0, 40);
   else if (storedN) S.name = storedN.slice(0, 40);
 
   var qP = q.get("phone");
