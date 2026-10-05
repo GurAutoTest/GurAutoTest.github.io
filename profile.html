@@ -666,6 +666,7 @@ img,svg{display:block; max-width:100%}
    this padding goes when the panel goes */
 .pg{padding-bottom:104px}
 .rev{
+  display:none !important;
   position:fixed; right:var(--s-4); bottom:var(--s-4); z-index:60;
   display:flex; flex-direction:column; gap:var(--s-2); padding:var(--s-2);
   border-radius:var(--r-lg); background:#fff; box-shadow:var(--shadow-lg), inset 0 0 0 1px var(--line);
@@ -826,8 +827,8 @@ input:-webkit-autofill:active{
   </div>
 </div>
 
-<!-- Review tool only — delete this block, its CSS section and its script loop. -->
-<div class="rev" role="group" aria-label="Review controls">
+<!-- Review tool hidden for clean production experience -->
+<div class="rev" role="group" aria-label="Review controls" hidden style="display:none !important">
   <div class="rev__row" id="revView">
     <button type="button" data-v="visitor" aria-pressed="true">Visitor</button>
     <button type="button" data-v="owner" aria-pressed="false">Owner</button>

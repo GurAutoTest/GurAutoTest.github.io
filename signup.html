@@ -238,6 +238,7 @@ body[data-flow="login"] [data-only~="login"]{display:revert}
    Log in is not one of the buttons: the link under the Google button already
    goes there, so a second way in would just be the same control twice. */
 .preview{
+  display:none !important;
   position:fixed; right:var(--s-5); bottom:var(--s-5); z-index:80;
   display:flex; align-items:center; gap:var(--s-1); padding:5px; border-radius:var(--r-pill);
   background:var(--ground); box-shadow:var(--shadow-lg), inset 0 0 0 1px var(--line);
@@ -344,8 +345,8 @@ input:-webkit-autofill:active{
 
 </div>
 
-<!-- Review tool only — delete this block and its script loop before launch. -->
-<div class="preview" role="group" aria-label="Preview flow">
+<!-- Review tool hidden for clean production experience -->
+<div class="preview" role="group" aria-label="Preview flow" hidden style="display:none !important">
   <button type="button" data-set="build" aria-pressed="true">Claim profile</button>
   <button type="button" data-set="order" aria-pressed="false">Get your pack</button>
 </div>

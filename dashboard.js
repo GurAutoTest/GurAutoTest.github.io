@@ -1742,43 +1742,11 @@
       };
     })();
 
-    /* ══ 8. DEMO SWITCHER — delete for production ═══════════════════════════ */
+    /* ══ 8. DEMO SWITCHER — deleted for production ═══════════════════════════ */
 
     function mountDemo(a) {
-      var d = document.createElement("div");
-      d.className = "demo";
-
-      if (FLOW.stages && FLOW.stages.length) {
-        d.innerHTML =
-          '<span class="demo__lbl">Stage preview</span>' +
-          '<select class="demo__sel" aria-label="Preview account stage">' +
-          FLOW.stages.map(function (stg) {
-            return '<optgroup label="' + stg.label + '">' +
-              stg.states.map(function (o) {
-                return '<option value="' + stg.id + ':' + o.k + '">' + o.label + '</option>';
-              }).join("") +
-              '</optgroup>';
-          }).join("") +
-          '</select>';
-        var sel = d.querySelector("select");
-        sel.value = (a.stage || "page-live") + ":" + (a.substage || a.state || "fresh");
-        sel.addEventListener("change", function () { CM.setState(sel.value); });
-        document.body.appendChild(d);
-        return;
-      }
-
-      if (!FLOW.states || !FLOW.states.length) { return; }
-      d.innerHTML =
-        '<span class="demo__lbl">' + (FLOW.label || "Demo state") + "</span>" +
-        '<select class="demo__sel" aria-label="Preview account state">' +
-        FLOW.states.map(function (o) {
-          return '<option value="' + o.k + '">' + o.label + "</option>";
-        }).join("") +
-        "</select>";
-      var sel2 = d.querySelector("select");
-      sel2.value = a.state;
-      sel2.addEventListener("change", function () { CM.setState(sel2.value); });
-      document.body.appendChild(d);
+      // Demo switcher disabled for clean UI
+      return;
     }
 
     window.CM = CM;

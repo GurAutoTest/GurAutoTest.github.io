@@ -614,6 +614,7 @@ input:-webkit-autofill:active{
 
 /* ── 9. REVIEW TOOL — delete this block, its CSS and its script loop ───── */
 .preview{
+  display:none !important;
   position:fixed; right:var(--s-4); bottom:96px; z-index:50;
   display:flex; align-items:center; gap:var(--s-1); padding:5px; border-radius:var(--r-pill);
   background:var(--ground); box-shadow:var(--shadow-lg), inset 0 0 0 1px var(--line);
@@ -1010,8 +1011,8 @@ input:-webkit-autofill:active{
   </main>
 </div>
 
-<!-- Review tool only — delete this block, its CSS section and its script loop. -->
-<div class="preview" role="group" aria-label="Jump to step">
+<!-- Review tool hidden for clean production experience -->
+<div class="preview" role="group" aria-label="Jump to step" hidden style="display:none !important">
   <button type="button" data-go="1" aria-pressed="true">Address</button>
   <button type="button" data-go="2" aria-pressed="false">Payment</button>
   <button type="button" data-go="3" aria-pressed="false">Placed</button>

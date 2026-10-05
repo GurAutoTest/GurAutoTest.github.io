@@ -678,6 +678,7 @@ textarea.fld__in{height:auto; min-height:96px; padding-block:var(--s-3);
    through in all four account states without a backend. In React the
    state comes from the session — delete this whole block. */
 .demo{
+  display:none !important;
   position:fixed; z-index:50; right:var(--s-4);
   bottom:calc(var(--tabs-h) + var(--s-4) + env(safe-area-inset-bottom));
   display:flex; align-items:center; gap:var(--s-2);
