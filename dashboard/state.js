@@ -54,11 +54,23 @@
   };
 
   /* Default user */
+  /* Dynamic or fallback user */
+  var storedUsername = "";
+  var storedName = "";
+  var storedPhone = "";
+  var storedEmail = "";
+  try {
+    storedUsername = window.localStorage.getItem("cm.username") || "";
+    storedName = window.localStorage.getItem("cm.name") || "";
+    storedPhone = window.localStorage.getItem("cm.phone") || "";
+    storedEmail = window.localStorage.getItem("cm.email") || "";
+  } catch(e) {}
+
   var USER_DEFAULT = {
-    name: "Garry Singh",
-    email: "garry@example.com",
-    phone: "+91 98765 43210",
-    joined: "12 Sep 2026"
+    name: storedName || (storedUsername ? storedUsername : "Your Name"),
+    email: storedEmail || (storedUsername ? (storedUsername + "@gmail.com") : "you@example.com"),
+    phone: storedPhone ? ("+91 " + storedPhone) : "",
+    joined: "Just now"
   };
 
   /* Default profile */
@@ -66,17 +78,17 @@
     live: true,
     theme: "violet",
     updated: "just now",
-    handle: "garry",
-    name: "Garry Singh",
-    title: "Garry Singh",
-    bio: "Designing things people actually use. Usually somewhere near a coffee.",
+    handle: storedUsername || "yourname",
+    name: storedName || (storedUsername ? storedUsername : "Your Name"),
+    title: storedName || (storedUsername ? storedUsername : "Your Name"),
+    bio: "",
     photo: null,
-    phone: "9876543210",
+    phone: storedPhone || "",
     phoneOn: true,
-    waSame: false,
-    wa: "9876501234",
+    waSame: true,
+    wa: storedPhone || "",
     waOn: true,
-    email: "garry@example.com",
+    email: storedEmail || (storedUsername ? (storedUsername + "@gmail.com") : "you@example.com"),
     emailOn: true,
     links: {
       instagram: { v: "@garry.designs",              on: true  },

@@ -1030,7 +1030,7 @@ body[data-showing]{overflow:hidden}
 
           <div class="fld">
             <div class="fld__top"><label class="fld__lbl" for="name">Your name</label></div>
-            <div class="inp"><input id="name" type="text" maxlength="40" autocomplete="name" placeholder="Gurdeep Singh"></div>
+            <div class="inp"><input id="name" type="text" maxlength="40" autocomplete="name" placeholder="Your name"></div>
           </div>
 
           <div class="fld">
@@ -1069,7 +1069,7 @@ body[data-showing]{overflow:hidden}
             <div class="fld__top"><label class="fld__lbl" for="phone">Phone</label></div>
             <div class="inp">
               <span class="inp__pre">+91</span>
-              <input id="phone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="98765 43210">
+              <input id="phone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="10-digit mobile number">
               <button class="eye" type="button" id="phoneEye" aria-pressed="true" aria-label="Show phone on your page"></button>
             </div>
           </div>
@@ -1441,8 +1441,35 @@ body[data-showing]{overflow:hidden}
      Three routes land here — claim signup, post-order dashboard, first
      scan of a fresh code. All three arrive with a handle. */
   var q = new URLSearchParams(location.search);
-  if (q.get("handle")) S.handle = cleanHandle(q.get("handle"));
-  if (q.get("name"))   S.name   = q.get("name").slice(0, 40);
+  var customAccount = null;
+  try {
+    var raw = localStorage.getItem("cm.account.custom");
+    if (raw) customAccount = JSON.parse(raw);
+  } catch(e) {}
+
+  var qH = q.get("handle");
+  var storedH = "";
+  try { storedH = localStorage.getItem("cm.username") || (customAccount && customAccount.profile && customAccount.profile.handle) || ""; } catch(e) {}
+  if (qH) S.handle = cleanHandle(qH);
+  else if (storedH) S.handle = cleanHandle(storedH);
+
+  var qN = q.get("name");
+  var storedN = "";
+  try { storedN = localStorage.getItem("cm.name") || (customAccount && customAccount.user && customAccount.user.name) || (customAccount && customAccount.profile && customAccount.profile.title) || ""; } catch(e) {}
+  if (qN) S.name = qN.slice(0, 40);
+  else if (storedN) S.name = storedN.slice(0, 40);
+
+  var qP = q.get("phone");
+  var storedP = "";
+  try { storedP = localStorage.getItem("cm.phone") || (customAccount && customAccount.profile && customAccount.profile.phone) || ""; } catch(e) {}
+  if (qP) S.phone = qP.replace(/\D/g, "").slice(0, 10);
+  else if (storedP) S.phone = storedP.replace(/\D/g, "").slice(0, 10);
+
+  var qE = q.get("email");
+  var storedE = "";
+  try { storedE = localStorage.getItem("cm.email") || (customAccount && customAccount.user && customAccount.user.email) || ""; } catch(e) {}
+  if (qE) S.email = qE.trim();
+  else if (storedE) S.email = storedE.trim();
 
   /* WHERE "DONE" GOES — added 2026-09-16 with the flow folders.
      Most people arrive here with no pack, so finishing lands them on the
@@ -1649,11 +1676,20 @@ body[data-showing]{overflow:hidden}
       if (toDashEl) {
         toDashEl.href = "dashboard/home.html";
       }
+      var packEl = $("getPack");
+      if (packEl) {
+        packEl.href = "select-pack.html?built=1&handle=" + encodeURIComponent(S.handle) +
+          "&name=" + encodeURIComponent(S.name.trim() || S.handle) +
+          (S.phone ? "&phone=" + encodeURIComponent(S.phone) : "") +
+          (S.email ? "&email=" + encodeURIComponent(S.email) : "");
+      }
       try {
         localStorage.setItem("cm.stage", "page-live");
         localStorage.setItem("cm.substage", dashState);
         localStorage.setItem("cm.username", S.handle);
         localStorage.setItem("cm.name", S.name.trim() || S.handle);
+        if (S.phone) localStorage.setItem("cm.phone", S.phone);
+        if (S.email) localStorage.setItem("cm.email", S.email);
       } catch(e) {}
       var customData = {
         user: {
@@ -1682,6 +1718,8 @@ body[data-showing]{overflow:hidden}
         localStorage.setItem("cm.account.custom", JSON.stringify(customData));
         localStorage.setItem("cm.username", S.handle);
         localStorage.setItem("cm.name", S.name.trim() || S.handle);
+        if (S.phone) localStorage.setItem("cm.phone", S.phone);
+        if (S.email) localStorage.setItem("cm.email", S.email);
       } catch (e) { }
 
       try {
@@ -1800,8 +1838,16 @@ body[data-showing]{overflow:hidden}
   });
 
   $("name").value = S.name;
-  $("name").addEventListener("input", function () { S.name = this.value; paintPhoto(); refresh(); });
+  $("name").addEventListener("input", function () {
+    S.name = this.value;
+    try { localStorage.setItem("cm.name", S.name.trim()); } catch(e) {}
+    paintPhoto(); refresh();
+  });
 
+  if (S.bio) {
+    $("bio").value = S.bio;
+    $("bioCount").textContent = S.bio.length + "/100";
+  }
   $("bio").addEventListener("input", function () {
     S.bio = this.value.slice(0, 100);
     $("bioCount").textContent = S.bio.length + "/100";
@@ -1855,10 +1901,28 @@ body[data-showing]{overflow:hidden}
   eye($("waEye"),    "waOn",    "WhatsApp");
   eye($("emailEye"), "emailOn", "email");
 
+  if (S.phone) $("phone").value = S.phone;
+  if (S.wa) $("wa").value = S.wa;
+  if (S.email) $("email").value = S.email;
+
   function digits(v) { return v.replace(/[^0-9]/g, "").slice(0, 10); }
-  $("phone").addEventListener("input", function () { this.value = digits(this.value); S.phone = this.value; refresh(); });
-  $("wa").addEventListener("input",    function () { this.value = digits(this.value); S.wa = this.value; refresh(); });
-  $("email").addEventListener("input", function () { S.email = this.value.trim(); refresh(); });
+  $("phone").addEventListener("input", function () {
+    this.value = digits(this.value);
+    S.phone = this.value;
+    try { localStorage.setItem("cm.phone", S.phone); } catch(e) {}
+    refresh();
+  });
+  $("wa").addEventListener("input", function () {
+    this.value = digits(this.value);
+    S.wa = this.value;
+    try { localStorage.setItem("cm.wa", S.wa); } catch(e) {}
+    refresh();
+  });
+  $("email").addEventListener("input", function () {
+    S.email = this.value.trim();
+    try { localStorage.setItem("cm.email", S.email); } catch(e) {}
+    refresh();
+  });
 
   /* business WhatsApp numbers are often different — so the box is a
      checkbox, on by default, not an assumption */

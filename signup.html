@@ -445,7 +445,10 @@ input:-webkit-autofill:active{
      reservation — decided 2026-09-04. Whoever signs in first gets it. */
   /* what the real Google sign-in hands back; ?name= overrides it so the
      screen can be reviewed as somebody else */
-  var GOOGLE_NAME = new URLSearchParams(location.search).get("name") || "Garry Singh";
+  var queryName = new URLSearchParams(location.search).get("name");
+  var savedName = "";
+  try { savedName = localStorage.getItem("cm.name") || ""; } catch(e) {}
+  var GOOGLE_NAME = queryName || savedName || "";
 
   googleBtn.addEventListener("click", function () {
     if (body.dataset.flow === "build") {
@@ -463,25 +466,22 @@ input:-webkit-autofill:active{
     googleBtn.dataset.busy = "true";
     setTimeout(function () {
       googleBtn.dataset.busy = "false";
-      /* Google itself is not wired yet; the hop it makes afterwards is.
-         The claim route carries the handle AND the Google account's name
-         into the builder (Garry, 2026-09-23) — sign-in is Google-only, so
-         the name is already known and asking for it again is asking a
-         question we have the answer to. GOOGLE_NAME stands in for what the
-         real sign-in hands back. The pack route
-         goes to select-pack.html, which is the first thing a buyer has to
-         answer — an address form for a pack nobody has chosen yet is a form
-         asking the second question first. No `built` flag on this route:
-         somebody arriving from the website has no page yet. The free pack
-         is always for themselves (2026-09-18) — gifts are ordered later,
-         from the dashboard. */
       if (body.dataset.flow === "build") {
+        try {
+          localStorage.setItem("cm.username", getHandle());
+          if (GOOGLE_NAME) localStorage.setItem("cm.name", GOOGLE_NAME);
+        } catch (e) {}
         location.href = "onboarding.html?handle=" + encodeURIComponent(getHandle()) +
-          "&name=" + encodeURIComponent(GOOGLE_NAME);
+          (GOOGLE_NAME ? "&name=" + encodeURIComponent(GOOGLE_NAME) : "");
         return;
       }
       if (body.dataset.flow === "order") {
-        location.href = "select-pack.html";
+        try {
+          localStorage.setItem("cm.username", getHandle());
+          if (GOOGLE_NAME) localStorage.setItem("cm.name", GOOGLE_NAME);
+        } catch (e) {}
+        location.href = "select-pack.html?handle=" + encodeURIComponent(getHandle()) +
+          (GOOGLE_NAME ? "&name=" + encodeURIComponent(GOOGLE_NAME) : "");
         return;
       }
       /* LOGIN — added 2026-09-16 with the flow folders.

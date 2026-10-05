@@ -1278,7 +1278,14 @@ input:-webkit-autofill:active{
   $("next").addEventListener("click", function () {
     var s = Number(sp.dataset.step);
     if (s === 1 && O.kind === "custom") { setStep(2); return; }
-    location.href = "checkout.html" + P.orderQuery(O);
+    var qStr = P.orderQuery(O);
+    var pParams = new URLSearchParams(location.search);
+    var forward = new URLSearchParams(qStr.slice(1));
+    ["handle", "name", "phone", "email"].forEach(function(k) {
+      var v = pParams.get(k) || (window.localStorage ? window.localStorage.getItem(k === "handle" ? "cm.username" : ("cm." + k)) : "");
+      if (v && !forward.has(k)) forward.set(k, v);
+    });
+    location.href = "checkout.html?" + forward.toString();
   });
   $("back").addEventListener("click", function () { setStep(1); });
 

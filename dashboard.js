@@ -128,7 +128,15 @@
         acc.profile.handle = customUsername;
         acc.profile.title = customName || customUsername;
         acc.user.name = customName || customUsername;
-        acc.user.email = (customAccount && customAccount.user && customAccount.user.email) || (customUsername + "@gmail.com");
+        acc.user.email = window.localStorage.getItem("cm.email") ||
+                         (customAccount && customAccount.user && customAccount.user.email) ||
+                         (customUsername + "@gmail.com");
+        var customPhone = window.localStorage.getItem("cm.phone") ||
+                          (customAccount && customAccount.profile && customAccount.profile.phone);
+        if (customPhone) {
+          acc.user.phone = "+91 " + customPhone.replace(/\D/g, "");
+          acc.profile.phone = customPhone.replace(/\D/g, "");
+        }
         acc.code.id = (customAccount && customAccount.code && customAccount.code.id) || customUsername.slice(0, 8);
         acc.code.url = "codemarca.com/c/" + acc.code.id;
 
@@ -138,6 +146,19 @@
           if (customAccount.profile.links) acc.profile.links = customAccount.profile.links;
           if (customAccount.profile.theme) acc.profile.theme = customAccount.profile.theme;
         }
+
+        try {
+          var savedOrders = JSON.parse(window.localStorage.getItem("cm.orders") || "null");
+          if (savedOrders && savedOrders.length) {
+            acc.orders = savedOrders;
+            acc.order = savedOrders[0];
+          } else {
+            var savedAddr = JSON.parse(window.localStorage.getItem("cm.address") || "null");
+            if (savedAddr && acc.order) {
+              acc.order.address = savedAddr.full || (savedAddr.addr + ", " + savedAddr.city + ", " + savedAddr.state + " " + savedAddr.pin);
+            }
+          }
+        } catch (e) {}
 
         try {
           window.localStorage.setItem("cm.username", customUsername);
