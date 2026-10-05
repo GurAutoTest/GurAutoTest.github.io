@@ -12,22 +12,16 @@
 
 /* ── 1. SHARED BITS ────────────────────────────────────────────────────── */
 .fun{overflow-x:clip}
-.hl{position:relative; white-space:nowrap}
-.hl::after{
-  content:""; position:absolute; left:-.06em; right:-.06em; bottom:.06em; height:.34em; z-index:-1;
-  background:var(--brand-violet-tint); border-radius:.12em; transform:scaleX(0); transform-origin:left;
-  transition:transform .7s var(--ease-out) .25s;
-}
-.in .hl::after,.hl.in::after{transform:scaleX(1)}
+/* .hl (the lilac under-highlight) retired 2026-09-30 — Garry wants it nowhere */
 
 .big{
   font-size:clamp(2.75rem,8vw,6.25rem); font-weight:var(--fw-black);
-  letter-spacing:-.055em; line-height:.95; text-wrap:balance; position:relative; z-index:1;
+  letter-spacing:-.05em; line-height:1.04; text-wrap:balance; position:relative; z-index:1;
 }
 .big .soft{color:var(--ink-soft)}
 .mid{
   font-size:clamp(2rem,5vw,3.5rem); font-weight:var(--fw-black);
-  letter-spacing:-.05em; line-height:1; text-wrap:balance; position:relative; z-index:1;
+  letter-spacing:-.045em; line-height:1.1; text-wrap:balance; position:relative; z-index:1;
 }
 .mid .soft{color:var(--ink-soft)}
 .band--dark .mid .soft{color:rgba(255,255,255,.45)}
@@ -59,7 +53,12 @@
 .slap.in{opacity:1; transform:rotate(var(--r,-4deg))}
 
 /* ── 3. HERO WITH SCATTERED STICKERS ───────────────────────────────────── */
-.hero{position:relative; padding-block:clamp(var(--s-12),8vw,var(--s-20)) clamp(var(--s-12),6vw,var(--s-16))}
+.fhero{position:relative; padding-block:clamp(var(--s-10),6vw,var(--s-16)); overflow:hidden;
+  background:linear-gradient(160deg,#F1E9FE 0%,#FFFFFF 48%,#FFF1E8 100%)}
+/* the same soft blooms as the Get-the-app band (Garry, 2026-09-30) */
+.fhero::before,.fhero::after{content:""; position:absolute; border-radius:50%; filter:blur(70px); pointer-events:none; z-index:0}
+.fhero::before{width:460px; height:460px; left:-80px; top:-60px; background:rgba(161,113,244,.32)}
+.fhero::after{width:380px; height:380px; right:-60px; bottom:-40px; background:rgba(255,160,122,.26)}
 .hero__copy{position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; text-align:center; gap:var(--s-6)}
 .hero__copy .lede{margin-inline:auto}
 .hero__tags{display:flex; flex-wrap:wrap; justify-content:center; gap:var(--s-4) var(--s-3); margin-top:var(--s-2)}
@@ -70,7 +69,7 @@
 .swap > span[data-out]{opacity:0; transform:translateY(-.4em) rotate(3deg)}
 
 .pola{
-  position:absolute; z-index:1; width:clamp(120px,13vw,190px); aspect-ratio:9/13; padding:8px 8px 30px;
+  position:absolute; z-index:1; width:clamp(120px,13vw,190px); aspect-ratio:9/13; padding:8px;
   background:#fff; border-radius:14px; box-shadow:0 18px 40px rgba(16,18,21,.14), 0 0 0 1px var(--line);
   transform:rotate(var(--r)); animation:bob 6s ease-in-out infinite; animation-delay:var(--d,0s);
   transition:transform .35s var(--ease-out), box-shadow .35s var(--ease-out); cursor:pointer;
@@ -80,20 +79,20 @@
   font-family:var(--font-mono); font-size:.6875rem; font-weight:var(--fw-semibold); color:var(--ink-soft); letter-spacing:.04em}
 .pola:hover{animation-play-state:paused; transform:rotate(0) scale(1.08); z-index:3; box-shadow:0 26px 60px rgba(16,18,21,.22)}
 @keyframes bob{0%,100%{translate:0 0} 50%{translate:0 -12px}}
-.hero .pola:nth-of-type(1){top:6%;  left:2%;  --r:-9deg}
-.hero .pola:nth-of-type(2){top:52%; left:7%;  --r:6deg;  --d:-2s}
-.hero .pola:nth-of-type(3){top:4%;  right:3%; --r:8deg;  --d:-4s}
-.hero .pola:nth-of-type(4){top:50%; right:8%; --r:-6deg; --d:-1s}
+.fhero .pola:nth-of-type(1){top:6%;  left:2%;  --r:-9deg}
+.fhero .pola:nth-of-type(2){top:52%; left:7%;  --r:6deg;  --d:-2s}
+.fhero .pola:nth-of-type(3){top:4%;  right:3%; --r:8deg;  --d:-4s}
+.fhero .pola:nth-of-type(4){top:50%; right:8%; --r:-6deg; --d:-1s}
 @media (max-width:1099px){
-  .hero{padding-bottom:0}
+  .fhero{padding-bottom:0}
   .hero__pics{display:flex; gap:var(--s-4); overflow-x:auto; padding:var(--s-10) var(--gutter) var(--s-6);
     scroll-snap-type:x mandatory; scrollbar-width:none; justify-content:safe center}
   .hero__pics::-webkit-scrollbar{display:none}
-  .hero .pola:nth-of-type(n){position:relative; inset:auto; flex:0 0 150px; scroll-snap-align:center}
+  .fhero .pola:nth-of-type(n){position:relative; inset:auto; flex:0 0 150px; scroll-snap-align:center}
 }
 
 /* ── 4. PHOTO RIVER ────────────────────────────────────────────────────── */
-.river{display:flex; flex-direction:column; gap:var(--s-4); padding-block:var(--s-4)}
+.river{display:flex; flex-direction:column; gap:var(--s-4); padding-block:var(--s-4); overflow:hidden}
 .river__row{display:flex; width:max-content; gap:var(--s-4); animation:river var(--t,60s) linear infinite}
 .river__row--back{animation-direction:reverse}
 .river figure{flex:0 0 auto; width:clamp(160px,18vw,240px); aspect-ratio:3/4; margin:0; border-radius:20px; overflow:hidden;
@@ -139,6 +138,9 @@
 @media (max-width:600px){ .stage:has(.phone){aspect-ratio:3/4} }
 .pg__ava,.pg__name,.pg__url{flex-shrink:0}
 .pg__name,.pg__url{max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.stage--dark{background:radial-gradient(circle at 72% 28%, rgba(161,113,244,.55), transparent 55%),
+  radial-gradient(circle at 18% 85%, rgba(255,143,177,.3), transparent 50%), #1B1D24;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 .stage > img.stage__bg{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
 .stage .tag{position:absolute; z-index:3}
 
@@ -163,7 +165,7 @@
   background:var(--ink); border-radius:36px; box-shadow:0 30px 70px rgba(16,18,21,.28);
 }
 .phone__scr{position:relative; width:100%; height:100%; border-radius:27px; overflow:hidden; background:#fff}
-.pg{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; padding:28px 14px 16px; gap:6px; color:var(--ink)}
+.pg{position:absolute; inset:0; z-index:3; display:flex; flex-direction:column; align-items:center; padding:28px 14px 16px; gap:6px; color:var(--ink)}
 .pg__ava{width:56px; height:56px; border-radius:50%; background:var(--ink); color:#fff; display:grid; place-items:center;
   font-weight:var(--fw-black); font-size:1.125rem}
 .pg__name{font-weight:var(--fw-black); font-size:1rem; letter-spacing:-.03em; margin-top:4px}
@@ -195,27 +197,91 @@
 .scan__hint{position:absolute; top:14px; left:50%; translate:-50% 0; z-index:2; color:#fff; font-family:var(--font-mono);
   font-size:.625rem; letter-spacing:.08em; text-transform:uppercase; opacity:.7}
 
+/* the homepage "sticker beats a card" demo (2026-09-30): the camera finds
+   the sticker, the page slides up, then the number changes on its own —
+   the product and the promise in one loop. fun.js steps data-s through
+   scan → page → upd. */
+.demo__stk{position:absolute; z-index:1; left:7%; bottom:12%; width:34%; aspect-ratio:1; padding:3%; background:#fff;
+  border-radius:14%; box-shadow:0 16px 36px rgba(16,18,21,.14), 0 0 0 1px var(--line); transform:rotate(-6deg)}
+.demo__stk svg{width:100%; height:100%; display:block}
+.demo .phone{position:absolute; right:8%; top:8%; height:84%}
+.demo .cam{position:absolute; inset:0; overflow:hidden;
+  background:radial-gradient(circle at 50% 42%, #5A5D68 0%, #2A2C33 45%, #111215 100%)}
+.demo .cam__qr{position:absolute; left:50%; top:42%; width:44%; aspect-ratio:1; padding:5px; background:#fff; border-radius:8px;
+  translate:-50% -50%; rotate:-7deg; box-shadow:0 10px 24px rgba(0,0,0,.45)}
+.demo .cam__qr svg{width:100%; height:100%; display:block}
+.demo .cam__frame{position:absolute; left:50%; top:42%; width:66%; aspect-ratio:1; translate:-50% -50%;
+  border:3px solid rgba(255,255,255,.9); border-radius:18px; transition:border-color .25s ease, width .35s ease;
+  clip-path:polygon(0 0,26% 0,26% 5%,5% 5%,5% 26%,0 26%,0 74%,5% 74%,5% 95%,26% 95%,26% 100%,74% 100%,74% 95%,95% 95%,95% 74%,100% 74%,100% 26%,95% 26%,95% 5%,74% 5%,74% 0,100% 0,100% 100%,0 100%)}
+.demo[data-s="found"] .cam__frame{border-color:#FFD60A; width:56%}
+.demo .cam__line{position:absolute; left:22%; right:22%; height:2px; border-radius:2px; background:#fff; box-shadow:0 0 14px #fff; top:26%; opacity:0}
+.demo[data-s="scan"] .cam__line{animation:sweep1 1.8s ease-in-out forwards}
+.demo .cam__hint{position:absolute; left:50%; bottom:13%; translate:-50% 0; padding:5px 11px; border-radius:999px;
+  background:rgba(0,0,0,.45); color:#fff; font-size:.625rem; font-weight:var(--fw-bold); white-space:nowrap; transition:opacity .2s ease}
+.demo .cam__pill{position:absolute; left:50%; bottom:12%; translate:-50% 0; display:inline-flex; align-items:center; gap:6px;
+  padding:6px 12px; border-radius:999px; background:#FFD60A; color:#101215; font-size:.625rem; font-weight:var(--fw-bold);
+  font-family:var(--font-mono); white-space:nowrap; opacity:0; transform:scale(.85); transition:opacity .25s ease, transform .3s cubic-bezier(.3,1.5,.5,1)}
+.demo .cam__pill i{width:12px; height:12px; border-radius:3px; background:#101215}
+.demo[data-s="found"] .cam__pill{opacity:1; transform:none}
+.demo[data-s="found"] .cam__hint{opacity:0}
+@keyframes sweep1{0%{top:24%; opacity:0} 10%{opacity:1} 85%{top:60%; opacity:1} 100%{top:60%; opacity:0}}
+.demo .pg{transform:translateY(102%); border-radius:20px 20px 0 0; box-shadow:0 -10px 30px rgba(0,0,0,.25); background:#fff;
+  transition:transform .6s var(--ease-out)}
+.demo[data-s="page"] .pg,.demo[data-s="upd"] .pg{transform:none}
+.demo[data-s="upd"] .flip > span{transform:translateY(-100%)}
+.demo__upd{position:absolute; left:50%; bottom:12px; translate:-50% 0; white-space:nowrap; display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px;
+  background:var(--ok-tint,#E7F6ED); color:var(--ok-deep,#0C7A41); font-size:.625rem; font-weight:var(--fw-bold);
+  opacity:0; transform:translateY(6px); transition:opacity .3s ease .35s, transform .3s ease .35s}
+.demo__upd::before{content:""; width:6px; height:6px; border-radius:50%; background:currentColor}
+.demo[data-s="upd"] .demo__upd{opacity:1; transform:none}
+
 /* ── 7. SIZE PICKER ────────────────────────────────────────────────────── */
 .sizes{display:grid; gap:var(--s-8); align-items:center}
 @media (min-width:880px){ .sizes{grid-template-columns:1.1fr 1fr} }
-.sizes__stage{position:relative; aspect-ratio:1/1; border-radius:32px; background:var(--ground-soft); overflow:hidden;
-  display:flex; align-items:flex-end; justify-content:center; gap:clamp(12px,3vw,28px); padding:10% 8%}
-.sizes__card{width:calc(3.37 * var(--u)); height:calc(2.13 * var(--u)); border-radius:10px; border:2px dashed var(--ink-faint);
-  display:grid; place-items:center; font-family:var(--font-mono); font-size:.6875rem; color:var(--ink-soft); flex-shrink:0; text-align:center; padding:6px}
-.sizes__stk{width:calc(var(--in) * var(--u)); aspect-ratio:1; padding:calc(var(--in) * var(--u) * .05); background:#fff; border-radius:calc(var(--in) * var(--u) * .1);
-  box-shadow:0 18px 40px rgba(16,18,21,.16), 0 0 0 1px var(--line); transition:width .5s cubic-bezier(.3,1.4,.5,1); flex-shrink:0}
-.sizes__stage{--u:clamp(26px,6vw,52px)}
+.sizes__stage{position:relative; aspect-ratio:1/1; border-radius:32px; overflow:hidden; container-type:inline-size;
+  display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-start; gap:18px; padding:9% 8% 8%;
+  background:radial-gradient(var(--line-strong) 1.2px, transparent 1.6px) 0 0/20px 20px,
+             linear-gradient(160deg,#F1E9FE 0%,#FFFFFF 50%,#FFF1E8 100%);
+  box-shadow:0 0 0 1px var(--line)}
+.sizes__stage .sizes__free{position:absolute; top:8%; left:8%}
+/* one inch = 10% of the box (content width), so card + 6″ sticker + gap always fit */
+.sizes__row,.sizes__ruler{--u:10cqw; --g:4cqw}
+.sizes__row{display:flex; align-items:flex-end; gap:var(--g)}
+.sizes__card{position:relative; width:calc(3.37 * var(--u)); height:calc(2.13 * var(--u)); border-radius:calc(.14 * var(--u)); flex-shrink:0;
+  background:linear-gradient(135deg,#3A3D47 0%,#101215 70%); box-shadow:0 14px 30px rgba(16,18,21,.22); transform:rotate(-4deg)}
+.sizes__chip{position:absolute; left:10%; top:28%; width:16%; aspect-ratio:1.3; border-radius:4px;
+  background:linear-gradient(135deg,#E9D58B,#B8973E)}
+.sizes__cardt{position:absolute; left:10%; bottom:12%; font-family:var(--font-mono); font-size:.625rem; color:rgba(255,255,255,.6); letter-spacing:.04em}
+.sizes__stk{width:calc(var(--in) * var(--u)); aspect-ratio:1; padding:calc(var(--in) * var(--u) * .11); background:#fff; border-radius:calc(var(--in) * var(--u) * .1);
+  box-shadow:0 18px 40px rgba(16,18,21,.16), 0 0 0 1px var(--line); transition:width .5s cubic-bezier(.3,1.4,.5,1), padding .5s cubic-bezier(.3,1.4,.5,1); flex-shrink:0}
+.sizes__ruler{position:relative; width:calc(6 * var(--u)); height:30px; margin-left:calc(3.37 * var(--u) + var(--g));
+  border-top:2px solid var(--ink);
+  background:repeating-linear-gradient(90deg, var(--ink) 0 1.5px, transparent 1.5px calc(var(--u) / 2)) top left / 100% 8px no-repeat;
+  display:flex; justify-content:space-between}
+.sizes__ruler span{position:relative; top:12px; width:0; font-family:var(--font-mono); font-size:.625rem; color:var(--ink-soft); display:flex; justify-content:center; white-space:nowrap}
 .sizes__pick{display:flex; flex-wrap:wrap; gap:var(--s-2); margin-top:var(--s-2)}
 .chipb{
   height:48px; min-width:64px; padding:0 18px; border-radius:999px; border:1.5px solid var(--line-strong); background:#fff;
   font:inherit; font-weight:var(--fw-black); font-size:1rem; cursor:pointer; transition:all .2s var(--ease)
 }
 .chipb:hover{border-color:var(--ink)}
-.chipb[aria-pressed="true"]{background:var(--ink); color:#fff; border-color:var(--ink); transform:rotate(-3deg) scale(1.06)}
+.chipb[aria-pressed="true"]{background:var(--ink); color:#fff; border-color:var(--ink)}
 .sizes__out{display:flex; flex-direction:column; gap:var(--s-2); min-height:120px}
 .sizes__big{font-family:var(--font-mono); font-size:clamp(2.5rem,6vw,3.5rem); font-weight:var(--fw-semibold); letter-spacing:-.04em; line-height:1}
 .sizes__where{font-size:var(--fs-lead); color:var(--ink-mid); letter-spacing:var(--ls-soft)}
 .sizes__free{align-self:flex-start; margin-top:var(--s-2)}
+.sizes__free[hidden]{display:none}
+/* the ask under the picker, with the honest reason it is free (2026-09-30) */
+.sizes__cta{position:relative; display:flex; flex-wrap:wrap; align-items:center; gap:var(--s-3) var(--s-5); margin-top:var(--s-4)}
+.why{position:static; display:inline-flex; align-items:center; gap:6px; font-size:var(--fs-sm); font-weight:var(--fw-bold);
+  color:var(--ink-mid); cursor:help; border-radius:8px; letter-spacing:var(--ls-soft)}
+.why svg{width:18px; height:18px; flex-shrink:0}
+.why__tip{position:absolute; left:0; bottom:calc(100% + 12px); z-index:10; width:min(360px,100%); padding:14px 16px;
+  background:var(--ink); color:#fff; border-radius:14px; font-size:.875rem; font-weight:var(--fw-medium); line-height:1.45;
+  box-shadow:0 18px 40px rgba(16,18,21,.25); opacity:0; visibility:hidden; transform:translateY(6px);
+  transition:opacity .2s ease, transform .2s ease, visibility .2s}
+.why__tip b{color:#fff; font-weight:var(--fw-bold)}
+.why:hover .why__tip,.why:focus .why__tip,.why:focus-within .why__tip{opacity:1; visibility:visible; transform:none}
 
 /* ── 8. STICKER WALL (beliefs, facts) ──────────────────────────────────── */
 .wall{display:grid; gap:var(--s-6); margin-top:var(--s-10)}
@@ -252,7 +318,8 @@
 @media (max-width:879px){ .cta-tags{display:none} }
 
 @media (prefers-reduced-motion:reduce){
-  .pola,.river__row,.type__caret,.build .pg__btn,.scan .cam__line,.scan .pg{animation:none !important}
+  .pola,.river__row,.type__caret,.build .pg__btn,.scan .cam__line,.scan .pg,.demo .cam__line{animation:none !important}
+  .demo .pg{transform:none}
   .build .pg__btn{opacity:1; transform:none}
   .scan .pg{transform:none}
   .up,.slap,.bub{opacity:1; transform:none; transition:none}

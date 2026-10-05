@@ -90,6 +90,17 @@
     setInterval(function () { on = !on; f.setAttribute("data-n", on ? "1" : "0"); }, 2400);
   });
 
+  /* ── the scan → found → page → update loop (homepage) ────────────────────── */
+  all("[data-demo]").forEach(function (d) {
+    var steps = [["scan", 1900], ["found", 1300], ["page", 1700], ["upd", 3200]], k = 0;
+    if (reduce) { d.setAttribute("data-s", "upd"); return; }
+    function next() {
+      d.setAttribute("data-s", steps[k][0]);
+      setTimeout(function () { k = (k + 1) % steps.length; next(); }, steps[k][1]);
+    }
+    next();
+  });
+
   /* ── the size picker ─────────────────────────────────────────────── */
   var SIZES = {
     S:   { inch: 1.5, where: "Phone case, laptop, bottle, wallet, diary.", free: true },

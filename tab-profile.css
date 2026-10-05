@@ -14,11 +14,12 @@
 .photo{display:flex; align-items:center; gap:var(--s-4)}
 .photo__disc{
   position:relative; width:88px; height:88px; flex-shrink:0; border-radius:50%;
-  background:var(--brand-violet); color:#fff; display:grid; place-items:center;
+  background:#E7E9EE; color:#fff; display:grid; place-items:center;   /* under the grey face — no violet rim */
   font-size:2.125rem; font-weight:var(--fw-black); letter-spacing:-.03em;
   overflow:hidden; user-select:none;
 }
 .photo__disc img{width:100%; height:100%; object-fit:cover}
+.photo__disc .face{display:block; width:100%; height:100%}
 /* Remove sits BESIDE the button, not under it (Garry, 2026-09-24) — stacked,
    it appeared the moment a photo landed and shunted the button upwards. */
 .photo__acts{display:flex; flex-direction:column; align-items:flex-start; gap:var(--s-1)}
@@ -203,7 +204,7 @@ input:-webkit-autofill:active{
   transition:box-shadow var(--dur-fast) var(--ease);
 }
 .theme:hover{box-shadow:inset 0 0 0 1.5px var(--line-strong)}
-.theme[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--brand-violet)}
+.theme[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--ok)}   /* chosen theme = green (Garry, 2026-10-03) */
 .theme__sw{
   width:100%; aspect-ratio:3/4; border-radius:var(--r-sm);
   box-shadow:inset 0 0 0 1px rgba(16,18,21,.12);
@@ -212,15 +213,14 @@ input:-webkit-autofill:active{
 .theme__sw i{display:block; height:5px; border-radius:var(--r-pill); background:currentColor; opacity:.85}
 .theme__sw i:first-child{width:60%; height:7px; opacity:1}
 .theme__n{font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-mid)}
-.theme[aria-pressed="true"] .theme__n{color:var(--brand-violet)}
-/* the seven, matching profile.html exactly */
+.theme[aria-pressed="true"] .theme__n{color:var(--ok)}
+/* the five, matching profile.html exactly (Dark + Violet retired 2026-10-03; Leaf replaced Cream 2026-10-04) */
 .theme__sw[data-t="light"]   {background:#FFFFFF; color:#101215}
-.theme__sw[data-t="dark"]    {background:#101215; color:#FFFFFF}
-.theme__sw[data-t="violet"]  {background:#6E27E6; color:#FFFFFF}
-.theme__sw[data-t="cream"]   {background:#F6EFE4; color:#2A2118}
-.theme__sw[data-t="gradient"]{background:linear-gradient(168deg,#6E27E6,#B32E6E 55%,#C2452E); color:#FFFFFF}
-.theme__sw[data-t="glass-ember"]{color:#FFFFFF; background:linear-gradient(180deg, rgba(7,4,16,.26), rgba(7,4,16,.46)), url("assets/profile-bg/4.jpg") 40% 50% / cover no-repeat, #1A0806}
-.theme__sw[data-t="glass-violet"]{color:#FFFFFF; background:linear-gradient(180deg, rgba(7,4,16,.26), rgba(7,4,16,.46)), url("assets/profile-bg/3.jpg") 44% 50% / cover no-repeat, #0C0630}
+.theme__sw[data-t="leaf"]    {background:#A3BF5A; color:#0A0A0A}
+.theme__sw[data-t="soft"]    {background:#E8E7E5; color:#0B0B0C; box-shadow:inset 0 0 0 6px #fff, inset 0 0 0 7px rgba(16,18,21,.08)}
+.theme__sw[data-t="photo"]   {background:linear-gradient(#E7E9EE 0 46%, #fff 46%); color:#1497F5; box-shadow:inset 0 0 0 5px #C4CBD4}
+.theme__sw[data-t="glass-copper"]{color:#FFFFFF; background:url("assets/profile-bg/pv1hd.jpg") 30% 50% / cover no-repeat, #150E0B}
+.theme__sw[data-t="glass-bronze"]{color:#FFFFFF; background:url("assets/profile-bg/pv3hd.jpg") 45% 50% / cover no-repeat, #7A5440}
 /* the glass swatches show the panel, not just the ground — the frosted
    sheet is the whole point of these two and a flat chip would hide it */
 .theme__sw[data-t^="glass-"]{position:relative; overflow:hidden}
@@ -245,3 +245,93 @@ input:-webkit-autofill:active{
 .chk,
 .pick,
 .order__empty{ letter-spacing:var(--ls-soft) }
+
+
+/* ══ LIVE PREVIEW (2026-09-30) ═══════════════════════════════════════════
+   The editor and a phone side by side, like onboarding. The phone is the
+   real profile.html at a phone's width (375px), scaled to fit the frame. */
+.pp-wrap{flex:1; display:flex; justify-content:center; align-items:flex-start; width:100%; min-width:0}
+.pp-wrap > .view{margin-inline:0}
+.pp{display:none}
+.pp__in{display:flex; flex-direction:column; gap:var(--s-4)}
+.pp__head{display:flex; align-items:center; gap:var(--s-3)}
+.pp__head .pp__t{margin-left:auto}   /* tabs left, the live label right */
+.pp__t{display:inline-flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:var(--fs-label);
+  font-weight:var(--fw-semibold); letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--ink-soft)}
+.pp__t i{width:7px; height:7px; border-radius:50%; background:var(--ok); box-shadow:0 0 0 3px rgba(23,145,79,.18)}
+.pp__x{display:none; width:36px; height:36px; border:0; border-radius:50%; background:var(--ground-soft); cursor:pointer;
+  place-items:center; color:var(--ink)}
+.pp__x svg{width:18px; height:18px}
+.pp__phone{width:300px; padding:10px; background:var(--ink); border-radius:44px; box-shadow:0 30px 70px rgba(16,18,21,.22)}
+.pp__scr{position:relative; width:280px; height:560px; border-radius:34px; overflow:hidden; background:#fff}
+.pp__scr iframe{position:absolute; top:0; left:0; width:375px; height:750px; border:0;
+  transform:scale(.7467); transform-origin:top left}
+.pp__devs{display:flex; gap:4px; padding:4px; border-radius:999px; background:var(--ground-soft)}
+.pp__devs button{border:0; background:none; cursor:pointer; padding:6px 14px; border-radius:999px;
+  font:inherit; font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-mid)}
+.pp__devs button[aria-pressed="true"]{background:var(--ground); color:var(--ink); box-shadow:0 1px 3px rgba(16,18,21,.12)}
+/* Web: a browser window instead of a phone — three dots in a top bar */
+.pp__phone[data-device="web"]{padding:24px 0 0; border-radius:14px; position:relative; background:#1B1D22}
+.pp__phone[data-device="web"]::before{content:""; position:absolute; top:9px; left:12px; width:42px; height:7px;
+  background:radial-gradient(circle 3.5px at 3.5px 50%, rgba(255,255,255,.3) 98%, transparent) 0 0 / 14px 7px repeat-x}
+.pp__phone[data-device="web"] .pp__scr{width:300px; height:200px; border-radius:0 0 14px 14px}
+.pp__themes{max-width:300px; display:flex; flex-direction:column; gap:8px}
+.pp__th{font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:var(--ls-soft)}
+.pp__th b{color:var(--ink); font-weight:var(--fw-bold)}
+.pp__sws{display:flex; flex-wrap:wrap; gap:8px}
+.pp__sw{position:relative; width:32px; height:32px; padding:0; border:0; border-radius:10px; background:none; cursor:pointer;
+  box-shadow:inset 0 0 0 1px rgba(16,18,21,.12); transition:transform var(--dur-fast) var(--ease)}
+.pp__sw:hover{transform:translateY(-1px)}
+.pp__sw .theme__sw{width:100%; height:100%; aspect-ratio:auto; padding:0; border-radius:inherit; display:block}
+.pp__sw .theme__sw::before{display:none}
+/* the chosen one: a green ring and a green check in the corner */
+.pp__sw[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ground), 0 0 0 3.5px var(--ok)}
+.pp__sw i{display:none; position:absolute; top:-6px; right:-6px; width:16px; height:16px; border-radius:50%;
+  background:var(--ok); color:#fff; place-items:center; box-shadow:0 0 0 2px var(--ground)}
+.pp__sw i svg{width:10px; height:10px}
+.pp__sw[aria-pressed="true"] i{display:grid}
+/* theme versions (Leaf colours, Soft / Photo light-dark) — under the theme
+   grid and under the preview. The row always keeps its height, so nothing
+   below it jumps when a theme with versions is picked. */
+.subs, .pp__subs{display:flex; align-items:center; gap:10px; min-height:32px; margin-top:var(--s-4)}
+.pp__subs{margin-top:2px; min-height:26px}
+.subs[data-on="false"], .pp__subs[data-on="false"]{visibility:hidden}
+.subs span, .pp__subs span{font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-soft); letter-spacing:var(--ls-soft); margin-right:2px}
+.subs button, .pp__subs button{width:28px; height:28px; padding:0; border:0; border-radius:50%; cursor:pointer;
+  background:var(--dot); box-shadow:inset 0 0 0 1px rgba(16,18,21,.14); transition:transform var(--dur-fast) var(--ease)}
+.pp__subs button{width:22px; height:22px}
+.subs button:hover, .pp__subs button:hover{transform:scale(1.08)}
+/* the chosen version: the same green ring as the chosen theme */
+.subs button[aria-pressed="true"], .pp__subs button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ground), 0 0 0 4px var(--ok)}
+.pp__note{max-width:300px; font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.45; letter-spacing:var(--ls-soft)}
+
+/* desktop: the phone sits beside the editor and follows the scroll */
+@media (min-width:1280px){
+  .pp{display:block; position:sticky; top:var(--s-10); flex:0 0 320px; padding:var(--s-10) var(--gutter) 0 0}
+}
+
+/* narrower: a button, and the phone as a sheet over the page */
+.pp-fab{
+  position:fixed; right:16px; bottom:calc(var(--tabs-h) + 76px); z-index:40;
+  display:inline-flex; align-items:center; gap:8px; height:46px; padding:0 18px 0 14px;
+  border:0; border-radius:999px; background:var(--ink); color:#fff; cursor:pointer;
+  font:inherit; font-weight:var(--fw-bold); font-size:var(--fs-sm); box-shadow:0 12px 30px rgba(16,18,21,.25)
+}
+.pp-fab svg{width:18px; height:18px}
+@media (min-width:1024px) and (max-width:1279px){ .pp-fab{bottom:84px} }
+/* the save bar owns the bottom while it is up */
+body[data-editing] .pp-fab{bottom:calc(var(--tabs-h) + 84px)}  /* the demo pill parks while editing */
+@media (min-width:1024px){ body[data-editing] .pp-fab{bottom:96px} }
+@media (max-width:1279px){
+  .pp[data-open="true"]{display:grid; place-items:center; position:fixed; inset:0; z-index:90;
+    background:rgba(16,18,21,.55); padding:16px; overflow:auto}
+  .pp[data-open="true"] .pp__in{background:var(--ground); border-radius:28px; padding:16px 16px 18px; align-items:center}
+  .pp[data-open="true"] .pp__head{align-self:stretch}
+  .pp__x{display:grid}
+  .pp[data-open="true"] .pp__phone{width:min(300px, calc(100vw - 64px))}
+}
+@media (max-height:760px) and (max-width:1279px){
+  .pp[data-open="true"] .pp__phone{transform:scale(.85); transform-origin:top center; margin-bottom:-90px}
+}
+
+@media (min-width:1280px){ .pp-fab{display:none} }

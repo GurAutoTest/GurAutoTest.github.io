@@ -5,6 +5,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="site-menu.css">
+<link rel="stylesheet" href="site-end.css">
 
 <style>
 /* ==========================================================================
@@ -179,6 +180,22 @@ a.way__value:hover{text-decoration:underline; text-decoration-thickness:2px; tex
 .way__acts{display:flex; flex-wrap:wrap; gap:var(--s-3)}
 @media (max-width:480px){ .way__acts .btn{flex:1 1 100%} }
 
+/* ── 5a. THE FIRST SCREEN, IN COLOUR (Garry, 2026-09-30) ───────────────────
+   Same lilac→peach wash and blooms as the heroes elsewhere; the grey cards
+   turn white so they sit on it like the app band's cards do. */
+.c-top{position:relative; overflow:hidden; padding-bottom:clamp(var(--s-12),6vw,var(--s-20));
+  background:linear-gradient(160deg,#F1E9FE 0%,#FFFFFF 50%,#FFF1E8 100%)}
+.c-top::before,.c-top::after{content:""; position:absolute; border-radius:50%; filter:blur(70px); pointer-events:none; z-index:0}
+.c-top::before{width:460px; height:460px; left:-90px; top:-70px; background:rgba(161,113,244,.32)}
+.c-top::after{width:400px; height:400px; right:-70px; bottom:-60px; background:rgba(255,160,122,.26)}
+.c-top > *{position:relative; z-index:1}
+.c-top .eyebrow{display:inline-flex; align-items:center; gap:var(--s-2)}
+.c-top .eyebrow::before{content:""; width:8px; height:8px; border-radius:2px; background:var(--ink)}
+.c-top .way{background:#fff; box-shadow:0 0 0 1px var(--line), 0 12px 30px rgba(16,18,21,.06)}
+.c-top .form{background:#fff}
+.c-top .way--mail .way__ico{background:#F1E9FE; color:#6E27E6; box-shadow:none}
+.c-top .way:not(.way--mail) .way__ico{background:#FFF1E8; color:#C2571A; box-shadow:none}
+
 /* ── 5b. FORM ─────────────────────────────────────────────────────────────
    WhatsApp and Call sit at the head of the card; the fields are for anyone
    they don't suit — a laptop, a number abroad, or a bulk ask with details.
@@ -332,6 +349,9 @@ a.soc:hover .soc__handle{color:rgba(255,255,255,.6)}
 
 <main>
 
+  <!-- plain scroll, no folds (Garry, 2026-09-30); the app band and the
+       close come from site-end.js -->
+  <div class="c-top">
   <!-- ══ HEAD ═══════════════════════════════════════════════════════════ -->
   <section class="shell head">
     <span class="eyebrow">Contact</span>
@@ -380,7 +400,7 @@ a.soc:hover .soc__handle{color:rgba(255,255,255,.6)}
         <div class="row2">
           <label class="fld" id="fName">
             <span class="fld__label">Your name</span>
-            <input class="fld__input" name="name" type="text" autocomplete="name" placeholder="Your name">
+            <input class="fld__input" name="name" type="text" autocomplete="name" placeholder="Gurdeep Singh">
             <span class="fld__err">We need a name to reply to.</span>
           </label>
           <label class="fld" id="fReach">
@@ -432,6 +452,8 @@ a.soc:hover .soc__handle{color:rgba(255,255,255,.6)}
     </div>
   </section>
 
+  </div>
+
   <!-- ══ SOCIALS ════════════════════════════════════════════════════════ -->
   <section class="shell socials">
     <span class="eyebrow">Follow along</span>
@@ -477,6 +499,8 @@ a.soc:hover .soc__handle{color:rgba(255,255,255,.6)}
 
 </main>
 
+<div data-site-end></div>
+
 <!-- ══ FOOTER ═══════════════════════════════════════════════════════════ -->
 <footer class="footer">
   <div class="shell shell--wide">
@@ -521,6 +545,7 @@ a.soc:hover .soc__handle{color:rgba(255,255,255,.6)}
 </footer>
 
 <script src="site-menu.js"></script>
+<script src="site-end.js"></script>
 <script>
 (function () {
   "use strict";

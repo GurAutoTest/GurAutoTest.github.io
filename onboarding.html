@@ -258,11 +258,12 @@ input:-webkit-autofill:active{
 .photo{display:flex; align-items:center; gap:var(--s-4)}
 .photo__disc{
   position:relative; width:88px; height:88px; flex-shrink:0; border-radius:50%;
-  background:var(--brand-violet); color:#fff; display:grid; place-items:center;
+  background:#E7E9EE; color:#fff; display:grid; place-items:center;
   font-size:2.125rem; font-weight:var(--fw-black); letter-spacing:-.03em;
   overflow:hidden; user-select:none;
 }
 .photo__disc img{width:100%; height:100%; object-fit:cover}
+.photo__disc .face{display:block; width:100%; height:100%}
 /* Remove sits BESIDE the button, not under it (Garry, 2026-09-24) — stacked,
    it appeared the moment a photo landed and shunted the button upwards. The
    8px gap plus the link's own padding reads as the 16px he asked for. */
@@ -405,17 +406,27 @@ input:-webkit-autofill:active{
   transition:box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .sw:hover{transform:translateY(-1px)}
-.sw[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--brand-violet), 0 0 0 3px var(--brand-violet-tint)}
+.sw[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--ok), 0 0 0 3px rgba(23,145,79,.18)}   /* chosen theme = green (Garry, 2026-10-03) */
 .sw svg{
   width:20px; height:20px; opacity:0; transform:scale(.5);
   transition:opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .sw[aria-pressed="true"] svg{opacity:1; transform:none}
 .sw[data-t="light"]{background:#fff}
-.sw[data-t="dark"]{background:#101215}
-.sw[data-t="violet"]{background:#6E27E6}
-.sw[data-t="cream"]{background:#F6EFE4}
-.sw[data-t="gradient"]{background:linear-gradient(150deg,#6E27E6,#B32E6E 55%,#C2452E)}
+.sw[data-t="leaf"]{background:#A3BF5A}
+.sw[data-t="soft"]{background:#E8E7E5; box-shadow:inset 0 0 0 5px #fff, inset 0 0 0 6px rgba(16,18,21,.1)}
+.sw[data-t="photo"]{background:linear-gradient(#E7E9EE 0 50%, #fff 50%); box-shadow:inset 0 0 0 4px #C4CBD4}
+/* theme versions (Leaf colours, Soft / Photo light-dark), under the strip.
+   The row always keeps its height — it used to appear from nothing and jolt
+   the preview upwards (Garry, 2026-10-06). */
+.subs{display:flex; justify-content:center; align-items:center; gap:10px; min-height:28px; margin-top:12px}
+.subs[data-on="false"]{visibility:hidden}
+.subs button{width:24px; height:24px; padding:0; border:0; border-radius:50%; cursor:pointer; background:var(--dot);
+  box-shadow:inset 0 0 0 1px rgba(16,18,21,.14); transition:transform var(--dur-fast) var(--ease)}
+.subs button:hover{transform:scale(1.08)}
+.subs button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ground), 0 0 0 4px var(--ok)}
+.sw[data-t="glass-copper"]{background:url("assets/profile-bg/pv1hd.jpg") 30% 50% / cover no-repeat, #150E0B}
+.sw[data-t="glass-bronze"]{background:url("assets/profile-bg/pv3hd.jpg") 45% 50% / cover no-repeat, #7A5440}
 
 @media (min-width:960px){
   .ob__wrap{gap:var(--s-12)}
@@ -456,12 +467,12 @@ input:-webkit-autofill:active{
   transition:background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 .phone__scr::-webkit-scrollbar{width:0}
+.phone__lv{position:relative; flex:1; min-height:0; border-radius:26px; overflow:hidden; background:#fff}
+.phone__lv iframe{position:absolute; top:0; left:0; border:0; transform-origin:0 0}
+.phone[data-device="desktop"] .phone__lv{border-radius:0}
+.phone[data-live] .phone__scr{display:none}
 
 .phone[data-theme="light"]   {--p-av-bg:#6E27E6; --p-av-fg:#FFFFFF; --p-bg:#FFFFFF; --p-ink:#101215; --p-mid:#5B5D68; --p-btn:#F4F3F7; --p-btn-ink:#101215; --p-line:rgba(16,18,21,.10); --p-r:12px; --p-sk:rgba(16,18,21,.08)}
-.phone[data-theme="dark"]    {--p-av-bg:#6E27E6; --p-av-fg:#FFFFFF; --p-bg:#101215; --p-ink:#FFFFFF; --p-mid:#9A9CA8; --p-btn:#1D2026; --p-btn-ink:#FFFFFF; --p-line:rgba(255,255,255,.12); --p-r:12px; --p-sk:rgba(255,255,255,.11)}
-.phone[data-theme="violet"]  {--p-av-bg:#FFFFFF; --p-av-fg:#6E27E6; --p-bg:#6E27E6; --p-ink:#FFFFFF; --p-mid:#EDE3FE; --p-btn:rgba(255,255,255,.17); --p-btn-ink:#FFFFFF; --p-line:rgba(255,255,255,.24); --p-r:999px; --p-sk:rgba(255,255,255,.20)}
-.phone[data-theme="cream"]   {--p-av-bg:#6E27E6; --p-av-fg:#FFFFFF; --p-bg:#F6EFE4; --p-ink:#2A2118; --p-mid:#6B5B47; --p-btn:#FFFFFF; --p-btn-ink:#2A2118; --p-line:rgba(42,33,24,.13); --p-r:999px; --p-sk:rgba(42,33,24,.10)}
-.phone[data-theme="gradient"]{--p-av-bg:#FFFFFF; --p-av-fg:#6E27E6; --p-bg:linear-gradient(165deg,#6E27E6,#B32E6E 55%,#C2452E); --p-ink:#FFFFFF; --p-mid:#FFF0E6; --p-btn:rgba(255,255,255,.19); --p-btn-ink:#FFFFFF; --p-line:rgba(255,255,255,.26); --p-r:999px; --p-sk:rgba(255,255,255,.22)}
 
 .p-photo{width:68px; height:68px; border-radius:50%; overflow:hidden; flex-shrink:0;
   background:var(--p-av-bg); color:var(--p-av-fg); display:grid; place-items:center;
@@ -503,7 +514,7 @@ input:-webkit-autofill:active{
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:60%;
 }
 .phone[data-device="desktop"]{
-  width:min(880px,92vw); height:min(560px,calc(100svh - 240px));
+  width:min(880px,100%); height:auto; aspect-ratio:16/10.5;
   border-radius:16px; padding:0 0 0; overflow:hidden;
 }
 .phone[data-device="desktop"] .win{display:flex}
@@ -519,16 +530,13 @@ input:-webkit-autofill:active{
 .phone[data-device="desktop"] .p-foot{font-size:.6875rem}
 @media (max-width:899px){
   .aside__inner{overflow-x:hidden}
-  .phone[data-device="desktop"]{
-    width:880px; height:560px; flex-shrink:0;
-    transform:scale(var(--dscale,.4)); transform-origin:top center;
-    /* the scale frees vertical space the layout box still reserves */
-    margin-bottom:calc(560px * (var(--dscale,.4) - 1));
-  }
+  /* (the desktop frame used to be a fixed 880px scaled down here; it now
+     takes the column's width and the page inside it is what scales) */
 }
 
 /* only on the done screen, where "View my page" opens the preview full-bleed */
-.devs{display:none; gap:4px; padding:4px; border-radius:var(--r-pill); background:var(--ground-sunk)}
+/* Mobile / Web — always on now, the preview shows both (Garry, 2026-10-03) */
+.devs{display:flex; gap:4px; padding:4px; border-radius:var(--r-pill); background:var(--ground-sunk)}
 .ob[data-step="3"] .ob__aside[data-open="true"] .devs{display:flex}
 .devs button{
   border:0; background:none; cursor:pointer; padding:7px 16px; border-radius:var(--r-pill);
@@ -932,21 +940,9 @@ body[data-showing]{overflow:hidden}
   100%{opacity:0; transform:translate3d(var(--dx),104svh,0) rotate(var(--rot))}
 }
 
-/* ── 12. REVIEW TOOL — delete this block, its CSS and its script loop ──── */
-.preview{
-  display:none !important;
-  position:fixed; right:var(--s-4); bottom:96px; z-index:50;
-  display:flex; align-items:center; gap:var(--s-1); padding:5px; border-radius:var(--r-pill);
-  background:var(--ground); box-shadow:var(--shadow-lg), inset 0 0 0 1px var(--line);
-}
-.preview button{
-  border:0; cursor:pointer; background:none; color:var(--ink-soft);
-  font-size:var(--fs-xs); font-weight:var(--fw-bold); padding:6px var(--s-3);
-  border-radius:var(--r-pill); white-space:nowrap;
-}
-.preview button:hover{color:var(--ink)}
-.preview button[aria-pressed="true"]{background:var(--brand-violet); color:#fff}
-@media (min-width:960px){ .preview{bottom:var(--s-5)} }
+/* ── 12. REVIEW TOOL — hidden for production ──── */
+.preview{ display: none !important; }
+
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms !important; transition-duration:.001ms !important}
@@ -1030,7 +1026,7 @@ body[data-showing]{overflow:hidden}
 
           <div class="fld">
             <div class="fld__top"><label class="fld__lbl" for="name">Your name</label></div>
-            <div class="inp"><input id="name" type="text" maxlength="40" autocomplete="name" placeholder="Your name"></div>
+            <div class="inp"><input id="name" type="text" maxlength="40" autocomplete="name" placeholder="Gurdeep Singh"></div>
           </div>
 
           <div class="fld">
@@ -1069,7 +1065,7 @@ body[data-showing]{overflow:hidden}
             <div class="fld__top"><label class="fld__lbl" for="phone">Phone</label></div>
             <div class="inp">
               <span class="inp__pre">+91</span>
-              <input id="phone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="10-digit mobile number">
+              <input id="phone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="98765 43210">
               <button class="eye" type="button" id="phoneEye" aria-pressed="true" aria-label="Show phone on your page"></button>
             </div>
           </div>
@@ -1233,6 +1229,9 @@ body[data-showing]{overflow:hidden}
         <div class="phone" data-theme="light" data-device="mobile" id="phoneFrame">
           <div class="win" aria-hidden="true"><i></i><i></i><i></i><span class="win__u" id="winUrl">codemarca.com</span></div>
           <div class="phone__scr" id="scr"></div>
+          <!-- the glass themes carry their own layout, so they preview as the
+               real page in a frame, scaled down to fit — see section 13b -->
+          <div class="phone__lv" id="lv" hidden><iframe id="lvFrame" title="Your page, as a scan shows it" tabindex="-1"></iframe></div>
         </div>
         <button class="aside__share" type="button" id="asideShare" hidden>
           <svg viewBox="0 0 20 20" fill="none"><path d="M10 13V3m0 0L6.6 6.4M10 3l3.4 3.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 11.5v4.2c0 .7.6 1.3 1.3 1.3h8.4c.7 0 1.3-.6 1.3-1.3v-4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -1288,8 +1287,8 @@ body[data-showing]{overflow:hidden}
   </div>
 </div>
 
-<!-- Review tool hidden for clean production experience -->
-<div class="preview" role="group" aria-label="Jump to step" hidden style="display:none !important">
+<!-- Review tool only — delete this block, its CSS section and its script loop. -->
+<div class="preview" role="group" aria-label="Jump to step">
   <button type="button" data-go="1" aria-pressed="true">About</button>
   <button type="button" data-go="2" aria-pressed="false">Links</button>
   <button type="button" data-go="3" aria-pressed="false">Done</button>
@@ -1413,8 +1412,9 @@ body[data-showing]{overflow:hidden}
                          .map(function (l) { return l.k; });
 
   var THEMES = [
-    { t:"light",    n:"Light" },   { t:"dark",  n:"Dark" }, { t:"violet", n:"Brand violet" },
-    { t:"cream",    n:"Warm cream" }, { t:"gradient", n:"Gradient" }
+    /* final order (Garry, 2026-10-06) */
+    { t:"light", n:"Light" }, { t:"glass-bronze", n:"Bronze glass" }, { t:"leaf", n:"Leaf" },
+    { t:"glass-copper", n:"Copper glass" }, { t:"soft", n:"Soft" }, { t:"photo", n:"Photo" }
   ];
 
   /* ══ 3. STATE ════════════════════════════════════════════════════════
@@ -1477,16 +1477,6 @@ body[data-showing]{overflow:hidden}
   if (qE) S.email = qE.trim();
   else if (storedE) S.email = storedE.trim();
 
-  /* WHERE "DONE" GOES — added 2026-09-16 with the flow folders.
-     Most people arrive here with no pack, so finishing lands them on the
-     page-live dashboard and the loud button is still "get your pack".
-
-     ?ordered=1 is the other way round: they bought the pack FIRST and are
-     only now building the page — the flow-3 screens send them here with
-     it. For them the pack is already paid for and in a van, so offering
-     to sell them one would be the product not paying attention. They get
-     the photos only — no price, no button — and "Done" goes to flow 2's
-     pack-on-the-way state. */
   if (q.get("ordered")) {
     var dash = document.getElementById("toDash");
     var pack = document.getElementById("getPack");
@@ -1671,89 +1661,46 @@ body[data-showing]{overflow:hidden}
     $("aside").dataset.open = "false";
     $("next").textContent = n === 2 ? "Publish my page" : "Continue";
     if (n === 3) {
+      if ($("toDash")) $("toDash").href = "dashboard/home.html";
+      if ($("getPack")) $("getPack").href = "select-pack.html?built=1&handle=" + encodeURIComponent(S.handle);
       $("liveUrl").textContent = "codemarca.com/" + S.handle;
       $("meName").textContent = S.name.trim() || S.handle;
       $("meAv").innerHTML = S.photo ? '<img src="' + S.photo + '" alt="">' : esc(initial());
       $("winUrl").textContent = "codemarca.com/" + S.handle;
       drawQR(S.handle);
-
-      var dashState = q.get("ordered") ? "coming" : "fresh";
-      var toDashEl = $("toDash");
-      if (toDashEl) {
-        toDashEl.href = "dashboard/home.html";
-      }
-      var packEl = $("getPack");
-      if (packEl) {
-        packEl.href = "select-pack.html?built=1&handle=" + encodeURIComponent(S.handle) +
-          "&name=" + encodeURIComponent(S.name.trim() || S.handle) +
-          (S.phone ? "&phone=" + encodeURIComponent(S.phone) : "") +
-          (S.email ? "&email=" + encodeURIComponent(S.email) : "");
-      }
-      try {
-        localStorage.setItem("cm.stage", "page-live");
-        localStorage.setItem("cm.substage", dashState);
-        localStorage.setItem("cm.username", S.handle);
-        localStorage.setItem("cm.name", S.name.trim() || S.handle);
-        if (S.phone) localStorage.setItem("cm.phone", S.phone);
-        if (S.email) localStorage.setItem("cm.email", S.email);
-      } catch(e) {}
-      var customData = {
-        user: {
-          name: S.name.trim() || S.handle,
-          email: S.email.trim() || (S.handle + "@gmail.com")
-        },
-        profile: {
-          handle: S.handle,
-          title: S.name.trim() || S.handle,
-          bio: S.bio || "",
-          photo: S.photo,
-          theme: S.theme,
-          phone: S.phone,
-          wa: S.wa,
-          email: S.email,
-          links: S.links,
-          customs: S.customs,
-          order: S.order
-        },
-        code: {
-          id: (S.handle || "x7k9m2").slice(0, 8),
-          url: "codemarca.com/c/" + (S.handle || "x7k9m2").slice(0, 8)
-        }
-      };
-      try {
-        localStorage.setItem("cm.account.custom", JSON.stringify(customData));
-        localStorage.setItem("cm.username", S.handle);
-        localStorage.setItem("cm.name", S.name.trim() || S.handle);
-        if (S.phone) localStorage.setItem("cm.phone", S.phone);
-        if (S.email) localStorage.setItem("cm.email", S.email);
-      } catch (e) { }
-
-      try {
-        fetch("/api/auth/claim-username", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username: S.handle,
-            display_name: S.name.trim() || S.handle,
-            bio: S.bio,
-            avatar_url: S.photo,
-            phone: S.phone,
-            whatsapp: S.wa,
-            email: S.email,
-            theme: S.theme,
-            links: S.links,
-            customs: S.customs,
-            stage: "page-live",
-            substage: dashState,
-            is_live: true,
-            onboarding_done: true
-          })
-        }).catch(function () {});
-      } catch (e) { }
-
       if (paintDone() !== "bare") celebrate();
       paintPlaces();                         /* the row has a width now */
       requestAnimationFrame(paintPlaces);    /* …and again once fonts settle */
+
+      try {
+        localStorage.setItem("cm.username", S.handle);
+        localStorage.setItem("cm.name", S.name.trim());
+        if (S.phone) localStorage.setItem("cm.phone", S.phone);
+        if (S.email) localStorage.setItem("cm.email", S.email);
+        if (S.tag) localStorage.setItem("cm.tag", S.tag);
+        if (S.bio) localStorage.setItem("cm.bio", S.bio);
+        if (S.theme) localStorage.setItem("cm.theme", S.theme);
+        if (S.themeColor) localStorage.setItem("cm.themeColor", S.themeColor);
+        if (S.photo) localStorage.setItem("cm.photo", S.photo);
+        localStorage.setItem("cm.stage", "page-live");
+
+        var custom = {};
+        try { custom = JSON.parse(localStorage.getItem("cm.account.custom") || "{}"); } catch(e){}
+        custom.user = custom.user || {};
+        custom.profile = custom.profile || {};
+        custom.profile.brand = custom.profile.brand || {};
+        custom.user.username = S.handle;
+        custom.user.name = S.name.trim();
+        custom.profile.name = S.name.trim();
+        custom.profile.headline = S.tag || "";
+        custom.profile.bio = S.bio || "";
+        custom.profile.phone = S.phone || "";
+        custom.user.email = S.email || custom.user.email || "";
+        custom.profile.brand.theme = S.theme || "light";
+        if (S.themeColor) custom.profile.brand.color = S.themeColor;
+        if (S.photo) custom.profile.photo = S.photo;
+        localStorage.setItem("cm.account.custom", JSON.stringify(custom));
+      } catch(e) {}
     } else {
       closeShow();
       stopCelebrating();
@@ -1826,7 +1773,9 @@ body[data-showing]{overflow:hidden}
 
   function paintPhoto() {
     var d = $("photoDisc");
-    d.innerHTML = S.photo ? '<img src="' + S.photo + '" alt="">' : esc(initial());
+    /* no photo: the light cool-grey silhouette the page itself uses, not a letter on violet */
+    d.innerHTML = S.photo ? '<img src="' + S.photo + '" alt="">' :
+      '<svg class="face" viewBox="0 0 96 96" aria-hidden="true"><rect width="96" height="96" fill="#E7E9EE"/><circle cx="48" cy="38" r="16" fill="#B3B8C2"/><path d="M16 96c4-19 17-28 32-28s28 9 32 28z" fill="#B3B8C2"/></svg>';
     $("photoClear").hidden = !S.photo;
     $("photoBtn").textContent = S.photo ? "Change photo" : "Add photo";
   }
@@ -1844,16 +1793,8 @@ body[data-showing]{overflow:hidden}
   });
 
   $("name").value = S.name;
-  $("name").addEventListener("input", function () {
-    S.name = this.value;
-    try { localStorage.setItem("cm.name", S.name.trim()); } catch(e) {}
-    paintPhoto(); refresh();
-  });
+  $("name").addEventListener("input", function () { S.name = this.value; paintPhoto(); refresh(); });
 
-  if (S.bio) {
-    $("bio").value = S.bio;
-    $("bioCount").textContent = S.bio.length + "/100";
-  }
   $("bio").addEventListener("input", function () {
     S.bio = this.value.slice(0, 100);
     $("bioCount").textContent = S.bio.length + "/100";
@@ -1907,28 +1848,10 @@ body[data-showing]{overflow:hidden}
   eye($("waEye"),    "waOn",    "WhatsApp");
   eye($("emailEye"), "emailOn", "email");
 
-  if (S.phone) $("phone").value = S.phone;
-  if (S.wa) $("wa").value = S.wa;
-  if (S.email) $("email").value = S.email;
-
   function digits(v) { return v.replace(/[^0-9]/g, "").slice(0, 10); }
-  $("phone").addEventListener("input", function () {
-    this.value = digits(this.value);
-    S.phone = this.value;
-    try { localStorage.setItem("cm.phone", S.phone); } catch(e) {}
-    refresh();
-  });
-  $("wa").addEventListener("input", function () {
-    this.value = digits(this.value);
-    S.wa = this.value;
-    try { localStorage.setItem("cm.wa", S.wa); } catch(e) {}
-    refresh();
-  });
-  $("email").addEventListener("input", function () {
-    S.email = this.value.trim();
-    try { localStorage.setItem("cm.email", S.email); } catch(e) {}
-    refresh();
-  });
+  $("phone").addEventListener("input", function () { this.value = digits(this.value); S.phone = this.value; refresh(); });
+  $("wa").addEventListener("input",    function () { this.value = digits(this.value); S.wa = this.value; refresh(); });
+  $("email").addEventListener("input", function () { S.email = this.value.trim(); refresh(); });
 
   /* business WhatsApp numbers are often different — so the box is a
      checkbox, on by default, not an assumption */
@@ -2151,13 +2074,21 @@ body[data-showing]{overflow:hidden}
   }
 
   /* ══ 11. ORDER LIST ══════════════════════════════════════════════════ */
+  /* Call, WhatsApp, Email and Add Contact always lead the page, in every
+     theme (Garry, 2026-10-05) — so they are not in the reorder list. Only the
+     socials block, the link rows and custom buttons move. */
+  var FIXED = ["call", "wa", "email", "vcard"];
+  function orderable() {
+    return S.order.filter(rowLive).filter(function (k) { return FIXED.indexOf(k) < 0; });
+  }
+  var FIXED_NOTE = '<li class="order__empty">Call, WhatsApp, Email and Add Contact always stay at the top.</li>';
   function paintOrder() {
-    var live = S.order.filter(rowLive);
+    var live = orderable();
     if (!live.length) {
       $("order").innerHTML = '<li class="order__empty">Fill something in above and it shows up here.</li>';
       return;
     }
-    $("order").innerHTML = live.map(function (k, i) {
+    $("order").innerHTML = FIXED_NOTE + live.map(function (k, i) {
       return '<li class="ord" draggable="true" data-k="' + k + '">' +
         '<span class="ord__grip" aria-hidden="true"><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="6" cy="4" r="1.3"/><circle cx="10" cy="4" r="1.3"/><circle cx="6" cy="8" r="1.3"/><circle cx="10" cy="8" r="1.3"/><circle cx="6" cy="12" r="1.3"/><circle cx="10" cy="12" r="1.3"/></svg></span>' +
         '<span class="ord__name">' + esc(rowName(k)) + "</span>" +
@@ -2171,15 +2102,15 @@ body[data-showing]{overflow:hidden}
   /* moves operate on the visible list, then write back into the full
      order array so hidden keys keep their relative place */
   function move(k, dir) {
-    var live = S.order.filter(rowLive);
+    var live = orderable();
     var i = live.indexOf(k), j = i + dir;
     if (i < 0 || j < 0 || j >= live.length) return;
     live.splice(j, 0, live.splice(i, 1)[0]);
     writeBack(live);
   }
   function writeBack(live) {
-    var rest = S.order.filter(function (x) { return live.indexOf(x) < 0; });
-    S.order = live.concat(rest);
+    var rest = S.order.filter(function (x) { return live.indexOf(x) < 0 && FIXED.indexOf(x) < 0; });
+    S.order = FIXED.concat(live, rest);
     paintOrder(); paintPreview();
   }
 
@@ -2215,7 +2146,7 @@ body[data-showing]{overflow:hidden}
   $("order").addEventListener("drop", function (e) {
     var li = e.target.closest(".ord"); if (!li || !dragKey) return;
     e.preventDefault();
-    var live = S.order.filter(rowLive);
+    var live = orderable();
     var from = live.indexOf(dragKey), to = live.indexOf(li.dataset.k);
     if (from > -1 && to > -1 && from !== to) {
       live.splice(to, 0, live.splice(from, 1)[0]);
@@ -2234,14 +2165,112 @@ body[data-showing]{overflow:hidden}
       '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="#fff"/>' +
       '<path d="m5.8 10.2 2.7 2.7 5.7-5.7" fill="none" stroke="#101215" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
   }).join("");
-  $("themes").addEventListener("click", function (e) {
-    var b = e.target.closest(".sw"); if (!b) return;
-    S.theme = b.dataset.t;
+  /* Some themes come in versions — Leaf in four colours, Soft and Photo in
+     light and dark (Garry, 2026-10-05/06). One swatch each in the strip;
+     picking it fills the row of dots under it. The version is part of the
+     theme id (leaf-blue, soft-dark…). */
+  var SUBS = {
+    leaf:  [ { t:"leaf", n:"Green", c:"#A3BF5A" }, { t:"leaf-blue", n:"Blue", c:"#0062FE" },
+             { t:"leaf-orange", n:"Orange", c:"#F45C30" }, { t:"leaf-violet", n:"Violet", c:"#6741FF" } ],
+    soft:  [ { t:"soft", n:"Light", c:"#E8E7E5" }, { t:"soft-dark", n:"Dark", c:"#1E1E1C" } ],
+    photo: [ { t:"photo", n:"Light", c:"#C4CBD4" }, { t:"photo-dark", n:"Dark", c:"#191C22" } ]
+  };
+  var lastSub = {};
+  function themeBase(t) { var m = /^(leaf|soft|photo)/.exec(t || ""); return m ? m[1] : t; }
+  $("themes").insertAdjacentHTML("afterend", '<div class="subs" id="subs" role="group" aria-label="Theme version" data-on="false"></div>');
+  function setTheme(t) {
+    var base = themeBase(t);
+    if (SUBS[base]) { lastSub[base] = t; }
+    S.theme = t;
     $("phoneFrame").dataset.theme = S.theme;
     Array.prototype.forEach.call($("themes").children, function (x) {
-      x.setAttribute("aria-pressed", String(x.dataset.t === S.theme));
+      x.setAttribute("aria-pressed", String(x.dataset.t === base));
     });
+    var list = SUBS[base];
+    $("subs").dataset.on = list ? "true" : "false";
+    $("subs").innerHTML = (list || [{ t:"", n:"", c:"transparent" }]).map(function (x) {
+      return '<button type="button" data-t="' + x.t + '" aria-label="' + x.n + '" title="' + x.n +
+             '" aria-pressed="' + (x.t === t) + '" style="--dot:' + x.c + '"></button>';
+    }).join("");
+    paintLive();
+  }
+  $("themes").addEventListener("click", function (e) {
+    var b = e.target.closest(".sw"); if (!b) return;
+    var base = b.dataset.t;
+    /* a swatch keeps whichever version was picked last */
+    setTheme(SUBS[base] ? (themeBase(S.theme) === base ? S.theme : (lastSub[base] || base)) : base);
   });
+  $("subs").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (b && b.dataset.t) { setTheme(b.dataset.t); }
+  });
+
+  /* ══ 13b. THE GLASS THEMES — the real page, scaled ═══════════════════
+     Copper, Bronze and Blush glass are their own layouts (profile.html 2b,
+     2c), which this simplified phone cannot draw. For those three the phone
+     shows profile.html itself in a frame — fed the unsaved state, as the
+     dashboard's live preview is — at a real 375px phone (or 1280px desktop)
+     width, scaled down to the frame. Text shrinks with it; it is a preview
+     (Garry, 2026-10-03). */
+  var lvSrc = "profile.html?view=visitor&chrome=0&preview=1";
+  function livePage() {
+    var links = {};
+    Object.keys(S.links).forEach(function (k) {
+      var l = S.links[k];
+      if (l && l.v && l.on) { links[k] = l.v; }
+    });
+    return {
+      handle: S.handle || "", name: S.name.trim(), bio: S.bio || "", photo: S.photo || null,
+      phone: S.phone && S.phoneOn ? S.phone : "",
+      wa: waNumber() && S.waOn ? waNumber() : "",
+      email: S.email && S.emailOn ? S.email : "",
+      links: links,
+      customs: S.customs.filter(function (c) { return c.title && c.on; })
+                        .map(function (c) { return { id: c.id, title: c.title, url: c.url }; }),
+      theme: S.theme,
+      order: S.order.filter(rowLive),
+      socialOrder: (S.socialOrder || []).slice()
+    };
+  }
+  function fitLive() {
+    var box = $("lv"), fr = $("lvFrame");
+    if (box.hidden || !box.clientWidth) { return; }
+    var vw = $("phoneFrame").dataset.device === "desktop" ? 1280 : 375;
+    var s = box.clientWidth / vw;
+    fr.style.width = vw + "px";
+    fr.style.height = Math.ceil(box.clientHeight / s) + "px";
+    fr.style.transform = "scale(" + s + ")";
+  }
+  var lvLast = "";
+  function pushLive(force) {
+    if ($("lv").hidden) { return; }
+    var j = JSON.stringify(livePage());
+    if (!force && j === lvLast) { return; }
+    lvLast = j;
+    var w = $("lvFrame").contentWindow;
+    /* opened from disk (file://) every page is its own opaque origin, so a same-origin target never arrives — "*" there */
+    if (w) { w.postMessage({ type: "cm-preview", page: JSON.parse(j) }, (location.protocol === "file:" ? "*" : location.origin)); }
+  }
+  function paintLive() {
+    /* every theme now previews as the real page — the simplified phone
+       could not draw the glass looks, and one preview is easier to trust */
+    var on = true, f = $("phoneFrame");
+    $("lv").hidden = !on;
+    if (on) { f.dataset.live = ""; } else { delete f.dataset.live; }
+    if (!on) { return; }
+    var fr = $("lvFrame");
+    if (!fr.getAttribute("src")) { fr.src = lvSrc + "&theme=" + encodeURIComponent(S.theme); }
+    fitLive();
+    pushLive(true);
+  }
+  window.addEventListener("message", function (e) {
+    if ((e.origin === location.origin || location.protocol === "file:") && e.data && e.data.type === "cm-preview-ready") { lvLast = ""; pushLive(true); }
+  });
+  $("lvFrame").addEventListener("load", function () { lvLast = ""; pushLive(true); });
+  window.addEventListener("resize", fitLive);
+  /* the preview is a closed sheet on a phone — refit whenever its box changes */
+  if (window.ResizeObserver) { new ResizeObserver(fitLive).observe($("lv")); }
+  /* every edit lands in S through a dozen handlers; a cheap poll catches all */
+  setInterval(function () { pushLive(false); }, 250);
 
   /* ══ 13. THE PHONE ═══════════════════════════════════════════════════
      Skeleton rows first so it is never empty, and every keystroke shows
@@ -2695,6 +2724,7 @@ body[data-showing]{overflow:hidden}
       b.setAttribute("aria-pressed", String(b.dataset.d === d));
     });
     fitDesktop();
+    fitLive();
   }
   /* the desktop frame is 880 wide whatever the screen is; on a phone it gets
      scaled down rather than squeezed, so a desktop page still reads as one */
@@ -2717,10 +2747,16 @@ body[data-showing]{overflow:hidden}
   paintPhoto(); paintGrid(); paintAdded(); paintCustoms();
   sayHandle("ok", "<b>codemarca.com/" + esc(S.handle) + "</b> is yours. You can change it later from your dashboard.");
   setStep(1);
+  paintLive();   /* the real page in the preview from the first screen */
 
   /* Review tool — delete this loop and the .preview block before launch. */
   Array.prototype.forEach.call(document.querySelectorAll(".preview button"), function (b) {
     b.addEventListener("click", function () { setStep(Number(b.dataset.go)); });
   });
+  /* ?go=2|3 — the same review jump from the address bar (user-flow shots) */
+  if (/^[23]$/.test(new URLSearchParams(location.search).get("go") || "")) {
+    var goBtn = document.querySelector('.preview button[data-go="' + new URLSearchParams(location.search).get("go") + '"]');
+    if (goBtn) { goBtn.click(); }
+  }
 })();
 </script>

@@ -30,19 +30,59 @@
     if (v !== undefined && v !== null && v !== "") { el.textContent = v; }
   });
 
-  /* ══ 3. THEME PICKER ══════════════════════════════════════════════════ */
+  /* ══ 3. THEME PICKER ══════════════════════════════════════════════════
+     Some themes come in versions (Garry, 2026-10-05/06): Leaf in four
+     colours, Soft and Photo in light and dark. Each stays ONE tile in the
+     grid; choosing it shows a row of dots under the grid for its versions.
+     The version is part of the theme id (leaf-blue, soft-dark…), so the page
+     and the payload need nothing new. The row's space is always kept, so
+     nothing below it jumps when it appears. */
+  var SUBS = {
+    leaf:  { label:"Colour", list:[
+      { t:"leaf", n:"Green", c:"#A3BF5A" }, { t:"leaf-blue", n:"Blue", c:"#0062FE" },
+      { t:"leaf-orange", n:"Orange", c:"#F45C30" }, { t:"leaf-violet", n:"Violet", c:"#6741FF" } ] },
+    soft:  { label:"Mode", list:[ { t:"soft", n:"Light", c:"#E8E7E5" }, { t:"soft-dark", n:"Dark", c:"#1E1E1C" } ] },
+    photo: { label:"Mode", list:[ { t:"photo", n:"Light", c:"#C4CBD4" }, { t:"photo-dark", n:"Dark", c:"#191C22" } ] }
+  };
+  function themeBase(t) { var m = /^(leaf|soft|photo)/.exec(t || ""); return m ? m[1] : t; }
+  function subOf(t) {
+    var s = SUBS[themeBase(t)]; if (!s) { return null; }
+    return s.list.filter(function (x) { return x.t === t; })[0] || null;
+  }
+  var lastSub = {};   /* the version picked last, per family */
+  function chooseTheme(t, exact) {
+    var base = themeBase(t);
+    /* a tile keeps whichever version was picked last; a dot names it exactly */
+    if (SUBS[base] && !exact) { t = themeBase(S.theme) === base ? S.theme : (lastSub[base] || base); }
+    if (SUBS[base]) { lastSub[base] = t; }
+    S.theme = t;
+    paintTheme();
+    dirty();
+  }
   var themes = document.querySelectorAll(".theme");
+  var grid = document.querySelector(".themes");
+  if (grid) { grid.insertAdjacentHTML("afterend", '<div class="subs" role="group" aria-label="Theme version"></div>'); }
+  function paintSubs(row) {
+    var s = SUBS[themeBase(S.theme)];
+    row.dataset.on = s ? "true" : "false";
+    row.innerHTML = s ? "<span>" + s.label + "</span>" + s.list.map(function (x) {
+      return '<button type="button" data-theme="' + x.t + '" aria-label="' + x.n + '" title="' + x.n +
+             '" aria-pressed="' + (x.t === S.theme) + '" style="--dot:' + x.c + '"></button>';
+    }).join("") : "<span>&nbsp;</span>";
+  }
   function paintTheme() {
+    var base = themeBase(S.theme);
     Array.prototype.forEach.call(themes, function (o) {
-      o.setAttribute("aria-pressed", String(o.dataset.theme === S.theme));
+      o.setAttribute("aria-pressed", String(o.dataset.theme === base));
     });
+    Array.prototype.forEach.call(document.querySelectorAll(".subs, .pp__subs"), paintSubs);
   }
   Array.prototype.forEach.call(themes, function (b) {
-    b.addEventListener("click", function () {
-      S.theme = b.dataset.theme;
-      paintTheme();
-      dirty();
-    });
+    b.addEventListener("click", function () { chooseTheme(b.dataset.theme); });
+  });
+  document.addEventListener("click", function (e) {
+    var d = e.target.closest && e.target.closest(".subs button, .pp__subs button"); if (!d) { return; }
+    chooseTheme(d.dataset.theme, true);
   });
 
   /* ══ 4. CONTACT, LINKS, ORDER ═══════════════════════════════════════
@@ -829,4 +869,143 @@
       el.insertAdjacentHTML("beforeend", CM.icon(el.getAttribute("data-ic-btn")));
     });
   }
+  /* ══ LIVE PREVIEW ═════════════════════════════════════════════════════
+     edit like onboarding — the page on a
+     phone beside the editor, changing as you type. It is the REAL page
+     (profile.html?preview=1) in a frame, fed the unsaved state, so every
+     theme and row looks exactly as a scan will show it. Desktop: a sticky
+     column on the right. Narrower: a "Preview" button opens it as a sheet. */
+  (function () {
+    var view = document.querySelector("main.view");
+    if (!view || !$("savebar")) { return; }
+
+    var wrap = document.createElement("div");
+    wrap.className = "pp-wrap";
+    view.parentNode.insertBefore(wrap, view);
+    wrap.appendChild(view);
+
+    var src = CM.ROOT + "profile.html?view=visitor&chrome=0&preview=1&handle=" +
+              encodeURIComponent(S.handle || "") + "&theme=" + encodeURIComponent(S.theme || "light");
+    var pp = document.createElement("aside");
+    pp.className = "pp";
+    pp.setAttribute("aria-label", "Live preview");
+    pp.innerHTML =
+      '<div class="pp__in">' +
+        '<div class="pp__head">' +
+          '<div class="pp__devs" role="group" aria-label="Preview size">' +
+            '<button type="button" data-d="mobile" aria-pressed="true">Mobile</button>' +
+            '<button type="button" data-d="web" aria-pressed="false">Web</button></div>' +
+          '<span class="pp__t"><i></i>Live preview</span>' +
+          '<button class="pp__x" type="button" aria-label="Close preview">' + CM.icon("close") + "</button></div>" +
+        '<div class="pp__phone"><div class="pp__scr"><iframe title="Your page, as a scan shows it" src="' + src + '"></iframe></div></div>' +
+        '<div class="pp__themes" hidden><span class="pp__th">Theme · <b></b></span><div class="pp__sws" role="group" aria-label="Page theme"></div></div>' +
+      "</div>";
+    wrap.appendChild(pp);
+
+    /* A small copy of the theme picker under the phone (Garry, 2026-10-03),
+       so a theme can be tried while looking at the page rather than after
+       scrolling back to the Theme card. Built from that card's own buttons,
+       so the two lists can never differ; both write S.theme, and the poll
+       below keeps the pair in step. */
+    var sws = pp.querySelector(".pp__sws");
+    var big = document.querySelectorAll(".theme");
+    if (big.length) {
+      pp.querySelector(".pp__themes").hidden = false;
+      sws.innerHTML = Array.prototype.map.call(big, function (b) {
+        var n = (b.querySelector(".theme__n") || {}).textContent || b.dataset.theme;
+        return '<button class="pp__sw" type="button" data-theme="' + b.dataset.theme + '" title="' + n +
+               '" aria-label="' + n + ' theme"><span class="theme__sw" data-t="' + b.dataset.theme + '"></span>' +
+               '<i aria-hidden="true">' + CM.icon("check") + "</i></button>";
+      }).join("");
+      sws.insertAdjacentHTML("afterend", '<div class="pp__subs" role="group" aria-label="Theme version"></div>');
+      sws.addEventListener("click", function (e) {
+        var b = e.target.closest(".pp__sw"); if (!b) { return; }
+        chooseTheme(b.dataset.theme);
+        paintMini();
+      });
+    }
+    var miniFor = null;
+    function paintMini() {
+      if (!big.length || miniFor === S.theme) { return; }
+      miniFor = S.theme;
+      Array.prototype.forEach.call(sws.children, function (b) {
+        b.setAttribute("aria-pressed", String(b.dataset.theme === themeBase(S.theme)));
+      });
+      paintTheme();   /* keeps both colour rows in step */
+      var on = sws.querySelector('[aria-pressed="true"]');
+      var ver = subOf(S.theme);
+      pp.querySelector(".pp__th b").textContent = (on ? on.title : "") + (ver ? " · " + ver.n : "");
+    }
+    paintMini();
+
+    var fab = document.createElement("button");
+    fab.type = "button";
+    fab.className = "pp-fab";
+    fab.innerHTML = CM.icon("eye") + "<span>Preview</span>";
+    document.body.appendChild(fab);
+
+    fab.addEventListener("click", function () { pp.dataset.open = "true"; document.body.dataset.ppOpen = ""; });
+    pp.querySelector(".pp__x").addEventListener("click", closeSheet);
+    pp.addEventListener("click", function (e) { if (e.target === pp) { closeSheet(); } });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") { closeSheet(); } });
+    function closeSheet() { pp.dataset.open = "false"; delete document.body.dataset.ppOpen; }
+
+    var frame = pp.querySelector("iframe");
+
+    /* Mobile / Web (Garry, 2026-10-03). The page renders at a real 375px
+       phone or 1280px laptop width and is scaled to the frame — tiny on
+       Web, but it shows the shape of the page there, which is the point. */
+    var dev = "mobile";
+    function fitPP() {
+      var scr = pp.querySelector(".pp__scr");
+      if (!scr || !scr.clientWidth) { return; }
+      var vw = dev === "web" ? 1280 : 375, s = scr.clientWidth / vw;
+      frame.style.width = vw + "px";
+      frame.style.height = Math.ceil(scr.clientHeight / s) + "px";
+      frame.style.transform = "scale(" + s + ")";
+    }
+    pp.querySelector(".pp__devs").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-d]"); if (!b) { return; }
+      dev = b.dataset.d;
+      pp.querySelector(".pp__phone").dataset.device = dev;
+      Array.prototype.forEach.call(this.children, function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      fitPP();
+    });
+    if (window.ResizeObserver) { new ResizeObserver(fitPP).observe(pp.querySelector(".pp__scr")); }
+    window.addEventListener("resize", fitPP);
+    function page() {
+      var links = {};
+      Object.keys(S.links).forEach(function (k) {
+        var l = S.links[k];
+        if (l && l.v && l.on) { links[k] = l.v; }
+      });
+      return {
+        handle: S.handle || "", name: S.name || "", bio: S.bio || "", photo: S.photo || null,
+        phone: S.phone && S.phoneOn ? S.phone : "",
+        wa: waNumber() && S.waOn ? waNumber() : "",
+        email: S.email && S.emailOn ? S.email : "",
+        links: links,
+        customs: S.customs.filter(function (c) { return c.title && c.on; })
+                          .map(function (c) { return { id: c.id, title: c.title, url: c.url }; }),
+        theme: S.theme || "light",
+        order: S.order.filter(rowLive),
+        socialOrder: (S.socialOrder || []).slice()
+      };
+    }
+    /* a cheap poll rather than hooks in every handler above: the editor has
+       a dozen ways to change S, and this catches all of them */
+    var last = "";
+    function push(force) {
+      paintMini();
+      var p = page(), j = JSON.stringify(p);
+      if (!force && j === last) { return; }
+      last = j;
+      if (frame.contentWindow) { frame.contentWindow.postMessage({ type: "cm-preview", page: p }, (location.protocol === "file:" ? "*" : location.origin)); }
+    }
+    window.addEventListener("message", function (e) {
+      if ((e.origin === location.origin || location.protocol === "file:") && e.data && e.data.type === "cm-preview-ready") { push(true); }
+    });
+    frame.addEventListener("load", function () { push(true); });
+    setInterval(push, 250);
+  })();
 })();

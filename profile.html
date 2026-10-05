@@ -68,268 +68,605 @@ img,svg{display:block; max-width:100%}
 :focus-visible{outline:none; box-shadow:0 0 0 3px var(--ground),0 0 0 5px var(--ink); border-radius:var(--r-sm)}
 
 /* ── 2. THEMES ─────────────────────────────────────────────────────────────
-   A theme changes ground, ink, button fill and button radius. It must NOT
-   change the layout, the order, or the social icons' own brand colours.
+   The flat themes below (Light, Cream) change ground, ink, button fill and button
+   radius only. That is no longer the rule for themes in general: from the
+   glass looks on (2b), each theme is its own design and may change layout
+   too (Garry, 2026-10-03). New themes are drawn on profile-themes.html
+   first, then ported here.
 
    Every pair here clears 4.5:1. The first gradient draft ran white text down
    to a pale orange (~1.9:1) — unreadable on a phone held in sun, which is
    exactly where this page gets read. The stops are darker for that reason. */
-.pg[data-theme="light"]   {--mark:#6E27E6; --av-bg:#6E27E6; --av-fg:#FFFFFF; --bg:#FFFFFF; --fg:#101215; --mid:#5B5D68; --btn:#F4F3F7; --btn-fg:#101215; --edge:rgba(16,18,21,.10); --r-btn:14px}
-.pg[data-theme="dark"]    {--av-bg:#6E27E6; --av-fg:#FFFFFF; --bg:#101215; --fg:#FFFFFF; --mid:#9A9CA8; --btn:#1D2026; --btn-fg:#FFFFFF; --edge:rgba(255,255,255,.12); --r-btn:14px}
-.pg[data-theme="violet"]  {--mark:currentColor; --av-bg:#FFFFFF; --av-fg:#6E27E6; --bg:#6E27E6; --fg:#FFFFFF; --mid:#EDE3FE; --btn:rgba(255,255,255,.17); --btn-fg:#FFFFFF; --edge:rgba(255,255,255,.26); --r-btn:999px}
-.pg[data-theme="cream"]   {--mark:#6E27E6; --av-bg:#6E27E6; --av-fg:#FFFFFF; --bg:#F6EFE4; --fg:#2A2118; --mid:#6B5B47; --btn:#FFFFFF; --btn-fg:#2A2118; --edge:rgba(42,33,24,.13); --r-btn:999px}
-.pg[data-theme="gradient"]{--mark:currentColor; --av-bg:#FFFFFF; --av-fg:#6E27E6; --bg:linear-gradient(168deg,#6E27E6,#B32E6E 55%,#C2452E); --fg:#FFFFFF; --mid:#FFF0E6; --btn:rgba(255,255,255,.19); --btn-fg:#FFFFFF; --edge:rgba(255,255,255,.28); --r-btn:999px}
-
-/* The two glass themes. The scene is one of the two wallpapers Garry put in
-   assets/profile-bg/ — a real image, not a CSS mesh, because the mesh could
-   never give the soft ribbon falloff these have.
-
-   It is painted by a POSITION:FIXED layer, not as a background on .pg. A
-   background on a 2000px-tall column would have to cover that height and
-   would crop to a narrow vertical sliver of a 1920x1280 photo. Fixed pins it
-   to the viewport, so the composition survives — and it then behaves like a
-   phone wallpaper, sitting still while the page scrolls over it.
-
-   The scrim over the image is LIGHT. The heavy darkening lives in the
-   panel's own tint, so it only dims what is behind the glass: the wallpaper
-   you see raw around the panel stays as saturated as Garry drew it, and the
-   text still gets its contrast. */
-/* 3.jpg and 4.jpg are both far brighter than the first pair — a pale cyan
-   streak in one, a yellow-orange petal in the other. So the smoke is set per
-   theme (--tint-a): that is the one number that decides whether the bio
-   line clears 4.5:1 over the brightest part of the wallpaper. */
-.pg[data-theme="glass-ember"]{
-  --mark:currentColor; --av-fg:#FFFFFF; --av-bg:rgba(255,255,255,.14);
-  --fg:#FFFFFF; --mid:rgba(255,255,255,.88);
-  --btn:rgba(255,255,255,.10); --btn-fg:#FFFFFF; --edge:rgba(255,255,255,.24); --r-btn:14px;
-  --glass-tint:34,10,6;                /* the smoke inside the glass — warm */
-  --tint-a:.62;
-  --glass-warm:rgba(255,196,140,.30);  /* what the rim catches */
-  --scene:url("assets/profile-bg/4.jpg");
-  --scene-pos:40% 50%;
-  --bg:#1A0806;
-}
-.pg[data-theme="glass-violet"]{
-  --mark:currentColor; --av-fg:#FFFFFF; --av-bg:rgba(255,255,255,.14);
-  --fg:#FFFFFF; --mid:rgba(255,255,255,.88);
-  --btn:rgba(255,255,255,.10); --btn-fg:#FFFFFF; --edge:rgba(255,255,255,.24); --r-btn:14px;
-  --glass-tint:14,6,46;
-  --tint-a:.56;
-  --glass-warm:rgba(190,200,255,.30);
-  --scene:url("assets/profile-bg/3.jpg");
-  --scene-pos:44% 50%;
-  --bg:#0C0630;
-}
-
-/* isolation makes .pg the backdrop root, so the fixed wallpaper below still
-   counts as backdrop for every backdrop-filter inside it */
-.pg[data-theme^="glass-"]{isolation:isolate}
-.pg[data-theme^="glass-"]::before{
-  content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
-  background:
-    linear-gradient(180deg, rgba(7,4,16,.26), rgba(7,4,16,.34) 50%, rgba(7,4,16,.46)),
-    var(--scene) var(--scene-pos) / cover no-repeat,
-    var(--bg);
-}
+.pg[data-theme="light"]   {--mark:#6E27E6; --av-bg:#E7E9EE; --av-fg:#FFFFFF; --bg:#FFFFFF; --fg:#101215; --mid:#5B5D68; --btn:#F4F3F7; --btn-fg:#101215; --edge:rgba(16,18,21,.10); --r-btn:14px}
 
 .pg{
   min-height:100svh; background:var(--bg); color:var(--fg);
   display:flex; flex-direction:column; align-items:center;
 }
 
-/* ── 2b. GLASS ─────────────────────────────────────────────────────────────
-   Only the glass themes get this. The layout, the order, the copy and the
-   socials' own brand colours are untouched, so a profile reads the same
-   whichever theme its owner picked.
+/* ── 2b. THE TWO GLASS LOOKS — Copper (pill) and Bronze (tile) ─────────────
+   Built and signed off on the design bench, profile-themes.html (Figma QR
+   272:444, Garry 2026-10-03). They replaced Ember glass and Violet glass.
 
-   What makes glass look like glass is NOT the blur — a blur on its own is
-   the frosted-bathroom-window look, and that was the first draft. It is the
-   EDGE. Real glass gathers light around its rim and throws a highlight where
-   the light hits it, so every glass surface here is built from four layers:
+   Unlike the five flat themes, these two DO change the layout, because the
+   design does: call / WhatsApp / email become three round buttons under the
+   bio, Save contact becomes the "Add Contact" chip top-right, share moves
+   top-left, socials become pills (Copper) or tiles (Bronze) with the handle
+   under the name. The script sets data-look on .pg for these two, and
+   render() builds that markup — everything below keys off data-look.
 
-     1. backdrop-filter   blur, plus a saturation and brightness push, so the
-                          scene behind stays colourful instead of going grey
-     2. a smoked tint     dark enough to hold white text at 4.5:1
-     3. ::before          a specular rim — a gradient border, bright at the
-                          top-left and bottom-right, gone at the other two
-                          corners, so the edge reads as a curve catching
-                          light rather than as a drawn outline
-     4. ::after           the gloss — a soft sheen off the top edge and one
-                          diagonal streak, the highlight a lens actually has
-
-   Layers 3 and 4 are the same recipe at three sizes: panel, row, tile. They
-   live in one place, .glassy, and the three selectors below opt in. */
-.pg[data-theme^="glass-"] .card,
-.pg[data-theme^="glass-"] .btn,
-.pg[data-theme^="glass-"] .share,
-.pg[data-theme^="glass-"] .brand button,
-.pg[data-theme^="glass-"] .avatar,
-.pg[data-theme^="glass-"] .socials a{
-  isolation:isolate;   /* keeps the two layers inside their own surface */
+   The wallpaper is a POSITION:FIXED layer, not a background on .pg: a
+   background on a 2000px column would crop the 16:9 photo to a sliver.
+   Phone sizes first; 640px and up takes the Figma web numbers 1:1. */
+.pg[data-theme="glass-copper"]{
+  --mark:currentColor; --av-bg:rgba(75,75,75,.23); --av-fg:#FFFFFF;
+  --fg:#FFFFFF; --mid:rgba(255,255,255,.82); --btn:rgba(255,255,255,.05); --btn-fg:#FFFFFF;
+  --edge:rgba(255,255,255,.43); --r-btn:36px;
+  --scene:url("assets/profile-bg/pv1hd.jpg"); --bg:#150E0B;
 }
-/* .card and .share are already positioned by the layout above — setting
-   position here would drop the share control out of its corner. */
-.pg[data-theme^="glass-"] .btn,
-.pg[data-theme^="glass-"] .brand button,
-.pg[data-theme^="glass-"] .avatar,
-.pg[data-theme^="glass-"] .socials a{
-  position:relative;
+.pg[data-theme="glass-bronze"]{
+  --mark:currentColor; --av-bg:rgba(255,255,255,.02); --av-fg:#FFFFFF;
+  --fg:#FFFFFF; --mid:rgba(255,255,255,.86); --btn:rgba(255,255,255,.05); --btn-fg:#FFFFFF;
+  --edge:rgba(255,255,255,.43); --r-btn:23px;
+  --scene:url("assets/profile-bg/pv3hd.jpg"); --bg:#7A5440;
 }
-.pg[data-theme^="glass-"] .card::before,   .pg[data-theme^="glass-"] .card::after,
-.pg[data-theme^="glass-"] .btn::before,    .pg[data-theme^="glass-"] .btn::after,
-.pg[data-theme^="glass-"] .share::before,  .pg[data-theme^="glass-"] .share::after,
-.pg[data-theme^="glass-"] .brand button::before, .pg[data-theme^="glass-"] .brand button::after,
-.pg[data-theme^="glass-"] .avatar::before, .pg[data-theme^="glass-"] .avatar::after{
-  content:""; position:absolute; inset:0; border-radius:inherit;
-  pointer-events:none;
+/* isolation makes .pg the backdrop root, so the fixed wallpaper still
+   counts as backdrop for every backdrop-filter inside it */
+.pg[data-look]{isolation:isolate}
+.pg[data-look]::before{
+  content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background:var(--scene) center / cover no-repeat, var(--bg);
 }
 
-/* 3 — the specular rim. A gradient painted into a 1.2px ring: the mask
-   punches the middle out so only the border survives. Two bright arcs, two
-   dark ones; that asymmetry is the whole trick. A uniform 1px white line
-   looks like a stroke, not like glass. */
-.pg[data-theme^="glass-"] .card::before,
-.pg[data-theme^="glass-"] .btn::before,
-.pg[data-theme^="glass-"] .share::before,
-.pg[data-theme^="glass-"] .brand button::before,
-.pg[data-theme^="glass-"] .avatar::before{
-  padding:1.2px;
-  background:var(--rim, linear-gradient(145deg,
-    rgba(255,255,255,1) 0%, rgba(255,255,255,.78) 8%, var(--glass-warm) 19%,
-    rgba(255,255,255,.06) 40%, rgba(255,255,255,.03) 55%,
-    rgba(255,255,255,.38) 71%, rgba(255,255,255,.88) 89%, rgba(255,255,255,1) 100%));
+/* the panel */
+.pg[data-look] .card{
+  flex:none; width:calc(100% - 32px); max-width:562px; margin:16px auto 28px;
+  padding:72px 18px 22px; border-radius:30px;
+  /* a 5px rim at 3% — Garry's value from the inspector (2026-10-03) */
+  background:rgba(255,255,255,.05); box-shadow:inset 0 0 0 5px rgba(255,255,255,.03), 0 24px 60px -24px rgba(0,0,0,.45);
+  -webkit-backdrop-filter:blur(18px) saturate(1.1); backdrop-filter:blur(18px) saturate(1.1);
+}
+.pg[data-look="tile"] .card{background:rgba(255,255,255,.01); box-shadow:inset 0 0 0 5px rgba(255,255,255,.03), 0 24px 60px -24px rgba(0,0,0,.45)}
+
+/* top corners: share left, Add Contact right */
+.pg[data-look] .share{
+  top:18px; left:18px; right:auto; width:40px; height:40px;
+  background:rgba(0,0,0,.1); color:#fff; box-shadow:inset 0 0 0 1px rgba(255,255,255,.3);
+}
+.pg[data-look] .share svg{width:18px; height:18px}
+.addc{display:none}
+.pg[data-look] .addc{
+  display:inline-flex; align-items:center; gap:6px; position:absolute; top:18px; right:18px; z-index:5;
+  height:40px; padding:0 14px; border-radius:36px; color:#fff; font-size:14px; font-weight:500;
+  transition:transform var(--dur-fast) var(--ease);
+}
+.pg[data-look] .addc:active{transform:scale(.97)}
+.pg[data-look] .addc svg{width:13px; height:13px}
+.pg[data-look="pill"] .addc{background:rgba(65,195,0,.78); box-shadow:inset 0 0 0 1px #81C759, 0 0 18px rgba(65,195,0,.45)}
+.pg[data-look="tile"] .addc{background:#000; font-weight:600; box-shadow:inset 0 0 0 1px rgba(199,199,199,.38), 2px 3px 0 rgba(255,255,255,.9)}
+
+/* photo on its ring — a band of light travels round the ring's edge, slow
+   and endless. The element rotates (not the gradient), so it stays on the
+   compositor and never stutters. */
+.pg[data-look] .avatar{width:112px; height:112px; position:relative; overflow:visible; background:var(--av-bg)}
+.pg[data-look] .avatar img{width:96px; height:96px; border-radius:50%; position:relative; z-index:1}
+.pg[data-look] .avatar::before{
+  content:""; position:absolute; inset:0; border-radius:50%; pointer-events:none;
+  background:conic-gradient(from 0deg, transparent 0 62%, rgba(255,255,255,.35) 72%, #fff 80%, rgba(255,255,255,.35) 88%, transparent 96%);
+  -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 1.6px), #000 calc(100% - 1px));
+          mask:radial-gradient(farthest-side, transparent calc(100% - 1.6px), #000 calc(100% - 1px));
+  animation:ring 7s linear infinite;
+}
+@keyframes ring{to{transform:rotate(1turn)}}
+/* no photo: a person silhouette in the page's own white, on the same smoked
+   disc as the call / WhatsApp / email buttons — never the brand-violet chip */
+.pg[data-look] .avatar .ph{position:relative; z-index:1; width:96px; height:96px; border-radius:50%; overflow:hidden;
+  background:rgba(0,0,0,.12); color:#fff}
+.pg[data-look] .avatar .ph svg{width:100%; height:100%}
+@media (prefers-reduced-motion:reduce){ .pg[data-look] .avatar::before{animation:none} }
+
+.pg[data-look] .name{margin-top:12px; font-size:26px; font-weight:var(--fw-semibold); letter-spacing:-.02em; line-height:1.2}
+.pg[data-look="tile"] .name{text-shadow:-1px 1px 4px rgba(0,0,0,.12)}
+.pg[data-look] .handle{
+  margin-top:8px; gap:7px; padding:5px 12px; border-radius:999px; font-size:12px; letter-spacing:.14px;
+  color:rgba(255,255,255,.82); background:rgba(0,0,0,.1); box-shadow:inset 0 0 0 1px rgba(255,255,255,.22);
+}
+.pg[data-look] .handle:hover{background:rgba(0,0,0,.18); color:#fff}
+/* the bio matches the row titles: 15px phone, 18px web */
+.pg[data-look] .bio{margin-top:12px; max-width:290px; font-size:15px; font-weight:400; line-height:1.4; color:#fff}
+.pg[data-look="tile"] .bio{text-shadow:0 0 4px rgba(0,0,0,.16)}
+
+.pg[data-look] .list{margin-top:22px; gap:12px}
+
+/* call · WhatsApp · email */
+.acts{display:flex; justify-content:center; gap:14px; margin-bottom:16px}
+.acts a{width:58px; height:58px; border-radius:50%; display:grid; place-items:center;
+  background:rgba(0,0,0,.1); color:#fff; transition:background .15s}
+.acts a:hover{background:rgba(0,0,0,.18)}
+.acts svg{width:26px; height:26px}
+
+/* socials grid; minmax(0,…) so a long handle can't stretch its column */
+.sgrid{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px}
+.sgrid > :last-child:nth-child(odd){grid-column:1 / -1}
+.pg[data-look="pill"] .sgrid{grid-template-columns:minmax(0,1fr)}
+
+.pill, .tile{position:relative; isolation:isolate; min-width:0; color:#fff;
+  background:rgba(255,255,255,.05); box-shadow:inset 0 0 0 1px rgba(255,255,255,.43);
+  transition:background .3s ease, box-shadow .5s ease}
+.pill:hover, .tile:hover{box-shadow:inset 0 0 0 1px rgba(255,255,255,.7)}
+
+/* Copper — pills */
+.pill{display:flex; align-items:center; gap:11px; height:62px; padding:0 11px 0 7px; border-radius:36px; text-align:left}
+.pill:hover{background:rgba(255,255,255,.1)}
+.pill .disc{flex:none; width:46px; height:46px; border-radius:50%; background:#fff; color:#2A2220; display:grid; place-items:center}
+.pill .disc svg{width:27px; height:27px}
+.pill .disc svg.ro{width:22px; height:22px}
+.pill .disc--snap{background:#FFFC00}
+.pill .txt{flex:1; min-width:0}
+.pill .txt b, .tile .tx b{display:block; font-weight:500; line-height:1.15; letter-spacing:-.01em}
+.pill .txt b{font-size:15px}
+.pill small, .tile small{display:block; max-width:100%; font-size:11px; font-weight:500; opacity:.6;
+  text-transform:uppercase; letter-spacing:.08em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.pill small{margin-top:3px}
+
+/* Bronze — tiles */
+.tile{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; height:88px; border-radius:20px}
+.tile:hover{background:rgba(255,255,255,.09)}
+.tile svg{width:28px; height:28px; flex:none}
+.tile svg.ro{width:22px; height:22px; color:#fff}
+.tile .tx{display:flex; flex-direction:column; align-items:center; width:100%; min-width:0; padding:0 10px; text-shadow:0 0 4px rgba(0,0,0,.16)}
+.tile .tx b{font-size:16px}
+.tile small{margin-top:2px; font-size:10px}
+/* phone: the mark says which site it is — only the handle stays under it */
+.sgrid .tile .tx b{display:none}
+.sgrid .tile small{margin-top:0}
+/* link tiles: a row, content from the left, share on the right */
+.tile--row{flex-direction:row; justify-content:flex-start; height:62px; padding:0 11px 0 20px}
+.tile--row > a{flex:1; min-width:0; display:flex; align-items:center; gap:12px}
+.tile--row .tx{align-items:flex-start; padding:0; text-align:left}
+
+/* the row share, same in both looks */
+.pg[data-look] .rowshare{
+  position:static; transform:none; flex:none; width:36px; height:36px; border-radius:50%;
+  background:rgba(0,0,0,.12); color:#fff; opacity:1; box-shadow:none;
+}
+.pg[data-look] .rowshare svg{width:18px; height:18px}
+.pg[data-look] .rowshare:hover{background:rgba(0,0,0,.22)}
+
+/* outline shine on hover: only the edge lights up — a bright band sweeps
+   along the border, masked so the fill never changes. Transitions, not a
+   keyframe, so leaving mid-sweep fades out instead of snapping. */
+.pill::after, .tile::after{content:""; position:absolute; inset:0; border-radius:inherit; padding:1.5px; pointer-events:none;
+  background:linear-gradient(115deg, transparent 36%, rgba(255,255,255,.6) 45%, #fff 50%, rgba(255,255,255,.6) 55%, transparent 64%) 160% 0 / 260% 100% no-repeat;
   -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-          mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite:xor; mask-composite:exclude;
-  z-index:-1;
+  -webkit-mask-composite:xor; mask-composite:exclude; opacity:0;
+  transition:opacity .45s ease, background-position 0s linear .45s}
+.pill:hover::after, .tile:hover::after{opacity:1; background-position:-60% 0;
+  transition:opacity .25s ease, background-position 1.4s cubic-bezier(.45,.05,.35,1)}
+@media (prefers-reduced-motion:reduce){
+  .pill::after, .tile::after{transition:opacity .3s ease}
+  .pill:hover::after, .tile:hover::after{background-position:50% 0}
 }
 
-/* 4 — the gloss. One pool of light spilling over the top edge and one
-   diagonal streak across the upper third, both clipped to the shape. */
-.pg[data-theme^="glass-"] .card::after,
-.pg[data-theme^="glass-"] .btn::after,
-.pg[data-theme^="glass-"] .share::after,
-.pg[data-theme^="glass-"] .brand button::after,
-.pg[data-theme^="glass-"] .avatar::after{
-  background:
-    radial-gradient(26% 15% at 21% 0%,    rgba(255,255,255,.52), transparent 72%),
-    radial-gradient(96% 26% at 34% -10%,  rgba(255,255,255,.11), transparent 66%),
-    linear-gradient(197deg, rgba(255,255,255,.14) 0 7%, rgba(255,255,255,.03) 20%, rgba(255,255,255,0) 38%);
-  z-index:-2;
+/* footer — a quiet text button on the glass */
+.pg[data-look] .brand{margin-top:20px; padding-top:0}
+.pg[data-look] .brand button{background:none; box-shadow:none; color:rgba(255,255,255,.75); padding:8px 12px; letter-spacing:.14px}
+.pg[data-look] .brand button:hover{transform:none; box-shadow:none; color:#fff}
+.pg[data-look] .brand button svg{color:currentColor; width:16px; height:16px}
+
+/* ── web: Figma numbers 1:1 ── */
+@media (min-width:640px){
+  .pg[data-look] .card{margin:65px auto 56px; padding:58px 32px 32px; border-radius:36px}
+  .pg[data-look] .share{top:35px; left:37px; width:45px; height:45px}
+  .pg[data-look] .share svg{width:20px; height:20px}
+  .pg[data-look] .addc{top:35px; right:37px; height:45px; padding:0 18px; font-size:17px}
+  .pg[data-look] .addc svg{width:15px; height:15px}
+  .pg[data-look] .avatar{width:136px; height:136px}
+  .pg[data-look] .avatar img, .pg[data-look] .avatar .ph{width:117px; height:117px}
+  .pg[data-look] .name{margin-top:14px; font-size:33px}
+  .pg[data-look] .handle{font-size:13px}
+  .pg[data-look] .bio{margin-top:14px; max-width:368px; font-size:18px}
+  .pg[data-look] .list{margin-top:28px; gap:16px}
+  .acts{gap:18px; margin-bottom:28px}
+  .acts a{width:73px; height:73px}
+  .acts svg{width:32px; height:32px}
+  .sgrid{gap:24px}
+  .pg[data-look="pill"] .sgrid{grid-template-columns:repeat(2, minmax(0,1fr))}
+  .pill{height:74px; gap:12px; padding:0 14px 0 9px}
+  .pill .disc{width:54px; height:54px}
+  .pill .disc svg{width:32px; height:32px}
+  .pill .disc svg.ro{width:26px; height:26px}
+  .pill .txt b{font-size:18px}
+  .pill small, .tile small{font-size:12px}
+  .tile{flex-direction:row; gap:10px; height:110px; border-radius:23px}
+  .tile svg{width:32px; height:32px}
+  .tile svg.ro{width:26px; height:26px}
+  .tile .tx{width:auto; align-items:flex-start; padding:0; text-align:left}
+  .tile .tx b{font-size:18px}
+  .tile small{margin-top:3px}
+  .sgrid .tile .tx b{display:block}
+  .sgrid .tile small{margin-top:3px}
+  .tile--row{justify-content:flex-start; gap:14px; height:76px; padding:0 15px 0 26px}
+  .tile--row > a{gap:14px}
+  .pg[data-look] .rowshare{width:40px; height:40px}
+  .pg[data-look] .brand{margin-top:28px}
 }
 
-/* The avatar is the one exception: its content is a photo, and glass in
-   front of a photo is the whole point — so there the two layers go over it. */
-.pg[data-theme^="glass-"] .avatar::before{z-index:2}
-.pg[data-theme^="glass-"] .avatar::after{
-  z-index:1;
-  background:radial-gradient(38% 24% at 30% 4%, rgba(255,255,255,.40), transparent 72%);
+/* ── 2d. LEAF — bench V4 "Deck" (Garry, 2026-10-04) ────────────────────────
+   Replaced Cream. Flat and graphic: a leaf-green page, white cards with a
+   thick black outline, the photo sitting ON the top edge of the profile
+   card, Add Contact inside that card. Socials are a deck — one card in
+   front, two peeking above — flipped by swipe, sideways scroll, arrow keys
+   or the black strip under it. The script sets data-look="deck", wraps the
+   top of the page in .card4 (layoutDeck) and renderDeck() builds the rest.
+   Every rule here outranks the glass-look rules above by coming later. */
+.pg[data-theme^="leaf"]{
+  --mark:currentColor; --av-bg:#FFFFFF; --av-fg:#0A0A0A; --fg:#0A0A0A; --mid:#1C1C1C;
+  --btn:#FFFFFF; --btn-fg:#0A0A0A; --edge:#0A0A0A; --r-btn:32px; --ink4:#0A0A0A;
+}
+/* Leaf in four colours (Garry, 2026-10-05) — one theme, the owner picks the
+   colour under it. Only these tokens move: page, the two peeking cards, Add
+   Contact, the link pill and the row share. "leaf" alone is the green. */
+.pg[data-theme="leaf"], .pg[data-theme="leaf-green"]{--bg:#A3BF5A; --pk1:#E8EFD8; --pk2:#C2D693; --add4:#C3E36A; --tint4:#EEF4DD; --tintInk4:#4F6128; --rs4:#EEF3E2; --rsInk4:#7FA03A}
+.pg[data-theme="leaf-blue"]  {--bg:#0062FE; --pk1:#DCE8FF; --pk2:#8DB6FF; --add4:#9CC0FF; --tint4:#E6EFFF; --tintInk4:#0047B8; --rs4:#E6EFFF; --rsInk4:#0062FE}
+.pg[data-theme="leaf-orange"]{--bg:#F45C30; --pk1:#FDE5DD; --pk2:#F9AE97; --add4:#FBB79F; --tint4:#FDECE6; --tintInk4:#B23A15; --rs4:#FDECE6; --rsInk4:#F45C30}
+.pg[data-theme="leaf-violet"]{--bg:#6741FF; --pk1:#E7E1FF; --pk2:#B3A2FF; --add4:#BFB0FF; --tint4:#EDE9FF; --tintInk4:#4A26DB; --rs4:#EDE9FF; --rsInk4:#6741FF}
+.pg[data-look="deck"]::before{background:var(--bg)}
+.pg[data-look="deck"] .card{
+  width:100%; max-width:562px; margin:0 auto; padding:92px 32px 56px; border-radius:0; color:var(--ink4);
+  background:none; box-shadow:none; -webkit-backdrop-filter:none; backdrop-filter:none;
+}
+.pg[data-look="deck"] .addc{display:none}
+.card4{position:relative; width:100%; padding:88px 32px 34px; text-align:center; display:flex; flex-direction:column; align-items:center;
+  background:#fff; border:4px solid var(--ink4); border-radius:52px; color:var(--ink4)}
+/* the photo straddles the card's top edge */
+.pg[data-look="deck"] .avatar{position:absolute; top:0; left:50%; transform:translate(-50%,-50%); margin:0; overflow:hidden;
+  width:132px; height:132px; background:#fff; border:4px solid var(--ink4); box-shadow:0 10px 24px -14px rgba(0,0,0,.45)}
+.pg[data-look="deck"] .avatar::before{display:none}
+.pg[data-look="deck"] .avatar img, .pg[data-look="deck"] .avatar .ph{width:116px; height:116px; border-radius:50%}
+.pg[data-look="deck"] .avatar .ph{background:#fff; color:var(--ink4)}
+.pg[data-look="deck"] .share{top:26px; left:28px; right:auto; width:44px; height:44px; background:var(--ink4); color:#fff; box-shadow:none}
+.pg[data-look="deck"] .share:hover{background:#2A2A2A; transform:none}
+.pg[data-look="deck"] .name{margin:0; font-size:33px; font-weight:700; letter-spacing:-.02em; color:var(--ink4); text-shadow:none}
+/* the link pill: a very light shade of the page's green, not grey */
+.pg[data-look="deck"] .handle{margin-top:8px; color:var(--tintInk4); background:var(--tint4); box-shadow:none}
+.pg[data-look="deck"] .handle:hover{filter:brightness(.97)}
+.pg[data-look="deck"] .bio{margin-top:14px; max-width:368px; font-size:18px; font-weight:400; color:#1C1C1C; text-shadow:none}
+.deckTop{display:flex; flex-direction:column; align-items:center; width:100%}
+.deckTop:empty{display:none}
+.pg[data-look="deck"] .acts{margin:28px 0 0}
+.pg[data-look="deck"] .acts a{width:73px; height:73px; background:var(--ink4); color:#fff; box-shadow:none; -webkit-backdrop-filter:none; backdrop-filter:none}
+.pg[data-look="deck"] .acts a:hover{background:#2A2A2A}
+.pg[data-look="deck"] .acts svg{width:32px; height:32px}
+.add4{display:inline-flex; align-items:center; justify-content:center; gap:8px; margin-top:28px;
+  height:54px; padding:0 34px; border-radius:999px; background:var(--add4);
+  color:var(--ink4); font-size:16px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+  transition:transform .15s, background .15s}
+.add4:hover{filter:brightness(.96)}
+.add4:active{transform:scale(.97)}
+.add4 svg{width:14px; height:14px}
+.pg[data-look="deck"] .list{margin-top:0; gap:0}
+
+/* the deck — a wheel, like the iOS date picker: thumb or wheel rolls it
+   continuously, a flick carries on and it settles on the nearest card. The
+   script places every card on every frame (no CSS transitions); touch-action
+   none keeps a swipe on the deck from scrolling the page. --pk1 / --pk2 are
+   the two peeking cards' colours. */
+.deck{position:relative; width:100%; height:216px; margin-top:132px; touch-action:none; user-select:none; outline:none; cursor:grab}
+.deck.dragging{cursor:grabbing}
+.dk{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:30px;
+  background:#fff; border:4px solid var(--ink4); border-radius:52px; color:var(--ink4);
+  transform-origin:50% 0; will-change:transform, opacity}
+.dk svg{width:66px; height:66px; flex:none}
+.dk .tx4{display:flex; flex-direction:column; align-items:flex-start; min-width:0; max-width:55%; text-align:left}
+.dk b{font-size:20px; font-weight:600; letter-spacing:-.01em; line-height:1.2}
+.dk small{margin-top:6px; max-width:100%; font-size:13px; font-weight:500; color:#5F6368; letter-spacing:.1em;
+  text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+/* a card's content fades with its distance from the front */
+.dk > *{opacity:var(--c,1)}
+
+/* the black strip — how many, and which is up; every mark is a button */
+.strip{display:flex; justify-content:center; gap:4px; width:max-content; max-width:100%; margin:14px auto 0;
+  padding:6px 8px; border-radius:999px; background:var(--ink4); overflow-x:auto; scrollbar-width:none}
+.strip::-webkit-scrollbar{display:none}
+.strip button{flex:none; width:34px; height:34px; border-radius:50%; padding:0; display:grid; place-items:center; transition:background .3s ease}
+.strip button:hover{background:#262626}
+.strip button[aria-current="true"]{background:#454545}
+.strip svg{width:18px; height:18px}
+
+/* link rows */
+.links4{display:grid; gap:18px; width:100%; margin-top:30px}
+.lrow{display:flex; align-items:center; gap:18px; height:96px; padding:0 18px 0 30px; background:#fff;
+  border:4px solid var(--ink4); border-radius:32px; color:var(--ink4); transition:transform .2s ease}
+.lrow:hover{transform:translateY(-2px)}
+.lrow > a{flex:1; min-width:0; display:flex; align-items:center; gap:22px; text-align:left}
+.lrow svg.ro{width:30px; height:30px; flex:none; color:var(--ink4)}
+.lrow .tx4{display:flex; flex-direction:column; min-width:0}
+.lrow b{font-size:18px; font-weight:600; letter-spacing:-.01em}
+.lrow small{margin-top:4px; font-size:13px; font-weight:500; color:#5F6368; letter-spacing:.1em;
+  text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+/* the row share: the same glyph as every theme, on a pale green */
+.pg[data-look="deck"] .rowshare{position:static; transform:none; flex:none; width:52px; height:52px; border-radius:50%;
+  background:var(--rs4); color:var(--rsInk4); opacity:1; box-shadow:none}
+.pg[data-look="deck"] .rowshare:hover{filter:brightness(.97)}
+.pg[data-look="deck"] .rowshare svg{width:22px; height:22px}
+.pg[data-look="deck"] .brand{margin-top:30px; padding-top:0}
+.pg[data-look="deck"] .brand button{height:50px; padding:0 22px; border-radius:999px; background:var(--ink4); color:#fff; box-shadow:none}
+.pg[data-look="deck"] .brand button:hover{background:#2A2A2A; transform:none}
+.pg[data-look="deck"] .brand button svg{color:currentColor; width:16px; height:16px}
+
+@media (max-width:639px){
+  .pg[data-look="deck"] .card{padding:76px 16px 28px}
+  .card4{padding:72px 18px 24px; border-width:3px; border-radius:36px}
+  .pg[data-look="deck"] .avatar{width:108px; height:108px; border-width:3px}
+  .pg[data-look="deck"] .avatar img, .pg[data-look="deck"] .avatar .ph{width:94px; height:94px}
+  .pg[data-look="deck"] .share{top:16px; left:16px; width:38px; height:38px}
+  .pg[data-look="deck"] .name{font-size:26px}
+  .pg[data-look="deck"] .bio{margin-top:12px; max-width:290px; font-size:15px}
+  .pg[data-look="deck"] .acts{gap:14px; margin-top:22px}
+  .pg[data-look="deck"] .acts a{width:58px; height:58px}
+  .pg[data-look="deck"] .acts svg{width:26px; height:26px}
+  .add4{margin-top:20px; height:46px; padding:0 26px; font-size:14px}
+  .deck{height:150px; margin-top:96px}
+  .dk{border-width:3px; border-radius:34px; gap:20px}
+  .dk svg{width:48px; height:48px}
+  .dk b{font-size:16px}
+  .dk small{font-size:11px}
+  .strip{gap:2px; padding:5px 6px}
+  .strip button{width:28px; height:28px}
+  .strip svg{width:15px; height:15px}
+  .links4{gap:12px; margin-top:22px}
+  .lrow{height:72px; gap:12px; padding:0 11px 0 18px; border-width:3px; border-radius:24px}
+  .lrow > a{gap:14px}
+  .lrow svg.ro{width:24px; height:24px}
+  .lrow b{font-size:15px}
+  .lrow small{font-size:11px}
+  .pg[data-look="deck"] .rowshare{width:42px; height:42px}
+  .pg[data-look="deck"] .rowshare svg{width:19px; height:19px}
+  .pg[data-look="deck"] .brand{margin-top:22px}
 }
 
-/* 1 + 2 — the panel itself. brightness() is what stops smoked glass from
-   going muddy: the tint takes light out, the filter puts some back. */
-.pg[data-theme^="glass-"] .card{
-  align-self:center;
-  width:calc(100% - var(--s-5) * 2);
-  margin-block:var(--s-5) var(--s-6);
-  border-radius:var(--r-lg);
-  background:
-    linear-gradient(168deg, rgba(255,255,255,.13), rgba(255,255,255,.02) 46%, rgba(255,255,255,.08)),
-    rgba(var(--glass-tint),var(--tint-a));
-  -webkit-backdrop-filter:blur(24px) saturate(215%) brightness(1.18);
-          backdrop-filter:blur(24px) saturate(215%) brightness(1.18);
-  box-shadow:
-    inset 0 0 26px rgba(255,255,255,.10),    /* light pooling inside the edge */
-    inset 0 -34px 56px rgba(0,0,0,.24),
-    0 34px 74px rgba(0,0,0,.55);
+/* ── 2e. SOFT and PHOTO — bench V3 and V5 (Garry, 2026-10-06) ─────────────
+   Soft replaced Blush glass. Each comes in a light and a dark version, and
+   the version is part of the theme id: soft / soft-dark, photo / photo-dark.
+   These two lay the whole page out themselves: renderSoft() / renderPhoto()
+   write it into #list and the shared top elements are hidden, so nothing
+   here depends on where those elements sit for the other themes. Ported
+   from profile-themes.html — the selectors are the bench's, re-scoped. */
+.pg[data-look="soft"]::before, .pg[data-look="photo"]::before{background:var(--bg)}
+.pg[data-look="soft"] .card, .pg[data-look="photo"] .card{
+  width:100%; max-width:594px; margin:0 auto; padding:40px 16px 56px; border-radius:0; text-align:center;
+  background:none; box-shadow:none; -webkit-backdrop-filter:none; backdrop-filter:none; align-items:center}
+.pg[data-look="photo"] .card{padding-top:65px}
+.pg[data-look="soft"] :is(#shareBtn, #addBtn, #avatar, #name, #handle, #bio),
+.pg[data-look="photo"] :is(#shareBtn, #addBtn, #avatar, #name, #handle, #bio){display:none}
+.pg[data-look="soft"] .list, .pg[data-look="photo"] .list{display:flex; flex-direction:column; align-items:center; gap:0; margin:0; width:100%}
+.pg[data-look="soft"] .handle, .pg[data-look="photo"] .handle{display:inline-flex}
+.pg[data-look="soft"] .brand, .pg[data-look="photo"] .brand{padding-top:0}
+.pg[data-look="soft"] .brand button svg, .pg[data-look="photo"] .brand button svg{color:currentColor}
+.pg[data-look="soft"] .rowshare, .pg[data-look="photo"] .rowshare{position:static; transform:none; flex:none; border-radius:50%; opacity:1; display:grid; place-items:center}
+.pg[data-theme^="soft"], .pg[data-theme^="photo"]{--mark:currentColor}
+
+/* ══ V3 · Soft ═════════════════════════════════════════════════════════
+   Figma: assets/profile-bgs/design-reference-profile-v4.png (Garry,
+   2026-10-05). Replaces the old V3 (Blush) on this bench. Quiet and soft:
+   a warm-grey ground and plain white rounded cards — the profile card
+   (name, round photo, bio, Call/WhatsApp pill + Email), a big Save Contact
+   card, the socials as app icons in one card, then the link rows. Share is
+   a white disc sitting above the card's top-right corner. */
+.pg[data-theme="soft"]{--bg:#E8E7E5}
+.pg[data-look="soft"] .card{--ink3:#0B0B0C; --line3:#E3E3E3; padding-top:40px}
+.pg[data-look="soft"] .top3{display:flex; justify-content:flex-end; width:562px; max-width:100%}
+.pg[data-look="soft"] .share{position:relative; top:auto; left:auto; margin:0 26px 16px 0;
+  width:58px; height:58px; background:#fff; color:var(--ink3); border:0; box-shadow:0 6px 16px -10px rgba(0,0,0,.25)}
+.pg[data-look="soft"] .share:hover{background:#F6F6F5}
+.pg[data-look="soft"] .share svg{width:22px; height:22px}
+.pg[data-look="soft"] .c3, .pg[data-look="soft"] .save3, .pg[data-look="soft"] .soc3, .pg[data-look="soft"] .lk3{width:562px; max-width:100%; background:#fff; color:var(--ink3)}
+.pg[data-look="soft"] .c3{display:flex; flex-direction:column; align-items:center; padding:52px 40px 44px; border-radius:64px; text-align:center}
+.pg[data-look="soft"] .name{margin:0; font-size:33px; font-weight:700; letter-spacing:-.02em; color:var(--ink3)}
+.pg[data-look="soft"] .handle{margin-top:10px; color:#55595F; background:#F3F3F2; border:0}
+.pg[data-look="soft"] .ph3{width:200px; height:200px; margin-top:28px; border-radius:50%; overflow:hidden; background:#F1ECE4}
+.pg[data-look="soft"] .ph3 img{width:100%; height:100%; object-fit:cover; display:block}
+.pg[data-look="soft"] .ph3 svg{width:100%; height:100%; display:block}
+.pg[data-look="soft"] .bio{margin:30px 0 0; max-width:380px; font-size:18px; font-weight:400; line-height:1.4; color:#1C1C1E}
+/* Call / WhatsApp in one pill, Email beside it */
+.pg[data-look="soft"] .ct3{display:flex; gap:20px; width:100%; margin-top:36px}
+.pg[data-look="soft"] .cw3{flex:1; min-width:0; display:flex; align-items:center; gap:4px; height:76px; padding:0 18px 0 12px;
+  border:1px solid var(--line3); border-radius:24px; text-align:left; transition:background .15s}
+.pg[data-look="soft"] .cw3:hover{background:#FAFAF9}
+.pg[data-look="soft"] .cw3 .wa3, .pg[data-look="soft"] .cw3 .tel3{flex:none; display:grid; place-items:center; width:46px; height:46px; border-radius:50%}
+.pg[data-look="soft"] .cw3 .wa3 svg{width:32px; height:32px}
+.pg[data-look="soft"] .cw3 .tel3 svg{width:28px; height:28px; color:var(--ink3)}
+.pg[data-look="soft"] .cw3 .num3{flex:1; min-width:0; display:flex; flex-direction:column; margin-left:10px; color:var(--ink3)}
+.pg[data-look="soft"] .cw3 b{font-size:18px; font-weight:500; letter-spacing:-.005em; white-space:nowrap}
+.pg[data-look="soft"] .cw3 small{margin-top:2px; font-size:13px; font-weight:500; color:#6B6E73; letter-spacing:.1em; white-space:nowrap}
+.pg[data-look="soft"] .em3{flex:none; display:grid; place-items:center; width:66px; height:76px; border:1px solid var(--line3); border-radius:24px;
+  color:var(--ink3); transition:background .15s}
+.pg[data-look="soft"] .em3:hover{background:#FAFAF9}
+.pg[data-look="soft"] .em3 svg{width:28px; height:28px}
+.pg[data-look="soft"] .save3{display:flex; align-items:center; justify-content:center; gap:14px; height:112px; margin-top:26px; border:0;
+  border-radius:999px; font-size:20px; font-weight:500; letter-spacing:-.005em; cursor:pointer; transition:background .15s}
+.pg[data-look="soft"] .save3:hover{background:#FAFAF9}
+.pg[data-look="soft"] .save3 svg{width:26px; height:26px}
+.pg[data-look="soft"] .soc3{display:flex; flex-wrap:wrap; justify-content:center; gap:14px 18px; margin-top:26px; padding:26px 36px; border-radius:60px}
+/* each icon sits in a padded tap target, so the mark itself stays modest */
+.pg[data-look="soft"] .soc3 a{display:grid; place-items:center; width:56px; height:56px; padding:9px; border-radius:16px; transition:transform .15s, background .15s}
+.pg[data-look="soft"] .soc3 a:hover{transform:translateY(-2px); background:#F6F6F5}
+.pg[data-look="soft"] .soc3 svg{width:100%; height:100%}
+/* custom CTAs under the socials */
+.pg[data-look="soft"] .lk3{display:grid; margin-top:26px; padding:6px 30px; border-radius:44px}
+.pg[data-look="soft"] .it3{display:flex; align-items:center; gap:18px; min-height:96px}
+.pg[data-look="soft"] .it3 + .it3{box-shadow:0 -1px 0 #F0F0EF}
+.pg[data-look="soft"] .it3 > a{flex:1; min-width:0; display:flex; align-items:center; gap:22px; text-align:left; color:var(--ink3)}
+.pg[data-look="soft"] .it3 svg.ro{width:28px; height:28px; flex:none; color:var(--ink3)}
+.pg[data-look="soft"] .it3 .tx3{display:flex; flex-direction:column; min-width:0}
+.pg[data-look="soft"] .it3 b{font-size:18px; font-weight:600; letter-spacing:-.01em}
+.pg[data-look="soft"] .it3 small{margin-top:4px; font-size:13px; font-weight:500; color:#6B6E73; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.pg[data-look="soft"] .rowshare{width:46px; height:46px; background:#F3F3F2; color:var(--ink3); box-shadow:none}
+.pg[data-look="soft"] .rowshare:hover{background:#EAEAE8}
+.pg[data-look="soft"] .rowshare svg{width:20px; height:20px}
+.pg[data-look="soft"] .brand{margin-top:28px}
+.pg[data-look="soft"] .brand button{display:inline-flex; align-items:center; gap:8px; height:50px; padding:0 22px; border-radius:999px; border:0;
+  background:var(--ink3); color:#fff; font-size:14px; font-weight:700; letter-spacing:.14px}
+.pg[data-look="soft"] .brand button svg{width:16px; height:16px}
+
+@media (max-width:639px){
+  .pg[data-look="soft"] .card{padding:20px 16px 28px}
+  .pg[data-look="soft"] .share{width:46px; height:46px; margin:0 14px 12px 0}
+  .pg[data-look="soft"] .share svg{width:19px; height:19px}
+  .pg[data-look="soft"] .c3{padding:34px 18px 26px; border-radius:40px}
+  .pg[data-look="soft"] .name{font-size:26px}
+  .pg[data-look="soft"] .ph3{width:150px; height:150px; margin-top:20px}
+  .pg[data-look="soft"] .bio{margin-top:20px; font-size:15px; max-width:290px}
+  .pg[data-look="soft"] .ct3{gap:10px; margin-top:24px}
+  .pg[data-look="soft"] .cw3{height:62px; padding:0 12px 0 8px; border-radius:18px; gap:0}
+  .pg[data-look="soft"] .cw3 .wa3, .pg[data-look="soft"] .cw3 .tel3{width:36px; height:36px}
+  .pg[data-look="soft"] .cw3 .wa3 svg{width:26px; height:26px}
+  .pg[data-look="soft"] .cw3 .tel3 svg{width:22px; height:22px}
+  .pg[data-look="soft"] .cw3 .num3{margin-left:6px}
+  .pg[data-look="soft"] .cw3 b{font-size:15px}
+  .pg[data-look="soft"] .cw3 small{font-size:11px}
+  .pg[data-look="soft"] .em3{width:54px; height:62px; border-radius:18px}
+  .pg[data-look="soft"] .em3 svg{width:22px; height:22px}
+  .pg[data-look="soft"] .save3{height:76px; margin-top:16px; font-size:16px}
+  .pg[data-look="soft"] .save3 svg{width:20px; height:20px}
+  /* phone: four to a row, a short last row centred */
+  .pg[data-look="soft"] .soc3{display:flex; flex-wrap:wrap; justify-content:center; gap:10px 0;
+    margin-top:16px; padding:18px 12px; border-radius:32px}
+  .pg[data-look="soft"] .soc3 a{flex:0 0 25%; width:auto; height:52px; padding:9px 0}
+  .pg[data-look="soft"] .soc3 svg{width:34px; height:34px}
+  .pg[data-look="soft"] .lk3{margin-top:16px; padding:4px 18px; border-radius:30px}
+  .pg[data-look="soft"] .it3{min-height:72px; gap:12px}
+  .pg[data-look="soft"] .it3 > a{gap:14px}
+  .pg[data-look="soft"] .it3 svg.ro{width:22px; height:22px}
+  .pg[data-look="soft"] .it3 b{font-size:15px}
+  .pg[data-look="soft"] .it3 small{font-size:11px}
+  .pg[data-look="soft"] .rowshare{width:38px; height:38px}
+  .pg[data-look="soft"] .rowshare svg{width:17px; height:17px}
 }
 
-/* Every row is its own lozenge of glass, not a flat fill on the panel —
-   that second surface is what gives the page depth when you tilt it. */
-.pg[data-theme^="glass-"] .btn,
-.pg[data-theme^="glass-"] .share,
-.pg[data-theme^="glass-"] .brand button{
-  /* Read off the Figma CTA (node 69:358). The light there comes from BELOW:
-     the inside of the top-left corner is in shadow and the bottom lip is
-     what glows. That is the opposite of the panel, so the rim runs the other
-     way round — hence --rim. Getting this backwards is what made the first
-     build's buttons look like flat grey pills. */
-  --rim:linear-gradient(145deg,
-    rgba(255,255,255,.30) 0%, rgba(255,255,255,.10) 22%,
-    rgba(255,255,255,.06) 46%, var(--glass-warm) 66%,
-    rgba(255,255,255,.90) 86%, rgba(255,255,255,1) 100%);
-  background:
-    linear-gradient(170deg, rgba(255,255,255,.07), rgba(255,255,255,.02) 46%, rgba(255,255,255,.14)),
-    rgba(255,255,255,.03);
-  -webkit-backdrop-filter:blur(13px) saturate(205%) brightness(1.16);
-          backdrop-filter:blur(13px) saturate(205%) brightness(1.16);
-  box-shadow:
-    inset 6px 6px 15px rgba(0,0,0,.38),        /* the shade cast in from top-left */
-    inset 0 -12px 22px rgba(255,255,255,.10),  /* the lip catching the light */
-    0 12px 26px rgba(0,0,0,.30);
-}
-/* the row's sheen sits low, where its light comes from */
-.pg[data-theme^="glass-"] .btn::after,
-.pg[data-theme^="glass-"] .brand button::after{
-  background:
-    radial-gradient(40% 70% at 24% 104%, rgba(255,255,255,.40), transparent 70%),
-    linear-gradient(0deg, rgba(255,255,255,.14) 0 14%, rgba(255,255,255,0) 46%);
+
+/* ══ V5 · Photo ════════════════════════════════════════════════════════
+   Figma: assets/profile-bgs/design-reference-profile-v3.png (Garry,
+   2026-10-04). Calm and photographic: a cool-grey ground, one white card
+   led by a big photo panel, the name and bio set left, blue round buttons
+   with Add Contact beside them, and the socials and links as two white
+   grouped lists with hairline dividers. */
+.pg[data-theme="photo"]{--bg:#C4CBD4}
+.pg[data-look="photo"] .card{--ink5:#0B0B0C; --blue5:#1497F5; --tint5:#EEF6FF; --line5:#EEF0F3; gap:0}
+.pg[data-look="photo"] .card5, .pg[data-look="photo"] .grp{width:562px; max-width:100%; background:#fff; color:var(--ink5)}
+.pg[data-look="photo"] .card5{position:relative; padding:16px 16px 34px; border-radius:52px; text-align:left}
+.pg[data-look="photo"] .photo5{position:relative; height:452px; border-radius:40px; overflow:hidden; background:#E7E9EE}
+.pg[data-look="photo"] .photo5 img{width:100%; height:100%; object-fit:cover; display:block}
+.pg[data-look="photo"] .photo5 .face5{position:absolute; inset:0; display:grid; place-items:end center; color:#B3B8C2}
+.pg[data-look="photo"] .photo5 .face5 svg{width:62%; height:auto}
+/* share sits on the photo, top right — a white disc */
+.pg[data-look="photo"] .share{top:36px; right:36px; left:auto; width:56px; height:56px; background:#fff; color:var(--ink5); border:0;
+  box-shadow:0 6px 18px -8px rgba(0,0,0,.35)}
+.pg[data-look="photo"] .share:hover{background:#F4F6F8}
+.pg[data-look="photo"] .share svg{width:22px; height:22px}
+.pg[data-look="photo"] .body5{padding:0 18px}
+.pg[data-look="photo"] .name{margin:30px 0 0; font-size:33px; font-weight:700; letter-spacing:-.02em; color:var(--ink5); text-align:left}
+.pg[data-look="photo"] .handle{margin-top:10px; color:var(--blue5); background:var(--tint5); border:0}
+.pg[data-look="photo"] .bio{margin:14px 0 0; max-width:420px; font-size:18px; font-weight:400; line-height:1.4; color:#1C1C1E; text-align:left}
+.pg[data-look="photo"] .row5{display:flex; align-items:center; gap:16px; margin-top:28px}
+.pg[data-look="photo"] .acts{margin:0; gap:14px; justify-content:flex-start}
+.pg[data-look="photo"] .acts a{width:73px; height:73px; background:var(--blue5); color:#fff}
+.pg[data-look="photo"] .acts a:hover{background:#0B86E0}
+.pg[data-look="photo"] .add5{margin-left:auto; height:50px; padding:0 26px; border-radius:999px; border:0; background:var(--tint5);
+  color:var(--blue5); font-size:17px; font-weight:600; letter-spacing:-.005em; white-space:nowrap; flex:none; transition:background .15s}
+.pg[data-look="photo"] .add5:hover{background:#E0EEFF}
+
+/* grouped lists */
+.pg[data-look="photo"] .grp{margin-top:28px; padding:8px 28px; border-radius:48px}
+.pg[data-look="photo"] .it{display:flex; align-items:center; gap:24px; min-height:122px; color:var(--ink5); text-align:left}
+.pg[data-look="photo"] .it + .it{box-shadow:0 -1px 0 var(--line5)}
+.pg[data-look="photo"] .it > a{flex:1; min-width:0; display:flex; align-items:center; gap:28px}
+.pg[data-look="photo"] .it svg{width:52px; height:52px; flex:none}
+.pg[data-look="photo"] .it svg.ro{width:30px; height:30px; margin-inline:11px; color:var(--ink5)}
+.pg[data-look="photo"] .it .tx5{display:flex; flex-direction:column; min-width:0}
+.pg[data-look="photo"] .it b{font-size:18px; font-weight:600; letter-spacing:-.01em}
+.pg[data-look="photo"] .it small{margin-top:5px; font-size:13px; font-weight:500; color:#5F6368; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.pg[data-look="photo"] .it > a:hover b{color:var(--blue5)}
+.pg[data-look="photo"] .rowshare{width:46px; height:46px; background:var(--tint5); color:var(--blue5); box-shadow:none}
+.pg[data-look="photo"] .rowshare:hover{background:#E0EEFF}
+.pg[data-look="photo"] .rowshare svg{width:20px; height:20px}
+.pg[data-look="photo"] .brand{margin-top:28px}
+.pg[data-look="photo"] .brand button{display:inline-flex; align-items:center; gap:8px; height:50px; padding:0 22px; border-radius:999px; border:0;
+  background:#fff; color:var(--ink5); font-size:14px; font-weight:700; letter-spacing:.14px}
+.pg[data-look="photo"] .brand button:hover{background:#F4F6F8}
+.pg[data-look="photo"] .brand button svg{width:16px; height:16px}
+
+@media (max-width:639px){
+  .pg[data-look="photo"] .card{padding:16px 16px 28px}
+  .pg[data-look="photo"] .card5{padding:12px 12px 22px; border-radius:36px}
+  .pg[data-look="photo"] .photo5{height:330px; border-radius:26px}
+  .pg[data-look="photo"] .share{top:24px; right:24px; width:46px; height:46px}
+  .pg[data-look="photo"] .share svg{width:19px; height:19px}
+  .pg[data-look="photo"] .body5{padding:0 10px}
+  .pg[data-look="photo"] .name{margin-top:20px; font-size:26px}
+  .pg[data-look="photo"] .bio{margin-top:10px; font-size:15px}
+  .pg[data-look="photo"] .row5{gap:8px; margin-top:20px}
+  .pg[data-look="photo"] .acts{gap:8px}
+  .pg[data-look="photo"] .acts a{width:52px; height:52px}
+  .pg[data-look="photo"] .acts svg{width:24px; height:24px}
+  .pg[data-look="photo"] .add5{height:42px; padding:0 13px; font-size:14px}
+  .pg[data-look="photo"] .grp{margin-top:16px; padding:4px 18px; border-radius:32px}
+  .pg[data-look="photo"] .it{gap:16px; min-height:84px}
+  .pg[data-look="photo"] .it > a{gap:18px}
+  .pg[data-look="photo"] .it svg{width:38px; height:38px}
+  .pg[data-look="photo"] .it svg.ro{width:24px; height:24px; margin-inline:7px}
+  .pg[data-look="photo"] .it b{font-size:15px}
+  .pg[data-look="photo"] .it small{font-size:11px}
+  .pg[data-look="photo"] .rowshare{width:38px; height:38px}
+  .pg[data-look="photo"] .rowshare svg{width:17px; height:17px}
 }
 
-/* the hover ring the other themes get would fight the rim, so here the
-   glass simply brightens, the way a lens does when it catches more light */
-.pg[data-theme^="glass-"] .btn:hover,
-.pg[data-theme^="glass-"] .share:hover,
-.pg[data-theme^="glass-"] .brand button:hover{
-  background:
-    linear-gradient(170deg, rgba(255,255,255,.10), rgba(255,255,255,.03) 46%, rgba(255,255,255,.19)),
-    rgba(255,255,255,.06);
-  box-shadow:
-    inset 6px 6px 15px rgba(0,0,0,.30),
-    inset 0 -12px 22px rgba(255,255,255,.15),
-    0 14px 30px rgba(0,0,0,.32);
-}
-.pg[data-theme^="glass-"] .btn:active{transform:scale(.985)}
 
-.pg[data-theme^="glass-"] .avatar{
-  background:
-    linear-gradient(160deg, rgba(255,255,255,.10), rgba(255,255,255,0) 50%, rgba(255,255,255,.06)),
-    rgba(var(--glass-tint),.46);
-  -webkit-backdrop-filter:blur(7px) saturate(220%) brightness(.94);
-          backdrop-filter:blur(7px) saturate(220%) brightness(.94);
-  box-shadow:
-    inset 0 0 16px rgba(255,255,255,.10),
-    0 16px 34px rgba(0,0,0,.48);
-}
-/* Socials keep the circle every other theme uses — same shapes as Light
-   and Dark, only the surface changes. They keep their brand colours, so
-   they get gloss over the top rather than glass behind: a lit disc, not a
-   window. (The disc is a rect with a CSS rx, so a theme could still turn
-   them into tiles by setting --soc-r and --disc-rx.) */
-.pg[data-theme^="glass-"] .socials a{
-  box-shadow:0 10px 22px rgba(0,0,0,.48);
-}
-.pg[data-theme^="glass-"] .socials a::after{
-  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
-  background:
-    linear-gradient(168deg, rgba(255,255,255,.42), rgba(255,255,255,.05) 46%, rgba(0,0,0,.14)),
-    radial-gradient(120% 58% at 30% -12%, rgba(255,255,255,.34), transparent 62%);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.28);
-}
+/* ══ Dark versions of V3 · Soft and V5 · Photo (Garry, 2026-10-06) ═════
+   Same layout, same sizes; only colour changes. Soft goes warm charcoal
+   (it was warm grey), Photo goes cool ink (it was cool grey) and keeps its
+   blue. Black brand marks (X, Threads) turn white so they still show. */
+.pg[data-theme$="-dark"] svg [fill="#000000"]{fill:#fff}
 
-/* Without backdrop-filter there is nothing to see through, so the tint
-   carries the whole surface on its own and the gloss comes down — a bright
-   sheen over an opaque plate reads as plastic, not glass. */
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  .pg[data-theme^="glass-"] .card{background:rgba(var(--glass-tint),.90)}
-  .pg[data-theme^="glass-"] .btn,
-  .pg[data-theme^="glass-"] .share,
-  .pg[data-theme^="glass-"] .brand button{background:rgba(255,255,255,.13)}
-  .pg[data-theme^="glass-"] .card::after,
-  .pg[data-theme^="glass-"] .btn::after,
-  .pg[data-theme^="glass-"] .share::after,
-  .pg[data-theme^="glass-"] .brand button::after{opacity:.55}
-}
+/* Soft, dark */
+.pg[data-theme="soft-dark"]{--bg:#121211}
+.pg[data-theme="soft-dark"] .card{--ink3:#F2F2EF; --line3:#33332F}
+.pg[data-theme="soft-dark"] .share{background:#1E1E1C; color:#F2F2EF; box-shadow:0 6px 16px -10px rgba(0,0,0,.7)}
+.pg[data-theme="soft-dark"] .share:hover{background:#272725}
+.pg[data-theme="soft-dark"] .c3, .pg[data-theme="soft-dark"] .save3, .pg[data-theme="soft-dark"] .soc3, .pg[data-theme="soft-dark"] .lk3{background:#1E1E1C}
+.pg[data-theme="soft-dark"] .handle{color:#B8B8B2; background:#2A2A27}
+.pg[data-theme="soft-dark"] .bio{color:#D6D6D1}
+.pg[data-theme="soft-dark"] .ph3{background:#2A2A27}
+.pg[data-theme="soft-dark"] .ph3 svg rect{fill:#2A2A27}
+.pg[data-theme="soft-dark"] .ph3 svg circle, .pg[data-theme="soft-dark"] .ph3 svg path{fill:#5A5A54}
+.pg[data-theme="soft-dark"] .cw3:hover, .pg[data-theme="soft-dark"] .em3:hover, .pg[data-theme="soft-dark"] .save3:hover{background:#262624}
+.pg[data-theme="soft-dark"] .cw3 small, .pg[data-theme="soft-dark"] .it3 small{color:#9A9A94}
+.pg[data-theme="soft-dark"] .soc3 a:hover{background:#2A2A27}
+.pg[data-theme="soft-dark"] .it3 + .it3{box-shadow:0 -1px 0 #2C2C29}
+.pg[data-theme="soft-dark"] .rowshare{background:#2A2A27; color:#F2F2EF}
+.pg[data-theme="soft-dark"] .rowshare:hover{background:#33332F}
+.pg[data-theme="soft-dark"] .brand button{background:#F2F2EF; color:#121211}
+
+/* Photo, dark */
+.pg[data-theme="photo-dark"]{--bg:#0E1014}
+.pg[data-theme="photo-dark"] .card{--ink5:#F3F5F8; --tint5:rgba(20,151,245,.16); --line5:#272B33}
+.pg[data-theme="photo-dark"] .card5, .pg[data-theme="photo-dark"] .grp{background:#191C22}
+.pg[data-theme="photo-dark"] .photo5{background:#252932}
+.pg[data-theme="photo-dark"] .photo5 .face5{color:#454B56}
+.pg[data-theme="photo-dark"] .share{background:#191C22; color:#F3F5F8; box-shadow:0 6px 18px -8px rgba(0,0,0,.7)}
+.pg[data-theme="photo-dark"] .share:hover{background:#22262E}
+.pg[data-theme="photo-dark"] .handle{color:#6CC0FF}
+.pg[data-theme="photo-dark"] .bio{color:#D3D7DE}
+.pg[data-theme="photo-dark"] .add5{color:#6CC0FF}
+.pg[data-theme="photo-dark"] .add5:hover, .pg[data-theme="photo-dark"] .rowshare:hover{background:rgba(20,151,245,.26)}
+.pg[data-theme="photo-dark"] .it small{color:#8E949D}
+.pg[data-theme="photo-dark"] .it > a:hover b{color:#6CC0FF}
+.pg[data-theme="photo-dark"] .rowshare{color:#6CC0FF}
+.pg[data-theme="photo-dark"] .brand button{background:#F3F5F8; color:#0E1014}
+.pg[data-theme="photo-dark"] .brand button:hover{background:#fff}
 
 /* ── 3. OWNER BAR — thin, and that is the whole point ──────────────────── */
 .bar{
@@ -364,6 +701,7 @@ img,svg{display:block; max-width:100%}
   user-select:none;
 }
 .avatar img{width:88px; height:88px; object-fit:cover}
+.avatar .face{display:block; width:100%; height:100%}
 
 .name{margin-top:var(--s-4); font-size:1.625rem; font-weight:var(--fw-black);
   line-height:1.12; letter-spacing:var(--ls-display); text-wrap:balance}
@@ -684,12 +1022,16 @@ img,svg{display:block; max-width:100%}
 .rev__sw{width:30px; height:30px; border-radius:var(--r-sm); box-shadow:inset 0 0 0 1.5px var(--line-strong)}
 .rev__sw[aria-pressed="true"]{box-shadow:0 0 0 2px #fff,0 0 0 3px var(--ink)}
 .rev__sw[data-t="light"]{background:#fff}
-.rev__sw[data-t="dark"]{background:#101215}
-.rev__sw[data-t="violet"]{background:#6E27E6}
-.rev__sw[data-t="cream"]{background:#F6EFE4}
-.rev__sw[data-t="gradient"]{background:linear-gradient(150deg,#6E27E6,#B32E6E 55%,#C2452E)}
-.rev__sw[data-t="glass-ember"]{background:linear-gradient(180deg, rgba(7,4,16,.26), rgba(7,4,16,.46)), url("assets/profile-bg/4.jpg") 40% 50% / cover no-repeat, #1A0806}
-.rev__sw[data-t="glass-violet"]{background:linear-gradient(180deg, rgba(7,4,16,.20), rgba(7,4,16,.42)), url("assets/profile-bg/3.jpg") 44% 50% / cover no-repeat, #0C0630}
+.rev__sw[data-t="leaf"]{background:#A3BF5A; box-shadow:inset 0 0 0 3px #fff, inset 0 0 0 5px #0A0A0A}
+.rev__sw[data-t="leaf-blue"]{background:#0062FE; box-shadow:inset 0 0 0 3px #fff, inset 0 0 0 5px #0A0A0A}
+.rev__sw[data-t="leaf-orange"]{background:#F45C30; box-shadow:inset 0 0 0 3px #fff, inset 0 0 0 5px #0A0A0A}
+.rev__sw[data-t="leaf-violet"]{background:#6741FF; box-shadow:inset 0 0 0 3px #fff, inset 0 0 0 5px #0A0A0A}
+.rev__sw[data-t="soft"]{background:#E8E7E5; box-shadow:inset 0 0 0 6px #fff}
+.rev__sw[data-t="soft-dark"]{background:#121211; box-shadow:inset 0 0 0 6px #1E1E1C}
+.rev__sw[data-t="photo"]{background:#C4CBD4; box-shadow:inset 0 0 0 6px #fff}
+.rev__sw[data-t="photo-dark"]{background:#0E1014; box-shadow:inset 0 0 0 6px #191C22}
+.rev__sw[data-t="glass-copper"]{background:url("assets/profile-bg/pv1hd.jpg") 30% 50% / cover no-repeat, #150E0B}
+.rev__sw[data-t="glass-bronze"]{background:url("assets/profile-bg/pv3hd.jpg") 45% 50% / cover no-repeat, #7A5440}
     radial-gradient(96% 44% at 16% -6%,  rgba(178,132,255,.95), transparent 62%),
     radial-gradient(90% 42% at 28% 106%, rgba(226,114,226,.82),transparent 62%),
     #0A0616}
@@ -738,7 +1080,7 @@ input:-webkit-autofill:active{
   <div class="bar">
     <span class="bar__dot" aria-hidden="true"></span>
     <span class="bar__txt">This is your page</span>
-    <a class="bar__edit" href="dashboard/profile.html">Edit</a>
+    <a class="bar__edit" href="dashboard/4-active/profile.html">Edit</a>
   </div>
 
   <!-- ══ THE PAGE ════════════════════════════════════════════════════ -->
@@ -746,6 +1088,8 @@ input:-webkit-autofill:active{
     <button class="share" type="button" id="shareBtn" aria-label="Share this page">
       <svg viewBox="0 0 20 20" fill="none"><path d="M10 13V3m0 0L6.6 6.4M10 3l3.4 3.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 11.5v4.2c0 .7.6 1.3 1.3 1.3h8.4c.7 0 1.3-.6 1.3-1.3v-4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
     </button>
+    <!-- glass looks only: Save contact as a chip in the top-right corner -->
+    <button class="addc" type="button" id="addBtn">Add Contact</button>
     <figure class="avatar" id="avatar" aria-hidden="true">G</figure>
     <h1 class="name" id="name">Gurdeep Singh</h1>
     <button class="handle" type="button" id="handle" aria-label="Copy this page's link">
@@ -827,8 +1171,8 @@ input:-webkit-autofill:active{
   </div>
 </div>
 
-<!-- Review tool hidden for clean production experience -->
-<div class="rev" role="group" aria-label="Review controls" hidden style="display:none !important">
+<!-- Review tool only — delete this block, its CSS section and its script loop. -->
+<div class="rev" role="group" aria-label="Review controls">
   <div class="rev__row" id="revView">
     <button type="button" data-v="visitor" aria-pressed="true">Visitor</button>
     <button type="button" data-v="owner" aria-pressed="false">Owner</button>
@@ -975,20 +1319,480 @@ input:-webkit-autofill:active{
     return c && c.title && c.url ? http(c.url) : null;
   }
 
+  /* ══ 3b. THE GLASS LOOKS — Copper (pill) and Bronze (tile) ═══════════
+     These two themes carry their own layout (CSS 2b). Brand marks here are
+     the official logo shapes from Simple Icons (CC0), one path each. */
+  var LOOK = { "glass-copper":"pill", "glass-bronze":"tile",
+               "soft":"soft", "soft-dark":"soft", "photo":"photo", "photo-dark":"photo",
+               "leaf":"deck", "leaf-green":"deck", "leaf-blue":"deck", "leaf-orange":"deck", "leaf-violet":"deck" };
+  var SI = {
+      "x": "M14.234 10.162 22.977 0h-2.072l-7.591 8.824L7.251 0H.258l9.168 13.343L.258 24H2.33l8.016-9.318L16.749 24h6.993zm-2.837 3.299-.929-1.329L3.076 1.56h3.182l5.965 8.532.929 1.329 7.754 11.09h-3.182z",
+      "instagram": "M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077",
+      "threads": "M18.263 11.097c-.03-3.486-1.92-5.586-5.111-5.586-2.13 0-3.922.963-4.863 2.499l2.062 1.438c.535-.843 1.272-1.543 2.628-1.543 1.528 0 2.318.85 2.544 2.431a15 15 0 0 0-2.236-.173c-4.125 0-6.068 1.867-6.068 4.336s1.943 3.99 4.804 3.99c3.139 0 5.013-2.115 5.781-4.735.798.361 1.348 1.204 1.348 2.47 0 3.387-3.907 5.232-7.22 5.232-4.885 0-8.077-3.207-8.077-8.424 0-6.392 4.223-10.487 9.9-10.487 3.808 0 5.69 1.671 6.97 3.914l2.108-1.475C21.44 2.078 18.331 0 13.663 0 6.227 0 1.168 5.277 1.168 12.934c0 7 4.953 11.066 10.856 11.066 4.878 0 9.809-2.846 9.809-7.716 0-2.545-1.46-4.231-3.569-5.187m-6.33 4.855c-1.077 0-2.026-.512-2.026-1.453 0-1.483 1.822-1.934 3.606-1.934.678 0 1.34.045 1.927.173-.422 1.927-1.671 3.215-3.508 3.214Z",
+      "telegram": "M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z",
+      "spotify": "M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z",
+      "snapchat": "M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12 1.033-.301.165-.088.344-.104.464-.104.182 0 .359.029.509.09.45.149.734.479.734.838.015.449-.39.839-1.213 1.168-.089.029-.209.075-.344.119-.45.135-1.139.36-1.333.81-.09.224-.061.524.12.868l.015.015c.06.136 1.526 3.475 4.791 4.014.255.044.435.27.42.509 0 .075-.015.149-.045.225-.24.569-1.273.988-3.146 1.271-.059.091-.12.375-.164.57-.029.179-.074.36-.134.553-.076.271-.27.405-.555.405h-.03c-.135 0-.313-.031-.538-.074-.36-.075-.765-.135-1.273-.135-.3 0-.599.015-.913.074-.6.104-1.123.464-1.723.884-.853.599-1.826 1.288-3.294 1.288-.06 0-.119-.015-.18-.015h-.149c-1.468 0-2.427-.675-3.279-1.288-.599-.42-1.107-.779-1.707-.884-.314-.045-.629-.074-.928-.074-.54 0-.958.089-1.272.149-.211.043-.391.074-.54.074-.374 0-.523-.224-.583-.42-.061-.192-.09-.389-.135-.567-.046-.181-.105-.494-.166-.57-1.918-.222-2.95-.642-3.189-1.226-.031-.063-.052-.15-.055-.225-.015-.243.165-.465.42-.509 3.264-.54 4.73-3.879 4.791-4.02l.016-.029c.18-.345.224-.645.119-.869-.195-.434-.884-.658-1.332-.809-.121-.029-.24-.074-.346-.119-1.107-.435-1.257-.93-1.197-1.273.09-.479.674-.793 1.168-.793.146 0 .27.029.383.074.42.194.789.3 1.104.3.234 0 .384-.06.465-.105l-.046-.569c-.098-1.626-.225-3.651.307-4.837C7.392 1.077 10.739.807 11.727.807l.419-.015h.06z",
+      "facebook": "M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z",
+      "pinterest": "M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.39 18.592.026 11.985.026L12.017 0z",
+      "whatsapp": "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z",
+      "youtube": "M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z",
+      "linkedin": "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z",
+      "soundcloud": "M23.999 14.165c-.052 1.796-1.612 3.169-3.4 3.169h-8.18a.68.68 0 0 1-.675-.683V7.862a.747.747 0 0 1 .452-.724s.75-.513 2.333-.513a5.364 5.364 0 0 1 2.763.755 5.433 5.433 0 0 1 2.57 3.54c.282-.08.574-.121.868-.12.884 0 1.73.358 2.347.992s.948 1.49.922 2.373ZM10.721 8.421c.247 2.98.427 5.697 0 8.672a.264.264 0 0 1-.53 0c-.395-2.946-.22-5.718 0-8.672a.264.264 0 0 1 .53 0ZM9.072 9.448c.285 2.659.37 4.986-.006 7.655a.277.277 0 0 1-.55 0c-.331-2.63-.256-5.02 0-7.655a.277.277 0 0 1 .556 0Zm-1.663-.257c.27 2.726.39 5.171 0 7.904a.266.266 0 0 1-.532 0c-.38-2.69-.257-5.21 0-7.904a.266.266 0 0 1 .532 0Zm-1.647.77a26.108 26.108 0 0 1-.008 7.147.272.272 0 0 1-.542 0 27.955 27.955 0 0 1 0-7.147.275.275 0 0 1 .55 0Zm-1.67 1.769c.421 1.865.228 3.5-.029 5.388a.257.257 0 0 1-.514 0c-.21-1.858-.398-3.549 0-5.389a.272.272 0 0 1 .543 0Zm-1.655-.273c.388 1.897.26 3.508-.01 5.412-.026.28-.514.283-.54 0-.244-1.878-.347-3.54-.01-5.412a.283.283 0 0 1 .56 0Zm-1.668.911c.4 1.268.257 2.292-.026 3.572a.257.257 0 0 1-.514 0c-.241-1.262-.354-2.312-.023-3.572a.283.283 0 0 1 .563 0Z"
+  };
+  var BRAND = { instagram:"url(#igGrad)", youtube:"#FF0000", facebook:"#0866FF", snapchat:"#FFFC00",
+                telegram:"#26A5E4", linkedin:"#0A66C2", x:"#000000", threads:"#000000",
+                spotify:"#1ED760", pinterest:"#E60023", soundcloud:"#FF5500" };
+  var SOC_NAME = { instagram:"Instagram", youtube:"YouTube", facebook:"Facebook", snapchat:"Snapchat",
+                   telegram:"Telegram", linkedin:"LinkedIn", x:"X", threads:"Threads",
+                   spotify:"Spotify", pinterest:"Pinterest", soundcloud:"SoundCloud" };
+  /* Copper: brand colour on a white disc. Snapchat's ghost is white with a
+     black outline, so the disc behind it turns yellow instead. */
+  function brandIc(k) {
+    return k === "snapchat"
+      ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + SI[k] + '" fill="#fff" stroke="#000" stroke-width="1.1" stroke-linejoin="round"/></svg>'
+      : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + SI[k] + '" fill="' + BRAND[k] + '"/></svg>';
+  }
+  /* Bronze: the same mark, white */
+  function monoIc(k) { return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + SI[k] + '" fill="#fff"/></svg>'; }
+  var ACT = {
+    call : '<path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/>',
+    wa   : '<path fill="currentColor" d="' + SI.whatsapp + '"/>',
+    email: '<path fill="currentColor" d="M20 4H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5z"/>'
+  };
+  var ACT_LABEL = { call:"Call", wa:"WhatsApp", email:"Email" };
+  var WIDE = window.matchMedia ? window.matchMedia("(min-width:640px)") : { matches:false };
+
+  /* the small line under a name: @handle, or the address without https:// */
+  function subOf(v) {
+    v = String(v).trim();
+    if (v.charAt(0) === "@") return v;
+    var bare = v.replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/+$/, "");
+    /* a full address: drop the domain, keep the path — facebook.com/garry → /garry */
+    var m = bare.match(/^[^/]+\.[a-z]{2,}(\/.*)?$/i);
+    if (m) return m[1] || bare;
+    /* a bare username, typed as-is — show it as-is (it used to come out as "/") */
+    return bare;
+  }
+  /* Bronze on a wide screen sits the handle beside the mark, so it gets a
+     hard cap of 15 characters (Garry, 2026-10-03); the full handle shows on
+     hover. Everywhere else CSS cuts it to the room the row has. */
+  function handleTag(s, max) {
+    if (!max || s.length <= max) return "<small>" + esc(s) + "</small>";
+    return '<small data-full="1" title="' + esc(s) + '">' + esc(s.slice(0, max)) + "…</small>";
+  }
+  /* a handle CSS had to cut gets a title, so hovering shows all of it */
+  function markCut() {
+    Array.prototype.forEach.call($("list").querySelectorAll(".pill small, .tile small"), function (s) {
+      if (s.dataset.full) return;
+      if (s.scrollWidth > s.clientWidth + 1) s.title = s.textContent;
+      else s.removeAttribute("title");
+    });
+  }
+
+  /* Order still decides the sequence of everything left in the list; the
+     look only lifts call / WhatsApp / email into the round buttons under the
+     bio and Save contact into the corner chip, as the design has them. */
+  function renderLook(look) {
+    var acts = P.order.filter(function (k) { return ACT[k] && href(k); });
+    var html = acts.length ? '<nav class="acts">' + acts.map(function (k) {
+      var h = href(k);
+      return '<a href="' + esc(h) + '"' + (k === "wa" ? ' target="_blank" rel="noopener"' : "") +
+             ' aria-label="' + ACT_LABEL[k] + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + ACT[k] + "</svg></a>";
+    }).join("") + "</nav>" : "";
+
+    html += P.order.map(function (k) {
+      if (ACT[k] || k === "vcard") return "";
+      if (k === "socials") {
+        var s = liveSocials();
+        if (!s.length) return "";
+        return '<div class="sgrid">' + s.map(function (x) {
+          var u = esc(SOCIAL_URL[x](P.links[x])), sub = subOf(P.links[x]);
+          return look === "pill"
+            ? '<a class="pill" href="' + u + '" target="_blank" rel="noopener"><span class="disc' + (x === "snapchat" ? " disc--snap" : "") + '">' +
+              brandIc(x) + '</span><span class="txt"><b>' + SOC_NAME[x] + "</b><small>" + esc(sub) + "</small></span></a>"
+            : '<a class="tile" href="' + u + '" target="_blank" rel="noopener" aria-label="' + SOC_NAME[x] + '">' + monoIc(x) +
+              '<span class="tx"><b>' + SOC_NAME[x] + "</b>" + handleTag(sub, WIDE.matches ? 15 : 0) + "</span></a>";
+        }).join("") + "</div>";
+      }
+      var h = href(k); if (!h) return "";
+      var c = custom(k);
+      var label = LABEL[k] || (c ? c.title : "");
+      var sub = c ? c.url.replace(/^https?:\/\//, "") : P.links[k];
+      var ico = '<svg class="ro" viewBox="0 0 20 20" aria-hidden="true">' + (ROWIC[LABEL[k] ? k : "custom"] || ROWIC.custom) + "</svg>";
+      var share = '<button class="rowshare" type="button" data-u="' + esc(h) + '" data-l="' + esc(label) +
+                  '" aria-label="Share ' + esc(label) + '">' + SHARE_ICON + "</button>";
+      return look === "pill"
+        ? '<div class="pill"><a class="disc" href="' + esc(h) + '" target="_blank" rel="noopener" aria-hidden="true" tabindex="-1">' + ico +
+          '</a><a class="txt" href="' + esc(h) + '" target="_blank" rel="noopener"><b>' + esc(label) +
+          "</b><small>" + esc(sub) + "</small></a>" + share + "</div>"
+        : '<div class="tile tile--row"><a href="' + esc(h) + '" target="_blank" rel="noopener">' + ico +
+          '<span class="tx"><b>' + esc(label) + "</b><small>" + esc(sub) + "</small></span></a>" + share + "</div>";
+    }).join("");
+    return html;
+  }
+
+  function applyTheme(t) {
+    var pg = document.querySelector(".pg");
+    pg.dataset.theme = t;
+    if (LOOK[t]) pg.dataset.look = LOOK[t]; else delete pg.dataset.look;
+    layoutDeck(LOOK[t] === "deck");
+  }
+
+  /* Leaf (2d) draws the top of the page as its own white card — share,
+     photo, name, link, bio, the three buttons and Add Contact — with the
+     socials and links outside it on the green. The markup is shared by every
+     theme, so for Leaf those elements are moved into a .card4 wrapper, and
+     moved back out for any other theme. Ids stay, so render() is unchanged. */
+  function layoutDeck(on) {
+    var card = document.querySelector(".pg .card"), w = $("card4");
+    if (on && !w) {
+      w = document.createElement("div");
+      w.className = "card4"; w.id = "card4";
+      card.insertBefore(w, $("shareBtn"));
+      ["shareBtn", "avatar", "name", "handle", "bio"].forEach(function (id) { w.appendChild($(id)); });
+      var top = document.createElement("div");
+      top.className = "deckTop"; top.id = "deckTop";
+      w.appendChild(top);
+    } else if (!on && w) {
+      ["shareBtn", "avatar", "name", "handle", "bio"].forEach(function (id) { card.insertBefore($(id), w); });
+      card.insertBefore($("addBtn"), $("avatar"));
+      card.removeChild(w);
+    }
+  }
+
+  /* ══ 3c. LEAF — the deck as a wheel ═════════════════════════════════
+     (Garry, 2026-10-05: "like picking a year on an iPhone".) One float,
+     DK.pos, is the deck's position: card i sits at t = i - pos round the
+     ring. t = 0 is up front; cards already seen (t < 0) stack peeking above;
+     the next one (t = 1) waits below, unseen. Thumb or wheel UP rolls pos
+     forward — the front card rises into the stack and the next rises from
+     below. On release a flick carries on and settles on the nearest card.
+     The deck is rebuilt on every render (the preview re-renders per
+     keystroke), so DK keeps the position and the handlers are wired once. */
+  var DK = { pos: 0, anim: null, shown: -1 };
+  function deckCards() { return Array.prototype.slice.call($("list").querySelectorAll(".dk")); }
+  function mixHex(a, b, k) {
+    var x = parseInt(a.slice(1), 16), y = parseInt(b.slice(1), 16);
+    function ch(s) { return Math.round(((x >> s) & 255) + ((((y >> s) & 255) - ((x >> s) & 255)) * k)); }
+    return "rgb(" + ch(16) + "," + ch(8) + "," + ch(0) + ")";
+  }
+  function deckPaint() {
+    var cards = deckCards(), n = cards.length, deck = $("list").querySelector(".deck");
+    if (!n || !deck) { return; }
+    var cs = getComputedStyle(deck);
+    var pk1 = (cs.getPropertyValue("--pk1") || "#E8EFD8").trim(), pk2 = (cs.getPropertyValue("--pk2") || "#C2D693").trim();
+    var small = deck.clientWidth < 480;
+    var Y1 = small ? 34 : 46, Y2 = small ? 62 : 84, YB = small ? 40 : 54;
+    cards.forEach(function (c, i) {
+      var t = i - DK.pos;
+      t = ((t % n) + n) % n; if (t > n / 2) { t -= n; }
+      var y, s, o = 1, bg = "#FFFFFF", a = Math.abs(t);
+      if (t >= 0) { var k = Math.min(t, 1); y = YB * k; s = 1 - .14 * k; o = 1 - k; }
+      else if (a <= 1) { y = -Y1 * a; s = 1 - .08 * a; bg = mixHex("#FFFFFF", pk1, a); }
+      else if (a <= 2) { y = -Y1 - (Y2 - Y1) * (a - 1); s = .92 - .10 * (a - 1); bg = mixHex(pk1, pk2, a - 1); }
+      else { y = -Y2; s = .82; bg = pk2; o = Math.max(0, 1 - (a - 2)); }
+      c.style.transform = "translateY(" + y.toFixed(2) + "px) scale(" + s.toFixed(4) + ")";
+      c.style.opacity = o.toFixed(3);
+      c.style.backgroundColor = bg;
+      c.style.setProperty("--c", Math.max(0, 1 - a * 2).toFixed(3));
+      c.style.zIndex = String(Math.round(t >= 0 ? 100 - t * 20 : 85 - a * 20));
+      c.style.pointerEvents = a < .5 ? "auto" : "none";
+      c.tabIndex = a < .5 ? 0 : -1;
+    });
+    var at = ((Math.round(DK.pos) % n) + n) % n, dots = $("list").querySelectorAll(".strip button");
+    Array.prototype.forEach.call(dots, function (b, i) { b.setAttribute("aria-current", String(i === at)); });
+    if (at !== DK.shown) {
+      DK.shown = at;
+      var on = dots[at], row = on && on.parentNode;
+      if (row && row.scrollWidth > row.clientWidth) {
+        row.scrollTo({ left: on.offsetLeft - row.clientWidth / 2 + on.offsetWidth / 2, behavior: "smooth" });
+      }
+    }
+  }
+  function deckStop() { if (DK.anim) { cancelAnimationFrame(DK.anim); DK.anim = null; } }
+  /* ease to a whole card — easeOutCubic, longer for longer trips */
+  function deckGlide(to) {
+    deckStop();
+    var from = DK.pos, d = to - from;
+    if (Math.abs(d) < .001) { DK.pos = to; deckPaint(); return; }
+    var dur = Math.min(700, 320 + Math.abs(d) * 120), t0 = performance.now();
+    (function step(now) {
+      var k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      DK.pos = from + d * e; deckPaint();
+      DK.anim = k < 1 ? requestAnimationFrame(step) : null;
+    })(t0);
+  }
+  function wireDeck() {
+    var y0 = null, p0 = 0, moved = false, lastY = 0, lastT = 0, vel = 0, deck = null, settle = null;
+    function stepPx() { return (deck ? deck.clientHeight : 216) * .62; }
+    document.addEventListener("pointerdown", function (e) {
+      deck = e.target.closest && e.target.closest(".deck"); if (!deck) { return; }
+      deckStop(); y0 = lastY = e.clientY; p0 = DK.pos; lastT = performance.now(); vel = 0; moved = false;
+      deck.classList.add("dragging");
+    });
+    window.addEventListener("pointermove", function (e) {
+      if (y0 === null) { return; }
+      var now = performance.now(), dy = e.clientY - y0;
+      if (Math.abs(dy) > 5) { moved = true; }
+      vel = .8 * ((e.clientY - lastY) / Math.max(1, now - lastT)) + .2 * vel;
+      lastY = e.clientY; lastT = now;
+      DK.pos = p0 - dy / stepPx(); deckPaint();
+    });
+    function release() {
+      if (y0 === null) { return; }
+      y0 = null; if (deck) { deck.classList.remove("dragging"); }
+      if (performance.now() - lastT > 90) { vel = 0; }   /* held still: no flick */
+      deckGlide(Math.round(DK.pos - (vel * 180) / stepPx()));
+    }
+    window.addEventListener("pointerup", release);
+    window.addEventListener("pointercancel", release);
+    /* a drag must not also open the profile */
+    document.addEventListener("click", function (e) {
+      if (moved && e.target.closest && e.target.closest(".deck")) { e.preventDefault(); moved = false; }
+    }, true);
+    $("list").addEventListener("click", function (e) {
+      var b = e.target.closest(".strip button"); if (!b) { return; }
+      var i = +b.dataset.i, n = deckCards().length;
+      deckGlide(i + n * Math.round((DK.pos - i) / n));
+    });
+    /* wheel / trackpad over the deck rolls it; anywhere else scrolls the page */
+    document.addEventListener("wheel", function (e) {
+      if (!e.target.closest || !e.target.closest(".deck")) { return; }
+      e.preventDefault(); deckStop();
+      var d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      if (e.deltaMode === 1) { d *= 32; }
+      DK.pos += d / 160; deckPaint();
+      clearTimeout(settle);
+      settle = setTimeout(function () { deckGlide(Math.round(DK.pos)); }, 120);
+    }, { passive: false });
+    document.addEventListener("keydown", function (e) {
+      if (!e.target.closest || !e.target.closest(".deck")) { return; }
+      if (e.key === "ArrowDown" || e.key === "ArrowRight") { e.preventDefault(); deckGlide(Math.round(DK.pos) + 1); }
+      if (e.key === "ArrowUp" || e.key === "ArrowLeft") { e.preventDefault(); deckGlide(Math.round(DK.pos) - 1); }
+    });
+    window.addEventListener("resize", deckPaint);
+  }
+
+  /* Leaf's page: the three buttons and Add Contact go in the top card, the
+     deck, its strip and the link rows below it on the green. */
+  function renderDeck() {
+    var acts = P.order.filter(function (k) { return ACT[k] && href(k); });
+    var top = acts.length ? '<nav class="acts">' + acts.map(function (k) {
+      return '<a href="' + esc(href(k)) + '"' + (k === "wa" ? ' target="_blank" rel="noopener"' : "") +
+             ' aria-label="' + ACT_LABEL[k] + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + ACT[k] + "</svg></a>";
+    }).join("") + "</nav>" : "";
+    if (P.order.indexOf("vcard") > -1) {
+      top += '<button class="add4" type="button" id="add4">Add Contact</button>';
+    }
+    $("deckTop").innerHTML = top;
+    var a4 = $("add4"); if (a4) { a4.addEventListener("click", saveContact); }
+
+    var html = "";
+    P.order.forEach(function (k) {
+      if (ACT[k] || k === "vcard") { return; }
+      if (k === "socials") {
+        var s = liveSocials();
+        if (!s.length) { return; }
+        html += '<div class="deck" tabindex="0" aria-roledescription="carousel" aria-label="Social profiles">' + s.map(function (x, i) {
+          return '<a class="dk" data-i="' + i + '" href="' + esc(SOCIAL_URL[x](P.links[x])) + '" target="_blank" rel="noopener" draggable="false">' +
+                 /* Snapchat's ghost in its own yellow, outlined */
+                 brandIc(x).replace('fill="#fff" stroke="#000"', 'fill="#FFFC00" stroke="#000"') +
+                 '<span class="tx4"><b>' + SOC_NAME[x] + "</b><small>" + esc(subOf(P.links[x])) + "</small></span></a>";
+        }).join("") + "</div>" +
+        /* on the black strip every mark is white */
+        '<div class="strip" role="tablist" aria-label="Choose a social profile">' + s.map(function (x, i) {
+          return '<button type="button" data-i="' + i + '" aria-label="' + SOC_NAME[x] + '">' + monoIc(x) + "</button>";
+        }).join("") + "</div>";
+        return;
+      }
+      var h = href(k); if (!h) { return; }
+      var c = custom(k), label = LABEL[k] || (c ? c.title : "");
+      var sub = c ? c.url.replace(/^https?:\/\//, "") : P.links[k];
+      var ico = '<svg class="ro" viewBox="0 0 20 20" aria-hidden="true">' + (ROWIC[LABEL[k] ? k : "custom"] || ROWIC.custom) + "</svg>";
+      html += '<div class="lrow"><a href="' + esc(h) + '" target="_blank" rel="noopener">' + ico +
+        '<span class="tx4"><b>' + esc(label) + "</b><small>" + esc(sub) + "</small></span></a>" +
+        '<button class="rowshare" type="button" data-u="' + esc(h) + '" data-l="' + esc(label) + '" aria-label="Share ' + esc(label) + '">' + SHARE_ICON + "</button></div>";
+    });
+    /* consecutive link rows sit in one grid so they share the gap */
+    html = html.replace(/((?:<div class="lrow">[\s\S]*?<\/button><\/div>)+)/g, '<div class="links4">$1</div>');
+    $("list").innerHTML = html;
+    deckPaint();
+  }
+
+
+  /* ══ 3d. SOFT and PHOTO — the whole page, written into #list ══════════
+     Both lay out everything themselves (CSS 2e hides the shared top
+     elements). Their buttons say what they do with data-act; one handler,
+     wired once in wireSheets(), runs them. */
+  function svgAct(k) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + ACT[k] + "</svg>"; }
+  var SHARE_GLYPH = '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 12.6V3.4m0 0L7.1 6.3M10 3.4l2.9 2.9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 11v5.1c0 .6.5 1.1 1.1 1.1h7.8c.6 0 1.1-.5 1.1-1.1V11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+  var CP_GLYPH = '<svg class="cp" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="5.4" y="5.4" width="8.2" height="8.2" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M10.6 5.4V4.4a2 2 0 0 0-2-2H4.4a2 2 0 0 0-2 2v4.2a2 2 0 0 0 2 2h1" stroke="currentColor" stroke-width="1.5"/></svg><svg class="tick" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.4 6.5 12 13 4.6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var FACE_SVG = '<svg viewBox="0 0 96 96" aria-hidden="true"><rect width="96" height="96" fill="#E7E9EE"/><circle cx="48" cy="38" r="16" fill="#B3B8C2"/><path d="M16 96c4-19 17-28 32-28s28 9 32 28z" fill="#B3B8C2"/></svg>';
+  function hasPhoto() { return P.photo && !/^data:image\/svg/.test(P.photo); }
+  function handleBtn() {
+    return '<button class="handle" type="button" data-act="copy" aria-label="Copy this page\'s link"><span>codemarca.com/' + esc(P.handle) + "</span>" + CP_GLYPH + "</button>";
+  }
+  function shareBtn() { return '<button class="share" type="button" data-act="share" aria-label="Share this page">' + SHARE_GLYPH + "</button>"; }
+  /* a social as an app icon: Snapchat on its yellow disc, Instagram on its squircle */
+  function appIc(k) {
+    if (k === "snapchat") {
+      return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#FFFC00"/>' +
+             '<path d="' + SI.snapchat + '" fill="#fff" stroke="#000" stroke-width="1.2" stroke-linejoin="round" transform="translate(4.6 4.6) scale(.62)"/></svg>';
+    }
+    if (k === "instagram") {
+      return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="url(#igGrad)"/>' +
+             '<path d="' + SI.instagram + '" fill="#fff" transform="translate(4.8 4.8) scale(.6)"/></svg>';
+    }
+    return brandIc(k);
+  }
+  function prettyTel(v) {
+    var d = String(v).replace(/[^0-9]/g, "").slice(-10);
+    return d.length === 10 ? "+91 " + d.slice(0, 5) + " " + d.slice(5) : String(v);
+  }
+  /* the link rows, in the owner's order, grouped into one card per run */
+  function linkRows(itemCls, txCls) {
+    var out = "";
+    P.order.forEach(function (k) {
+      if (ACT[k] || k === "vcard" || k === "socials") { out += "|"; return; }
+      var h = href(k); if (!h) { return; }
+      var c = custom(k), label = LABEL[k] || (c ? c.title : "");
+      var sub = c ? c.url.replace(/^https?:\/\//, "") : P.links[k];
+      var ico = '<svg class="ro" viewBox="0 0 20 20" aria-hidden="true">' + (ROWIC[LABEL[k] ? k : "custom"] || ROWIC.custom) + "</svg>";
+      out += '<div class="' + itemCls + '"><a href="' + esc(h) + '" target="_blank" rel="noopener">' + ico +
+             '<span class="' + txCls + '"><b>' + esc(label) + "</b><small>" + esc(sub) + "</small></span></a>" +
+             '<button class="rowshare" type="button" data-u="' + esc(h) + '" data-l="' + esc(label) + '" aria-label="Share ' + esc(label) + '">' + SHARE_ICON + "</button></div>";
+    });
+    return out;
+  }
+  function wrapRuns(rows, cls, label) {
+    return rows.split("|").filter(Boolean).map(function (run) {
+      return '<section class="' + cls + '" aria-label="' + label + '">' + run + "</section>";
+    }).join("");
+  }
+
+  function renderSoft() {
+    var soc = liveSocials();
+    var tel = href("call"), wa = href("wa"), mail = href("email");
+    var WA = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#25D366"/><path d="' + SI.whatsapp + '" fill="#fff" transform="translate(5 5) scale(.583)"/></svg>';
+    var DL = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.5v11m0 0-4.2-4.2M12 14.5l4.2-4.2M4.5 15.5v3.2c0 .7.6 1.3 1.3 1.3h12.4c.7 0 1.3-.6 1.3-1.3v-3.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    var label = tel && wa ? "Call / WhatsApp" : tel ? "Call" : "WhatsApp";
+    var pill = (tel || wa) ? '<div class="cw3">' +
+        (wa ? '<a class="wa3" href="' + esc(wa) + '" target="_blank" rel="noopener" aria-label="WhatsApp">' + WA + "</a>" : "") +
+        (tel ? '<a class="tel3" href="' + esc(tel) + '" aria-label="Call">' + svgAct("call") + "</a>" : "") +
+        '<a class="num3" href="' + esc(tel || wa) + '"' + (tel ? "" : ' target="_blank" rel="noopener"') + "><b>" + label + "</b><small>" + esc(prettyTel(P.phone || P.wa)) + "</small></a></div>" : "";
+    var em = mail ? '<a class="em3" href="' + esc(mail) + '" aria-label="Email">' + svgAct("email") + "</a>" : "";
+    var html = '<div class="top3">' + shareBtn() + "</div>" +
+      '<div class="c3">' +
+        (P.name ? '<h1 class="name">' + esc(P.name) + "</h1>" : "") + handleBtn() +
+        '<figure class="ph3" style="margin:28px 0 0">' + (hasPhoto() ? '<img src="' + esc(P.photo) + '" alt="">' : FACE_SVG) + "</figure>" +
+        (P.bio ? '<p class="bio">' + esc(P.bio) + "</p>" : "") +
+        (pill || em ? '<div class="ct3">' + pill + em + "</div>" : "") +
+      "</div>";
+    if (P.order.indexOf("vcard") > -1) { html += '<button class="save3" type="button" data-act="save">' + DL + "Save Contact</button>"; }
+    var rows = linkRows("it3", "tx3"), socAt = P.order.indexOf("socials");
+    var socHtml = soc.length ? '<nav class="soc3" aria-label="Social profiles">' + soc.map(function (k) {
+      return '<a href="' + esc(SOCIAL_URL[k](P.links[k])) + '" target="_blank" rel="noopener" aria-label="' + SOC_NAME[k] + '" title="' + SOC_NAME[k] + '">' + appIc(k) + "</a>";
+    }).join("") + "</nav>" : "";
+    /* socials and link runs keep the owner's order */
+    var parts = [];
+    P.order.forEach(function (k) { if (k === "socials") { parts.push("S"); } else if (!ACT[k] && k !== "vcard" && href(k)) { parts.push("L"); } });
+    var runs = rows.split("|").filter(Boolean), ri = 0, lastL = false;
+    parts.forEach(function (x) {
+      if (x === "S") { html += socHtml; lastL = false; }
+      else if (!lastL) { if (runs[ri]) { html += '<section class="lk3" aria-label="Links">' + runs[ri] + "</section>"; } ri++; lastL = true; }
+    });
+    return html;
+  }
+
+  function renderPhoto() {
+    var soc = liveSocials();
+    var acts = P.order.filter(function (k) { return ACT[k] && href(k); });
+    var html = '<div class="card5">' +
+      '<div class="photo5">' + (hasPhoto() ? '<img src="' + esc(P.photo) + '" alt="">' :
+        '<span class="face5"><svg viewBox="0 0 96 80" aria-hidden="true"><circle cx="48" cy="30" r="18" fill="currentColor"/><path d="M10 80c4-21 19-31 38-31s34 10 38 31z" fill="currentColor"/></svg></span>') +
+        shareBtn() + "</div>" +
+      '<div class="body5">' + (P.name ? '<h1 class="name">' + esc(P.name) + "</h1>" : "") + handleBtn() +
+        (P.bio ? '<p class="bio">' + esc(P.bio) + "</p>" : "") +
+        ((acts.length || P.order.indexOf("vcard") > -1) ? '<div class="row5"><nav class="acts">' + acts.map(function (k) {
+          return '<a href="' + esc(href(k)) + '"' + (k === "wa" ? ' target="_blank" rel="noopener"' : "") + ' aria-label="' + ACT_LABEL[k] + '">' + svgAct(k) + "</a>";
+        }).join("") + "</nav>" + (P.order.indexOf("vcard") > -1 ? '<button class="add5" type="button" data-act="save">Add Contact</button>' : "") + "</div>" : "") +
+      "</div></div>";
+    var socHtml = soc.length ? '<section class="grp" aria-label="Social profiles">' + soc.map(function (k) {
+      return '<div class="it"><a href="' + esc(SOCIAL_URL[k](P.links[k])) + '" target="_blank" rel="noopener">' +
+             brandIc(k).replace('fill="#fff" stroke="#000"', 'fill="#FFFC00" stroke="#000"') +
+             '<span class="tx5"><b>' + SOC_NAME[k] + "</b><small>" + esc(subOf(P.links[k])) + "</small></span></a></div>";
+    }).join("") + "</section>" : "";
+    var runs = linkRows("it", "tx5").split("|").filter(Boolean), ri = 0, lastL = false;
+    P.order.forEach(function (k) {
+      if (k === "socials") { html += socHtml; lastL = false; }
+      else if (!ACT[k] && k !== "vcard" && href(k)) {
+        if (!lastL) { if (runs[ri]) { html += '<section class="grp" aria-label="Links">' + runs[ri] + "</section>"; } ri++; lastL = true; }
+      }
+    });
+    return html;
+  }
+  /* one handler for both: share the page, copy the link, save the contact */
+  function wireLookActs() {
+    $("list").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-act]"); if (!b) { return; }
+      var act = b.dataset.act;
+      if (act === "share") { $("shareBtn").click(); }
+      else if (act === "save") { saveContact(); }
+      else if (act === "copy") {
+        copy("https://codemarca.com/" + P.handle).then(function () {
+          b.dataset.copied = "true";
+          setTimeout(function () { b.dataset.copied = "false"; }, 1500);
+        });
+      }
+    });
+  }
+
   /* ══ 4. RENDER ═══════════════════════════════════════════════════════
      Straight down the order array. No sorting, no promoting, no special
      case for the first item — order alone is the hierarchy. */
   function render() {
-    $("avatar").innerHTML = P.photo
+    /* The glass looks draw a silhouette when there is no photo. The demo
+       state's stand-in portrait (an inline violet SVG) counts as no photo —
+       a real upload is never an inline SVG. */
+    var lookNow = document.querySelector(".pg").dataset.look;
+    var noPhoto = !P.photo || (lookNow && /^data:image\/svg/.test(P.photo));
+    $("avatar").innerHTML = lookNow && noPhoto
+      ? '<span class="ph"><svg viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="38" r="16" fill="currentColor" fill-opacity=".92"/>' +
+        '<path d="M16 96c4-19 17-28 32-28s28 9 32 28z" fill="currentColor" fill-opacity=".92"/></svg></span>'
+      : P.photo
       ? '<img src="' + esc(P.photo) + '" width="88" height="88" alt="">'
-      : esc((P.name.trim()[0] || P.handle[0] || "?").toUpperCase());
+      /* the flat themes: a light cool-grey silhouette, not the initial on violet */
+      : '<svg class="face" viewBox="0 0 96 96" aria-hidden="true"><rect width="96" height="96" fill="#E7E9EE"/><circle cx="48" cy="38" r="16" fill="#B3B8C2"/><path d="M16 96c4-19 17-28 32-28s28 9 32 28z" fill="#B3B8C2"/></svg>';
     $("name").textContent = P.name;
     $("handleTxt").textContent = "codemarca.com/" + P.handle;
     $("bio").textContent = P.bio;
     $("bio").hidden = !P.bio;
     document.title = P.name + " — Codemarca";
 
-    var html = P.order.map(function (k) {
+    var look = document.querySelector(".pg").dataset.look;
+    $("addBtn").hidden = !(look && P.order.indexOf("vcard") > -1);
+    if (look === "deck") {
+      $("addBtn").hidden = true;
+      renderDeck();
+      return;
+    }
+    if (look === "soft" || look === "photo") {
+      $("list").innerHTML = look === "soft" ? renderSoft() : renderPhoto();
+      return;
+    }
+    if (look) {
+      $("list").innerHTML = renderLook(look) || (document.querySelector(".pg").dataset.bare === "1"
+        ? '<p class="bare">This page is still being set up.</p>' : "");
+      markCut();
+      return;
+    }
+
+    /* Call, WhatsApp, Email and Save contact always lead, whatever order the
+       payload carries — the editor no longer lets them move (2026-10-05) */
+    var LEAD = ["call", "wa", "email", "vcard"];
+    var ord = LEAD.filter(function (k) { return P.order.indexOf(k) > -1; })
+                  .concat(P.order.filter(function (k) { return LEAD.indexOf(k) < 0; }));
+    var html = ord.map(function (k) {
       if (k === "socials") {
         var s = liveSocials();
         if (!s.length) return "";
@@ -1185,6 +1989,13 @@ input:-webkit-autofill:active{
   }
 
   function wireSheets() {
+    wireDeck();
+    wireLookActs();
+    $("addBtn").addEventListener("click", saveContact);
+    window.addEventListener("resize", function () { if (document.querySelector(".pg").dataset.look) markCut(); });
+    if (WIDE.addEventListener) WIDE.addEventListener("change", function () { if (document.querySelector(".pg").dataset.look) render(); });
+    if (document.fonts) document.fonts.ready.then(function () { if (document.querySelector(".pg").dataset.look) markCut(); });
+
     $("shareBtn").addEventListener("click", function () {
       openShare(pageUrl(), "Share " + (P.name.split(" ")[0] || "this page"),
                 "codemarca.com/" + P.handle);
@@ -1316,11 +2127,11 @@ input:-webkit-autofill:active{
   if (P.name === "Gurdeep Singh" || P.name === "Garry Singh" || P.name === "Your Name" || P.name === "User") {
     P.name = P.handle || "My Page";
   }
-  if (P.phone === "9876543210" && (!customAcc || !customAcc.profile || !customAcc.profile.phone)) {
+  if ((P.phone === "9876543210" || P.phone === "+91 98765 43210" || P.phone.replace(/\D/g,"") === "9876543210") && (!customAcc || !customAcc.profile || !customAcc.profile.phone)) {
     P.phone = "";
     P.wa = "";
   }
-  if (P.email === "hello@gurdeep.in" && (!customAcc || !customAcc.profile || !customAcc.profile.email)) {
+  if ((P.email === "hello@gurdeep.in" || P.email === "garry@example.com") && (!customAcc || !customAcc.profile || !customAcc.profile.email)) {
     P.email = "";
   }
 
@@ -1353,8 +2164,37 @@ input:-webkit-autofill:active{
     });
   }
 
-  pg.dataset.theme = P.theme;
+  /* A preview frame starts EMPTY, not on the demo page: the editor fills it
+     a moment later, and until then it must show only what the person has
+     typed — nothing (Garry, 2026-10-03). */
+  if (q.get("preview") === "1") {
+    P.name = ""; P.bio = ""; P.photo = null;
+    P.phone = ""; P.wa = ""; P.email = "";
+    P.links = {}; P.customs = []; P.socialOrder = []; P.order = [];
+  }
+
+  applyTheme(P.theme);
   render();
+
+  /* ?preview=1 — the dashboard's live preview (Garry + Gurdeep, 2026-09-30).
+     The Profile tab posts its UNSAVED state here on every change, so the
+     phone beside the editor shows the page before it is saved. Same origin
+     only; the payload is the same shape as P. */
+  if (q.get("preview") === "1") {
+    window.addEventListener("message", function (e) {
+      if ((e.origin !== location.origin && location.protocol !== "file:") || !e.data || e.data.type !== "cm-preview") { return; }
+      var d = e.data.page, k;
+      for (k in d) { if (Object.prototype.hasOwnProperty.call(d, k)) { P[k] = d[k]; } }
+      applyTheme(P.theme);
+      delete pg.dataset.bare;
+      render();
+    });
+    /* opened from disk (file://) every page is its own opaque origin and a
+       same-origin target never arrives — so "*" there, same-origin on a host */
+    if (window.parent !== window) {
+      try { window.parent.postMessage({ type: "cm-preview-ready" }, (location.protocol === "file:" ? "*" : location.origin)); } catch (err) {}
+    }
+  }
 
   /* an unclaimed code has no owner yet, so it must not carry one in the
      tab title either — on the real site the payload simply does not exist */
@@ -1365,15 +2205,17 @@ input:-webkit-autofill:active{
   else recordScan();
 
   /* Review tool — delete this block and the .rev markup before launch. */
-  var THEMES = ["light", "dark", "violet", "cream", "gradient",
-                "glass-ember", "glass-violet"];
+  var THEMES = ["light", "glass-bronze", "leaf", "leaf-blue", "leaf-orange", "leaf-violet",
+                "glass-copper", "soft", "soft-dark", "photo", "photo-dark"];
   $("revTheme").innerHTML = THEMES.map(function (t) {
     return '<button class="rev__sw" type="button" data-t="' + t + '" aria-pressed="' +
            (t === P.theme) + '" aria-label="' + t + ' theme"></button>';
   }).join("");
   $("revTheme").addEventListener("click", function (e) {
     var b = e.target.closest(".rev__sw"); if (!b) return;
-    pg.dataset.theme = b.dataset.t;
+    P.theme = b.dataset.t;
+    applyTheme(P.theme);
+    render();
     Array.prototype.forEach.call($("revTheme").children, function (x) {
       x.setAttribute("aria-pressed", String(x === b));
     });
