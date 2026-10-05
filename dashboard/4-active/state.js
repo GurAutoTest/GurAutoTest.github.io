@@ -39,34 +39,20 @@ window.CM_FLOW = {
   ]
 };
 
-var USER = { name: "Garry Singh", email: "garry@example.com", phone: "+91 98765 43210", joined: "12 Aug 2026" };
+var USER = { name: "", email: "", phone: "", joined: "Recently" };
 
-/* THE PAGE, IN ONE SHAPE — Garry, 2026-09-24.
-   This is the builder's state, the API's response and what the Profile tab
-   loads: the same object, so Home's checklist, the editor and the live page
-   can never disagree about what has been filled in. The editor used to keep
-   its own hardcoded copy, which is how Home came to say "add your links"
-   over a page that already had six. */
+/* THE PAGE, IN ONE SHAPE */
 var PROFILE = {
-  live: true, theme: "violet", updated: "4 days ago",
-  handle: "garry", name: "Garry Singh", title: "Garry Singh",
-  bio: "Designing things people actually use. Usually somewhere near a coffee.",
-  /* a stand-in portrait, inline so the prototype never 404s */
-  photo: "data:image/svg+xml;utf8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 96 96\'%3E%3Cdefs%3E%3ClinearGradient id=\'g\' x1=\'0\' y1=\'0\' x2=\'1\' y2=\'1\'%3E%3Cstop offset=\'0\' stop-color=\'%23A171F4\'/%3E%3Cstop offset=\'1\' stop-color=\'%236E27E6\'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=\'96\' height=\'96\' fill=\'url(%23g)\'/%3E%3Ccircle cx=\'48\' cy=\'38\' r=\'16\' fill=\'%23fff\' fill-opacity=\'.92\'/%3E%3Cpath d=\'M16 96c4-19 17-28 32-28s28 9 32 28z\' fill=\'%23fff\' fill-opacity=\'.92\'/%3E%3C/svg%3E",
-  phone: "9876543210", phoneOn: true,
-  waSame: false, wa: "9876501234", waOn: true,
-  email: "garry@example.com", emailOn: true,
-  links: {
-    instagram: { v: "@garry.designs",              on: true  },
-    linkedin:  { v: "linkedin.com/in/garrysingh",  on: true  },
-    x:         { v: "@garrymakes",                 on: true  },
-    threads:   { v: "@garry.designs",              on: true  },
-    website:   { v: "garry.design",                on: true  },
-    spotify:   { v: "open.spotify.com/user/garry", on: false }
-  },
+  live: true, theme: "light", updated: "just now",
+  handle: "", name: "", title: "",
+  bio: "",
+  photo: null,
+  phone: "", phoneOn: true,
+  waSame: true, wa: "", waOn: true,
+  email: "", emailOn: true,
+  links: {},
   customs: [],
   order: ["call","wa","email","vcard","socials","website","directions","review"],
-  /* the icon row's own order */
   socialOrder: ["instagram","linkedin","x","threads","spotify"]
 };
 
@@ -127,7 +113,7 @@ var GIFTS = [
 
 function referrals(counted, claimedTee) {
   return {
-    link: "codemarca.com/r/garry",
+    link: "",
     goal: 50,
     counted: counted,
     waiting: 6,

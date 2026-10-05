@@ -162,6 +162,28 @@
   if (!SAVED.name && a.user && a.user.name && a.user.name !== "Garry Singh" && a.user.name !== "Garry") {
     SAVED.name = a.user.name;
   }
+  if (SAVED.phone === "9876543210" || SAVED.phone === "98765 43210") {
+    SAVED.phone = (a.user && a.user.phone && a.user.phone.indexOf("9876543210") === -1 && a.user.phone.indexOf("98765 43210") === -1)
+      ? a.user.phone.replace(/\D/g, "")
+      : "";
+  }
+  if (SAVED.wa === "9876501234" || SAVED.wa === "9876543210") {
+    SAVED.wa = "";
+  }
+  if (!SAVED.wa) {
+    SAVED.waSame = true;
+  }
+  if (SAVED.email === "garry@example.com" || SAVED.email === "you@example.com" || SAVED.email === "garry@gmail.com") {
+    SAVED.email = (a.user && a.user.email && a.user.email !== "garry@example.com" && a.user.email !== "you@example.com")
+      ? a.user.email
+      : "";
+  }
+  if (!SAVED.email && a.user && a.user.email && a.user.email !== "garry@example.com" && a.user.email !== "you@example.com") {
+    SAVED.email = a.user.email;
+  }
+  if (SAVED.bio === "Designing things people actually use. Usually somewhere near a coffee.") {
+    SAVED.bio = "";
+  }
 
   function merge(base, extra) {
     var out = JSON.parse(JSON.stringify(base)), k;

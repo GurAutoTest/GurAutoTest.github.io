@@ -36,21 +36,14 @@ window.CM_FLOW = {
    its own hardcoded copy, which is how Home came to say "add your links"
    over a page that already had six. */
 var PROFILE = {
-  live: true, theme: "violet", updated: "4 days ago",
-  handle: "garry", name: "Garry Singh", title: "Garry Singh",
-  bio: "Designing things people actually use. Usually somewhere near a coffee.",
+  live: true, theme: "light", updated: "just now",
+  handle: "", name: "", title: "",
+  bio: "",
   photo: null,
-  phone: "9876543210", phoneOn: true,
-  waSame: false, wa: "9876501234", waOn: true,
-  email: "garry@example.com", emailOn: true,
-  links: {
-    instagram: { v: "@garry.designs",              on: true  },
-    linkedin:  { v: "linkedin.com/in/garrysingh",  on: true  },
-    x:         { v: "@garrymakes",                 on: true  },
-    threads:   { v: "@garry.designs",              on: true  },
-    website:   { v: "garry.design",                on: true  },
-    spotify:   { v: "open.spotify.com/user/garry", on: false }
-  },
+  phone: "", phoneOn: true,
+  waSame: true, wa: "", waOn: true,
+  email: "", emailOn: true,
+  links: {},
   customs: [],
   order: ["call","wa","email","vcard","socials","website","directions","review"],
   /* the icon row's own order */
@@ -85,27 +78,18 @@ window.CM_STATES = {
   /* walked out of onboarding a minute ago — the page is the news */
   fresh: {
     state: "fresh",
-    user: { name: "Garry Singh", email: "garry@example.com", phone: "+91 98765 43210", joined: "16 Sep 2026" },
-    /* out of the builder a minute ago, on "baaki baad mein": one number on
-       it, no photo and no links — the checklist's whole reason */
+    user: { name: "", email: "", phone: "", joined: "Recently" },
     profile: page({ updated: "just now", photo: null, bio: "",
                     links: {}, customs: [], waSame: true, wa: "", email: "", emailOn: true }),
     order: null,
     code: CODE,
     gift: null,
-    /* the invite link exists from day one — no pack needed to earn the tee */
-    referrals: { link: "codemarca.com/r/garry", goal: 50, counted: 0, waiting: 0 }
+    referrals: { link: "", goal: 50, counted: 0, waiting: 0 }
   },
 
-  /* live for a couple of weeks. The page is working; the pack is the ask,
-     and by now it can be asked with a number behind it. */
-  /* PACK ON THE WAY — Garry, 2026-09-29. Page done, free pack ordered, not
-     here yet. The QR already works — the page is live — so nothing on this
-     screen is a to-do; it is a parcel to wait for. Checkout lands here
-     (home.html?state=coming). Once delivered the account is 4-active. */
   coming: {
     state: "coming",
-    user: { name: "Garry Singh", email: "garry@example.com", phone: "+91 98765 43210", joined: "16 Sep 2026" },
+    user: { name: "", email: "", phone: "", joined: "Recently" },
     profile: page({ updated: "just now" }),
     order: COMING,
     orders: [COMING],
@@ -116,21 +100,18 @@ window.CM_STATES = {
             ] },
     gift: null,
     daysLeft: 5,
-    referrals: { link: "codemarca.com/r/garry", goal: 50, counted: 0, waiting: 0 }
+    referrals: { link: "", goal: 50, counted: 0, waiting: 0 }
   },
 
   settled: {
     state: "settled",
-    user: { name: "Garry Singh", email: "garry@example.com", phone: "+91 98765 43210", joined: "2 Sep 2026" },
-    profile: page({ updated: "5 days ago" }),
+    user: { name: "", email: "", phone: "", joined: "Recently" },
+    profile: page({ updated: "just now" }),
     order: null,
     code: CODE,
     gift: null,
-    /* link shares so far — the argument for the sticker writes itself:
-       you sent this link 31 times, a sticker sends it for you */
-    shares: 31,
-    /* a few friends in already, all without anyone ordering anything */
-    referrals: { link: "codemarca.com/r/garry", goal: 50, counted: 4, waiting: 2 }
+    shares: 0,
+    referrals: { link: "", goal: 50, counted: 0, waiting: 0 }
   }
 };
 

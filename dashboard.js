@@ -222,9 +222,22 @@
 
       acc.user.name = customName || customUsername || "My Account";
       acc.user.email = customEmail;
+
+      if (acc.profile.phone === "9876543210" || acc.profile.phone === "98765 43210") {
+        acc.profile.phone = rawPhone || "";
+      }
+      if (acc.profile.wa === "9876501234" || acc.profile.wa === "9876543210") {
+        acc.profile.wa = "";
+      }
+      if (acc.user.phone === "+91 98765 43210" || acc.user.phone === "+91 9876543210") {
+        acc.user.phone = rawPhone ? ("+91 " + rawPhone.replace(/\D/g, "")) : "";
+      }
       if (rawPhone) {
         acc.user.phone = "+91 " + rawPhone.replace(/\D/g, "");
-        if (!acc.profile.phone) acc.profile.phone = rawPhone.replace(/\D/g, "");
+        acc.profile.phone = rawPhone.replace(/\D/g, "");
+      } else if (!customAccount || !customAccount.profile || !customAccount.profile.phone) {
+        acc.profile.phone = "";
+        acc.user.phone = "";
       }
 
       try {
