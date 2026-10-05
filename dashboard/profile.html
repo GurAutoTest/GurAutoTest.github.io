@@ -1,0 +1,255 @@
+<title>Your page · Codemarca</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../dashboard.css">
+<link rel="stylesheet" href="../tab-profile.css">
+
+<!-- ==========================================================================
+     CODEMARCA — UNIFIED PROFILE / EDITOR
+     ========================================================================== -->
+
+<div class="app">
+  <div class="app__main">
+    <main class="view">
+
+      <!-- ══ EMPTY — when no page built yet ════════════════════════════════ -->
+      <section class="card" id="emptyProfile" data-flow="empty" hidden>
+        <div class="empty">
+          <span class="empty__ic" data-ic="user"></span>
+          <span class="empty__t">No page yet</span>
+          <p class="empty__p">This is the bit that does the work. Your name, your photo, and the links worth sharing — phone, WhatsApp, Instagram, UPI, whatever you actually hand out. Two minutes, and you have a link you can send anyone.</p>
+          <a class="btn btn--go" href="../onboarding.html" style="margin-top:var(--s-2)">Build my page</a>
+        </div>
+      </section>
+
+      <!-- ══ EDITOR ══════════════════════════════════════════════════════ -->
+
+      <header class="head" data-when="fresh settled coming active reorder tee">
+        <div class="head__row">
+          <div>
+            <h1>Your page</h1>
+            <p>Every change goes live the moment you save. Your stickers never
+               need reprinting — they point at you, not at a snapshot of
+               you.</p>
+          </div>
+        </div>
+      </header>
+
+      <!-- ══ YOU, LIVE ═══════════════════════════════════════════════════ -->
+
+      <section class="card card--dark me me--dark" data-when="fresh settled coming active reorder tee">
+        <span class="me__mark" id="meMark"></span>
+
+        <div class="me__top">
+          <span class="me__av" id="meAv">G</span>
+          <span class="me__who">
+            <span class="me__name" id="meName">Garry Singh</span>
+            <span class="me__live"><i></i>Live</span>
+          </span>
+          <button class="me__qr" type="button" id="meQr" aria-label="Show my QR full screen"></button>
+        </div>
+
+        <button class="me__link" type="button" id="meShare" aria-label="Share my page">
+          <span class="me__url"><span>codemarca.com/</span><b id="meHandle">garry</b></span>
+          <span class="me__share"><span data-ic-in="share"></span><span class="me__share-t">Share</span></span>
+        </button>
+
+        <div class="me__acts">
+          <button class="me__btn" type="button" id="meCopy"
+                  data-copy="https://codemarca.com/garry" data-copy-msg="Profile link copied">
+            <span data-ic-in="copy"></span>Copy link
+          </button>
+          <a class="me__btn" id="meView" href="../profile.html?view=owner&amp;handle=garry&amp;theme=violet"
+             target="_blank" rel="noopener"><span data-ic-in="eye"></span>View page</a>
+        </div>
+      </section>
+
+      <!-- ── BASICS ──────────────────────────────────────────────────────── -->
+
+      <section class="card" data-when="fresh settled coming active reorder tee">
+        <span class="card__title">Basics</span>
+
+        <div class="photo">
+          <div class="photo__disc" id="photoDisc">G</div>
+          <div class="photo__acts">
+            <label class="btn btn--ghost btn--sm">
+              <span data-ic-in="pen"></span>Change photo
+              <input type="file" id="photoInput" accept="image/*" hidden>
+            </label>
+            <button class="btn btn--quiet btn--sm" type="button" id="removePhoto">Remove</button>
+          </div>
+        </div>
+
+        <div class="fld">
+          <label class="lbl" for="name">Your name</label>
+          <input class="inp" type="text" id="name" maxlength="50" autocomplete="name" required>
+        </div>
+
+        <div class="fld">
+          <label class="lbl" for="bio">Bio <span class="lbl__opt">Optional</span></label>
+          <textarea class="inp" id="bio" rows="2" maxlength="160" placeholder="A line about what you do"></textarea>
+          <span class="fld__hint"><span id="bioCount">0</span>/160</span>
+        </div>
+
+        <div class="fld">
+          <label class="lbl" for="handle">Codemarca link</label>
+          <div class="inp-pfx">
+            <span class="inp-pfx__t">codemarca.com/</span>
+            <input class="inp" type="text" id="handle" maxlength="24" autocomplete="off" spellcheck="false" required>
+          </div>
+          <span class="fld__hint">Changing this does not break existing stickers — your printed code stays the same.</span>
+        </div>
+      </section>
+
+      <!-- ── CONTACT ─────────────────────────────────────────────────────── -->
+
+      <section class="card" data-when="fresh settled coming active reorder tee">
+        <span class="card__title">Contact</span>
+
+        <div class="fld">
+          <div class="row">
+            <span class="row__txt">
+              <span class="row__t">Phone</span>
+              <span class="row__s">Call button on your page</span>
+            </span>
+            <label class="sw"><input type="checkbox" id="phoneOn"><span class="sw__track"></span></label>
+          </div>
+          <div class="inp-pfx" id="phoneBox">
+            <span class="inp-pfx__t">+91</span>
+            <input class="inp" type="tel" id="phone" placeholder="98765 43210" maxlength="12">
+          </div>
+        </div>
+
+        <div class="fld">
+          <div class="row">
+            <span class="row__txt">
+              <span class="row__t">WhatsApp</span>
+              <span class="row__s">Chat button on your page</span>
+            </span>
+            <label class="sw"><input type="checkbox" id="waOn"><span class="sw__track"></span></label>
+          </div>
+          <div id="waBox">
+            <label class="chk">
+              <input type="checkbox" id="waSame">
+              <span class="chk__box"></span>
+              <span class="chk__t">Same as phone</span>
+            </label>
+            <div class="inp-pfx" id="waCustomBox" style="margin-top:var(--s-2)">
+              <span class="inp-pfx__t">+91</span>
+              <input class="inp" type="tel" id="wa" placeholder="98765 43210" maxlength="12">
+            </div>
+          </div>
+        </div>
+
+        <div class="fld">
+          <div class="row">
+            <span class="row__txt">
+              <span class="row__t">Email</span>
+              <span class="row__s">Email button on your page</span>
+            </span>
+            <label class="sw"><input type="checkbox" id="emailOn"><span class="sw__track"></span></label>
+          </div>
+          <input class="inp" type="email" id="email" placeholder="you@example.com" maxlength="80">
+        </div>
+      </section>
+
+      <!-- ── LINKS ───────────────────────────────────────────────────────── -->
+
+      <section class="card" data-when="fresh settled coming active reorder tee" id="linksCard">
+        <div class="card__head">
+          <span class="card__title">Links</span>
+          <span class="chip chip--flat" id="linkCount">5 shown</span>
+        </div>
+
+        <p class="card__note">Tap a platform to add it. You can reorder them below.</p>
+        <div class="picks" id="picks" role="toolbar" aria-label="Add links"></div>
+        <div class="rows" id="rows"></div>
+
+        <button class="btn btn--ghost btn--wide" type="button" id="addCustom" style="margin-top:var(--s-3)">
+          <span data-ic-in="plus"></span>Add custom link
+        </button>
+      </section>
+
+      <!-- ── ORDER ───────────────────────────────────────────────────────── -->
+
+      <section class="card" data-when="fresh settled coming active reorder tee" id="orderCard">
+        <span class="card__title">Order on your page</span>
+        <p class="card__note">Every button is the same size — the order is the only hierarchy. Drag, or use the arrows.</p>
+        <ul class="order" id="order"></ul>
+      </section>
+
+      <!-- ── THEME ───────────────────────────────────────────────────────── -->
+
+      <section class="card" data-when="fresh settled coming active reorder tee">
+        <span class="card__title">Theme</span>
+        <div class="themes" role="group" aria-label="Page theme">
+          <button class="theme" type="button" aria-pressed="false" data-theme="light">
+            <span class="theme__sw" data-t="light"><i></i><i></i><i></i></span>
+            <span class="theme__n">Clean white</span>
+          </button>
+          <button class="theme" type="button" aria-pressed="false" data-theme="dark">
+            <span class="theme__sw" data-t="dark"><i></i><i></i><i></i></span>
+            <span class="theme__n">Pure black</span>
+          </button>
+          <button class="theme" type="button" aria-pressed="false" data-theme="stone">
+            <span class="theme__sw" data-t="stone"><i></i><i></i><i></i></span>
+            <span class="theme__n">Warm stone</span>
+          </button>
+          <button class="theme" type="button" aria-pressed="false" data-theme="violet">
+            <span class="theme__sw" data-t="violet"><i></i><i></i><i></i></span>
+            <span class="theme__n">Codemarca</span>
+          </button>
+          <button class="theme" type="button" aria-pressed="false" data-theme="amber">
+            <span class="theme__sw" data-t="amber"><i></i><i></i><i></i></span>
+            <span class="theme__n">Warm amber</span>
+          </button>
+          <button class="theme" type="button" aria-pressed="false" data-theme="glass-dark">
+            <span class="theme__sw" data-t="glass-dark"><i></i><i></i><i></i></span>
+            <span class="theme__n">Dark glass</span>
+          </button>
+          <button class="theme" type="button" aria-pressed="false" data-theme="glass-light">
+            <span class="theme__sw" data-t="glass-light"><i></i><i></i><i></i></span>
+            <span class="theme__n">Light glass</span>
+          </button>
+          <button class="theme" type="button" aria-pressed="false" data-theme="glass-ember">
+            <span class="theme__sw" data-t="glass-ember"><i></i><i></i><i></i></span>
+            <span class="theme__n">Ember glass</span>
+          </button>
+          <button class="theme" type="button" aria-pressed="false" data-theme="glass-violet">
+            <span class="theme__sw" data-t="glass-violet"><i></i><i></i><i></i></span>
+            <span class="theme__n">Violet glass</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ── VISIBILITY ────────────────────────────────────────────────── -->
+
+      <section class="card" data-when="fresh settled coming active reorder tee">
+        <div class="row row--static" style="padding:0">
+          <span class="row__txt">
+            <span class="row__t">Page is live</span>
+            <span class="row__s">Turn this off and every code shows a short
+              "this page is paused" note instead.</span>
+          </span>
+          <label class="sw"><input type="checkbox" id="pageLive" checked><span class="sw__track"></span></label>
+        </div>
+      </section>
+
+      <!-- ── SAVE BAR ──────────────────────────────────────────────────── -->
+
+      <div class="savebar" id="savebar" role="status">
+        <span class="savebar__t">Unsaved changes</span>
+        <button class="btn btn--ghost btn--sm" type="button" id="undo">Discard</button>
+        <button class="btn btn--go btn--sm" type="button" id="save">Save</button>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="state.js"></script>
+<script src="../dashboard.js"></script>
+<script src="../tab-profile.js"></script>

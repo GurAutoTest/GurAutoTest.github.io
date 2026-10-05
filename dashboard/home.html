@@ -1,0 +1,392 @@
+<title>Home · Codemarca</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../dashboard.css">
+<link rel="stylesheet" href="../home.css">
+
+<!-- ==========================================================================
+     CODEMARCA — UNIFIED HOME
+     Handles all 4 lifecycle stages seamlessly under clean /dashboard/home.html:
+       - data-flow="page-live"   (default for live page)
+       - data-flow="active"      (code live & stickers active)
+       - data-flow="empty"       (just signed up, no page yet)
+       - data-flow="pack-coming" (pack ordered, page in progress)
+     ========================================================================== -->
+
+<style>
+/* stage empty styles */
+.hero{display:grid; gap:var(--s-5); align-items:center}
+@media (min-width:720px){
+  .hero{grid-template-columns:minmax(0,3fr) minmax(0,2fr)}
+  .hero__art{order:2}
+}
+.hero__say{display:flex; flex-direction:column; gap:var(--s-3)}
+.hero__eyebrow{align-self:flex-start; background:rgba(255,255,255,.1); color:var(--ink-invert)}
+.hero__h{font-size:clamp(1.75rem,6vw,2.5rem); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display); line-height:1.05; text-wrap:balance}
+.hero__p{font-size:var(--fs-sm); color:rgba(255,255,255,.72); letter-spacing:.14px; max-width:34ch}
+.hero__say .btn{margin-top:var(--s-2)}
+@media (min-width:720px){ .hero__say .btn{align-self:flex-start; min-width:14rem} }
+.hero__art{position:relative; display:grid; place-items:center}
+
+.get{margin-block:var(--s-3)}
+.tiles{
+  display:grid; grid-auto-flow:column; grid-auto-columns:72%;
+  gap:var(--s-3); overflow-x:auto; scroll-snap-type:x mandatory;
+  margin:var(--s-4) calc(var(--gutter) * -1) 0; padding:var(--s-1) var(--gutter) var(--s-2);
+  scroll-padding-inline:var(--gutter); scrollbar-width:none;
+}
+.tiles::-webkit-scrollbar{display:none}
+.tiles__bar{position:relative; height:4px; margin-top:var(--s-3);
+  border-radius:var(--r-pill); background:var(--line); overflow:hidden}
+.tiles__bar i{position:absolute; top:0; bottom:0; left:0; width:40%;
+  border-radius:inherit; background:var(--ink)}
+@media (min-width:720px){
+  .get{margin-block:0}
+  .tiles{grid-auto-flow:row; grid-template-columns:repeat(3,1fr); grid-auto-columns:auto;
+    overflow:visible; margin:var(--s-3) 0 0; padding:0}
+  .tiles__bar{display:none}
+}
+.tile{scroll-snap-align:start; display:flex; flex-direction:column; gap:var(--s-3);
+  padding:var(--s-3); border-radius:var(--r-lg); background:var(--ground); box-shadow:var(--shadow-sm)}
+.tile__art{height:128px; border-radius:var(--r-md); background:var(--brand-violet-tint);
+  display:grid; place-items:center; overflow:hidden}
+.tile__t{padding-inline:var(--s-1); font-size:var(--fs-sm); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display)}
+.tile__s{padding-inline:var(--s-1); margin-top:calc(var(--s-2) * -1);
+  font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:.14px}
+.art-link{display:flex; align-items:center; gap:8px; padding:8px 8px 8px 14px;
+  border-radius:var(--r-pill); background:#fff; box-shadow:var(--shadow-md);
+  font-family:var(--font-mono); font-size:.75rem; color:var(--ink-mid)}
+.art-link b{color:var(--brand-violet)}
+.art-link span:last-child{display:grid; place-items:center; width:26px; height:26px;
+  border-radius:50%; background:var(--brand-violet); color:#fff}
+
+/* stage pack-coming race */
+.race{gap:var(--s-5)}
+.race__say{display:flex; flex-direction:column; gap:var(--s-5)}
+.race__art{position:relative; display:grid; place-items:center}
+@media (min-width:720px){
+  .race{display:grid; grid-template-columns:minmax(0,3fr) minmax(0,2fr); align-items:center}
+  .race__art{order:2}
+}
+.race__h{font-size:clamp(1.5rem,5vw,2rem); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display); line-height:1.1; text-wrap:balance}
+.race__p{font-size:var(--fs-sm); color:rgba(255,255,255,.72); max-width:46ch}
+.race__p b{color:var(--ink-invert)}
+.race__clock{display:flex; align-items:baseline; gap:var(--s-2)}
+.race__n{font-size:clamp(2.5rem,9vw,3.5rem); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display); line-height:1}
+.race__u{font-size:1.125rem; font-weight:var(--fw-bold); color:rgba(255,255,255,.5)}
+</style>
+
+<div class="app">
+  <div class="app__main">
+    <main class="view">
+
+      <!-- ══════════════════════════════════════════════════════════════════
+           FLOW 2 & 4: PAGE-LIVE / ACTIVE
+           ══════════════════════════════════════════════════════════════════ -->
+
+      <!-- HEADERS for page-live -->
+      <header class="head" data-flow="page-live" data-when="fresh">
+        <div class="head__row">
+          <div>
+            <h1>Your page is live.</h1>
+            <p>Anyone with the link can save your details already, and your
+               code is made. The stickers are what let you stop sending the
+               link at all.</p>
+          </div>
+        </div>
+      </header>
+
+      <header class="head" data-flow="page-live" data-when="coming">
+        <div class="head__row">
+          <div>
+            <h1>Your pack is on the way.</h1>
+            <p>Your page is already live and your QR already works. The
+               stickers just carry it onto the things you use every day.</p>
+          </div>
+        </div>
+      </header>
+
+      <header class="head" data-flow="page-live" data-when="settled">
+        <div class="head__row">
+          <div>
+            <h1>Hey, <span data-fill="user.first">Garry</span>.</h1>
+            <p>Your page has been live a while and you have sent the link
+               <b data-fill="shares">31</b> times. A sticker is that link,
+               already on the thing you were holding.</p>
+          </div>
+        </div>
+      </header>
+
+      <!-- HEADERS for active -->
+      <header class="head" data-flow="active">
+        <div class="head__row">
+          <div>
+            <h1>Hey, <span data-fill="user.first">Garry</span>.</h1>
+            <p>Your code is live, both stickers are working, and people have
+               saved your details <b data-fill="shares">59</b> times.</p>
+          </div>
+        </div>
+      </header>
+
+      <!-- ME CARD: for page-live and active -->
+      <section class="card me" data-flow="page-live active">
+        <span class="me__mark" data-mark></span>
+
+        <div class="me__top">
+          <span class="me__av" data-fill="user.initial">G</span>
+          <span class="me__who">
+            <span class="me__name" data-fill="profile.title">Garry Singh</span>
+            <span class="me__live"><i></i>Live</span>
+          </span>
+          <button class="me__qr" type="button" data-show data-qr
+                  aria-label="Show my QR full screen"></button>
+        </div>
+
+        <button class="me__link" type="button" data-share-page aria-label="Share my page">
+          <span class="me__url"><span>codemarca.com/</span><b data-fill="profile.handle">garry</b></span>
+          <span class="me__share"><span data-ic-in="share"></span><span class="me__share-t">Share</span></span>
+        </button>
+
+        <div class="me__acts">
+          <a class="me__btn" href="profile.html"><span data-ic-in="pen"></span>Edit page</a>
+          <a class="me__btn" href="../profile.html?view=owner&amp;handle=garry"
+             target="_blank" rel="noopener" data-owner-view><span data-ic-in="eye"></span>View page</a>
+        </div>
+      </section>
+
+      <!-- CHECKLIST TODO for page-live -->
+      <section class="card todo" data-flow="page-live" data-page-todo hidden></section>
+
+      <!-- GET THE PACK for page-live (fresh & settled) -->
+      <section class="card card--dark card--close card--act" data-flow="page-live" data-when="fresh settled">
+        <div class="pack2">
+          <div class="pack2__say">
+            <span class="card__title">Next</span>
+            <p class="card__h" style="margin-top:var(--s-2)">Get your two stickers.</p>
+            <p class="card__note" style="margin-top:var(--s-2)">
+              A 4″ for the car, bike or shutter and a 1.5″ for a laptop, bottle
+              or phone case — both printed with <b>the code you already have</b>.
+              Someone scans, your page opens, your details save to their phone.
+              The pack is free — delivery from <b data-fill="fee">₹49</b>, set by your pincode.
+            </p>
+          </div>
+
+          <div class="pack2__show">
+            <div class="shot" data-shots>
+              <div class="shot__track">
+                <div class="shot__slide"><img class="shot__ph" src="../assets/photos/codemarca-qr-sticker-car-rear-window-night-street.jpg" alt="Codemarca 4 inch QR sticker on a car's rear window at night" width="2400" height="1792" loading="lazy"></div>
+                <div class="shot__slide"><img class="shot__ph" src="../assets/photos/codemarca-qr-sticker-phone-case-studio.jpg" alt="Codemarca 1.5 inch QR sticker on a phone case" width="2400" height="1792" loading="lazy"></div>
+                <div class="shot__slide"><img class="shot__ph" src="../assets/photos/codemarca-qr-sticker-car-window-scan-parking.jpg" alt="Someone scanning a Codemarca QR sticker on a car window" width="2400" height="1792" loading="lazy"></div>
+              </div>
+              <div class="shot__dots">
+                <button class="shot__dot" type="button" data-go="0" aria-label="Photo 1"></button>
+                <button class="shot__dot" type="button" data-go="1" aria-label="Photo 2"></button>
+                <button class="shot__dot" type="button" data-go="2" aria-label="Photo 3"></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="pack2__cta">
+            <a class="btn btn--go btn--wide" href="../select-pack.html?built=1">Get my pack</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- PARCEL CARD for page-live (coming) -->
+      <section class="card" data-flow="page-live" data-when="coming">
+        <div class="card__head">
+          <span class="card__title">Order <span class="mono" data-fill="order.id">CM-5214</span></span>
+          <span class="chip chip--flat">Placed</span>
+        </div>
+        <div class="item">
+          <span class="item__ic" data-ic="box"></span>
+          <span class="item__txt">
+            <span class="item__t" data-fill="order.items">Codemarca pack — 2 stickers</span>
+            <span class="item__s">Expected <span data-fill="order.eta">4 Oct 2026</span>
+              · both carry the code you already have</span>
+          </span>
+        </div>
+        <div class="card__foot">
+          <a class="btn btn--ghost btn--sm btn--grow" href="orders.html">Order details</a>
+        </div>
+      </section>
+
+      <!-- REFERRAL CARD for page-live & active -->
+      <section class="card rf" data-flow="page-live active">
+        <div class="rf__say">
+          <span class="card__title">Free tee · no order needed</span>
+          <h2 class="rf__h">Bring 50 friends. Wear your code.</h2>
+          <p class="rf__p">A black tee printed with your own QR, free, in one of five
+             designs. A friend counts once they <b>sign up with your link and
+             finish their page</b>. Nobody has to buy anything, you included.</p>
+        </div>
+
+        <div class="rf__meter">
+          <div class="rf__count">
+            <b class="rf__n" data-fill="referrals.counted">0</b><span class="rf__of">/ <span data-fill="referrals.goal">50</span></span>
+          </div>
+          <div class="rf__bar" role="progressbar" aria-valuemin="0" aria-valuemax="50" id="rfBar">
+            <div class="rf__fill" id="rfFill"></div>
+          </div>
+          <span class="rf__sub" id="rfSub"></span>
+        </div>
+
+        <div class="rf__share">
+          <div class="linkbox">
+            <span class="linkbox__url"><span>codemarca.com/r/</span><b data-fill="profile.handle">garry</b></span>
+            <button type="button" data-ic-btn="copy" aria-label="Copy my invite link" data-copy-ref></button>
+          </div>
+          <button class="btn btn--go" type="button" data-share-ref>
+            <span data-ic-in="share"></span>Invite friends
+          </button>
+        </div>
+
+        <div>
+          <div class="rf__head">
+            <span class="card__title" id="teesTitle">The five designs</span>
+            <span class="rf__hint">You pick one at 50</span>
+          </div>
+          <div class="rf__tees" id="tees" aria-labelledby="teesTitle"></div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════════════════════════════════
+           FLOW 1: EMPTY ACCOUNT
+           ══════════════════════════════════════════════════════════════════ -->
+
+      <section class="card card--dark card--close hero" data-flow="empty">
+        <div class="hero__art" data-scene></div>
+        <div class="hero__say">
+          <span class="chip hero__eyebrow">Your code</span>
+          <h1 class="hero__h">Your page, your stickers, one code.</h1>
+          <p class="hero__p">Two minutes builds your page. A sticker puts it on the things you carry every day.</p>
+          <a class="btn btn--go" href="../onboarding.html">Build my page</a>
+        </div>
+      </section>
+
+      <div class="get" data-flow="empty">
+        <div class="tiles">
+          <div class="tile">
+            <div class="tile__art"><span class="art-link"><span>codemarca.com/</span><b>you</b><span>&rarr;</span></span></div>
+            <span class="tile__t">One link for everything</span>
+            <span class="tile__s">Phone, WhatsApp, Instagram, whatever you hand out.</span>
+          </div>
+          <div class="tile">
+            <div class="tile__art"><span data-qr-sample style="width:72px; height:72px"></span></div>
+            <span class="tile__t">Your own permanent QR</span>
+            <span class="tile__s">Minted once, never changes.</span>
+          </div>
+          <div class="tile">
+            <div class="tile__art"><span class="chip chip--ok">Details saved</span></div>
+            <span class="tile__t">Saves straight to contacts</span>
+            <span class="tile__s">One tap downloads your card into their phonebook.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════════════
+           FLOW 3: PACK BOUGHT, PAGE EMPTY
+           ══════════════════════════════════════════════════════════════════ -->
+
+      <header class="head" data-flow="pack-coming">
+        <div class="head__row">
+          <div>
+            <h1>Your pack is on the way.</h1>
+            <p>Your code is already minted and on both stickers. Finish your page before they land.</p>
+          </div>
+        </div>
+      </header>
+
+      <section class="card card--dark card--close race" data-flow="pack-coming">
+        <div class="race__art" data-scene></div>
+        <div class="race__say">
+          <div>
+            <span class="card__title">Before they land</span>
+            <p class="race__h" style="margin-top:var(--s-2)">Finish your page first.</p>
+            <p class="race__p" style="margin-top:var(--s-2)">
+              The stickers on their way already carry your code. Right now, a scan shows just your name.
+            </p>
+          </div>
+          <a class="btn btn--go" href="../onboarding.html?ordered=1">Build my page now</a>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="state.js"></script>
+<script src="../dashboard.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var a = CM.shell({ page: "home", title: "Home" });
+  var stage = a.stage || "page-live";
+
+  if (a.profile) {
+    CM.mountTodo(a);
+  }
+
+  var handle = (a.profile && a.profile.handle) || (a.code && a.code.id) || "garry";
+  var pageUrl = "https://" + CM.url(handle);
+  var codeId = (a.code && a.code.id) || handle.slice(0, 8);
+  var pattern = CM.qr(codeId);
+
+  Array.prototype.forEach.call(document.querySelectorAll("[data-qr]"), function (el) {
+    el.innerHTML = pattern;
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll("[data-qr-sample]"), function (el) {
+    el.innerHTML = pattern;
+  });
+
+  var open = function () {
+    CM.showCode({
+      title: (a.profile && a.profile.title) || a.user.name,
+      sub: CM.url(handle),
+      url: pageUrl,
+      seed: codeId
+    });
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-show]"), function (el) {
+    el.addEventListener("click", open);
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll("[data-share-page]"), function (el) {
+    el.addEventListener("click", function () {
+      CM.shareSheet({ title: "Share your page", url: pageUrl, name: (a.profile && a.profile.title) || a.user.name });
+    });
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll("[data-mark]"), function (el) {
+    el.innerHTML = CM.mark();
+  });
+
+  var owner = document.querySelector("[data-owner-view]");
+  if (owner && a.profile) {
+    owner.href = CM.ROOT + "profile.html?view=owner&handle=" +
+      encodeURIComponent(a.profile.handle) +
+      "&theme=" + encodeURIComponent((a.profile.theme || "").toLowerCase());
+  }
+
+  var shots = document.querySelector("[data-shots]");
+  if (shots) CM.carousel(shots);
+
+  if (stage === "page-live" || stage === "active") {
+    CM.referCard(a, pattern);
+  }
+
+  CM.draw(a, CM.assign(CM.derived(a), {
+    "profile.at": handle,
+    "fee": CM.money(49)
+  }));
+})();
+</script>

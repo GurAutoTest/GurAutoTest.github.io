@@ -1616,7 +1616,7 @@ input:-webkit-autofill:active{
     /* the sample name is the buyer's own — on an empty gift field it reads as if it were filled in */
     f.name.el.placeholder = "Who it's going to";
     /* a gift is started from the dashboard, so Cancel goes back there, not to the website */
-    $("exit").href = "dashboard/" + P.flowOr(ORDER.from) + "/gift.html";
+    $("exit").href = "dashboard/gift.html";
     openContact(false);
     mark(f.name.wrap, false); mark(f.phone.wrap, false);
     rest("name"); rest("phone");
@@ -1654,12 +1654,27 @@ input:-webkit-autofill:active{
 
   $("toDash").addEventListener("click", function () {
     if (ck.dataset.gift === "other") {
-      location.href = "dashboard/" + P.flowOr(ORDER.from) + "/gift.html";
+      location.href = "dashboard/gift.html";
       return;
     }
-    if (ck.dataset.built !== "1") { location.href = "dashboard/3-pack-coming/home.html"; return; }
-    location.href = ORDER.freeUsed ? "dashboard/4-active/home.html"
-                                   : "dashboard/2-page-live/home.html?state=coming";
+    if (ck.dataset.built !== "1") {
+      try {
+        localStorage.setItem("cm.stage", "pack-coming");
+        localStorage.setItem("cm.substage", "placed");
+      } catch (e) {}
+      location.href = "dashboard/home.html";
+      return;
+    }
+    try {
+      if (ORDER.freeUsed) {
+        localStorage.setItem("cm.stage", "active");
+        localStorage.setItem("cm.substage", "reorder");
+      } else {
+        localStorage.setItem("cm.stage", "page-live");
+        localStorage.setItem("cm.substage", "coming");
+      }
+    } catch (e) {}
+    location.href = "dashboard/home.html";
   });
 
   /* ══ 6. THE ACCOUNT ═════════════════════════════════════════════════

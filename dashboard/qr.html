@@ -1,0 +1,147 @@
+<title>My QR · Codemarca</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../dashboard.css">
+<link rel="stylesheet" href="../tab-qr.css">
+
+<!-- ==========================================================================
+     CODEMARCA — UNIFIED MY QR
+     ========================================================================== -->
+
+<div class="app">
+  <div class="app__main">
+    <main class="view">
+
+      <header class="head">
+        <h1>My QR</h1>
+        <p>One code, yours for good. Change your page whenever you like — the
+           code never changes, so nothing you have already printed or stuck
+           on anything ever goes stale.</p>
+      </header>
+
+      <!-- ══ THE SQUARE ══════════════════════════════════════════════════ -->
+
+      <section class="card big big--split">
+        <div class="big__l">
+          <button class="big__qr" type="button" data-qr aria-label="Show my QR full screen"></button>
+          <p class="big__hint">Tap to show it full screen</p>
+        </div>
+
+        <div class="big__r">
+          <span class="big__url">
+            <span>codemarca.com/<b data-fill="profile.handle">garry</b></span>
+            <button type="button" data-copy-url aria-label="Copy my page link"></button>
+          </span>
+
+          <div class="big__acts">
+            <button class="btn btn--ghost btn--sm" type="button" data-download>
+              <span data-ic-in="down"></span>Download PNG
+            </button>
+            <button class="btn btn--ghost btn--sm" type="button" data-share-code>
+              <span data-ic-in="share"></span>Share
+            </button>
+            <a class="btn btn--ghost btn--sm" href="#" data-view target="_blank" rel="noopener">
+              <span data-ic-in="eye"></span>View page
+            </a>
+            <a class="btn btn--quiet btn--sm" href="profile.html">
+              <span data-ic-in="pen"></span>Edit what it opens
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ PREVIEW ═════════════════════════════════════════════════════ -->
+
+      <section class="card pv" data-pv data-view="phone">
+        <div class="card__head">
+          <span class="card__title">Preview</span>
+          <span class="pv__acts">
+            <a class="btn btn--quiet btn--sm" href="#" data-view target="_blank" rel="noopener">
+              <span data-ic-in="share"></span>Open
+            </a>
+            <a class="btn btn--ghost btn--sm" href="profile.html" data-pv-do>
+              <span data-ic-in="pen"></span>Edit page
+            </a>
+          </span>
+        </div>
+
+        <div class="seg seg--sm" role="tablist" aria-label="Preview size">
+          <button class="seg__b" type="button" role="tab" aria-selected="true" data-pv-tab="phone">
+            <span data-ic-in="phone"></span>Phone
+          </button>
+          <button class="seg__b" type="button" role="tab" aria-selected="false" data-pv-tab="web">
+            <span data-ic-in="card"></span>Web
+          </button>
+        </div>
+
+        <div class="pv__stage">
+          <div class="pv__frame"><iframe data-pv-frame title="Your page, as a scan opens it" loading="lazy"></iframe></div>
+        </div>
+
+        <div class="onoff">
+          <span class="onoff__txt">
+            <span class="onoff__t" data-live-t>Your page is live</span>
+            <span class="onoff__s" data-live-s>Sticker scans and your link both open it</span>
+          </span>
+          <label class="sw"><input type="checkbox" checked data-live aria-label="Page live or hidden"><span class="sw__track"></span></label>
+        </div>
+      </section>
+
+      <!-- ══ ORDER MORE / GET PACK ══════════════════════════════════════ -->
+
+      <section class="card" id="qrAskPack">
+        <span class="card__title" id="qrAskTitle">Want it on something?</span>
+        <p class="card__note" id="qrAskNote" style="margin-top:var(--s-2); font-size:var(--fs-sm); color:var(--ink-mid)">
+          Every sticker we print for you carries this same code. Order a pack
+          for your car, bike, laptop, or shop shutter.
+        </p>
+        <div class="ps" data-strip style="margin-top:var(--s-4)">
+          <div class="ps__row">
+            <img class="ps__ph" src="../assets/photos/codemarca-qr-sticker-motorcycle-fuel-tank.jpg" alt="Codemarca QR sticker on a motorcycle fuel tank" width="2400" height="1792" loading="lazy">
+            <img class="ps__ph" src="../assets/photos/codemarca-qr-sticker-salon-mirror-scan.jpg" alt="Someone scanning a Codemarca QR sticker on a salon mirror" width="2400" height="1792" loading="lazy">
+            <img class="ps__ph" src="../assets/photos/codemarca-qr-sticker-suitcase-airport.jpg" alt="Codemarca QR sticker on a suitcase at the airport" width="2400" height="1792" loading="lazy">
+            <img class="ps__ph" src="../assets/photos/codemarca-qr-sticker-water-bottle-gym.jpg" alt="Codemarca QR sticker on a water bottle at the gym" width="2400" height="1792" loading="lazy">
+          </div>
+          <span class="ps__bar" aria-hidden="true"><i></i></span>
+        </div>
+
+        <div class="card__foot" style="margin-top:var(--s-4)">
+          <a class="btn btn--go btn--sm btn--grow" id="qrPackBtn" href="../select-pack.html?built=1">
+            <span data-ic-in="plus"></span>Get my pack
+          </a>
+          <a class="btn btn--ghost btn--sm btn--grow" href="orders.html">My orders</a>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="state.js"></script>
+<script src="../dashboard.js"></script>
+<script src="../tab-qr.js"></script>
+<script>
+(function() {
+  var a = CM.account();
+  var hasOrdered = !!(a.order || (a.orders && a.orders.length));
+  var qrPackBtn = document.getElementById("qrPackBtn");
+  var qrAskTitle = document.getElementById("qrAskTitle");
+  if (hasOrdered) {
+    if (qrPackBtn) {
+      qrPackBtn.href = "../select-pack.html?pack=custom&built=1&free=used";
+      qrPackBtn.innerHTML = '<span data-ic-in="plus"></span>Order more stickers';
+    }
+  } else {
+    if (qrAskTitle) qrAskTitle.textContent = "Get it on things";
+    if (qrPackBtn) {
+      qrPackBtn.href = "../select-pack.html?built=1";
+      qrPackBtn.innerHTML = 'Get my pack';
+    }
+  }
+  var strip = document.querySelector("[data-strip]");
+  if (strip) CM.strip(strip);
+})();
+</script>

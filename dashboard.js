@@ -57,36 +57,67 @@
     var STATES = window.CM_STATES || {};
 
     function firstKey() {
-      return (FLOW.states[0] && FLOW.states[0].k) || Object.keys(STATES)[0];
+      if (FLOW.stages && FLOW.stages[0] && FLOW.stages[0].states[0]) {
+        return FLOW.stages[0].id + ":" + FLOW.stages[0].states[0].k;
+      }
+      return (FLOW.states && FLOW.states[0] && FLOW.states[0].k) || Object.keys(STATES)[0] || "fresh";
     }
 
-    var KEY = "cm.demo." + FLOW.id;
+    var KEY = "cm.demo." + (FLOW.id || "unified");
 
     CM.account = function () {
-      var k;
       var q = new URLSearchParams(window.location.search);
-      var asked = q.get("state");
-      if (asked && STATES[asked]) {
-        try { window.localStorage.setItem(KEY, asked); } catch (e) { }
-        k = asked;
-      } else {
-        try { k = window.localStorage.getItem(KEY); } catch (e) { k = null; }
+      var stage = "page-live";
+      var substage = "fresh";
+
+      try {
+        stage = window.localStorage.getItem("cm.stage") || (FLOW.id !== "flow" && FLOW.id !== "unified" ? FLOW.id : "page-live");
+        substage = window.localStorage.getItem("cm.substage") || "fresh";
+      } catch (e) {}
+
+      if (q.get("stage")) {
+        stage = q.get("stage");
+        try { window.localStorage.setItem("cm.stage", stage); } catch (e) {}
       }
-      var base = STATES[k] || STATES[firstKey()] || {};
+      if (q.get("state")) {
+        substage = q.get("state");
+        try { window.localStorage.setItem("cm.substage", substage); } catch (e) {}
+      }
+      if (q.get("username")) {
+        try { window.localStorage.setItem("cm.username", q.get("username").toLowerCase().trim()); } catch (e) {}
+      }
+      if (q.get("name")) {
+        try { window.localStorage.setItem("cm.name", q.get("name").trim()); } catch (e) {}
+      }
+
+      // Automatically strip ugly query parameters from the address bar so user sees only clean clean URL
+      if (window.history && window.history.replaceState && (q.has("username") || q.has("state") || q.has("stage") || q.has("name"))) {
+        try {
+          var cleanUrl = window.location.pathname;
+          window.history.replaceState({}, document.title, cleanUrl);
+        } catch (e) {}
+      }
+
+      var lookupKey = stage + ":" + substage;
+      var base = STATES[lookupKey] || STATES[substage] || STATES[stage] || STATES[firstKey()] || {};
       var acc = JSON.parse(JSON.stringify(base));
+
+      acc.stage = stage;
+      acc.substage = substage;
+      acc.state = substage;
 
       var customAccount = null;
       try {
         var raw = window.localStorage.getItem("cm.account.custom");
         if (raw) customAccount = JSON.parse(raw);
-      } catch (e) { }
+      } catch (e) {}
 
-      var customUsername = q.get("username") ||
-                           window.localStorage.getItem("cm.username") ||
-                           (customAccount && customAccount.profile && customAccount.profile.handle);
-      var customName = q.get("name") ||
-                       window.localStorage.getItem("cm.name") ||
-                       (customAccount && customAccount.user && customAccount.user.name);
+      var customUsername = window.localStorage.getItem("cm.username") ||
+                           (customAccount && customAccount.profile && customAccount.profile.handle) ||
+                           (acc.profile && acc.profile.handle);
+      var customName = window.localStorage.getItem("cm.name") ||
+                       (customAccount && customAccount.user && customAccount.user.name) ||
+                       (acc.user && acc.user.name);
 
       if (customUsername) {
         customUsername = customUsername.toLowerCase().trim();
@@ -111,7 +142,7 @@
         try {
           window.localStorage.setItem("cm.username", customUsername);
           if (customName) window.localStorage.setItem("cm.name", customName);
-        } catch (e) { }
+        } catch (e) {}
       }
 
       return acc;
@@ -119,12 +150,15 @@
 
     CM.fetchGetValues = function (username, onData) {
       if (!username) return;
-      var q = new URLSearchParams(window.location.search);
-      var st = q.get("state") || "";
-      var flowId = (FLOW && FLOW.id) || "page-live";
+      var stage = "page-live";
+      var substage = "";
+      try {
+        stage = window.localStorage.getItem("cm.stage") || (FLOW && FLOW.id) || "page-live";
+        substage = window.localStorage.getItem("cm.substage") || "";
+      } catch (e) {}
       var url = "/api/dashboard/get-values?username=" + encodeURIComponent(username) +
-                "&stage=" + encodeURIComponent(flowId) +
-                (st ? "&substage=" + encodeURIComponent(st) : "");
+                "&stage=" + encodeURIComponent(stage) +
+                (substage ? "&substage=" + encodeURIComponent(substage) : "");
 
       fetch(url)
         .then(function (res) { return res.ok ? res.json() : null; })
@@ -171,6 +205,8 @@
             localStorage.setItem("cm.account.custom", JSON.stringify(saved));
             localStorage.setItem("cm.username", p.username);
             localStorage.setItem("cm.name", uName);
+            if (data.stage) localStorage.setItem("cm.stage", data.stage);
+            if (data.substage) localStorage.setItem("cm.substage", data.substage);
           } catch(e) {}
 
           if (typeof onData === "function") onData(data);
@@ -179,11 +215,23 @@
     };
 
     CM.setState = function (k) {
-      try { window.localStorage.setItem(KEY, k); } catch (e) { }
-      /* drop a ?state= from the address, or it would overrule the pick */
+      if (k && k.indexOf(":") !== -1) {
+        var parts = k.split(":");
+        try {
+          window.localStorage.setItem("cm.stage", parts[0]);
+          window.localStorage.setItem("cm.substage", parts[1]);
+        } catch (e) {}
+      } else {
+        try {
+          window.localStorage.setItem(KEY, k);
+          window.localStorage.setItem("cm.substage", k);
+        } catch (e) {}
+      }
+      /* drop any ?state= or ?stage= from the address */
       var u = new URL(window.location.href);
       u.searchParams.delete("state");
-      window.location.href = u.toString();
+      u.searchParams.delete("stage");
+      window.location.href = u.pathname;
     };
 
     /* ══ 2. ICONS ═══════════════════════════════════════════════════════════ */
@@ -281,9 +329,18 @@
       }
     ];
 
-    /* Everything outside the flow folder is two levels up. Pages use ROOT so
-       that moving a folder never means hunting for ../.. in five files. */
-    CM.ROOT = "../../";
+    /* Everything outside the flow folder is resolved dynamically based on depth.
+       Under dashboard/ directly it is ../, under dashboard/<flow>/ it is ../../ */
+    CM.ROOT = (function () {
+      var p = window.location.pathname;
+      if (/\/[1-4]-[^\/]+\//.test(p)) {
+        return "../../";
+      }
+      if (p.indexOf("/dashboard/") !== -1) {
+        return "../";
+      }
+      return "./";
+    })();
 
     function navFlags(a) {
       return {
@@ -680,9 +737,27 @@
     CM.draw = function (a, extra) {
       extra = extra || {};
 
+      Array.prototype.forEach.call(document.querySelectorAll("[data-flow]"), function (el) {
+        var flows = el.getAttribute("data-flow").split(" ");
+        if (flows.indexOf(a.stage || "page-live") === -1) {
+          el.hidden = true;
+        } else {
+          el.hidden = false;
+        }
+      });
 
       Array.prototype.forEach.call(document.querySelectorAll("[data-when]"), function (el) {
-        if (el.getAttribute("data-when").split(" ").indexOf(a.state) === -1) { el.hidden = true; }
+        if (el.hasAttribute("data-flow") && el.getAttribute("data-flow").split(" ").indexOf(a.stage || "page-live") === -1) {
+          el.hidden = true;
+          return;
+        }
+        var whens = el.getAttribute("data-when").split(" ");
+        var curState = a.substage || a.state || "fresh";
+        if (whens.indexOf(curState) === -1 && whens.indexOf(a.state) === -1) {
+          el.hidden = true;
+        } else {
+          el.hidden = false;
+        }
       });
 
       Array.prototype.forEach.call(document.querySelectorAll("[data-fill]"), function (el) {
@@ -1670,9 +1745,29 @@
     /* ══ 8. DEMO SWITCHER — delete for production ═══════════════════════════ */
 
     function mountDemo(a) {
-      if (!FLOW.states.length) { return; }
       var d = document.createElement("div");
       d.className = "demo";
+
+      if (FLOW.stages && FLOW.stages.length) {
+        d.innerHTML =
+          '<span class="demo__lbl">Stage preview</span>' +
+          '<select class="demo__sel" aria-label="Preview account stage">' +
+          FLOW.stages.map(function (stg) {
+            return '<optgroup label="' + stg.label + '">' +
+              stg.states.map(function (o) {
+                return '<option value="' + stg.id + ':' + o.k + '">' + o.label + '</option>';
+              }).join("") +
+              '</optgroup>';
+          }).join("") +
+          '</select>';
+        var sel = d.querySelector("select");
+        sel.value = (a.stage || "page-live") + ":" + (a.substage || a.state || "fresh");
+        sel.addEventListener("change", function () { CM.setState(sel.value); });
+        document.body.appendChild(d);
+        return;
+      }
+
+      if (!FLOW.states || !FLOW.states.length) { return; }
       d.innerHTML =
         '<span class="demo__lbl">' + (FLOW.label || "Demo state") + "</span>" +
         '<select class="demo__sel" aria-label="Preview account state">' +
@@ -1680,9 +1775,9 @@
           return '<option value="' + o.k + '">' + o.label + "</option>";
         }).join("") +
         "</select>";
-      var sel = d.querySelector("select");
-      sel.value = a.state;
-      sel.addEventListener("change", function () { CM.setState(sel.value); });
+      var sel2 = d.querySelector("select");
+      sel2.value = a.state;
+      sel2.addEventListener("change", function () { CM.setState(sel2.value); });
       document.body.appendChild(d);
     }
 

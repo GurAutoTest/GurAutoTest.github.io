@@ -925,7 +925,7 @@ input:-webkit-autofill:active{
      delivered — so that is the active account. */
   if (O.gift) {
     /* a gift was started on the Gift & Refer tab, so that is where it goes back to */
-    var giftBack = "dashboard/" + P.flowOr(O.from) + "/gift.html";
+    var giftBack = "dashboard/gift.html";
     sp.dataset.gift = "1";
     document.title = "Codemarca — Send a gift";
     $("h1b").hidden = true;
@@ -934,7 +934,7 @@ input:-webkit-autofill:active{
     $("exit").href = giftBack;
     $("logoLink").href = giftBack;
   } else if (O.built) {
-    var back = "dashboard/" + (O.freeUsed ? "4-active" : "2-page-live") + "/home.html";
+    var back = "dashboard/home.html";
     $("exit").textContent = "Back to dashboard";
     $("exit").href = back;
     $("logoLink").href = back;

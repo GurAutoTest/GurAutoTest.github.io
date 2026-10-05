@@ -998,7 +998,7 @@ body[data-showing]{overflow:hidden}
     </div>
 
     <a class="ob__exit" href="homepage.html" id="exit">Save &amp; exit</a>
-    <a class="ob__exit ob__dash" href="dashboard/2-page-live/home.html" id="toDash" hidden>
+    <a class="ob__exit ob__dash" href="dashboard/home.html" id="toDash" hidden>
       <span>Go to dashboard</span>
       <svg class="arw" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h11m0 0-4.3-4.3M15 10l-4.3 4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </a>
@@ -1456,8 +1456,13 @@ body[data-showing]{overflow:hidden}
   if (q.get("ordered")) {
     var dash = document.getElementById("toDash");
     var pack = document.getElementById("getPack");
-    /* page live + pack in the van = flow 2's `coming` state (2026-09-29) */
-    if (dash) { dash.href = "dashboard/2-page-live/home.html?state=coming"; }
+    if (dash) {
+      dash.href = "dashboard/home.html";
+      try {
+        localStorage.setItem("cm.stage", "page-live");
+        localStorage.setItem("cm.substage", "coming");
+      } catch(e) {}
+    }
     /* same photos, but no price and no button (Garry, 2026-09-29) — the pack
        is already paid for; the photos only show where it can go */
     if (pack) { pack.hidden = true; }
@@ -1641,8 +1646,14 @@ body[data-showing]{overflow:hidden}
       var dashState = q.get("ordered") ? "coming" : "fresh";
       var toDashEl = $("toDash");
       if (toDashEl) {
-        toDashEl.href = "dashboard/2-page-live/home.html?username=" + encodeURIComponent(S.handle) + "&state=" + dashState;
+        toDashEl.href = "dashboard/home.html";
       }
+      try {
+        localStorage.setItem("cm.stage", "page-live");
+        localStorage.setItem("cm.substage", dashState);
+        localStorage.setItem("cm.username", S.handle);
+        localStorage.setItem("cm.name", S.name.trim() || S.handle);
+      } catch(e) {}
       var customData = {
         user: {
           name: S.name.trim() || S.handle,
@@ -1733,7 +1744,7 @@ body[data-showing]{overflow:hidden}
   function paintExit() {
     var ok = canSave();
     $("exit").textContent = ok ? "Save & exit" : "Exit";
-    $("exit").href = ok ? "#" : "dashboard/1-empty/home.html";
+    $("exit").href = ok ? "#" : "dashboard/home.html";
   }
   $("exit").addEventListener("click", function (e) {
     if (!canSave()) return;          /* nothing saved — let the link leave */
