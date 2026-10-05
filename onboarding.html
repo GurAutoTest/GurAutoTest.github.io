@@ -1637,6 +1637,64 @@ body[data-showing]{overflow:hidden}
       $("meAv").innerHTML = S.photo ? '<img src="' + S.photo + '" alt="">' : esc(initial());
       $("winUrl").textContent = "codemarca.com/" + S.handle;
       drawQR(S.handle);
+
+      var dashState = q.get("ordered") ? "coming" : "fresh";
+      var toDashEl = $("toDash");
+      if (toDashEl) {
+        toDashEl.href = "dashboard/2-page-live/home.html?username=" + encodeURIComponent(S.handle) + "&state=" + dashState;
+      }
+      var customData = {
+        user: {
+          name: S.name.trim() || S.handle,
+          email: S.email.trim() || (S.handle + "@gmail.com")
+        },
+        profile: {
+          handle: S.handle,
+          title: S.name.trim() || S.handle,
+          bio: S.bio || "",
+          photo: S.photo,
+          theme: S.theme,
+          phone: S.phone,
+          wa: S.wa,
+          email: S.email,
+          links: S.links,
+          customs: S.customs,
+          order: S.order
+        },
+        code: {
+          id: (S.handle || "x7k9m2").slice(0, 8),
+          url: "codemarca.com/c/" + (S.handle || "x7k9m2").slice(0, 8)
+        }
+      };
+      try {
+        localStorage.setItem("cm.account.custom", JSON.stringify(customData));
+        localStorage.setItem("cm.username", S.handle);
+        localStorage.setItem("cm.name", S.name.trim() || S.handle);
+      } catch (e) { }
+
+      try {
+        fetch("/api/auth/claim-username", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: S.handle,
+            display_name: S.name.trim() || S.handle,
+            bio: S.bio,
+            avatar_url: S.photo,
+            phone: S.phone,
+            whatsapp: S.wa,
+            email: S.email,
+            theme: S.theme,
+            links: S.links,
+            customs: S.customs,
+            stage: "page-live",
+            substage: dashState,
+            is_live: true,
+            onboarding_done: true
+          })
+        }).catch(function () {});
+      } catch (e) { }
+
       if (paintDone() !== "bare") celebrate();
       paintPlaces();                         /* the row has a width now */
       requestAnimationFrame(paintPlaces);    /* …and again once fonts settle */

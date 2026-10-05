@@ -64,15 +64,118 @@
 
     CM.account = function () {
       var k;
-      /* ?state= wins and sticks — checkout hands a buyer to the state they
-         are now in (2-page-live/home.html?state=coming) */
-      var asked = new URLSearchParams(window.location.search).get("state");
+      var q = new URLSearchParams(window.location.search);
+      var asked = q.get("state");
       if (asked && STATES[asked]) {
         try { window.localStorage.setItem(KEY, asked); } catch (e) { }
-        return STATES[asked];
+        k = asked;
+      } else {
+        try { k = window.localStorage.getItem(KEY); } catch (e) { k = null; }
       }
-      try { k = window.localStorage.getItem(KEY); } catch (e) { k = null; }
-      return STATES[k] || STATES[firstKey()] || {};
+      var base = STATES[k] || STATES[firstKey()] || {};
+      var acc = JSON.parse(JSON.stringify(base));
+
+      var customAccount = null;
+      try {
+        var raw = window.localStorage.getItem("cm.account.custom");
+        if (raw) customAccount = JSON.parse(raw);
+      } catch (e) { }
+
+      var customUsername = q.get("username") ||
+                           window.localStorage.getItem("cm.username") ||
+                           (customAccount && customAccount.profile && customAccount.profile.handle);
+      var customName = q.get("name") ||
+                       window.localStorage.getItem("cm.name") ||
+                       (customAccount && customAccount.user && customAccount.user.name);
+
+      if (customUsername) {
+        customUsername = customUsername.toLowerCase().trim();
+        acc.profile = acc.profile || {};
+        acc.user = acc.user || {};
+        acc.code = acc.code || {};
+
+        acc.profile.handle = customUsername;
+        acc.profile.title = customName || customUsername;
+        acc.user.name = customName || customUsername;
+        acc.user.email = (customAccount && customAccount.user && customAccount.user.email) || (customUsername + "@gmail.com");
+        acc.code.id = (customAccount && customAccount.code && customAccount.code.id) || customUsername.slice(0, 8);
+        acc.code.url = "codemarca.com/c/" + acc.code.id;
+
+        if (customAccount && customAccount.profile) {
+          if (customAccount.profile.photo) acc.profile.photo = customAccount.profile.photo;
+          if (customAccount.profile.bio) acc.profile.bio = customAccount.profile.bio;
+          if (customAccount.profile.links) acc.profile.links = customAccount.profile.links;
+          if (customAccount.profile.theme) acc.profile.theme = customAccount.profile.theme;
+        }
+
+        try {
+          window.localStorage.setItem("cm.username", customUsername);
+          if (customName) window.localStorage.setItem("cm.name", customName);
+        } catch (e) { }
+      }
+
+      return acc;
+    };
+
+    CM.fetchGetValues = function (username, onData) {
+      if (!username) return;
+      var q = new URLSearchParams(window.location.search);
+      var st = q.get("state") || "";
+      var flowId = (FLOW && FLOW.id) || "page-live";
+      var url = "/api/dashboard/get-values?username=" + encodeURIComponent(username) +
+                "&stage=" + encodeURIComponent(flowId) +
+                (st ? "&substage=" + encodeURIComponent(st) : "");
+
+      fetch(url)
+        .then(function (res) { return res.ok ? res.json() : null; })
+        .then(function (data) {
+          if (!data || !data.profile) return;
+          var p = data.profile;
+          var uName = p.display_name || p.username;
+          var uInitial = (uName || "?").trim().charAt(0).toUpperCase();
+
+          Array.prototype.forEach.call(document.querySelectorAll(".me__name, [data-fill='profile.title']"), function (el) {
+            el.textContent = uName;
+          });
+          Array.prototype.forEach.call(document.querySelectorAll("[data-fill='profile.handle']"), function (el) {
+            el.textContent = p.username;
+          });
+          Array.prototype.forEach.call(document.querySelectorAll(".me__url b"), function (el) {
+            el.textContent = p.username;
+          });
+          Array.prototype.forEach.call(document.querySelectorAll(".me__av, .avatar"), function (el) {
+            if (p.avatar_url && !p.avatar_url.includes("dicebear")) {
+              el.innerHTML = '<img src="' + p.avatar_url + '" alt="">';
+            } else {
+              el.textContent = uInitial;
+            }
+          });
+          Array.prototype.forEach.call(document.querySelectorAll(".side__me__name"), function (el) {
+            el.textContent = uName;
+          });
+          Array.prototype.forEach.call(document.querySelectorAll(".side__me__mail"), function (el) {
+            el.textContent = p.email || (p.username + "@gmail.com");
+          });
+
+          try {
+            var saved = JSON.parse(localStorage.getItem("cm.account.custom") || "{}");
+            saved.user = saved.user || {};
+            saved.profile = saved.profile || {};
+            saved.user.name = uName;
+            saved.user.email = p.email || (p.username + "@gmail.com");
+            saved.profile.handle = p.username;
+            saved.profile.title = uName;
+            saved.profile.bio = p.bio || "";
+            if (p.avatar_url) saved.profile.photo = p.avatar_url;
+            if (p.theme) saved.profile.theme = p.theme;
+            localStorage.setItem("cm.account.custom", JSON.stringify(saved));
+            localStorage.setItem("cm.username", p.username);
+            localStorage.setItem("cm.name", uName);
+          } catch(e) {}
+
+          if (typeof onData === "function") onData(data);
+        })
+        .catch(function () {});
     };
 
     CM.setState = function (k) {
@@ -315,6 +418,9 @@
       CM.foldCards();
       CM.fold();
       mountDemo(a);
+      if (a && a.profile && a.profile.handle) {
+        CM.fetchGetValues(a.profile.handle);
+      }
       return a;
     };
 
