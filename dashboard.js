@@ -117,7 +117,7 @@
                            (acc.profile && acc.profile.handle);
       var customName = window.localStorage.getItem("cm.name") ||
                        (customAccount && customAccount.user && customAccount.user.name) ||
-                       (acc.user && acc.user.name);
+                       (customUsername && customUsername !== "garry" ? customUsername : (acc.user && acc.user.name));
 
       if (customUsername) {
         customUsername = customUsername.toLowerCase().trim();
