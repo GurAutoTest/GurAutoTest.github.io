@@ -660,6 +660,50 @@
     SAVED = JSON.parse(JSON.stringify(S));
     paintLive();
     clean();
+
+    try {
+      var customAccount = JSON.parse(window.localStorage.getItem("cm.account.custom") || "{}");
+      customAccount.profile = customAccount.profile || {};
+      customAccount.user = customAccount.user || {};
+
+      customAccount.profile.handle = S.handle;
+      customAccount.profile.name = S.name;
+      customAccount.profile.title = S.name || S.handle;
+      customAccount.profile.bio = S.bio;
+      customAccount.profile.photo = S.photo;
+      customAccount.profile.theme = S.theme;
+      customAccount.profile.phone = S.phone;
+      customAccount.profile.phoneOn = S.phoneOn;
+      customAccount.profile.waSame = S.waSame;
+      customAccount.profile.wa = S.wa;
+      customAccount.profile.waOn = S.waOn;
+      customAccount.profile.email = S.email;
+      customAccount.profile.emailOn = S.emailOn;
+      customAccount.profile.links = S.links;
+      customAccount.profile.customs = S.customs;
+      customAccount.profile.order = S.order;
+      customAccount.profile.socialOrder = S.socialOrder;
+      customAccount.profile.live = S.live;
+
+      customAccount.user.name = S.name || S.handle;
+      customAccount.user.email = S.email || (S.handle ? S.handle + "@gmail.com" : "");
+      if (S.phone) customAccount.user.phone = "+91 " + S.phone;
+
+      window.localStorage.setItem("cm.account.custom", JSON.stringify(customAccount));
+      if (S.handle) window.localStorage.setItem("cm.username", S.handle);
+      if (S.name && S.name !== "Garry Singh" && S.name !== "Gurdeep Singh") {
+        window.localStorage.setItem("cm.name", S.name);
+      } else {
+        window.localStorage.removeItem("cm.name");
+      }
+      if (S.phone) window.localStorage.setItem("cm.phone", S.phone);
+      if (S.email) window.localStorage.setItem("cm.email", S.email);
+      if (S.photo) {
+        try { window.localStorage.setItem("cm.photo", S.photo); } catch(e) {}
+      } else {
+        try { window.localStorage.removeItem("cm.photo"); } catch(e) {}
+      }
+    } catch(e) {}
     CM.toast("Page updated");
     return true;
   }

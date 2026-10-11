@@ -485,6 +485,9 @@ input:-webkit-autofill:active{
   .ob:not([data-step="3"]) .pane{flex:none}
   .ob:not([data-step="3"]) .ob__foot{margin-top:0}
   .ob[data-step="3"] .ob__aside{display:none}
+.ob[data-step="3"] .ob__aside:not([data-open="true"]){display:none !important}
+html,body{overflow-x:hidden}
+.ob{overflow-x:hidden}
   /* "View my page" on the done screen — the preview comes back as a full
      overlay, since by then the sticky column has done its job */
   .ob .ob__aside[data-open="true"]{
@@ -1010,6 +1013,7 @@ body[data-showing]{overflow:hidden}
 
 /* ── 12. REVIEW TOOL — delete this block, its CSS and its script loop ──── */
 .preview{
+  display:none !important;
   position:fixed; right:var(--s-4); bottom:96px; z-index:50;
   display:flex; align-items:center; gap:var(--s-1); padding:5px; border-radius:var(--r-pill);
   background:var(--ground); box-shadow:var(--shadow-lg), inset 0 0 0 1px var(--line);
@@ -1471,7 +1475,7 @@ body[data-showing]{overflow:hidden}
 </div>
 
 <!-- Review tool only — delete this block, its CSS section and its script loop. -->
-<div class="preview" role="group" aria-label="Jump to step">
+<div class="preview" role="group" aria-label="Jump to step" hidden style="display:none !important">
   <button type="button" data-go="1" aria-pressed="true">About</button>
   <button type="button" data-go="2" aria-pressed="false">Links</button>
   <button type="button" data-go="3" aria-pressed="false">Done</button>
@@ -1625,8 +1629,41 @@ body[data-showing]{overflow:hidden}
      Three routes land here — claim signup, post-order dashboard, first
      scan of a fresh code. All three arrive with a handle. */
   var q = new URLSearchParams(location.search);
-  if (q.get("handle")) S.handle = cleanHandle(q.get("handle"));
-  if (q.get("name"))   S.name   = q.get("name").slice(0, 40);
+  var customAccount = null;
+  try {
+    var raw = localStorage.getItem("cm.account.custom");
+    if (raw) customAccount = JSON.parse(raw);
+  } catch(e) {}
+
+  var qH = q.get("handle");
+  var storedH = "";
+  try { storedH = localStorage.getItem("cm.username") || (customAccount && customAccount.profile && customAccount.profile.handle) || ""; } catch(e) {}
+  if (qH) S.handle = cleanHandle(qH);
+  else if (storedH) S.handle = cleanHandle(storedH);
+
+  var qN = q.get("name");
+  var storedN = "";
+  try {
+    storedN = localStorage.getItem("cm.name") || (customAccount && customAccount.user && customAccount.user.name) || (customAccount && customAccount.profile && customAccount.profile.title) || "";
+    if (storedN === "Garry Singh" || storedN === "Garry" || storedN === "Gurdeep Singh" || storedN === "Your Name" || storedN === "User") {
+      storedN = "";
+      localStorage.removeItem("cm.name");
+    }
+  } catch(e) {}
+  if (qN && qN !== "Garry Singh" && qN !== "Garry" && qN !== "Gurdeep Singh" && qN !== "Your Name") S.name = qN.slice(0, 40);
+  else if (storedN) S.name = storedN.slice(0, 40);
+
+  var qP = q.get("phone");
+  var storedP = "";
+  try { storedP = localStorage.getItem("cm.phone") || (customAccount && customAccount.profile && customAccount.profile.phone) || ""; } catch(e) {}
+  if (qP) S.phone = qP.replace(/\D/g, "").slice(0, 10);
+  else if (storedP) S.phone = storedP.replace(/\D/g, "").slice(0, 10);
+
+  var qE = q.get("email");
+  var storedE = "";
+  try { storedE = localStorage.getItem("cm.email") || (customAccount && customAccount.user && customAccount.user.email) || ""; } catch(e) {}
+  if (qE) S.email = qE.trim();
+  else if (storedE) S.email = storedE.trim();
 
   /* WHERE "DONE" GOES — added 2026-09-16 with the flow folders.
      Most people arrive here with no pack, so finishing lands them on the
@@ -1835,6 +1872,34 @@ body[data-showing]{overflow:hidden}
       paintDone(); celebrate();   /* every way in gets the burst (Garry, 2026-10-07) */
       paintPlaces();                         /* the row has a width now */
       requestAnimationFrame(paintPlaces);    /* …and again once fonts settle */
+
+      try {
+        localStorage.setItem("cm.username", S.handle);
+        localStorage.setItem("cm.name", S.name.trim());
+        if (S.phone) localStorage.setItem("cm.phone", S.phone);
+        if (S.email) localStorage.setItem("cm.email", S.email);
+        if (S.tag) localStorage.setItem("cm.tag", S.tag);
+        if (S.bio) localStorage.setItem("cm.bio", S.bio);
+        if (S.theme) localStorage.setItem("cm.theme", S.theme);
+        if (S.themeColor) localStorage.setItem("cm.themeColor", S.themeColor);
+        if (S.photo) localStorage.setItem("cm.photo", S.photo);
+        localStorage.setItem("cm.stage", "page-live");
+
+        var custom = {};
+        try { custom = JSON.parse(localStorage.getItem("cm.account.custom") || "{}"); } catch(e){}
+        custom.user = custom.user || {};
+        custom.profile = custom.profile || {};
+        custom.profile.brand = custom.profile.brand || {};
+        custom.user.name = S.name.trim();
+        custom.profile.title = S.name.trim();
+        custom.profile.handle = S.handle;
+        if (S.bio) custom.profile.bio = S.bio;
+        if (S.phone) custom.profile.phone = S.phone;
+        if (S.email) custom.user.email = S.email;
+        if (S.photo) custom.profile.photo = S.photo;
+        if (S.theme) custom.profile.brand.theme = S.theme;
+        localStorage.setItem("cm.account.custom", JSON.stringify(custom));
+      } catch(e) {}
     } else {
       closeShow();
       stopCelebrating();
