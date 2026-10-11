@@ -202,6 +202,11 @@ img,svg{display:block; max-width:100%}
 .pill .disc svg{width:27px; height:27px}
 .pill .disc svg.ro{width:22px; height:22px}
 .pill .disc--snap{background:#FFFC00}
+/* Pill: the disc is the brand's own colour now, the mark white (Garry,
+   2026-10-07) — the svg is the whole disc, so no white ground behind it */
+.pill .disc.disc--fill{background:none}
+.pill .disc.disc--fill svg{width:100%; height:100%}
+
 .pill .txt{flex:1; min-width:0}
 .pill .txt b, .tile .tx b{display:block; font-weight:500; line-height:1.15; letter-spacing:-.01em}
 .pill .txt b{font-size:15px}
@@ -352,8 +357,12 @@ img,svg{display:block; max-width:100%}
    script places every card on every frame (no CSS transitions); touch-action
    none keeps a swipe on the deck from scrolling the page. --pk1 / --pk2 are
    the two peeking cards' colours. */
-.deck{position:relative; width:100%; height:216px; margin-top:132px; touch-action:none; user-select:none; outline:none; cursor:grab}
+.deck{position:relative; width:100%; height:216px; margin-top:132px; touch-action:none; user-select:none; outline:none; cursor:grab;
+  /* its own stacking layer: the cards run z-index up to 100 among themselves,
+     and without this they rose above the share sheet (z 70) */
+  isolation:isolate; z-index:0}
 .deck.dragging{cursor:grabbing}
+.deck[data-n="1"]{cursor:default}
 .dk{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:30px;
   background:#fff; border:4px solid var(--ink4); border-radius:52px; color:var(--ink4);
   transform-origin:50% 0; will-change:transform, opacity}
@@ -484,7 +493,8 @@ img,svg{display:block; max-width:100%}
   color:var(--ink3); transition:background .15s}
 .pg[data-look="soft"] .em3:hover{background:#FAFAF9}
 .pg[data-look="soft"] .em3 svg{width:28px; height:28px}
-.pg[data-look="soft"] .save3{display:flex; align-items:center; justify-content:center; gap:14px; height:112px; margin-top:26px; border:0;
+.pg[data-look="soft"] .save3{display:flex; align-items:center; justify-content:center; gap:14px; height:112px; margin-top:26px;
+  border:2px solid #0B0B0C;   /* a black 2px edge on light (Garry, 2026-10-10); dark clears it */
   border-radius:999px; font-size:20px; font-weight:500; letter-spacing:-.005em; cursor:pointer; transition:background .15s}
 .pg[data-look="soft"] .save3:hover{background:#FAFAF9}
 .pg[data-look="soft"] .save3 svg{width:26px; height:26px}
@@ -642,7 +652,10 @@ img,svg{display:block; max-width:100%}
 .pg[data-theme="soft-dark"] .ph3{background:#2A2A27}
 .pg[data-theme="soft-dark"] .ph3 svg rect{fill:#2A2A27}
 .pg[data-theme="soft-dark"] .ph3 svg circle, .pg[data-theme="soft-dark"] .ph3 svg path{fill:#5A5A54}
-.pg[data-theme="soft-dark"] .cw3:hover, .pg[data-theme="soft-dark"] .em3:hover, .pg[data-theme="soft-dark"] .save3:hover{background:#262624}
+.pg[data-theme="soft-dark"] .cw3:hover, .pg[data-theme="soft-dark"] .em3:hover{background:#262624}
+/* dark: Save contact a step lighter than the cards, no line (Garry, 2026-10-10) */
+.pg[data-theme="soft-dark"] .save3{background:#272725; border-color:transparent}
+.pg[data-theme="soft-dark"] .save3:hover{background:#2E2E2B}
 .pg[data-theme="soft-dark"] .cw3 small, .pg[data-theme="soft-dark"] .it3 small{color:#9A9A94}
 .pg[data-theme="soft-dark"] .soc3 a:hover{background:#2A2A27}
 .pg[data-theme="soft-dark"] .it3 + .it3{box-shadow:0 -1px 0 #2C2C29}
@@ -653,7 +666,8 @@ img,svg{display:block; max-width:100%}
 /* Photo, dark */
 .pg[data-theme="photo-dark"]{--bg:#0E1014}
 .pg[data-theme="photo-dark"] .card{--ink5:#F3F5F8; --tint5:rgba(20,151,245,.16); --line5:#272B33}
-.pg[data-theme="photo-dark"] .card5, .pg[data-theme="photo-dark"] .grp{background:#191C22}
+.pg[data-theme="photo-dark"] .card5, .pg[data-theme="photo-dark"] .grp{background:#191C22;
+  outline:1px solid #2C2F39; outline-offset:-1px}   /* an edge on the dark ground (Garry, 2026-10-07) */
 .pg[data-theme="photo-dark"] .photo5{background:#252932}
 .pg[data-theme="photo-dark"] .photo5 .face5{color:#454B56}
 .pg[data-theme="photo-dark"] .share{background:#191C22; color:#F3F5F8; box-shadow:0 6px 18px -8px rgba(0,0,0,.7)}
@@ -667,6 +681,76 @@ img,svg{display:block; max-width:100%}
 .pg[data-theme="photo-dark"] .rowshare{color:#6CC0FF}
 .pg[data-theme="photo-dark"] .brand button{background:#F3F5F8; color:#0E1014}
 .pg[data-theme="photo-dark"] .brand button:hover{background:#fff}
+
+/* ── 2f. LIGHT, Apple-style (Garry, 2026-10-06) ───────────────────────────
+   Same layout as before — only the surface changes. The grey rows read as
+   disabled, so the page takes iOS Settings' grammar: a soft grey ground,
+   white rows that sit up off it, a coloured rounded tile in front of each
+   row naming what it does (later: plain glyphs, no tile — Garry), and Save
+   contact in system blue. light-dark is
+   the same thing on black. */
+.pg[data-theme="light"]{--bg:#F2F2F7; --fg:#000000; --mid:#6E6E73; --btn:#FFFFFF; --btn-fg:#000000; --edge:transparent; --r-btn:14px;
+  --row-sh:0 1px 2px rgba(0,0,0,.05), 0 0 0 .5px rgba(0,0,0,.05); --row-hover:#FAFAFA; --chev:#C7C7CC; --tint:#007AFF; --av-bg:#E5E5EA}
+.pg[data-theme="light-dark"]{--mark:currentColor; --bg:#000000; --fg:#FFFFFF; --mid:#8E8E93; --btn:#1C1C1E; --btn-fg:#FFFFFF; --edge:transparent; --r-btn:14px;
+  --row-sh:none; --row-hover:#242426; --chev:#48484A; --tint:#0A84FF; --av-bg:#2C2C2E; --av-fg:#FFFFFF}
+.pg[data-theme^="light"] .name{font-weight:var(--fw-bold); letter-spacing:-.02em}
+.pg[data-theme^="light"] .share{background:var(--btn); color:var(--tint); box-shadow:var(--row-sh)}
+.pg[data-theme^="light"] .share:hover{transform:none; background:var(--row-hover); box-shadow:var(--row-sh)}
+.pg[data-theme^="light"] .handle:hover{background:var(--btn)}
+/* rows: white cards, a coloured tile, 16px semibold text */
+.pg[data-theme^="light"] .list{gap:10px}
+.pg[data-theme^="light"] .btn{position:relative; min-height:54px; gap:14px; padding:11px 16px 11px 12px;
+  background:var(--btn); color:var(--btn-fg); box-shadow:var(--row-sh); font-size:16px; font-weight:var(--fw-semibold); letter-spacing:-.01em}
+.pg[data-theme^="light"] .btn:hover{background:var(--row-hover); box-shadow:var(--row-sh)}
+.pg[data-theme^="light"] .btn:active{transform:scale(.985)}
+/* row icons: plain line glyphs in the text colour — no tile behind them */
+.pg[data-theme^="light"] .btn svg{width:22px; height:22px; margin:0 4px; opacity:1; color:var(--btn-fg)}
+/* socials: one row of equal round marks, a touch smaller, with room to breathe */
+/* Each mark sits in a 48px tap box — the icon grows a little (36 → 38), the
+   rest is padding, so a thumb never has to aim (Garry, 2026-10-08). */
+.pg[data-theme^="light"] .socials{gap:12px 16px; padding-block:8px}
+.pg[data-theme^="light"] .socials a{display:grid; place-items:center; width:48px; height:48px; border-radius:50%}
+.pg[data-theme^="light"] .socials svg{width:38px; height:38px; display:block}
+/* on a phone, five to a row at most: 5 × 48 + 4 × 12 */
+@media (max-width:639.98px){
+  .pg[data-theme^="light"] .socials{gap:8px 12px; max-width:288px; margin-inline:auto}
+}
+/* a row with nothing on its right gets the iOS chevron */
+.pg[data-theme^="light"] .list > .btn:not(.btn--save)::after{content:""; margin-left:auto; flex:none; width:8px; height:8px;
+  border-top:2px solid var(--chev); border-right:2px solid var(--chev); transform:rotate(45deg); margin-right:4px}
+/* the row share, in the system tint */
+.pg[data-theme^="light"] .row .btn{padding-right:52px}
+.pg[data-theme^="light"] .rowshare{right:10px; width:34px; height:34px; color:var(--tint); opacity:1; border-radius:50%}
+.pg[data-theme^="light"] .rowshare:hover{background:rgba(0,122,255,.1); box-shadow:none}
+.pg[data-theme^="light"] .rowshare svg{width:18px; height:18px}
+/* Save contact: the one filled button, system blue */
+.pg[data-theme^="light"] .btn--save{justify-content:center; background:var(--tint); color:#fff; box-shadow:none}
+.pg[data-theme^="light"] .btn--save:hover{background:var(--tint); filter:brightness(1.06)}
+.pg[data-theme^="light"] .btn--save svg{display:none}   /* just the words (Garry) */
+.pg[data-theme^="light"] .btn--save span{flex:none}
+.pg[data-theme^="light"] .brand button{background:var(--btn); color:var(--fg); box-shadow:var(--row-sh)}
+.pg[data-theme^="light"] .brand button:hover{transform:none; box-shadow:var(--row-sh); background:var(--row-hover)}
+/* dark: X and Threads' near-black discs would vanish on black — lift them */
+.pg[data-theme="light-dark"] .socials .dsc[fill="#111214"]{fill:#2C2C2E}
+.pg[data-theme="light-dark"] .avatar .face rect{fill:#2C2C2E}
+.pg[data-theme="light-dark"] .avatar .face circle, .pg[data-theme="light-dark"] .avatar .face path{fill:#636366}
+.pg[data-theme="light-dark"] .rowshare:hover{background:rgba(10,132,255,.16)}
+/* on black the rows need an edge (Garry, 2026-10-07) */
+.pg[data-theme="light-dark"] .btn:not(.btn--save),
+.pg[data-theme="light-dark"] .share,
+.pg[data-theme="light-dark"] .brand button{box-shadow:inset 0 0 0 1px #2D2D30}
+
+/* ── 2g. CLEAR OF THE NOTCH (Garry, 2026-10-08) ──────────────────────────
+   On a phone the top ~50px is the status bar / dynamic island — the My QR
+   iPhone frame draws one, and a real phone may too. Every theme whose first
+   thing is a photo, a share button or a card edge starts below it. Photo is
+   the exception: its top IS the picture, which is meant to run up there.
+   When the owner's sticky "This is your page" bar is showing, it leads
+   instead — but previews (chrome=0, as in My QR) hide that bar. */
+@media (max-width:639px){
+  .pg:not([data-look="photo"]){padding-top:40px}
+  .pg[data-view="owner"]:has(> .bar:not([hidden])){padding-top:0}
+}
 
 /* ── 3. OWNER BAR — thin, and that is the whole point ──────────────────── */
 .bar{
@@ -1004,7 +1088,6 @@ img,svg{display:block; max-width:100%}
    this padding goes when the panel goes */
 .pg{padding-bottom:104px}
 .rev{
-  display:none !important;
   position:fixed; right:var(--s-4); bottom:var(--s-4); z-index:60;
   display:flex; flex-direction:column; gap:var(--s-2); padding:var(--s-2);
   border-radius:var(--r-lg); background:#fff; box-shadow:var(--shadow-lg), inset 0 0 0 1px var(--line);
@@ -1026,6 +1109,7 @@ img,svg{display:block; max-width:100%}
 .rev__sw[data-t="leaf-blue"]{background:#0062FE; box-shadow:inset 0 0 0 3px #fff, inset 0 0 0 5px #0A0A0A}
 .rev__sw[data-t="leaf-orange"]{background:#F45C30; box-shadow:inset 0 0 0 3px #fff, inset 0 0 0 5px #0A0A0A}
 .rev__sw[data-t="leaf-violet"]{background:#6741FF; box-shadow:inset 0 0 0 3px #fff, inset 0 0 0 5px #0A0A0A}
+.rev__sw[data-t="light-dark"]{background:#000; box-shadow:inset 0 0 0 6px #1C1C1E}
 .rev__sw[data-t="soft"]{background:#E8E7E5; box-shadow:inset 0 0 0 6px #fff}
 .rev__sw[data-t="soft-dark"]{background:#121211; box-shadow:inset 0 0 0 6px #1E1E1C}
 .rev__sw[data-t="photo"]{background:#C4CBD4; box-shadow:inset 0 0 0 6px #fff}
@@ -1067,10 +1151,14 @@ input:-webkit-autofill:active{
 
 <svg style="position:absolute;width:0;height:0" aria-hidden="true" focusable="false">
   <defs>
-    <linearGradient id="igGrad" x1="0" y1="1" x2="1" y2="0">
-      <stop offset="0" stop-color="#FEDA75"/><stop offset=".35" stop-color="#FA7E1E"/>
-      <stop offset=".62" stop-color="#D62976"/><stop offset="1" stop-color="#962FBF"/>
-    </linearGradient>
+    <!-- Instagram's own glow: yellow from the bottom-left corner, through
+         orange and pink, to blue at the top (Garry, 2026-10-07 — the old
+         straight diagonal did not read as the real icon) -->
+    <radialGradient id="igGrad" cx=".3" cy="1.07" r="1.5">
+      <stop offset="0" stop-color="#FDF497"/><stop offset=".05" stop-color="#FDF497"/>
+      <stop offset=".45" stop-color="#FD5949"/><stop offset=".6" stop-color="#D6249F"/>
+      <stop offset=".9" stop-color="#285AEB"/>
+    </radialGradient>
   </defs>
 </svg>
 
@@ -1408,8 +1496,8 @@ input:-webkit-autofill:active{
         return '<div class="sgrid">' + s.map(function (x) {
           var u = esc(SOCIAL_URL[x](P.links[x])), sub = subOf(P.links[x]);
           return look === "pill"
-            ? '<a class="pill" href="' + u + '" target="_blank" rel="noopener"><span class="disc' + (x === "snapchat" ? " disc--snap" : "") + '">' +
-              brandIc(x) + '</span><span class="txt"><b>' + SOC_NAME[x] + "</b><small>" + esc(sub) + "</small></span></a>"
+            ? '<a class="pill" href="' + u + '" target="_blank" rel="noopener"><span class="disc disc--fill">' +
+              fillIc(x) + '</span><span class="txt"><b>' + SOC_NAME[x] + "</b><small>" + esc(sub) + "</small></span></a>"
             : '<a class="tile" href="' + u + '" target="_blank" rel="noopener" aria-label="' + SOC_NAME[x] + '">' + monoIc(x) +
               '<span class="tx"><b>' + SOC_NAME[x] + "</b>" + handleTag(sub, WIDE.matches ? 15 : 0) + "</span></a>";
         }).join("") + "</div>";
@@ -1469,7 +1557,32 @@ input:-webkit-autofill:active{
      below. On release a flick carries on and settles on the nearest card.
      The deck is rebuilt on every render (the preview re-renders per
      keystroke), so DK keeps the position and the handlers are wired once. */
-  var DK = { pos: 0, anim: null, shown: -1 };
+  var DK = { pos: 0, anim: null, shown: -1, n: 0, m: null, keys: [], grow: null };
+  /* Where card i sits. Four or more: the wheel above — seen cards stacked
+     above, the next one waiting below. Two or three (Garry, 2026-10-08):
+     every other card peeks above the front one, so each is visible — 2 shows
+     one peek, 3 shows two — and rolling swaps them: the front rises into the
+     stack while the card at the back of it drops down to the front. */
+  /* Returns [t, fade]. The motion is the date picker's (Garry, 2026-10-08):
+     scroll UP and the card below rises to the front while the front one
+     climbs into the stack; scroll DOWN and the front card drops away below
+     while the card peeking behind it comes forward.
+     Four or more: only the next card waits below (unseen), all others are
+     above, so two always peek. Two or three: there is no spare card to keep
+     below, so the next one is the deepest peek — on its way to the front it
+     fades out at the top of the stack and rises in from below, which keeps
+     the same direction of travel. fade multiplies its opacity. */
+  function deckDepth(i, n) {
+    if (n <= 1) { return [0, 1]; }
+    if (n <= 3) {
+      var u = (((DK.pos - i) % n) + n) % n;
+      if (u <= n - 1) { return [-u, 1]; }
+      var v = u - (n - 1);
+      return v < .5 ? [-(n - 1) - v, 1 - 2 * v] : [2 * (1 - v), 1];
+    }
+    var t = (((i - DK.pos) % n) + n) % n;
+    return [t > 1 ? t - n : t, 1];
+  }
   function deckCards() { return Array.prototype.slice.call($("list").querySelectorAll(".dk")); }
   function mixHex(a, b, k) {
     var x = parseInt(a.slice(1), 16), y = parseInt(b.slice(1), 16);
@@ -1484,15 +1597,17 @@ input:-webkit-autofill:active{
     var small = deck.clientWidth < 480;
     var Y1 = small ? 34 : 46, Y2 = small ? 62 : 84, YB = small ? 40 : 54;
     cards.forEach(function (c, i) {
-      var t = i - DK.pos;
-      t = ((t % n) + n) % n; if (t > n / 2) { t -= n; }
+      var dp = deckDepth(i, n), t = dp[0];
+      /* a card just added rises out from behind the front one */
+      if (DK.grow && DK.grow.i === i) { t = t * DK.grow.k; }
       var y, s, o = 1, bg = "#FFFFFF", a = Math.abs(t);
       if (t >= 0) { var k = Math.min(t, 1); y = YB * k; s = 1 - .14 * k; o = 1 - k; }
       else if (a <= 1) { y = -Y1 * a; s = 1 - .08 * a; bg = mixHex("#FFFFFF", pk1, a); }
       else if (a <= 2) { y = -Y1 - (Y2 - Y1) * (a - 1); s = .92 - .10 * (a - 1); bg = mixHex(pk1, pk2, a - 1); }
       else { y = -Y2; s = .82; bg = pk2; o = Math.max(0, 1 - (a - 2)); }
       c.style.transform = "translateY(" + y.toFixed(2) + "px) scale(" + s.toFixed(4) + ")";
-      c.style.opacity = o.toFixed(3);
+      /* a card coming or going fades (blur was tried and dropped, 2026-10-08) */
+      c.style.opacity = (o * dp[1]).toFixed(3);
       c.style.backgroundColor = bg;
       c.style.setProperty("--c", Math.max(0, 1 - a * 2).toFixed(3));
       c.style.zIndex = String(Math.round(t >= 0 ? 100 - t * 20 : 85 - a * 20));
@@ -1521,12 +1636,16 @@ input:-webkit-autofill:active{
       DK.pos = from + d * e; deckPaint();
       DK.anim = k < 1 ? requestAnimationFrame(step) : null;
     })(t0);
+    /* frames pause in a hidden tab — land on the card anyway */
+    clearTimeout(DK.land);
+    DK.land = setTimeout(function () { if (DK.anim) { deckStop(); DK.pos = to; deckPaint(); } }, dur + 60);
   }
   function wireDeck() {
     var y0 = null, p0 = 0, moved = false, lastY = 0, lastT = 0, vel = 0, deck = null, settle = null;
     function stepPx() { return (deck ? deck.clientHeight : 216) * .62; }
     document.addEventListener("pointerdown", function (e) {
       deck = e.target.closest && e.target.closest(".deck"); if (!deck) { return; }
+      if (deckCards().length < 2) { deck = null; return; }   /* one card: nothing to roll */
       deckStop(); y0 = lastY = e.clientY; p0 = DK.pos; lastT = performance.now(); vel = 0; moved = false;
       deck.classList.add("dragging");
     });
@@ -1558,6 +1677,7 @@ input:-webkit-autofill:active{
     /* wheel / trackpad over the deck rolls it; anywhere else scrolls the page */
     document.addEventListener("wheel", function (e) {
       if (!e.target.closest || !e.target.closest(".deck")) { return; }
+      if (deckCards().length < 2) { return; }   /* one card: let the page scroll */
       e.preventDefault(); deckStop();
       var d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
       if (e.deltaMode === 1) { d *= 32; }
@@ -1567,6 +1687,7 @@ input:-webkit-autofill:active{
     }, { passive: false });
     document.addEventListener("keydown", function (e) {
       if (!e.target.closest || !e.target.closest(".deck")) { return; }
+      if (deckCards().length < 2) { return; }
       if (e.key === "ArrowDown" || e.key === "ArrowRight") { e.preventDefault(); deckGlide(Math.round(DK.pos) + 1); }
       if (e.key === "ArrowUp" || e.key === "ArrowLeft") { e.preventDefault(); deckGlide(Math.round(DK.pos) - 1); }
     });
@@ -1616,7 +1737,45 @@ input:-webkit-autofill:active{
     /* consecutive link rows sit in one grid so they share the gap */
     html = html.replace(/((?:<div class="lrow">[\s\S]*?<\/button><\/div>)+)/g, '<div class="links4">$1</div>');
     $("list").innerHTML = html;
+    deckSettle();
     deckPaint();
+  }
+
+  /* The gap above the deck is the room its peeking cards need: none for one
+     card, one peek for two, two for three or more. When a social is added or
+     removed the front card eases down (or up) to its new place, and a new
+     card rises out from behind it (Garry, 2026-10-08). */
+  function deckSettle() {
+    var deck = $("list").querySelector(".deck");
+    if (!deck) { DK.n = 0; DK.keys = []; return; }
+    var keys = liveSocials(), n = keys.length;
+    var small = deck.clientWidth < 480;
+    var m = (small ? [0, 36, 70, 96] : [0, 48, 94, 132])[Math.min(n, 3)];
+    deck.dataset.n = n;
+    if (DK.n && n !== DK.n && DK.m !== null) {
+      deck.style.marginTop = DK.m + "px";
+      void deck.offsetHeight;
+      deck.style.transition = "margin-top .6s cubic-bezier(.22,.8,.24,1)";
+    }
+    deck.style.marginTop = m + "px";
+    if (DK.n && n > DK.n) {
+      var added = keys.filter(function (k) { return DK.keys.indexOf(k) < 0; })[0];
+      var gi = keys.indexOf(added);
+      if (gi > -1) {
+        var t0 = performance.now(), g = { i: gi, k: 0 };
+        DK.grow = g;
+        (function step(now) {
+          if (DK.grow !== g) { return; }   /* finished by the fallback, or a newer one started */
+          var k = Math.min(1, (now - t0) / 600);
+          g.k = 1 - Math.pow(1 - k, 3);
+          deckPaint();
+          if (k < 1) { requestAnimationFrame(step); } else { DK.grow = null; deckPaint(); }
+        })(t0);
+        /* frames pause in a hidden tab — make sure the card still lands */
+        setTimeout(function () { if (DK.grow === g) { DK.grow = null; deckPaint(); } }, 700);
+      }
+    }
+    DK.n = n; DK.m = m; DK.keys = keys.slice();
   }
 
 
@@ -1633,18 +1792,32 @@ input:-webkit-autofill:active{
     return '<button class="handle" type="button" data-act="copy" aria-label="Copy this page\'s link"><span>codemarca.com/' + esc(P.handle) + "</span>" + CP_GLYPH + "</button>";
   }
   function shareBtn() { return '<button class="share" type="button" data-act="share" aria-label="Share this page">' + SHARE_GLYPH + "</button>"; }
-  /* a social as an app icon: Snapchat on its yellow disc, Instagram on its squircle */
-  function appIc(k) {
-    if (k === "snapchat") {
-      return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#FFFC00"/>' +
-             '<path d="' + SI.snapchat + '" fill="#fff" stroke="#000" stroke-width="1.2" stroke-linejoin="round" transform="translate(4.6 4.6) scale(.62)"/></svg>';
+  /* Soft: the same filled discs as Light (Garry, 2026-10-07) */
+  function appIc(k) { return fillIc(k); }
+  /* ── A social as a filled disc: the brand's colour behind a white mark
+     (Garry, 2026-10-07). Light, Pill and Soft all use it. Marks that are
+     already a circle (Facebook, Telegram, Spotify, Pinterest) are drawn as
+     they are. YouTube is a white play on red, LinkedIn a white "in" on
+     blue: their own marks are a box, and a box inside a disc looks wrong.
+     X and Threads sit on a near-black disc (class dsc) so the dark theme can
+     lift it. ── */
+  var FILL_NATIVE = { facebook:1, telegram:1, spotify:1, pinterest:1 };
+  var FILL_GLYPH = {
+    youtube : '<path d="M9.7 7.6 16.6 12l-6.9 4.4z" fill="#fff"/>',
+    linkedin: '<rect x="6.3" y="9.9" width="2.6" height="7.9" rx=".4" fill="#fff"/><circle cx="7.6" cy="7.1" r="1.55" fill="#fff"/><path d="M10.9 17.8V9.9h2.5V11c.42-.72 1.24-1.3 2.44-1.3 2 0 3.06 1.24 3.06 3.5v4.6h-2.6v-4.2c0-1.1-.42-1.76-1.4-1.76-1 0-1.5.68-1.5 1.76v4.2z" fill="#fff"/>'
+  };
+  function fillIc(k) {
+    if (FILL_NATIVE[k]) {
+      return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11.4" fill="#fff"/><path d="' + SI[k] + '" fill="' + BRAND[k] + '"/></svg>';
     }
-    if (k === "instagram") {
-      return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="url(#igGrad)"/>' +
-             '<path d="' + SI.instagram + '" fill="#fff" transform="translate(4.8 4.8) scale(.6)"/></svg>';
-    }
-    return brandIc(k);
+    var disc = k === "x" || k === "threads" ? "#111214" : k === "snapchat" ? "#FFFC00" : BRAND[k];
+    var glyph = FILL_GLYPH[k] ||
+      (k === "snapchat"
+        ? '<path d="' + SI[k] + '" fill="#fff" stroke="#000" stroke-width="1.3" stroke-linejoin="round" transform="translate(5.4 5.4) scale(.55)"/>'
+        : '<path d="' + SI[k] + '" fill="#fff" transform="translate(6 6) scale(.5)"/>');
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="dsc" cx="12" cy="12" r="12" fill="' + disc + '"/>' + glyph + "</svg>";
   }
+  function circIc(k) { return fillIc(k); }
   function prettyTel(v) {
     var d = String(v).replace(/[^0-9]/g, "").slice(-10);
     return d.length === 10 ? "+91 " + d.slice(0, 5) + " " + d.slice(5) : String(v);
@@ -1798,7 +1971,9 @@ input:-webkit-autofill:active{
         if (!s.length) return "";
         return '<div class="socials">' + s.map(function (x) {
           return '<a href="' + esc(SOCIAL_URL[x](P.links[x])) + '" target="_blank" rel="noopener" aria-label="' +
-                 esc(x) + '">' + ic(x) + "</a>";
+                 /* every mark on the same round disc, so the row reads as one even line —
+                    official shapes (Simple Icons), not the old hand-drawn glyphs */
+                 esc(x) + '">' + circIc(x) + "</a>";
         }).join("") + "</div>";
       }
       var h = href(k); if (!h) return "";
@@ -1809,7 +1984,7 @@ input:-webkit-autofill:active{
       var attrs = k === "vcard"
         ? ' type="button" id="vcardBtn"'
         : ' href="' + esc(h) + '"' + (isLocal ? "" : ' target="_blank" rel="noopener"');
-      var row = "<" + tag + ' class="btn' + (k === "vcard" ? " btn--save" : "") + '"' + attrs + ">" +
+      var row = "<" + tag + ' class="btn' + (k === "vcard" ? " btn--save" : "") + '" data-k="' + esc(LABEL[k] ? k : "custom") + '"' + attrs + ">" +
                 rowIc(LABEL[k] ? k : "custom") +
                 "<span>" + esc(label) + "</span></" + tag + ">";
 
@@ -2079,62 +2254,6 @@ input:-webkit-autofill:active{
   if (q.get("theme"))  P.theme  = q.get("theme");
   if (q.get("view"))   pg.dataset.view = q.get("view");
 
-  try {
-    var rawCustom = localStorage.getItem("cm.account.custom");
-    var customAcc = rawCustom ? JSON.parse(rawCustom) : null;
-    var stHandle = localStorage.getItem("cm.username") || (customAcc && customAcc.profile && customAcc.profile.handle) || "";
-    var isOwner = q.get("view") === "owner" || (stHandle && P.handle && stHandle.toLowerCase() === P.handle.toLowerCase());
-    if (isOwner) {
-      if (customAcc && customAcc.profile) {
-        var cp = customAcc.profile;
-        if (cp.handle) P.handle = cp.handle;
-        if (cp.title || cp.name) P.name = cp.title || cp.name;
-        else if (cp.handle) P.name = cp.handle;
-        if (cp.bio !== undefined) P.bio = cp.bio;
-        if (cp.photo !== undefined) P.photo = cp.photo;
-        if (cp.phone !== undefined) P.phone = cp.phone;
-        if (cp.wa !== undefined) P.wa = cp.wa;
-        if (cp.email !== undefined) P.email = cp.email;
-        if (cp.links !== undefined) P.links = cp.links;
-        if (cp.customs !== undefined) P.customs = cp.customs;
-        if (cp.theme && !q.get("theme")) P.theme = cp.theme;
-        if (cp.order) P.order = cp.order;
-        if (cp.socialOrder) P.socialOrder = cp.socialOrder;
-      } else {
-        var stName = localStorage.getItem("cm.name");
-        if (stName && stName !== "Garry Singh" && stName !== "Gurdeep Singh" && stName !== "Your Name") {
-          P.name = stName;
-        } else if (stHandle) {
-          P.name = stHandle;
-        }
-        var stBio = localStorage.getItem("cm.bio");
-        if (stBio) P.bio = stBio;
-        var stPhone = localStorage.getItem("cm.phone");
-        if (stPhone && stPhone !== "9876543210") { P.phone = stPhone; P.wa = stPhone; }
-        else { P.phone = ""; P.wa = ""; }
-        var stEmail = localStorage.getItem("cm.email");
-        if (stEmail && stEmail !== "garry@example.com") P.email = stEmail;
-        else { P.email = ""; }
-        var stPhoto = localStorage.getItem("cm.photo");
-        if (stPhoto) P.photo = stPhoto;
-        P.links = {};
-        P.customs = [];
-        P.socialOrder = [];
-      }
-    }
-  } catch(e) {}
-
-  if (P.name === "Gurdeep Singh" || P.name === "Garry Singh" || P.name === "Your Name" || P.name === "User") {
-    P.name = P.handle || "My Page";
-  }
-  if ((P.phone === "9876543210" || P.phone === "+91 98765 43210" || P.phone.replace(/\D/g,"") === "9876543210") && (!customAcc || !customAcc.profile || !customAcc.profile.phone)) {
-    P.phone = "";
-    P.wa = "";
-  }
-  if ((P.email === "hello@gurdeep.in" || P.email === "garry@example.com") && (!customAcc || !customAcc.profile || !customAcc.profile.email)) {
-    P.email = "";
-  }
-
   /* ?bare=1 — the page a Google sign-up produces before anyone edits it:
      a name, a handle, and nothing else. This is what the code of a claimed
      gift sticker actually opens, and the dashboard previews it with this
@@ -2206,7 +2325,7 @@ input:-webkit-autofill:active{
 
   /* Review tool — delete this block and the .rev markup before launch. */
   var THEMES = ["light", "glass-bronze", "leaf", "leaf-blue", "leaf-orange", "leaf-violet",
-                "glass-copper", "soft", "soft-dark", "photo", "photo-dark"];
+                "glass-copper", "soft", "soft-dark", "photo", "photo-dark", "light-dark"];
   $("revTheme").innerHTML = THEMES.map(function (t) {
     return '<button class="rev__sw" type="button" data-t="' + t + '" aria-pressed="' +
            (t === P.theme) + '" aria-label="' + t + ' theme"></button>';

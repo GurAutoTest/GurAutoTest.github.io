@@ -5,6 +5,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../../dashboard.css">
+<link rel="stylesheet" href="../../page-view.css">
 <link rel="stylesheet" href="../../tab-qr.css">
 
 <!-- ==========================================================================
@@ -28,9 +29,13 @@
 
       <header class="head">
         <h1>My QR</h1>
+        <p data-when="offline">Made when your page went live, and yours for good. Your page is
+           switched off right now, so a scan shows a short “not available” note.</p>
         <p data-when="fresh settled">Made when your page went live, and yours for good. Nothing is
            printed yet — but the square already works anywhere you can put a
            picture.</p>
+        <p data-when="gifted">Printed on the stickers <b data-fill="giftedBy.name">Arjun M.</b> sent
+           you, and yours for good. It started working the moment your page went live.</p>
         <p data-when="coming">Made when your page went live, and yours for good. It already
            works — the stickers on their way carry this exact square.</p>
       </header>
@@ -125,7 +130,7 @@
 
       <!-- ── the pack, argued with the code rather than at it ──────────── -->
 
-      <section class="card card--dark card--close card--act" data-when="fresh settled">
+      <section class="card card--dark card--close card--act" data-when="fresh settled gifted offline">
         <span class="card__title">Next</span>
         <p class="card__h" style="margin-top:var(--s-2)">Get it on things.</p>
         <p class="card__note" style="margin-top:var(--s-2)">
@@ -167,5 +172,6 @@
 
 <script src="state.js"></script>
 <script src="../../dashboard.js"></script>
+<script src="../../page-view.js"></script>
 <script src="../../tab-qr.js"></script>
 <script>CM.strip(document.querySelector("[data-strip]"));</script>

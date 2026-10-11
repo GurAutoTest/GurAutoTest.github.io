@@ -139,6 +139,48 @@ img.shot__ph{display:block; width:100%; height:auto; padding:0; border:0; object
    CM.referCard in dashboard.js. The meter fill
    is ink, not violet — the brand colour stays rare. */
 .rf{gap:var(--s-5)}
+/* the free tee on its own photo — text on the dark left, the tee floating
+   right (Garry, 2026-10-08). card--dark brings the inverted title, buttons
+   and link box; the rest of the dark text is here because tab-gift.css,
+   which has rf--dark, is not loaded on Home. */
+.card--dark.rf--tee{
+  position:relative; overflow:visible;
+  background:linear-gradient(90deg, rgba(10,10,11,.92) 0, rgba(10,10,11,.6) 45%, rgba(10,10,11,0) 72%),
+             url("assets/photos/tshirtfreebee.jpg") 70% 50% / cover no-repeat, #0B0B0C;
+}
+@media (max-width:559px){
+  /* a phone: the tee rides the top right and the copy sits on the dark below */
+  .card--dark.rf--tee{
+    background:linear-gradient(180deg, rgba(10,10,11,.1) 0, rgba(10,10,11,.75) 38%, rgba(10,10,11,.95) 60%),
+               url("assets/photos/tshirtfreebee.jpg") 80% 0 / auto 62% no-repeat, #0B0B0C;
+  }
+}
+.rf--tee .rf__h{color:var(--ink-invert)}
+.rf--tee .rf__p{color:rgba(255,255,255,.72)}
+.rf--tee .rf__p b{color:var(--ink-invert)}
+.rf--tee .rf__n{color:var(--ink-invert)}
+.rf--tee .rf__of{color:rgba(255,255,255,.5)}
+/* the colour on the card is green — the meter and the Invite button, so
+   the thing that fills and the thing that fills it read as one (Garry,
+   2026-10-08: it had gone black and white). At 0 a short stub still says
+   "this fills". */
+/* meter, Invite button, link box and the gap above the designs: shared with
+   the Gift tab and 4-active's Refer card — see the end of dashboard.css */
+
+/* the same padding as the "Get your two stickers" card (card--close) */
+.rf--tee{--rf-px:var(--s-10); padding:var(--s-10) var(--rf-px)}
+@media (min-width:1024px){ .rf--tee{--rf-px:var(--s-12); padding:var(--s-12) var(--rf-px)} }
+@media (max-width:399px){ .rf--tee{--rf-px:var(--gutter); padding:var(--s-8) var(--rf-px)} }
+/* the tee strip bleeds to the card's edge, so it follows that padding */
+.rf--tee .rf__tees{margin-inline:calc(var(--rf-px) * -1); padding-inline:var(--rf-px); scroll-padding-inline:var(--rf-px)}
+@media (min-width:1280px){ .rf--tee .rf__tees{margin-inline:0; padding-inline:0} }
+/* a faint rail under it — a phone hides real scrollbars until you swipe,
+   so nothing said there were more tees. Drawn and moved by home.html. */
+.rf__rail{position:relative; height:4px; margin-top:var(--s-3); border-radius:4px; background:rgba(255,255,255,.1); overflow:hidden}
+.rf__rail[hidden]{display:none}
+.rf__rail i{position:absolute; inset:0 auto 0 0; display:block; border-radius:inherit; background:rgba(255,255,255,.34)}
+.rf--tee .rf__sub{color:rgba(255,255,255,.62)}
+.rf--tee .rf__sub b{color:var(--ink-invert)}
 .rf__say{display:flex; flex-direction:column; gap:var(--s-2)}
 .rf__h{font-size:clamp(1.25rem,4.4vw,1.5rem); font-weight:var(--fw-black);
   letter-spacing:var(--ls-display); line-height:1.12; text-wrap:balance}

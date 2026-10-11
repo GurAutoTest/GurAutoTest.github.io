@@ -41,10 +41,11 @@
     leaf:  { label:"Colour", list:[
       { t:"leaf", n:"Green", c:"#A3BF5A" }, { t:"leaf-blue", n:"Blue", c:"#0062FE" },
       { t:"leaf-orange", n:"Orange", c:"#F45C30" }, { t:"leaf-violet", n:"Violet", c:"#6741FF" } ] },
+    light: { label:"Mode", list:[ { t:"light", n:"Light", c:"#F2F2F7" }, { t:"light-dark", n:"Dark", c:"#000000" } ] },
     soft:  { label:"Mode", list:[ { t:"soft", n:"Light", c:"#E8E7E5" }, { t:"soft-dark", n:"Dark", c:"#1E1E1C" } ] },
     photo: { label:"Mode", list:[ { t:"photo", n:"Light", c:"#C4CBD4" }, { t:"photo-dark", n:"Dark", c:"#191C22" } ] }
   };
-  function themeBase(t) { var m = /^(leaf|soft|photo)/.exec(t || ""); return m ? m[1] : t; }
+  function themeBase(t) { var m = /^(light|leaf|soft|photo)/.exec(t || ""); return m ? m[1] : t; }
   function subOf(t) {
     var s = SUBS[themeBase(t)]; if (!s) { return null; }
     return s.list.filter(function (x) { return x.t === t; })[0] || null;
@@ -72,6 +73,7 @@
   }
   function paintTheme() {
     var base = themeBase(S.theme);
+    if (typeof kit !== "undefined" && kit) { kit.theme(); }   /* a picked face follows the theme's colour */
     Array.prototype.forEach.call(themes, function (o) {
       o.setAttribute("aria-pressed", String(o.dataset.theme === base));
     });
@@ -196,35 +198,6 @@
     socialOrder:[]
   }, a.profile || {});
 
-  if (SAVED.name === "Garry Singh" || SAVED.name === "Garry" || SAVED.name === "Gurdeep Singh" || SAVED.name === "Your Name" || SAVED.name === "User") {
-    SAVED.name = (a.user && a.user.name && a.user.name !== "Garry Singh" && a.user.name !== "Garry") ? a.user.name : (SAVED.handle && SAVED.handle !== "garry" ? SAVED.handle : "");
-  }
-  if (!SAVED.name && a.user && a.user.name && a.user.name !== "Garry Singh" && a.user.name !== "Garry") {
-    SAVED.name = a.user.name;
-  }
-  if (SAVED.phone === "9876543210" || SAVED.phone === "98765 43210") {
-    SAVED.phone = (a.user && a.user.phone && a.user.phone.indexOf("9876543210") === -1 && a.user.phone.indexOf("98765 43210") === -1)
-      ? a.user.phone.replace(/\D/g, "")
-      : "";
-  }
-  if (SAVED.wa === "9876501234" || SAVED.wa === "9876543210") {
-    SAVED.wa = "";
-  }
-  if (!SAVED.wa) {
-    SAVED.waSame = true;
-  }
-  if (SAVED.email === "garry@example.com" || SAVED.email === "you@example.com" || SAVED.email === "garry@gmail.com") {
-    SAVED.email = (a.user && a.user.email && a.user.email !== "garry@example.com" && a.user.email !== "you@example.com")
-      ? a.user.email
-      : "";
-  }
-  if (!SAVED.email && a.user && a.user.email && a.user.email !== "garry@example.com" && a.user.email !== "you@example.com") {
-    SAVED.email = a.user.email;
-  }
-  if (SAVED.bio === "Designing things people actually use. Usually somewhere near a coffee.") {
-    SAVED.bio = "";
-  }
-
   function merge(base, extra) {
     var out = JSON.parse(JSON.stringify(base)), k;
     for (k in extra) { if (extra[k] !== undefined) { out[k] = extra[k]; } }
@@ -242,47 +215,44 @@
   function initial() { return (S.name.trim()[0] || S.handle[0] || "?").toUpperCase(); }
 
   function paintPhoto() {
-    var disc = $("photoDisc");
-    if (disc) disc.innerHTML = S.photo ? '<img src="' + S.photo + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">' : esc(initial());
-    var clear = $("photoClear");
-    if (clear) clear.hidden = !S.photo;
-    var btn = $("photoBtn");
-    if (btn) btn.textContent = S.photo ? "Change photo" : "Add photo";
+    $("photoDisc").innerHTML = S.photo ? '<img src="' + S.photo + '" alt="">' : CM.FACE;
+    $("photoClear").hidden = !S.photo;
+    $("photoBtn").textContent = S.photo && !S.face ? "Change photo" : "Add photo";
   }
   function paintBasics() {
-    if ($("name")) $("name").value = S.name;
-    if ($("bio")) $("bio").value = S.bio;
-    if ($("bioCount")) {
-      $("bioCount").textContent  = S.bio.length + "/100";
-      $("bioCount").dataset.over = String(S.bio.length >= 100);
-    }
+    $("name").value     = S.name;
+    $("bio").value      = S.bio;
+    $("bioCount").textContent  = S.bio.length + "/100";
+    $("bioCount").dataset.over = String(S.bio.length >= 100);
     paintPhoto();
+    if (typeof kit !== "undefined" && kit) { kit.repaint(); }
   }
 
-  var photoBtn = $("photoBtn");
-  if (photoBtn) photoBtn.addEventListener("click", function () { var pi = $("photoInput"); if (pi) pi.click(); });
-  var photoInput = $("photoInput");
-  if (photoInput) photoInput.addEventListener("change", function (e) {
-    var f = e.target.files && e.target.files[0];
-    if (!f) return;
-    var r = new FileReader();
-    r.onload = function () { S.photo = r.result; paintPhoto(); dirty(); };
-    r.readAsDataURL(f);
-  });
-  var photoClear = $("photoClear");
-  if (photoClear) photoClear.addEventListener("click", function () {
-    S.photo = null; var pi = $("photoInput"); if (pi) pi.value = ""; paintPhoto(); dirty();
+  $("photoBtn").addEventListener("click", function () { $("photoInput").click(); });
+  /* faces, zodiac and the crop dialog — the same kit onboarding uses
+     (photo-kit.js, 2026-10-08). An upload is cropped before it lands. */
+  var kit = window.PhotoKit ? PhotoKit.mount({
+    disc: $("photoDisc"), input: $("photoInput"),
+    after: document.querySelector(".photo"),
+    leaf: SUBS.leaf.list,
+    get: function () { return { photo: S.photo, face: S.face || null, theme: S.theme }; },
+    set: function (photo, face) {
+      var changedPhoto = photo !== S.photo || (face || null) !== (S.face || null);
+      S.photo = photo; S.face = face || null; paintPhoto();
+      if (changedPhoto) { dirty(); }
+    }
+  }) : null;
+  $("photoClear").addEventListener("click", function () {
+    S.photo = null; S.face = null; $("photoInput").value = ""; paintPhoto(); dirty();
+    if (kit) { kit.repaint(); }
   });
 
   /* the name feeds the initial in the disc and whether Save contact is live */
-  if ($("name")) $("name").addEventListener("input", function () { S.name = this.value; paintPhoto(); paintOrder(); dirty(); });
-  if ($("bio")) $("bio").addEventListener("input", function () {
+  $("name").addEventListener("input",     function () { S.name = this.value; paintPhoto(); paintOrder(); });
+  $("bio").addEventListener("input", function () {
     S.bio = this.value.slice(0, 100);
-    if ($("bioCount")) {
-      $("bioCount").textContent  = S.bio.length + "/100";
-      $("bioCount").dataset.over = String(S.bio.length >= 100);
-    }
-    dirty();
+    $("bioCount").textContent  = S.bio.length + "/100";
+    $("bioCount").dataset.over = String(S.bio.length >= 100);
   });
 
   /* — handle. Same check as the builder, with one difference: the handle
@@ -336,15 +306,14 @@
   function digits(v) { return v.replace(/[^0-9]/g, "").slice(0, 10); }
 
   function paintContact() {
-    if ($("phone")) $("phone").value = S.phone;
-    if ($("wa")) $("wa").value    = S.wa;
-    if ($("email")) $("email").value = S.email;
-    if ($("waSame")) $("waSame").checked = S.waSame;
-    if ($("waWrap")) $("waWrap").hidden  = S.waSame;
+    $("phone").value = S.phone;
+    $("wa").value    = S.wa;
+    $("email").value = S.email;
+    $("waSame").checked = S.waSame;
+    $("waWrap").hidden  = S.waSame;
     [["phoneEye","phoneOn","phone"],["waEye","waOn","WhatsApp"],["emailEye","emailOn","email"]]
       .forEach(function (e) {
         var b = $(e[0]);
-        if (!b) return;
         b.innerHTML = EYE;
         b.setAttribute("aria-pressed", String(S[e[1]]));
         b.setAttribute("aria-label", (S[e[1]] ? "Hide " : "Show ") + e[2] + " on your page");
@@ -353,9 +322,7 @@
 
   [["phoneEye","phoneOn","phone"],["waEye","waOn","WhatsApp"],["emailEye","emailOn","email"]]
     .forEach(function (e) {
-      var b = $(e[0]);
-      if (!b) return;
-      b.addEventListener("click", function () {
+      $(e[0]).addEventListener("click", function () {
         S[e[1]] = !S[e[1]];
         this.setAttribute("aria-pressed", String(S[e[1]]));
         this.setAttribute("aria-label", (S[e[1]] ? "Hide " : "Show ") + e[2] + " on your page");
@@ -363,18 +330,20 @@
       });
     });
 
-  if ($("phone")) $("phone").addEventListener("input", function () { this.value = digits(this.value); S.phone = this.value; changed(); });
-  if ($("wa")) $("wa").addEventListener("input",    function () { this.value = digits(this.value); S.wa = this.value; changed(); });
-  if ($("email")) $("email").addEventListener("input", function () { S.email = this.value.trim(); changed(); });
-  if ($("waSame")) $("waSame").addEventListener("change", function () {
+  $("phone").addEventListener("input", function () { this.value = digits(this.value); S.phone = this.value; changed(); });
+  $("wa").addEventListener("input",    function () { this.value = digits(this.value); S.wa = this.value; changed(); });
+  $("email").addEventListener("input", function () { S.email = this.value.trim(); changed(); });
+
+  /* business WhatsApp numbers are often different — so the box is a
+     checkbox, not an assumption */
+  $("waSame").addEventListener("change", function () {
     S.waSame = this.checked;
-    if ($("waWrap")) $("waWrap").hidden = this.checked;
+    $("waWrap").hidden = this.checked;
     changed();
   });
 
   /* — the grid — */
   function paintPicks() {
-    if (!$("picks")) return;
     $("picks").innerHTML = LINKS.map(function (l) {
       var on = !!S.links[l.k];
       return '<button class="pick" type="button" data-k="' + l.k + '" data-on="' + on + '" aria-pressed="' + on + '">' +
@@ -382,7 +351,7 @@
     }).join("");
   }
 
-  if ($("picks")) $("picks").addEventListener("click", function (e) {
+  $("picks").addEventListener("click", function (e) {
     var b = e.target.closest(".pick"); if (!b) return;
     var k = b.dataset.k;
     if (S.links[k]) { delete S.links[k]; }
@@ -393,7 +362,13 @@
     var added = !!S.links[k];
     paintPicks(); paintAdded(); changed();
 
-    if (added && $("added")) {
+    /* The row a chip opens takes the cursor, same as onboarding (Garry,
+       2026-09-23) — tap the icon, start typing. Only where there is a real
+       pointer, though: on a phone focus opens the keyboard between taps and
+       pushes the grid away. preventScroll keeps the browser from jumping
+       there; the row is moved into view only when it is actually off screen,
+       so picking several in a row leaves the grid where the finger is. */
+    if (added) {
       var row = $("added").querySelector('[data-k="' + k + '"]');
       if (row) {
         var field = row.querySelector("input");
@@ -411,7 +386,8 @@
   var MV_DOWN = '<svg viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
   function paintAdded() {
-    if (!$("added")) return;
+    /* socials first, in the row's own order and with the arrows that set
+       it; the full-width rows after, arranged in "Order on your page" */
     var socialKeys = socialsAdded();
     var rowKeys = LINKS.filter(function (l) { return l.kind !== "social"; })
                        .map(function (l) { return l.k; })
@@ -435,30 +411,28 @@
     }).join("");
   }
 
-  if ($("added")) {
-    $("added").addEventListener("input", function (e) {
-      var row = e.target.closest(".lrow"); if (!row) return;
-      S.links[row.dataset.k].v = e.target.value.trim();
+  $("added").addEventListener("input", function (e) {
+    var row = e.target.closest(".lrow"); if (!row) return;
+    S.links[row.dataset.k].v = e.target.value.trim();
+    changed();
+  });
+  $("added").addEventListener("click", function (e) {
+    var row = e.target.closest(".lrow"); if (!row) return;
+    var k = row.dataset.k;
+    var mv = e.target.closest("[data-smv]");
+    if (mv) { moveSocial(k, mv.dataset.smv === "up" ? -1 : 1); return; }
+    if (e.target.closest(".kill")) { delete S.links[k]; paintPicks(); paintAdded(); changed(); return; }
+    var b = e.target.closest(".eye");
+    if (b) {
+      S.links[k].on = !S.links[k].on;
+      b.setAttribute("aria-pressed", String(S.links[k].on));
+      b.setAttribute("aria-label", (S.links[k].on ? "Hide " : "Show ") + BY[k].n + " on your page");
       changed();
-    });
-    $("added").addEventListener("click", function (e) {
-      var row = e.target.closest(".lrow"); if (!row) return;
-      var k = row.dataset.k;
-      var mv = e.target.closest("[data-smv]");
-      if (mv) { moveSocial(k, mv.dataset.smv === "up" ? -1 : 1); return; }
-      if (e.target.closest(".kill")) { delete S.links[k]; paintPicks(); paintAdded(); changed(); return; }
-      var b = e.target.closest(".eye");
-      if (b) {
-        S.links[k].on = !S.links[k].on;
-        b.setAttribute("aria-pressed", String(S.links[k].on));
-        b.setAttribute("aria-label", (S.links[k].on ? "Hide " : "Show ") + BY[k].n + " on your page");
-        changed();
-      }
-    });
-  }
+    }
+  });
 
   /* — custom links, capped at five so the page stays a page, not a list — */
-  if ($("addCustom")) $("addCustom").addEventListener("click", function () {
+  $("addCustom").addEventListener("click", function () {
     if (S.customs.length >= 5) return;
     var id = "c" + (++cid);
     S.customs.push({ id:id, title:"", url:"", on:true });
@@ -468,8 +442,7 @@
   });
 
   function paintCustoms() {
-    if (!$("customs")) return;
-    if ($("addCustom")) $("addCustom").hidden = S.customs.length >= 5;
+    $("addCustom").hidden = S.customs.length >= 5;
     $("customs").innerHTML = S.customs.map(function (c) {
       return '<div class="lrow" data-c="' + c.id + '">' + ic("custom") +
         '<div class="inp"><input type="text" data-f="title" value="' + esc(c.title) + '" placeholder="Button text" aria-label="Custom link text"></div>' +
@@ -484,25 +457,23 @@
     for (var i = 0; i < S.customs.length; i++) if (S.customs[i].id === id) return S.customs[i];
     return null;
   }
-  if ($("customs")) {
-    $("customs").addEventListener("input", function (e) {
-      var row = e.target.closest("[data-c]"); if (!row) return;
-      var c = findCustom(row.dataset.c); if (!c) return;
-      c[e.target.dataset.f] = e.target.value;
-      changed();
-    });
-    $("customs").addEventListener("click", function (e) {
-      var row = e.target.closest("[data-c]"); if (!row) return;
-      var id = row.dataset.c, c = findCustom(id); if (!c) return;
-      if (e.target.closest(".kill")) {
-        S.customs = S.customs.filter(function (x) { return x.id !== id; });
-        S.order = S.order.filter(function (x) { return x !== id; });
-        paintCustoms(); changed(); return;
-      }
-      var b = e.target.closest(".eye");
-      if (b) { c.on = !c.on; b.setAttribute("aria-pressed", String(c.on)); changed(); }
-    });
-  }
+  $("customs").addEventListener("input", function (e) {
+    var row = e.target.closest("[data-c]"); if (!row) return;
+    var c = findCustom(row.dataset.c); if (!c) return;
+    c[e.target.dataset.f] = e.target.value;
+    changed();
+  });
+  $("customs").addEventListener("click", function (e) {
+    var row = e.target.closest("[data-c]"); if (!row) return;
+    var id = row.dataset.c, c = findCustom(id); if (!c) return;
+    if (e.target.closest(".kill")) {
+      S.customs = S.customs.filter(function (x) { return x.id !== id; });
+      S.order = S.order.filter(function (x) { return x !== id; });
+      paintCustoms(); changed(); return;
+    }
+    var b = e.target.closest(".eye");
+    if (b) { c.on = !c.on; b.setAttribute("aria-pressed", String(c.on)); changed(); }
+  });
 
   /* — what is live on the page. The eye being off must OMIT the field from
        the response on the real page, never CSS-hide it. — */
@@ -559,9 +530,8 @@
     return c ? (c.title || "Custom link") : "";
   }
 
+  var linkCount = $("linkCount");
   function recount() {
-    var linkCount = $("linkCount");
-    if (!linkCount) return;
     var n = Object.keys(S.links).filter(function (k) { return S.links[k].v && S.links[k].on; }).length +
             S.customs.filter(function (c) { return c.title && c.on; }).length;
     linkCount.textContent = n + " shown";
@@ -572,15 +542,21 @@
   var UP   = '<svg viewBox="0 0 14 14" fill="none"><path d="M3 9l4-4 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   var DOWN = '<svg viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
+  /* Call, WhatsApp, Email and Add Contact always lead the page, in every
+     theme (Garry, 2026-10-05) — so they are not in the reorder list. Only the
+     socials block, the link rows and custom buttons move. */
+  var FIXED = ["call", "wa", "email", "vcard"];
+  function orderable() {
+    return S.order.filter(rowLive).filter(function (k) { return FIXED.indexOf(k) < 0; });
+  }
+  var FIXED_NOTE = '<li class="order__empty">Call, WhatsApp, Email and Add Contact always stay at the top.</li>';
   function paintOrder() {
-    var orderEl = $("order");
-    if (!orderEl) return;
-    var live = S.order.filter(rowLive);
+    var live = orderable();
     if (!live.length) {
-      orderEl.innerHTML = '<li class="order__empty">Fill something in above and it shows up here.</li>';
+      $("order").innerHTML = '<li class="order__empty">Fill something in above and it shows up here.</li>';
       return;
     }
-    orderEl.innerHTML = live.map(function (k, i) {
+    $("order").innerHTML = FIXED_NOTE + live.map(function (k, i) {
       var n = esc(rowName(k));
       return '<li class="ord" draggable="true" data-k="' + k + '">' +
         '<span class="ord__grip" aria-hidden="true">' + GRIP + "</span>" +
@@ -595,62 +571,60 @@
   /* moves work on the visible list, then write back into the full order
      so hidden keys keep their relative place */
   function writeBack(live) {
-    var rest = S.order.filter(function (x) { return live.indexOf(x) < 0; });
-    S.order = live.concat(rest);
+    var rest = S.order.filter(function (x) { return live.indexOf(x) < 0 && FIXED.indexOf(x) < 0; });
+    S.order = FIXED.concat(live, rest);
     paintOrder(); dirty();
   }
   function move(k, dir) {
-    var live = S.order.filter(rowLive);
+    var live = orderable();
     var i = live.indexOf(k), j = i + dir;
     if (i < 0 || j < 0 || j >= live.length) return;
     live.splice(j, 0, live.splice(i, 1)[0]);
     writeBack(live);
   }
 
-  if ($("order")) {
-    $("order").addEventListener("click", function (e) {
-      var b = e.target.closest("[data-mv]"); if (!b) return;
-      var k = b.closest(".ord").dataset.k, dir = b.dataset.mv;
-      move(k, dir === "up" ? -1 : 1);
-      /* the list was rebuilt — hand focus to the new copy of the button */
-      var again = document.querySelector('.ord[data-k="' + k + '"] [data-mv="' + dir + '"]');
-      if (again && !again.disabled) {
-        try { again.focus({ preventScroll:true }); } catch (err) { again.focus(); }
-      }
-    });
+  $("order").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-mv]"); if (!b) return;
+    var k = b.closest(".ord").dataset.k, dir = b.dataset.mv;
+    move(k, dir === "up" ? -1 : 1);
+    /* the list was rebuilt — hand focus to the new copy of the button */
+    var again = document.querySelector('.ord[data-k="' + k + '"] [data-mv="' + dir + '"]');
+    if (again && !again.disabled) {
+      try { again.focus({ preventScroll:true }); } catch (err) { again.focus(); }
+    }
+  });
 
-    var dragKey = null;
-    $("order").addEventListener("dragstart", function (e) {
-      var li = e.target.closest(".ord"); if (!li) return;
-      dragKey = li.dataset.k; li.dataset.drag = "true";
-      e.dataTransfer.effectAllowed = "move";
-      try { e.dataTransfer.setData("text/plain", dragKey); } catch (err) {}
-    });
-    $("order").addEventListener("dragover", function (e) {
-      var li = e.target.closest(".ord"); if (!li || !dragKey) return;
-      e.preventDefault(); li.dataset.over = "true";
-    });
-    $("order").addEventListener("dragleave", function (e) {
-      var li = e.target.closest(".ord"); if (li) li.dataset.over = "false";
-    });
-    $("order").addEventListener("drop", function (e) {
-      var li = e.target.closest(".ord"); if (!li || !dragKey) return;
-      e.preventDefault();
-      var live = S.order.filter(rowLive);
-      var from = live.indexOf(dragKey), to = live.indexOf(li.dataset.k);
-      if (from > -1 && to > -1 && from !== to) {
-        live.splice(to, 0, live.splice(from, 1)[0]);
-        writeBack(live);
-      }
-      dragKey = null;
-    });
-    $("order").addEventListener("dragend", function () { dragKey = null; paintOrder(); });
-  }
+  var dragKey = null;
+  $("order").addEventListener("dragstart", function (e) {
+    var li = e.target.closest(".ord"); if (!li) return;
+    dragKey = li.dataset.k; li.dataset.drag = "true";
+    e.dataTransfer.effectAllowed = "move";
+    try { e.dataTransfer.setData("text/plain", dragKey); } catch (err) {}
+  });
+  $("order").addEventListener("dragover", function (e) {
+    var li = e.target.closest(".ord"); if (!li || !dragKey) return;
+    e.preventDefault(); li.dataset.over = "true";
+  });
+  $("order").addEventListener("dragleave", function (e) {
+    var li = e.target.closest(".ord"); if (li) li.dataset.over = "false";
+  });
+  $("order").addEventListener("drop", function (e) {
+    var li = e.target.closest(".ord"); if (!li || !dragKey) return;
+    e.preventDefault();
+    var live = orderable();
+    var from = live.indexOf(dragKey), to = live.indexOf(li.dataset.k);
+    if (from > -1 && to > -1 && from !== to) {
+      live.splice(to, 0, live.splice(from, 1)[0]);
+      writeBack(live);
+    }
+    dragKey = null;
+  });
+  $("order").addEventListener("dragend", function () { dragKey = null; paintOrder(); });
 
-  if ($("pageLive")) $("pageLive").addEventListener("change", function () { S.live = this.checked; });
+  $("pageLive").addEventListener("change", function () { S.live = this.checked; });
 
   function paintAll() {
-    if ($("pageLive")) $("pageLive").checked = S.live;
+    $("pageLive").checked = S.live;
     paintTheme();
     paintHandle(); paintBasics(); paintContact(); paintPicks(); paintAdded(); paintCustoms(); paintOrder(); recount();
   }
@@ -686,71 +660,6 @@
     SAVED = JSON.parse(JSON.stringify(S));
     paintLive();
     clean();
-
-    try {
-      var customAccount = JSON.parse(window.localStorage.getItem("cm.account.custom") || "{}");
-      customAccount.profile = customAccount.profile || {};
-      customAccount.user = customAccount.user || {};
-
-      customAccount.profile.handle = S.handle;
-      customAccount.profile.name = S.name;
-      customAccount.profile.title = S.name || S.handle;
-      customAccount.profile.bio = S.bio;
-      customAccount.profile.photo = S.photo;
-      customAccount.profile.theme = S.theme;
-      customAccount.profile.phone = S.phone;
-      customAccount.profile.phoneOn = S.phoneOn;
-      customAccount.profile.waSame = S.waSame;
-      customAccount.profile.wa = S.wa;
-      customAccount.profile.waOn = S.waOn;
-      customAccount.profile.email = S.email;
-      customAccount.profile.emailOn = S.emailOn;
-      customAccount.profile.links = S.links;
-      customAccount.profile.customs = S.customs;
-      customAccount.profile.order = S.order;
-      customAccount.profile.socialOrder = S.socialOrder;
-      customAccount.profile.live = S.live;
-
-      customAccount.user.name = S.name || S.handle;
-      customAccount.user.email = S.email || (S.handle ? S.handle + "@gmail.com" : "");
-      if (S.phone) customAccount.user.phone = "+91 " + S.phone;
-
-      window.localStorage.setItem("cm.account.custom", JSON.stringify(customAccount));
-      if (S.handle) window.localStorage.setItem("cm.username", S.handle);
-      if (S.name && S.name !== "Garry Singh" && S.name !== "Gurdeep Singh") {
-        window.localStorage.setItem("cm.name", S.name);
-      } else {
-        window.localStorage.removeItem("cm.name");
-      }
-      if (S.phone) window.localStorage.setItem("cm.phone", S.phone);
-      if (S.email) window.localStorage.setItem("cm.email", S.email);
-      if (S.photo) {
-        try { window.localStorage.setItem("cm.photo", S.photo); } catch(e) {}
-      } else {
-        try { window.localStorage.removeItem("cm.photo"); } catch(e) {}
-      }
-    } catch(e) {}
-
-    try {
-      fetch("/api/auth/claim-username", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: S.handle,
-          display_name: S.name.trim() || S.handle,
-          bio: S.bio,
-          avatar_url: S.photo,
-          phone: S.phone,
-          whatsapp: S.wa,
-          email: S.email,
-          theme: S.theme,
-          links: S.links,
-          customs: S.customs,
-          is_live: S.live
-        })
-      }).catch(function () {});
-    } catch(e) {}
-
     CM.toast("Page updated");
     return true;
   }
@@ -777,15 +686,34 @@
   function paintLive() {
     $("meHandle").textContent = SAVED.handle;
     $("meName").textContent = SAVED.name || SAVED.handle;
-    var init = (SAVED.name.trim()[0] || SAVED.handle[0] || "?").toUpperCase();
-    if (SAVED.photo) {
-      $("meAv").innerHTML = '<img src="' + SAVED.photo + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">';
-    } else {
-      $("meAv").textContent = init;
-    }
-    $("meCopy").setAttribute("data-copy", liveUrl());
+    $("meAv").textContent = (SAVED.name.trim()[0] || SAVED.handle[0] || "?").toUpperCase();
     $("meView").setAttribute("href", ownerUrl());
   }
+  /* View page opens the live preview full screen, not a new tab (Garry,
+     2026-10-10); the href stays as the no-script fallback */
+  var ppFull = null;
+  $("meView").removeAttribute("target");
+  $("meView").addEventListener("click", function (e) {
+    if (!ppFull) { return; }
+    e.preventDefault();
+    ppFull();
+  });
+  /* FOLD (Garry, 2026-10-10): the card starts closed — photo, name, Live.
+     The header opens it. Height runs on a grid row (0fr → 1fr) so it eases
+     open with no jump; the inside only stops clipping once it has settled,
+     so the copy tooltip is not cut off and nothing spills mid-animation. */
+  (function () {
+    var head = $("meHead"), card = head.closest(".me"), body = $("meBody");
+    head.addEventListener("click", function () {
+      var open = head.getAttribute("aria-expanded") !== "true";
+      head.setAttribute("aria-expanded", String(open));
+      card.toggleAttribute("data-open", open);
+      if (!open) { card.removeAttribute("data-settled"); }
+    });
+    body.addEventListener("transitionend", function (e) {
+      if (e.target === body && card.hasAttribute("data-open")) { card.setAttribute("data-settled", ""); }
+    });
+  })();
   $("meMark").innerHTML = CM.mark();
   /* the same sheet a visitor gets from the share icon on profile.html */
   $("meShare").addEventListener("click", function () {
@@ -842,6 +770,232 @@
   /* ══ 8. ICON SLOTS ════════════════════════════════════════════════════ */
   icons();
 
+  /* ══ LIVE PREVIEW ═════════════════════════════════════════════════════
+     Gurdeep's ask, agreed 2026-09-30: edit like onboarding — the page on a
+     phone beside the editor, changing as you type. It is the REAL page
+     (profile.html?preview=1) in a frame, fed the unsaved state, so every
+     theme and row looks exactly as a scan will show it. Desktop: a sticky
+     column on the right. Narrower: a "Preview" button opens it as a sheet. */
+  (function () {
+    var view = document.querySelector("main.view");
+    if (!view || !$("savebar")) { return; }
+
+    var wrap = document.createElement("div");
+    wrap.className = "pp-wrap";
+    view.parentNode.insertBefore(wrap, view);
+    wrap.appendChild(view);
+
+    var src = CM.ROOT + "profile.html?view=visitor&chrome=0&preview=1&handle=" +
+              encodeURIComponent(S.handle || "") + "&theme=" + encodeURIComponent(S.theme || "light");
+    var FULL = '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3.5 7.5v-4h4M16.5 7.5v-4h-4M3.5 12.5v4h4M16.5 12.5v4h-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    var pp = document.createElement("aside");
+    pp.className = "pp";
+    pp.setAttribute("aria-label", "Live preview");
+    pp.innerHTML =
+      '<div class="pp__in">' +
+        '<div class="pp__phone" data-device="mobile"><span class="pp__island" aria-hidden="true"></span>' +
+          /* Web only, in the column: ⤢ in the browser bar opens it full size */
+          '<button class="pp__full" type="button" aria-label="Open full screen">' + FULL + "</button>" +
+          '<div class="pp__scr"><iframe title="Your page, as a scan shows it" src="' + src + '"></iframe></div></div>' +
+        /* the controls. In the column they sit around the device; full screen
+           they become a dock (phones) or a slim top bar (laptops) — the same
+           as onboarding (Garry, 2026-10-10) */
+        '<div class="pp__ctl">' +
+          '<div class="pp__devs" role="group" aria-label="Preview size">' +
+            '<button type="button" data-d="mobile" aria-pressed="true">Mobile</button>' +
+            '<button type="button" data-d="web" aria-pressed="false">Web</button></div>' +
+          /* closed, the theme is one line of text; tap it and the swatches
+             open with a × to fold them away again (Garry, 2026-10-08) */
+          '<div class="pp__themes" data-open="false" hidden>' +
+            '<button class="pp__tt" type="button" aria-expanded="false"><span class="pp__th">Theme · <b></b></span>' +
+              '<span class="pp__chg">Change</span></button>' +
+            '<div class="pp__tray">' +
+              '<div class="pp__tray-top"><span class="pp__th">Theme · <b></b></span>' +
+                '<button class="pp__tc" type="button" aria-label="Close themes">' + CM.icon("close") + "</button></div>" +
+              '<div class="pp__sws" role="group" aria-label="Page theme"></div></div></div>' +
+          '<button class="pp__x" type="button" aria-label="Close preview">' + CM.icon("close") + "<span>Close preview</span></button>" +
+        "</div>" +
+      "</div>";
+    wrap.appendChild(pp);
+
+    /* A small copy of the theme picker under the phone (Garry, 2026-10-03),
+       so a theme can be tried while looking at the page rather than after
+       scrolling back to the Theme card. Built from that card's own buttons,
+       so the two lists can never differ; both write S.theme, and the poll
+       below keeps the pair in step. */
+    var sws = pp.querySelector(".pp__sws");
+    var big = document.querySelectorAll(".theme");
+    if (big.length) {
+      pp.querySelector(".pp__themes").hidden = false;
+      sws.innerHTML = Array.prototype.map.call(big, function (b) {
+        var n = (b.querySelector(".theme__n") || {}).textContent || b.dataset.theme;
+        return '<button class="pp__sw" type="button" data-theme="' + b.dataset.theme + '" title="' + n +
+               '" aria-label="' + n + ' theme"><span class="theme__sw" data-t="' + b.dataset.theme + '"></span>' +
+               '<i aria-hidden="true">' + CM.icon("check") + "</i></button>";
+      }).join("");
+      sws.insertAdjacentHTML("afterend", '<div class="pp__subs" role="group" aria-label="Theme version"></div>');
+      var tbox = pp.querySelector(".pp__themes");
+      function tray(open) {
+        tbox.dataset.open = String(open);
+        pp.querySelector(".pp__tt").setAttribute("aria-expanded", String(open));
+      }
+      pp.querySelector(".pp__tt").addEventListener("click", function () {
+        trayFrom = S.theme; trayName = pp.querySelector(".pp__th b").textContent;
+        tray(true);
+      });
+      pp.querySelector(".pp__tc").addEventListener("click", function () { settle(function () { tray(false); }); });
+      sws.addEventListener("click", function (e) {
+        var b = e.target.closest(".pp__sw"); if (!b) { return; }
+        chooseTheme(b.dataset.theme);
+        paintMini();
+      });
+    }
+    /* Picking in the tray only previews (Garry, 2026-10-09). Folding it, or
+       closing the preview, with a different theme showing asks first — yes
+       keeps it for Save, no puts the old one back. Esc / tapping outside
+       the question leaves them where they were. */
+    var trayFrom = null, trayName = "", asking = false;
+    function settle(done) {
+      if (trayFrom === null || S.theme === trayFrom) { trayFrom = null; done(); return; }
+      if (asking) { return; }
+      asking = true;
+      CM.dialog({
+        title: "Switch your page to " + pp.querySelector(".pp__th b").textContent + "?",
+        body: "It\u2019s on " + trayName + " right now. Switching changes it for everyone who scans your code, once you save.",
+        actions: [
+          { id: "yes", label: "Yes, switch", kind: "go" },
+          { id: "no",  label: "Keep " + trayName, kind: "quiet" }
+        ],
+        onPick: function (id) {
+          asking = false;
+          if (!id) { return; }
+          if (id === "no") { chooseTheme(trayFrom, true); paintMini(); }
+          trayFrom = null;
+          pp.querySelector(".pp__themes").dataset.open = "false";
+          pp.querySelector(".pp__tt").setAttribute("aria-expanded", "false");
+          done();
+        }
+      });
+    }
+    var miniFor = null;
+    function paintMini() {
+      if (!big.length || miniFor === S.theme) { return; }
+      miniFor = S.theme;
+      Array.prototype.forEach.call(sws.children, function (b) {
+        b.setAttribute("aria-pressed", String(b.dataset.theme === themeBase(S.theme)));
+      });
+      paintTheme();   /* keeps both colour rows in step */
+      var on = sws.querySelector('[aria-pressed="true"]');
+      var ver = subOf(S.theme);
+      Array.prototype.forEach.call(pp.querySelectorAll(".pp__th b"), function (b) {
+        b.textContent = (on ? on.title : "") + (ver && (!on || ver.n !== on.title) ? " \u00b7 " + ver.n : "");
+      });
+    }
+    paintMini();
+
+    var fab = document.createElement("button");
+    fab.type = "button";
+    fab.className = "pp-fab";
+    fab.innerHTML = CM.icon("eye") + "<span>Preview</span>";
+    document.body.appendChild(fab);
+
+    /* FULL SCREEN (Garry, 2026-10-10). The preview is the page itself: a
+       phone gets the mobile page edge to edge; a laptop opens on Web at full
+       size, and Mobile there stays framed. The column's own Mobile / Web
+       comes back on close. */
+    function small() { return !window.matchMedia("(min-width:600px)").matches; }
+    var colDev = "mobile";
+    function openFull() {
+      colDev = dev;
+      pp.dataset.open = "true"; document.body.dataset.ppOpen = "";
+      document.body.style.overflow = "hidden";
+      setDev(small() ? "mobile" : "web");
+    }
+    fab.addEventListener("click", openFull);
+    ppFull = openFull;
+    pp.querySelector(".pp__full").addEventListener("click", openFull);
+    pp.querySelector(".pp__x").addEventListener("click", closeSheet);
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") { closeSheet(); } });
+    function closeSheet() {
+      if (pp.dataset.open !== "true") { return; }
+      settle(function () {
+        pp.dataset.open = "false"; delete document.body.dataset.ppOpen;
+        document.body.style.overflow = "";
+        setDev(colDev);
+      });
+    }
+
+    var frame = pp.querySelector("iframe");
+
+    /* Mobile / Web (Garry, 2026-10-03). The page renders at a real 375px
+       phone or 1280px laptop width and is scaled to the frame — tiny on
+       Web, but it shows the shape of the page there, which is the point. */
+    var dev = "mobile";
+    function fitPP() {
+      var scr = pp.querySelector(".pp__scr");
+      if (!scr.clientWidth) { return; }
+      var vw = dev === "web" ? 1280 : 375;
+      /* full screen, wherever the page fills the screen it is drawn at the
+         screen's own width — real size, not a scaled copy */
+      if (pp.dataset.open === "true" && (dev === "web" || small())) { vw = scr.clientWidth; }
+      var s = scr.clientWidth / vw;
+      frame.style.width = vw + "px";
+      frame.style.height = Math.ceil(scr.clientHeight / s) + "px";
+      frame.style.transform = "scale(" + s + ")";
+    }
+    function setDev(d) {
+      dev = d;
+      pp.querySelector(".pp__phone").dataset.device = dev;
+      Array.prototype.forEach.call(pp.querySelectorAll(".pp__devs [data-d]"), function (x) {
+        x.setAttribute("aria-pressed", String(x.dataset.d === d));
+      });
+      fitPP();
+      requestAnimationFrame(fitPP);
+    }
+    pp.querySelector(".pp__devs").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-d]"); if (b) { setDev(b.dataset.d); }
+    });
+    if (window.ResizeObserver) { new ResizeObserver(fitPP).observe(pp.querySelector(".pp__scr")); }
+    window.addEventListener("resize", fitPP);
+    function page() {
+      var links = {};
+      Object.keys(S.links).forEach(function (k) {
+        var l = S.links[k];
+        if (l && l.v && l.on) { links[k] = l.v; }
+      });
+      return {
+        handle: S.handle || "", name: S.name || "", bio: S.bio || "", photo: S.photo || null,
+        phone: S.phone && S.phoneOn ? S.phone : "",
+        wa: waNumber() && S.waOn ? waNumber() : "",
+        email: S.email && S.emailOn ? S.email : "",
+        links: links,
+        customs: S.customs.filter(function (c) { return c.title && c.on; })
+                          .map(function (c) { return { id: c.id, title: c.title, url: c.url }; }),
+        theme: S.theme || "light",
+        order: S.order.filter(rowLive),
+        socialOrder: (S.socialOrder || []).slice()
+      };
+    }
+    /* a cheap poll rather than hooks in every handler above: the editor has
+       a dozen ways to change S, and this catches all of them */
+    var last = "";
+    /* Opened straight from disk (file://) every page is its own opaque
+       origin, so a same-origin message never arrives and the preview stayed
+       blank. There, "*"; on a real host, same-origin only. */
+    function push(force) {
+      paintMini();
+      var p = page(), j = JSON.stringify(p);
+      if (!force && j === last) { return; }
+      last = j;
+      if (frame.contentWindow) { frame.contentWindow.postMessage({ type: "cm-preview", page: p }, (location.protocol === "file:" ? "*" : location.origin)); }
+    }
+    window.addEventListener("message", function (e) {
+      if ((e.origin === location.origin || location.protocol === "file:") && e.data && e.data.type === "cm-preview-ready") { push(true); }
+    });
+    frame.addEventListener("load", function () { push(true); });
+    setInterval(push, 250);
+  })();
+
   /* ══ OPENED FROM THE CHECKLIST ════════════════════════════════════════
      Home's "Finish your page" rows link here as ?add=photo|bio|links|
      contact (Garry, 2026-09-23). Land on the field itself, not the top of
@@ -869,143 +1023,4 @@
       el.insertAdjacentHTML("beforeend", CM.icon(el.getAttribute("data-ic-btn")));
     });
   }
-  /* ══ LIVE PREVIEW ═════════════════════════════════════════════════════
-     edit like onboarding — the page on a
-     phone beside the editor, changing as you type. It is the REAL page
-     (profile.html?preview=1) in a frame, fed the unsaved state, so every
-     theme and row looks exactly as a scan will show it. Desktop: a sticky
-     column on the right. Narrower: a "Preview" button opens it as a sheet. */
-  (function () {
-    var view = document.querySelector("main.view");
-    if (!view || !$("savebar")) { return; }
-
-    var wrap = document.createElement("div");
-    wrap.className = "pp-wrap";
-    view.parentNode.insertBefore(wrap, view);
-    wrap.appendChild(view);
-
-    var src = CM.ROOT + "profile.html?view=visitor&chrome=0&preview=1&handle=" +
-              encodeURIComponent(S.handle || "") + "&theme=" + encodeURIComponent(S.theme || "light");
-    var pp = document.createElement("aside");
-    pp.className = "pp";
-    pp.setAttribute("aria-label", "Live preview");
-    pp.innerHTML =
-      '<div class="pp__in">' +
-        '<div class="pp__head">' +
-          '<div class="pp__devs" role="group" aria-label="Preview size">' +
-            '<button type="button" data-d="mobile" aria-pressed="true">Mobile</button>' +
-            '<button type="button" data-d="web" aria-pressed="false">Web</button></div>' +
-          '<span class="pp__t"><i></i>Live preview</span>' +
-          '<button class="pp__x" type="button" aria-label="Close preview">' + CM.icon("close") + "</button></div>" +
-        '<div class="pp__phone"><div class="pp__scr"><iframe title="Your page, as a scan shows it" src="' + src + '"></iframe></div></div>' +
-        '<div class="pp__themes" hidden><span class="pp__th">Theme · <b></b></span><div class="pp__sws" role="group" aria-label="Page theme"></div></div>' +
-      "</div>";
-    wrap.appendChild(pp);
-
-    /* A small copy of the theme picker under the phone (Garry, 2026-10-03),
-       so a theme can be tried while looking at the page rather than after
-       scrolling back to the Theme card. Built from that card's own buttons,
-       so the two lists can never differ; both write S.theme, and the poll
-       below keeps the pair in step. */
-    var sws = pp.querySelector(".pp__sws");
-    var big = document.querySelectorAll(".theme");
-    if (big.length) {
-      pp.querySelector(".pp__themes").hidden = false;
-      sws.innerHTML = Array.prototype.map.call(big, function (b) {
-        var n = (b.querySelector(".theme__n") || {}).textContent || b.dataset.theme;
-        return '<button class="pp__sw" type="button" data-theme="' + b.dataset.theme + '" title="' + n +
-               '" aria-label="' + n + ' theme"><span class="theme__sw" data-t="' + b.dataset.theme + '"></span>' +
-               '<i aria-hidden="true">' + CM.icon("check") + "</i></button>";
-      }).join("");
-      sws.insertAdjacentHTML("afterend", '<div class="pp__subs" role="group" aria-label="Theme version"></div>');
-      sws.addEventListener("click", function (e) {
-        var b = e.target.closest(".pp__sw"); if (!b) { return; }
-        chooseTheme(b.dataset.theme);
-        paintMini();
-      });
-    }
-    var miniFor = null;
-    function paintMini() {
-      if (!big.length || miniFor === S.theme) { return; }
-      miniFor = S.theme;
-      Array.prototype.forEach.call(sws.children, function (b) {
-        b.setAttribute("aria-pressed", String(b.dataset.theme === themeBase(S.theme)));
-      });
-      paintTheme();   /* keeps both colour rows in step */
-      var on = sws.querySelector('[aria-pressed="true"]');
-      var ver = subOf(S.theme);
-      pp.querySelector(".pp__th b").textContent = (on ? on.title : "") + (ver ? " · " + ver.n : "");
-    }
-    paintMini();
-
-    var fab = document.createElement("button");
-    fab.type = "button";
-    fab.className = "pp-fab";
-    fab.innerHTML = CM.icon("eye") + "<span>Preview</span>";
-    document.body.appendChild(fab);
-
-    fab.addEventListener("click", function () { pp.dataset.open = "true"; document.body.dataset.ppOpen = ""; });
-    pp.querySelector(".pp__x").addEventListener("click", closeSheet);
-    pp.addEventListener("click", function (e) { if (e.target === pp) { closeSheet(); } });
-    document.addEventListener("keydown", function (e) { if (e.key === "Escape") { closeSheet(); } });
-    function closeSheet() { pp.dataset.open = "false"; delete document.body.dataset.ppOpen; }
-
-    var frame = pp.querySelector("iframe");
-
-    /* Mobile / Web (Garry, 2026-10-03). The page renders at a real 375px
-       phone or 1280px laptop width and is scaled to the frame — tiny on
-       Web, but it shows the shape of the page there, which is the point. */
-    var dev = "mobile";
-    function fitPP() {
-      var scr = pp.querySelector(".pp__scr");
-      if (!scr || !scr.clientWidth) { return; }
-      var vw = dev === "web" ? 1280 : 375, s = scr.clientWidth / vw;
-      frame.style.width = vw + "px";
-      frame.style.height = Math.ceil(scr.clientHeight / s) + "px";
-      frame.style.transform = "scale(" + s + ")";
-    }
-    pp.querySelector(".pp__devs").addEventListener("click", function (e) {
-      var b = e.target.closest("[data-d]"); if (!b) { return; }
-      dev = b.dataset.d;
-      pp.querySelector(".pp__phone").dataset.device = dev;
-      Array.prototype.forEach.call(this.children, function (x) { x.setAttribute("aria-pressed", String(x === b)); });
-      fitPP();
-    });
-    if (window.ResizeObserver) { new ResizeObserver(fitPP).observe(pp.querySelector(".pp__scr")); }
-    window.addEventListener("resize", fitPP);
-    function page() {
-      var links = {};
-      Object.keys(S.links).forEach(function (k) {
-        var l = S.links[k];
-        if (l && l.v && l.on) { links[k] = l.v; }
-      });
-      return {
-        handle: S.handle || "", name: S.name || "", bio: S.bio || "", photo: S.photo || null,
-        phone: S.phone && S.phoneOn ? S.phone : "",
-        wa: waNumber() && S.waOn ? waNumber() : "",
-        email: S.email && S.emailOn ? S.email : "",
-        links: links,
-        customs: S.customs.filter(function (c) { return c.title && c.on; })
-                          .map(function (c) { return { id: c.id, title: c.title, url: c.url }; }),
-        theme: S.theme || "light",
-        order: S.order.filter(rowLive),
-        socialOrder: (S.socialOrder || []).slice()
-      };
-    }
-    /* a cheap poll rather than hooks in every handler above: the editor has
-       a dozen ways to change S, and this catches all of them */
-    var last = "";
-    function push(force) {
-      paintMini();
-      var p = page(), j = JSON.stringify(p);
-      if (!force && j === last) { return; }
-      last = j;
-      if (frame.contentWindow) { frame.contentWindow.postMessage({ type: "cm-preview", page: p }, (location.protocol === "file:" ? "*" : location.origin)); }
-    }
-    window.addEventListener("message", function (e) {
-      if ((e.origin === location.origin || location.protocol === "file:") && e.data && e.data.type === "cm-preview-ready") { push(true); }
-    });
-    frame.addEventListener("load", function () { push(true); });
-    setInterval(push, 250);
-  })();
 })();

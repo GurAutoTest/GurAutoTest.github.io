@@ -17,7 +17,7 @@
 
        gift     A gifted sticker nobody has claimed. The buyer's message
                 comes FIRST — decided 2026-09-27, it is the only thing they
-                get to say — and under it the claim: a name, then Google.
+                get to say — and under it the claim: a link, then Google.
                 WHOEVER SCANS AND SIGNS UP OWNS IT. No check on who they
                 are; that is the rule, brother, servant or stranger.
        waiting  The code already belongs to someone who has not built their
@@ -26,9 +26,10 @@
        paused   The owner switched it off. Their page is untouched.
        unknown  Not a code we know. Mistyped, or a very old sticker.
 
-     THE NAME FIELD is a head start, not a form: whatever is typed carries
-     into onboarding so the first screen is already half filled. Google is
-     what actually creates the account.
+     THE LINK FIELD is the homepage claim field without its button: seeing
+     codemarca.com/<them> fill in is what makes the gift feel like theirs.
+     The handle carries into onboarding; the name comes from Google, which
+     is what actually creates the account.
      ========================================================================== -->
 
 <style>
@@ -44,7 +45,7 @@ body{
 
 .wrap{width:100%; max-width:26rem; margin-inline:auto; display:flex; flex-direction:column; gap:var(--s-5)}
 .brand{display:flex; justify-content:center; padding-block:var(--s-2)}
-.brand svg{height:var(--logo-h); width:auto}
+.brand svg{height:var(--logo-h, 24px); width:auto}   /* tokens.css has no --logo-h */
 
 .card{
   display:flex; flex-direction:column; gap:var(--s-4);
@@ -74,15 +75,39 @@ body{
   color:var(--brand-violet-press); font-weight:var(--fw-bold); letter-spacing:var(--ls-soft)}
 
 .lbl{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
-.inp{
-  display:flex; align-items:center; min-height:var(--control-h); padding-inline:var(--s-4);
-  border-radius:var(--r-md); background:var(--ground); box-shadow:inset 0 0 0 1.5px var(--line-strong);
+/* the homepage claim field, minus the button — same frame, focus and status */
+.claim__field{
+  display:flex; align-items:center; height:var(--control-h); margin-top:var(--s-2);
+  background:var(--ground); border-radius:var(--r-pill);
+  box-shadow:inset 0 0 0 1.5px var(--line-strong);
+  padding-inline:var(--s-5);
   transition:box-shadow var(--dur) var(--ease);
 }
-.inp:focus-within{box-shadow:inset 0 0 0 1.5px var(--ink)}
-.inp input{flex:1; min-width:0; border:0; background:none; outline:none; font:inherit;
-  font-size:var(--fs-body); font-weight:var(--fw-semibold); color:var(--ink)}
-.inp input::placeholder{color:var(--ink-faint); font-weight:var(--fw-medium)}
+.claim__field:focus-within{box-shadow:inset 0 0 0 1.5px var(--ink), var(--focus-glow)}
+.claim__prefix{
+  font-family:var(--font-mono); font-size:1rem;
+  color:var(--ink-soft); white-space:nowrap; user-select:none; letter-spacing:-.02em;
+}
+.claim__input{
+  flex:1; min-width:0; border:0; background:none; outline:none;
+  font-family:var(--font-mono); font-size:1rem;
+  font-weight:var(--fw-semibold); letter-spacing:-.02em; padding-inline:2px;
+  color:var(--brand-violet); caret-color:var(--brand-violet);
+}
+.claim__input::placeholder{color:var(--ink-faint); font-weight:400}
+/* the frame already lights up — no second ring inside it on click */
+.claim__input:focus-visible{box-shadow:none}
+.claim__status{
+  display:block; min-height:22px; margin-top:var(--s-2);   /* block, not flex — flex splits the <b>s into columns in this narrow card */
+  padding-left:var(--s-5); font-size:var(--fs-sm); font-weight:var(--fw-semibold);
+  letter-spacing:var(--ls-soft);
+  opacity:0; transform:translateY(-3px); transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.claim__status[data-show="true"]{opacity:1; transform:none}
+.claim__status[data-state="ok"]{color:var(--ok)}
+.claim__status[data-state="bad"]{color:var(--bad)}
+.claim__status[data-state="idle"]{color:var(--ink-soft)}
+.claim__status b{font-family:var(--font-mono); font-weight:var(--fw-semibold)}
 
 .btn{
   display:flex; align-items:center; justify-content:center; gap:var(--s-3);
@@ -91,7 +116,7 @@ body{
   text-decoration:none; transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
 .btn--go{background:var(--ink); color:var(--ink-invert)}
-.btn--go:hover{background:var(--ink-strong)}
+.btn--go:hover{background:var(--ink-strong, #33353D)}   /* tokens.css has no --ink-strong */
 .btn--ghost{background:var(--ground); color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--line-strong)}
 .btn--ghost:hover{box-shadow:inset 0 0 0 1.5px var(--ink)}
 .btn svg{width:18px; height:18px}
@@ -104,8 +129,8 @@ body{
   border-radius:var(--r-lg); background:var(--ground); box-shadow:var(--shadow-sm);
   text-decoration:none; color:inherit}
 .what:hover .what__t{text-decoration:underline; text-underline-offset:3px}
-.what__t{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
-.what__s{font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:var(--ls-soft)}
+.what__t{display:block; font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.what__s{display:block; margin-top:2px; font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:var(--ls-soft)}
 .what svg{width:20px; height:20px; color:var(--brand-violet); flex-shrink:0}
 
 [hidden]{display:none !important}
@@ -134,14 +159,18 @@ body{
       <b class="note__from">— <span data-from>Arjun</span></b>
     </div>
 
-    <p class="p">These stickers are yours. Put your name in and this code opens
+    <p class="p">These stickers are yours. Pick your link and this code opens
        your own contact page — number, WhatsApp, socials, all on one tap.</p>
 
-    <form data-claim>
-      <label class="lbl" for="nm">Your name</label>
-      <div class="inp" style="margin-top:var(--s-2)"><input id="nm" type="text" maxlength="40"
-        autocomplete="name" placeholder="Your name" required></div>
-      <button class="btn btn--go" type="submit" style="width:100%; margin-top:var(--s-4)">
+    <form data-claim autocomplete="off">
+      <label class="lbl" for="handle">Your profile link</label>
+      <div class="claim__field">
+        <span class="claim__prefix">codemarca.com/</span>
+        <input class="claim__input" id="handle" type="text" placeholder="yourname"
+          spellcheck="false" autocapitalize="off" maxlength="24">
+      </div>
+      <p class="claim__status" id="claimStatus" data-state="idle" role="status" aria-live="polite"></p>
+      <button class="btn btn--go" type="submit" style="width:100%; margin-top:var(--s-3)">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#EA4335" d="M12 10.2v3.9h5.5a4.7 4.7 0 0 1-2 3.1l3.2 2.5c1.9-1.7 3-4.3 3-7.3 0-.7-.1-1.4-.2-2z" opacity=".001"/><circle cx="12" cy="12" r="9" fill="#fff"/><path d="M20.6 12.2c0-.6-.1-1.2-.2-1.8H12v3.5h4.8a4.1 4.1 0 0 1-1.8 2.7v2.2h2.9c1.7-1.6 2.7-3.9 2.7-6.6z" fill="#4285F4"/><path d="M12 21c2.4 0 4.5-.8 6-2.2l-2.9-2.2c-.8.5-1.8.9-3.1.9-2.4 0-4.4-1.6-5.1-3.8H3.9v2.3A9 9 0 0 0 12 21z" fill="#34A853"/><path d="M6.9 13.7a5.4 5.4 0 0 1 0-3.4V8H3.9a9 9 0 0 0 0 8z" fill="#FBBC05"/><path d="M12 6.6c1.3 0 2.5.5 3.4 1.4l2.6-2.6A9 9 0 0 0 3.9 8l3 2.3c.7-2.2 2.7-3.7 5.1-3.7z" fill="#EA4335"/></svg>
         Continue with Google
       </button>
@@ -225,15 +254,41 @@ body{
     el.insertAdjacentHTML("afterbegin", CM.icon(el.getAttribute("data-ic")));
   });
 
-  /* The name is a head start for onboarding, nothing more — Google is what
+  /* Live availability — same rules as the homepage claim field. Front-end
+     demo only; the real check hits the handles endpoint. Google is what
      makes the account, and the code is attached to whoever that turns out
      to be. */
+  var RESERVED = ["admin", "codemarca", "hello", "support", "help", "api",
+                  "about", "login", "signup", "app", "www", "shop", "blog"];
+  var TAKEN = ["gurdeep", "garry", "nikk", "nancy", "amit", "gill"];
+  var handle = one("#handle"), status = one("#claimStatus"), wait = null;
+
+  function show(s, html) { status.dataset.state = s; status.dataset.show = "true"; status.innerHTML = html; }
+
+  handle.addEventListener("input", function () {
+    var clean = handle.value.toLowerCase().replace(/[^a-z0-9._-]/g, "");
+    if (clean !== handle.value) { handle.value = clean; }
+    clearTimeout(wait);
+    if (!clean) { status.dataset.show = "false"; return; }
+    if (clean.length < 3) { show("idle", "Keep going — 3 characters or more."); return; }
+    show("idle", "Checking…");
+    wait = setTimeout(function () {
+      if (RESERVED.indexOf(clean) > -1) {
+        show("bad", "<b>" + clean + "</b> is reserved. Try another.");
+      } else if (TAKEN.indexOf(clean) > -1) {
+        show("bad", "<b>" + clean + "</b> is taken — <b>" + clean + "01</b> and <b>the" + clean + "</b> are free.");
+      } else {
+        show("ok", "<b>codemarca.com/" + clean + "</b> is yours.");
+      }
+    }, 420);
+  });
+
   one("[data-claim]").addEventListener("submit", function (e) {
     e.preventDefault();
-    var name = one("#nm").value.trim();
-    if (!name) { return; }
-    location.href = "onboarding.html?name=" + encodeURIComponent(name) +
-      "&handle=" + encodeURIComponent(name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")) +
+    var clean = handle.value.trim();
+    if (clean.length < 3) { handle.focus(); show("bad", "Pick a link with at least 3 characters."); return; }
+    if (status.dataset.state === "bad") { handle.focus(); return; }
+    location.href = "onboarding.html?handle=" + encodeURIComponent(clean) +
       "&claim=" + encodeURIComponent(code);
   });
 

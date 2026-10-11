@@ -6,6 +6,9 @@
    Who lands here
      · claimed a handle, finished onboarding, skipped the pack
      · finished the page from the "build it first" nudge in flow 1
+     · scanned a sticker someone GIFTED them, signed in and built the page
+       (`gifted`, 2026-10-08): the gift's stickers already work, and their
+       own free pack is still waiting — so this flow, not 4-active
 
    The one job of this flow: sell the pack. The page already works as a
    link — the stickers are what make it work without sending the link.
@@ -21,11 +24,13 @@
 
 window.CM_FLOW = {
   id: "page-live",
-  label: "Page live, no stickers yet",
+  label: "Page live, no pack of their own",
   states: [
     { k: "fresh",   label: "1 · Page just went live" },
     { k: "settled", label: "2 · Live a while, no pack" },
-    { k: "coming",  label: "3 · Pack on the way" }
+    { k: "coming",  label: "3 · Pack on the way" },
+    { k: "gifted",  label: "4 · Built on a gifted sticker" },
+    { k: "offline", label: "5 · Page switched off" }
   ]
 };
 
@@ -36,14 +41,21 @@ window.CM_FLOW = {
    its own hardcoded copy, which is how Home came to say "add your links"
    over a page that already had six. */
 var PROFILE = {
-  live: true, theme: "light", updated: "just now",
-  handle: "", name: "", title: "",
-  bio: "",
+  live: true, theme: "leaf", updated: "4 days ago",
+  handle: "garry", name: "Garry Singh", title: "Garry Singh",
+  bio: "Designing things people actually use. Usually somewhere near a coffee.",
   photo: null,
-  phone: "", phoneOn: true,
-  waSame: true, wa: "", waOn: true,
-  email: "", emailOn: true,
-  links: {},
+  phone: "9876543210", phoneOn: true,
+  waSame: false, wa: "9876501234", waOn: true,
+  email: "garry@example.com", emailOn: true,
+  links: {
+    instagram: { v: "@garry.designs",              on: true  },
+    linkedin:  { v: "linkedin.com/in/garrysingh",  on: true  },
+    x:         { v: "@garrymakes",                 on: true  },
+    threads:   { v: "@garry.designs",              on: true  },
+    website:   { v: "garry.design",                on: true  },
+    spotify:   { v: "open.spotify.com/user/garry", on: false }
+  },
   customs: [],
   order: ["call","wa","email","vcard","socials","website","directions","review"],
   /* the icon row's own order */
@@ -73,23 +85,42 @@ function page(o) {
   return p;
 }
 
+/* the code a friend's gift arrived with — the same one 1-empty `scanned`
+   shows; it became this account's the moment they signed in */
+var GIFT_CODE = {
+  id: "q4v8n1", status: "active", activated: "16 Sep 2026", scans: 5,
+  stickers: [
+    { size: "4″ × 4″",     name: "Big sticker",   where: "Car glass, bike, helmet, shop shutter" },
+    { size: "1.5″ × 1.5″", name: "Small sticker", where: "Laptop, bottle, phone case, diary" }
+  ]
+};
+
 window.CM_STATES = {
 
   /* walked out of onboarding a minute ago — the page is the news */
   fresh: {
     state: "fresh",
-    user: { name: "", email: "", phone: "", joined: "Recently" },
+    user: { name: "Garry Singh", email: "garry@example.com", phone: "+91 98765 43210", joined: "16 Sep 2026" },
+    /* out of the builder a minute ago, on "baaki baad mein": one number on
+       it, no photo and no links — the checklist's whole reason */
     profile: page({ updated: "just now", photo: null, bio: "",
                     links: {}, customs: [], waSame: true, wa: "", email: "", emailOn: true }),
     order: null,
     code: CODE,
     gift: null,
-    referrals: { link: "", goal: 50, counted: 0, waiting: 0 }
+    /* the invite link exists from day one — no pack needed to earn the tee */
+    referrals: { link: "codemarca.com/r/garry", goal: 50, counted: 0, waiting: 0 }
   },
 
+  /* live for a couple of weeks. The page is working; the pack is the ask,
+     and by now it can be asked with a number behind it. */
+  /* PACK ON THE WAY — Garry, 2026-09-29. Page done, free pack ordered, not
+     here yet. The QR already works — the page is live — so nothing on this
+     screen is a to-do; it is a parcel to wait for. Checkout lands here
+     (home.html?state=coming). Once delivered the account is 4-active. */
   coming: {
     state: "coming",
-    user: { name: "", email: "", phone: "", joined: "Recently" },
+    user: { name: "Garry Singh", email: "garry@example.com", phone: "+91 98765 43210", joined: "16 Sep 2026" },
     profile: page({ updated: "just now" }),
     order: COMING,
     orders: [COMING],
@@ -100,18 +131,51 @@ window.CM_STATES = {
             ] },
     gift: null,
     daysLeft: 5,
-    referrals: { link: "", goal: 50, counted: 0, waiting: 0 }
+    referrals: { link: "codemarca.com/r/garry", goal: 50, counted: 0, waiting: 0 }
+  },
+
+  /* BUILT ON A GIFT — 2026-10-08. Arjun paid for these stickers and sent
+     them; Simran scanned one, signed in, built her page. The stickers work
+     now. Nothing she paid for exists, so Orders is empty and the free pack
+     is still hers to claim — the ask stays, said as "for anywhere else". */
+  gifted: {
+    state: "gifted",
+    user: { name: "Simran Kaur", email: "simran@example.com", phone: "+91 98140 22113", joined: "16 Sep 2026" },
+    profile: page({ updated: "just now", handle: "simran", name: "Simran Kaur", title: "Simran Kaur",
+                    bio: "", links: {}, customs: [], waSame: true, wa: "", email: "simran@example.com" }),
+    order: null,
+    code: GIFT_CODE,
+    gift: null,
+    giftedBy: { name: "Arjun M.", on: "14 Sep 2026" },
+    referrals: { link: "codemarca.com/r/simran", goal: 50, counted: 0, waiting: 0 }
+  },
+
+  /* PAGE OFF — 2026-10-08. The settled account, with the page switched off
+     from My QR. Everything is kept; a scan and the link get scan.html's
+     "not available" note until it is switched back on. */
+  offline: {
+    state: "offline",
+    user: { name: "Garry Singh", email: "garry@example.com", phone: "+91 98765 43210", joined: "2 Sep 2026" },
+    profile: page({ updated: "2 days ago", live: false }),
+    order: null,
+    code: CODE,
+    gift: null,
+    shares: 31,
+    referrals: { link: "codemarca.com/r/garry", goal: 50, counted: 4, waiting: 2 }
   },
 
   settled: {
     state: "settled",
-    user: { name: "", email: "", phone: "", joined: "Recently" },
-    profile: page({ updated: "just now" }),
+    user: { name: "Garry Singh", email: "garry@example.com", phone: "+91 98765 43210", joined: "2 Sep 2026" },
+    profile: page({ updated: "5 days ago" }),
     order: null,
     code: CODE,
     gift: null,
-    shares: 0,
-    referrals: { link: "", goal: 50, counted: 0, waiting: 0 }
+    /* link shares so far — the argument for the sticker writes itself:
+       you sent this link 31 times, a sticker sends it for you */
+    shares: 31,
+    /* a few friends in already, all without anyone ordering anything */
+    referrals: { link: "codemarca.com/r/garry", goal: 50, counted: 4, waiting: 2 }
   }
 };
 
@@ -182,6 +246,32 @@ window.CM_STATES["coming"].notes = [
     "unread": false,
     "href": "profile.html"
   }
+];
+window.CM_STATES["gifted"].notes = [
+  {
+    "id": "g-live",
+    "tab": "account",
+    "icon": "spark",
+    "title": "Your stickers work now",
+    "body": "The ones Arjun M. sent you open codemarca.com/simran.",
+    "when": "Just now",
+    "unread": true,
+    "href": "qr.html"
+  },
+  {
+    "id": "g-pack",
+    "tab": "orders",
+    "icon": "box",
+    "title": "Your own free pack is still waiting",
+    "body": "Two more stickers with the same code. You only pay delivery.",
+    "when": "Just now",
+    "unread": true,
+    "href": "orders.html"
+  }
+];
+window.CM_STATES["offline"].notes = [
+  { "id": "f-off", "tab": "account", "icon": "eye", "title": "Your page is off",
+    "body": "Scans and your link show a “not available” note until you switch it back on.", "when": "2 days ago", "unread": true, "href": "qr.html" }
 ];
 window.CM_STATES["settled"].notes = [
   {

@@ -4,6 +4,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="photo-kit.css">
 
 <style>
 /* ==========================================================================
@@ -263,21 +264,24 @@ input:-webkit-autofill:active{
   overflow:hidden; user-select:none;
 }
 .photo__disc img{width:100%; height:100%; object-fit:cover}
-.photo__disc .face{display:block; width:100%; height:100%}
 /* Remove sits BESIDE the button, not under it (Garry, 2026-09-24) — stacked,
    it appeared the moment a photo landed and shunted the button upwards. The
    8px gap plus the link's own padding reads as the 16px he asked for. */
 .photo__acts{display:flex; flex-direction:column; align-items:flex-start; gap:var(--s-1)}
 .photo__row{display:flex; align-items:center; gap:var(--s-2)}
+/* white with a light hairline, not a grey fill (Garry, 2026-10-07) */
 .photo__btn{
-  border:0; background:var(--ground-soft); cursor:pointer; border-radius:var(--r-pill);
+  border:0; background:#fff; box-shadow:inset 0 0 0 1.5px var(--line-strong); cursor:pointer; border-radius:var(--r-pill);
   padding:10px var(--s-4); font-size:var(--fs-sm); font-weight:var(--fw-bold);
 }
-.photo__btn:hover{background:var(--ground-sunk)}
+.photo__btn:hover{box-shadow:inset 0 0 0 1.5px var(--ink)}
 .photo__clear{border:0; background:none; cursor:pointer; padding:6px var(--s-2);
   font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-soft); border-radius:var(--r-sm)}
 .photo__clear:hover{color:var(--bad)}
 .photo__hint{font-size:var(--fs-xs); color:var(--ink-soft)}
+
+/* faces & zodiac, the crop dialog and the glass ground behind a face come
+   from photo-kit.css — shared with the dashboard's Profile tab */
 
 /* ── 6. LINK GRID + ADDED LINKS ────────────────────────────────────────── */
 .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:var(--s-2)}
@@ -393,14 +397,51 @@ input:-webkit-autofill:active{
   font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-soft);
   text-align:center; line-height:1.4;
 }
-.aside__close{
-  border:0; background:var(--ground); box-shadow:0 -1px 0 var(--line); cursor:pointer;
-  padding:var(--s-4); font-size:var(--fs-sm); font-weight:var(--fw-bold); color:var(--ink-mid);
-}
+.aside__close{display:none; border:0; cursor:pointer; font:inherit; color:var(--ink)}
+.aside__close svg{width:16px; height:16px; flex:none}
 
-.themes{display:flex; gap:var(--s-2); flex-wrap:wrap; justify-content:center}
+/* the theme as one line under the phone; Change opens a tray of swatches
+   that rises over the line's spot, so the phone never moves (Garry, 2026-10-09) */
+.thm{position:relative; width:min(320px,100%); min-height:36px; display:flex; flex-direction:column; align-items:center; flex:none}
+.thm__th{font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:var(--ls-soft)}
+.thm__th b{color:var(--ink); font-weight:var(--fw-bold)}
+.thm__tt{display:inline-flex; align-items:center; gap:10px; padding:8px 14px; border:0; border-radius:999px;
+  background:none; cursor:pointer; font:inherit; transition:background var(--dur-fast) var(--ease)}
+.thm__tt:hover{background:var(--ground-sunk)}
+.thm__chg{font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink); letter-spacing:var(--ls-soft);
+  text-decoration:underline; text-underline-offset:3px}
+.thm__tray{display:none; position:absolute; left:0; right:0; bottom:0; z-index:4; flex-direction:column; gap:10px;
+  padding:12px 14px 10px; border-radius:18px; background:var(--ground);
+  box-shadow:0 1px 2px rgba(16,18,21,.06), 0 8px 24px rgba(16,18,21,.10), inset 0 0 0 1px var(--line)}
+.thm[data-open="true"] .thm__tt{display:none}
+.thm[data-open="true"] .thm__tray{display:flex}
+.thm__top{display:flex; align-items:center; justify-content:space-between; gap:8px}
+.thm__x{display:grid; place-items:center; width:28px; height:28px; padding:0; border:0; border-radius:50%;
+  background:var(--ground-soft); color:var(--ink); cursor:pointer}
+.thm__x:hover{background:var(--ground-sunk)}
+.thm__x svg{width:14px; height:14px}
+.themes{display:flex; gap:8px; flex-wrap:wrap}
+.thm .subs{justify-content:flex-start; margin-top:2px; min-height:26px}
+.thm .subs[data-on="false"]{display:none}
+.thm .subs button{width:22px; height:22px}
+/* the question asked when a tried theme is left on screen */
+.dlg{position:fixed; inset:0; z-index:100; display:flex; align-items:flex-end; justify-content:center;
+  padding:var(--s-3); background:rgba(16,18,21,.42); opacity:0; transition:opacity var(--dur) var(--ease)}
+.dlg[data-on]{opacity:1}
+.dlg__box{width:100%; max-width:420px; display:flex; flex-direction:column; gap:var(--s-2);
+  padding:var(--s-6) var(--s-5) var(--s-4); background:var(--ground); border-radius:var(--r-xl); box-shadow:var(--shadow-lg);
+  transform:translateY(24px); transition:transform var(--dur) var(--ease)}
+.dlg[data-on] .dlg__box{transform:none}
+@media (min-width:560px){
+  .dlg{align-items:center; padding:var(--s-6)}
+  .dlg__box{padding:var(--s-8) var(--s-6) var(--s-5); transform:scale(.96)}
+}
+.dlg__t{margin:0; font-size:1.25rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display); line-height:1.15}
+.dlg__b{margin:0; font-size:var(--fs-sm); color:var(--ink-mid); line-height:1.5; letter-spacing:var(--ls-soft)}
+.dlg__acts{display:flex; flex-direction:column; gap:var(--s-2); margin-top:var(--s-4)}
+.dlg__acts .btn{width:100%; flex:none}
 .sw{
-  width:44px; height:44px; border:0; cursor:pointer; border-radius:var(--r-md);
+  width:32px; height:32px; border:0; cursor:pointer; border-radius:10px;
   display:grid; place-items:center;
   box-shadow:inset 0 0 0 1.5px var(--line-strong);
   transition:box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
@@ -408,11 +449,11 @@ input:-webkit-autofill:active{
 .sw:hover{transform:translateY(-1px)}
 .sw[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--ok), 0 0 0 3px rgba(23,145,79,.18)}   /* chosen theme = green (Garry, 2026-10-03) */
 .sw svg{
-  width:20px; height:20px; opacity:0; transform:scale(.5);
+  width:16px; height:16px; opacity:0; transform:scale(.5);
   transition:opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .sw[aria-pressed="true"] svg{opacity:1; transform:none}
-.sw[data-t="light"]{background:#fff}
+.sw[data-t="light"]{background:#F2F2F7}
 .sw[data-t="leaf"]{background:#A3BF5A}
 .sw[data-t="soft"]{background:#E8E7E5; box-shadow:inset 0 0 0 5px #fff, inset 0 0 0 6px rgba(16,18,21,.1)}
 .sw[data-t="photo"]{background:linear-gradient(#E7E9EE 0 50%, #fff 50%); box-shadow:inset 0 0 0 4px #C4CBD4}
@@ -436,8 +477,13 @@ input:-webkit-autofill:active{
     width:380px; flex-shrink:0; height:calc(100svh - var(--bar-h));
     transform:none; visibility:visible; background:none;
   }
-  .aside__inner{justify-content:center; padding-inline:0}
-  .aside__close{display:none}
+  /* steps 1–2: form, CTA and phone all hang from the top. On a tall screen
+     (or zoomed out with cmd −) the CTA used to drop to the bottom and the
+     phone float to the middle (Garry, 2026-10-07). */
+  .aside__inner{justify-content:flex-start; padding-inline:0}
+  .ob .ob__aside[data-open="true"] .aside__inner{justify-content:center}
+  .ob:not([data-step="3"]) .pane{flex:none}
+  .ob:not([data-step="3"]) .ob__foot{margin-top:0}
   .ob[data-step="3"] .ob__aside{display:none}
   /* "View my page" on the done screen — the preview comes back as a full
      overlay, since by then the sticky column has done its job */
@@ -445,7 +491,6 @@ input:-webkit-autofill:active{
     display:flex; position:fixed; inset:0; z-index:60;
     width:auto; height:100svh; background:var(--ground);
   }
-  .ob .ob__aside[data-open="true"] .aside__close{display:block}
   .ob__foot{background:none; position:static}
   .btn--preview{display:none}
 }
@@ -454,20 +499,29 @@ input:-webkit-autofill:active{
    The core must fit one 375px screen with no scroll: photo, name, bio, top
    actions and the socials row come to about 420px. Extra links go below. */
 .phone{
-  width:296px; flex-shrink:0; border-radius:34px; padding:9px;
+  position:relative; width:296px; flex-shrink:0; border-radius:42px; padding:5px;
   height:clamp(360px,calc(100svh - 230px),604px);
-  background:#101215; box-shadow:var(--shadow-lg);
+  /* the same iPhone as the dashboard's (Garry, 2026-10-10): slim bezel,
+     dynamic island, side keys, no drop shadow */
+  background:#141416; box-shadow:inset 0 0 0 1.5px #3A3A3F, 0 0 0 1px #0B0B0C;
   display:flex; flex-direction:column;
 }
+.phone:not([data-device="desktop"])::before,
+.phone:not([data-device="desktop"])::after{content:""; position:absolute; width:3px; border-radius:2px; background:#2A2A2E}
+.phone:not([data-device="desktop"])::before{left:-3px; top:22%; height:16%; box-shadow:0 -34px 0 0 #2A2A2E}
+.phone:not([data-device="desktop"])::after{right:-3px; top:28%; height:20%}
+.phone__island{position:absolute; z-index:2; top:14px; left:50%; transform:translateX(-50%);
+  width:31%; height:24px; border-radius:20px; background:#000; pointer-events:none}
+.phone[data-device="desktop"] .phone__island{display:none}
 .phone__scr{
-  flex:1; min-height:0; border-radius:26px; overflow:auto; overscroll-behavior:contain;
-  padding:26px 20px 22px; display:flex; flex-direction:column; align-items:center;
+  flex:1; min-height:0; border-radius:37px; overflow:auto; overscroll-behavior:contain;
+  padding:48px 20px 22px; display:flex; flex-direction:column; align-items:center;
   gap:12px; text-align:center;
   background:var(--p-bg); color:var(--p-ink);
   transition:background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 .phone__scr::-webkit-scrollbar{width:0}
-.phone__lv{position:relative; flex:1; min-height:0; border-radius:26px; overflow:hidden; background:#fff}
+.phone__lv{position:relative; flex:1; min-height:0; border-radius:37px; overflow:hidden; background:#fff}
 .phone__lv iframe{position:absolute; top:0; left:0; border:0; transform-origin:0 0}
 .phone[data-device="desktop"] .phone__lv{border-radius:0}
 .phone[data-live] .phone__scr{display:none}
@@ -516,6 +570,15 @@ input:-webkit-autofill:active{
 .phone[data-device="desktop"]{
   width:min(880px,100%); height:auto; aspect-ratio:16/10.5;
   border-radius:16px; padding:0 0 0; overflow:hidden;
+  /* no drop shadow on the browser frame — a faint hairline instead, so a
+     light theme's ground does not melt into the page's (Garry, 2026-10-07) */
+  box-shadow:none; position:relative;
+}
+/* drawn on top, inside the edge — an outside ring was clipped left and
+   right by the aside's overflow, so only the bottom showed */
+.phone[data-device="desktop"]::after{
+  content:""; position:absolute; inset:0; z-index:3; border-radius:inherit; pointer-events:none;
+  box-shadow:inset 0 0 0 1px rgba(16,18,21,.14);
 }
 .phone[data-device="desktop"] .win{display:flex}
 .phone[data-device="desktop"] .phone__scr{border-radius:0; padding:40px 24px 26px; gap:14px}
@@ -534,10 +597,9 @@ input:-webkit-autofill:active{
      takes the column's width and the page inside it is what scales) */
 }
 
-/* only on the done screen, where "View my page" opens the preview full-bleed */
-/* Mobile / Web — always on now, the preview shows both (Garry, 2026-10-03) */
+/* Mobile / Web — on in the column and the laptop bar (done screen's
+   "View my page" too); never in the phone dock (9b; Garry, 2026-10-10) */
 .devs{display:flex; gap:4px; padding:4px; border-radius:var(--r-pill); background:var(--ground-sunk)}
-.ob[data-step="3"] .ob__aside[data-open="true"] .devs{display:flex}
 .devs button{
   border:0; background:none; cursor:pointer; padding:7px 16px; border-radius:var(--r-pill);
   font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-mid);
@@ -573,33 +635,22 @@ input:-webkit-autofill:active{
   .done > .status{order:3}
 }
 
-/* From 900px the column stops stacking: the page you just made on the left,
-   the pack you might want on the right (Garry, 2026-09-23). One 440px column
-   ran the length of two screens on a laptop, which buried the pack CTA. */
+/* From 900px: one centred column, read top to bottom — the page you just
+   made, then the pack as a card of its own with three photos in a row, then
+   whatever is still missing. Picked from four options (Garry, 2026-10-07);
+   the two-column grid before it split the eye between card and pack. */
 @media (min-width:900px){
-  .ob[data-step="3"] .ob__col{max-width:960px}
-  /* the pane's own display:flex is set by .ob[data-step="3"] [data-pane="3"],
-     so this has to match that weight to win */
-  .ob[data-step="3"] .done{
-    --done-w:none;
-    display:grid; align-items:start; text-align:left;
-    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-    /* Spelled out, because the pack block spans rows 2-3: left to `auto`
-       the browser shares its height between them, which pushed the
-       headline and the checklist away from the card they belong to
-       (Garry, 2026-09-24). Rows 1-2 take their content; row 3 absorbs
-       whatever the pack block has left over. */
-    grid-template-rows:auto auto 1fr auto;
-    column-gap:var(--s-12); row-gap:var(--s-6);
+  .ob[data-step="3"] .ob__col{max-width:600px}
+  .ob[data-step="3"] .done{--done-w:none; align-items:stretch}
+  .done > .me    {order:1}
+  .done > .sell  {order:2}
+  .done > .todo  {order:3}
+  .done > .status{order:4}
+  .done > .sell{
+    padding:var(--s-5); background:var(--ground); border-radius:var(--r-xl);
+    box-shadow:var(--shadow-md), inset 0 0 0 1px var(--line);
   }
-  .done .head{grid-area:1 / 1 / 2 / -1; align-items:flex-start}
-  .done .head p{max-width:52ch}
-  .done > .me  {grid-area:2 / 1 / 3 / 2}
-  .done > .todo{grid-area:3 / 1 / 4 / 2}
-  /* spans both rows on the left, so it stays level with the card whether or
-     not there is a checklist under it */
-  .done > .sell{grid-area:2 / 2 / 4 / 3; align-self:start}
-  .done > .status{grid-area:4 / 1 / 5 / -1; text-align:center}
+  .done .place{flex-basis:31.5%}
 }
 
 /* ── READY TO SHARE — the 4-active home's .me card, ported ──────────────── */
@@ -618,7 +669,7 @@ input:-webkit-autofill:active{
   line-height:1.1; overflow-wrap:anywhere}
 .me__live{display:inline-flex; align-items:center; gap:var(--s-2); padding:4px 10px 4px 8px;
   border-radius:var(--r-pill); background:rgba(23,145,79,.10); color:var(--ok);
-  font-family:var(--font-mono); font-size:var(--fs-label); font-weight:var(--fw-bold);
+  box-shadow:inset 0 0 0 1px rgba(23,145,79,.16); font-family:var(--font-mono); font-size:var(--fs-label); font-weight:var(--fw-bold);
   letter-spacing:var(--ls-label); text-transform:uppercase}
 .me__live i{width:6px; height:6px; border-radius:50%; background:currentColor}
 .me__qr{flex-shrink:0; width:76px; padding:6px; border:0; border-radius:var(--r-md); background:#fff;
@@ -627,32 +678,46 @@ input:-webkit-autofill:active{
 .me__qr:hover{transform:scale(1.04)}
 .me__qr svg{display:block; width:100%; height:auto}
 
-/* The link IS the share button. Grey with a hairline round it read as a
-   disabled input, so it takes the same green wash as the LIVE chip above
-   it and drops the border — the card is a live page, and the link is the
-   live part of it (Garry, 2026-09-23). */
+/* The address and Share — option B (Garry, 2026-10-10). A quiet grey
+   field holds the address and a copy icon (tooltip "Copy", then "Copied");
+   Share stands beside it as its own dark button, the field's height.
+   Copying and sharing are two jobs, so they are two controls. */
+.me__row{display:flex; align-items:stretch; gap:10px}
 .me__link{
-  display:flex; align-items:center; gap:var(--s-3); width:100%;
-  padding:var(--s-2) var(--s-2) var(--s-2) var(--s-4); border:0; border-radius:var(--r-pill);
-  background:rgba(23,145,79,.10); box-shadow:none;
-  color:var(--ink); cursor:pointer; text-align:left;
-  transition:background var(--dur-fast) var(--ease);
+  flex:1; min-width:0; display:flex; align-items:center; gap:var(--s-2); min-height:60px;
+  padding:0 var(--s-5); border-radius:var(--r-md);   /* no copy icon here — Copy link sits below (Garry, 2026-10-10) */
+  background:#F4F5F4; box-shadow:inset 0 0 0 1px var(--line); color:var(--ink);
 }
-.me__link:hover{background:rgba(23,145,79,.16)}
 .me__url{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-  font-family:var(--font-mono); font-size:var(--fs-sm); font-weight:var(--fw-semibold)}
-.me__share{flex-shrink:0; display:inline-flex; align-items:center; gap:var(--s-2);
-  height:36px; padding-inline:var(--s-4); border-radius:var(--r-pill);
-  background:var(--ink); color:var(--ink-invert); font-size:var(--fs-xs); font-weight:var(--fw-bold)}
-.me__share svg{width:16px; height:16px}
+  font-family:inherit; font-size:var(--fs-body); font-weight:var(--fw-medium); letter-spacing:-.01em}
+.me__url span{color:var(--ink-soft)}
+.me__url b{font-weight:var(--fw-bold); color:var(--ink)}
+.me__copy{position:relative; flex:none; display:grid; place-items:center; width:40px; height:40px; padding:0;
+  border:0; border-radius:var(--r-sm); background:none; color:var(--ink-mid); cursor:pointer;
+  transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease)}
+.me__copy:hover{background:rgba(16,18,21,.06); color:var(--ink)}
+.me__copy svg{width:17px; height:17px}
+.me__copy[data-copied]{color:var(--ok)}
+/* the tooltip — "Copy" on hover, "Copied" for a moment after a tap */
+.me__copy::after{content:attr(data-tip); position:absolute; left:50%; bottom:calc(100% + 8px); z-index:5;
+  transform:translate(-50%,4px); padding:5px 9px; border-radius:7px; background:var(--ink); color:#fff;
+  font-family:var(--font-sans, inherit); font-size:.75rem; font-weight:var(--fw-semibold); letter-spacing:.14px; white-space:nowrap;
+  opacity:0; pointer-events:none; transition:opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease)}
+.me__copy:hover::after, .me__copy:focus-visible::after, .me__copy[data-copied]::after{opacity:1; transform:translate(-50%,0)}
+.me__share{flex:none; display:inline-flex; align-items:center; justify-content:center; gap:var(--s-2);
+  min-height:60px; padding:0 var(--s-5); border:0; border-radius:var(--r-md); cursor:pointer;
+  background:var(--ink); color:var(--ink-invert); font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-semibold);
+  transition:opacity var(--dur-fast) var(--ease)}
+.me__share:hover{opacity:.88}
+.me__share svg{width:17px; height:17px}
 
 .me__acts{display:grid; grid-template-columns:repeat(3,1fr); gap:var(--s-2)}
 .me__btn{display:flex; align-items:center; justify-content:center; gap:6px;
-  min-height:44px; padding:var(--s-2); border:0; border-radius:var(--r-md); cursor:pointer;
-  background:var(--ground); box-shadow:inset 0 0 0 1.5px var(--line-strong); color:var(--ink);
-  font-size:var(--fs-xs); font-weight:var(--fw-bold); line-height:1.2; text-align:center;
+  min-height:50px; padding:var(--s-2); border:0; border-radius:var(--r-md); cursor:pointer;
+  background:var(--ground); box-shadow:inset 0 0 0 1px var(--line-strong); color:var(--ink);
+  font-size:var(--fs-xs); font-weight:var(--fw-semibold); line-height:1.2; text-align:center;
   transition:background var(--dur-fast) var(--ease)}
-.me__btn:hover{background:var(--ground-soft)}
+.me__btn:hover{background:#F7F8F7}
 .me__btn svg{width:16px; height:16px; flex-shrink:0}
 .me__btn[data-done]{color:var(--ok)}
 .me .scanline{max-width:none; font-size:var(--fs-xs); color:var(--ink-soft); text-align:center;
@@ -661,7 +726,10 @@ input:-webkit-autofill:active{
 /* a phone gives the link the room: share drops to its icon, and the three
    actions stack their icon over the label so none of them wraps mid-word */
 @media (max-width:479px){
-  .me__share{width:40px; height:40px; padding:0; justify-content:center}
+  .me__row{gap:8px}
+  .me__link{padding:0 14px; gap:4px}
+  .me__url{font-size:.9375rem}
+  .me__share{width:52px; padding:0}
   .me__share span{display:none}
   .me__btn{flex-direction:column; gap:4px; min-height:58px}
 }
@@ -940,9 +1008,20 @@ body[data-showing]{overflow:hidden}
   100%{opacity:0; transform:translate3d(var(--dx),104svh,0) rotate(var(--rot))}
 }
 
-/* ── 12. REVIEW TOOL — hidden for production ──── */
-.preview{ display: none !important; }
-
+/* ── 12. REVIEW TOOL — delete this block, its CSS and its script loop ──── */
+.preview{
+  position:fixed; right:var(--s-4); bottom:96px; z-index:50;
+  display:flex; align-items:center; gap:var(--s-1); padding:5px; border-radius:var(--r-pill);
+  background:var(--ground); box-shadow:var(--shadow-lg), inset 0 0 0 1px var(--line);
+}
+.preview button{
+  border:0; cursor:pointer; background:none; color:var(--ink-soft);
+  font-size:var(--fs-xs); font-weight:var(--fw-bold); padding:6px var(--s-3);
+  border-radius:var(--r-pill); white-space:nowrap;
+}
+.preview button:hover{color:var(--ink)}
+.preview button[aria-pressed="true"]{background:var(--brand-violet); color:#fff}
+@media (min-width:960px){ .preview{bottom:var(--s-5)} }
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms !important; transition-duration:.001ms !important}
@@ -968,14 +1047,89 @@ body[data-showing]{overflow:hidden}
 .order__empty,
 .gate,
 .status{ letter-spacing:var(--ls-soft) }
+
+/* ── 9b. FULL-SCREEN PREVIEW (Garry, 2026-10-10) ──────────────────────────
+   In a frame the page never felt real. Open, the preview is the page
+   itself. A phone (under 600px) gets the mobile page edge to edge with a floating dock
+   at the bottom (Mobile is all a phone shows). A laptop opens on Web at
+   full size under a slim top bar — × Close · Mobile | Web · Theme — and
+   Mobile there stays in a phone frame. In the column (steps 1–2 on a
+   laptop) .pvc is display:contents, so the controls sit around the phone
+   as before; Web adds ⤢ in the browser bar to open it full size. */
+.aside__inner{position:relative}
+.pvc{display:contents}
+.aside__label{order:0} .devs{order:1} .phone{order:2} .aside__share{order:3} .thm{order:4}
+.pv-full{display:none}
+.ob__aside:not([data-open="true"]) .phone[data-device="desktop"] .pv-full{
+  display:grid; place-items:center; position:absolute; z-index:4; top:4px; right:8px;
+  width:26px; height:26px; padding:0; border:0; border-radius:7px; cursor:pointer;
+  background:none; color:rgba(255,255,255,.7); transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease)}
+.ob__aside:not([data-open="true"]) .phone[data-device="desktop"] .pv-full:hover{background:rgba(255,255,255,.12); color:#fff}
+.pv-full svg{width:15px; height:15px}
+
+.ob__aside[data-open="true"] .aside__inner{padding:0; gap:0; height:100%; overflow:hidden; justify-content:center; align-items:center}
+.ob__aside[data-open="true"] .aside__label{display:none}
+.ob__aside[data-open="true"] .thm{width:auto; min-height:0}
+/* the line stays put while the tray is open, so the dock / bar never jumps */
+.ob__aside[data-open="true"] .thm[data-open="true"] .thm__tt{display:inline-flex}
+.ob__aside[data-open="true"] .thm__tray{width:min(320px, calc(100vw - 24px))}
+.ob__aside[data-open="true"] .aside__share{width:36px; height:36px; padding:0; justify-content:center}
+.ob__aside[data-open="true"] .aside__share span{display:none}
+
+
+/* Web fills the screen */
+.ob__aside[data-open="true"] .phone[data-device="desktop"]{width:100%; height:100%; aspect-ratio:auto; border-radius:0; box-shadow:none}
+.ob__aside[data-open="true"] .phone[data-device="desktop"] .win,
+.ob__aside[data-open="true"] .phone[data-device="desktop"]::after{display:none}
+
+/* ── phone: the page edge to edge, a dock at the bottom ── */
+@media (max-width:599px){
+  .ob__aside[data-open="true"] .phone{width:100%; height:100%; padding:0; border-radius:0; box-shadow:none; background:none}
+  .ob__aside[data-open="true"] .phone::before, .ob__aside[data-open="true"] .phone::after,
+  .ob__aside[data-open="true"] .phone__island{display:none}
+  .ob__aside[data-open="true"] .phone__lv{border-radius:0}
+  .ob__aside[data-open="true"] .devs{display:none}
+  .ob__aside[data-open="true"] .pvc{
+    display:flex; align-items:center; gap:4px; position:absolute; z-index:6; left:50%; transform:translateX(-50%);
+    bottom:calc(16px + env(safe-area-inset-bottom)); padding:5px; border-radius:999px; white-space:nowrap;
+    background:rgba(255,255,255,.94); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+    box-shadow:0 1px 2px rgba(16,18,21,.08), 0 10px 30px rgba(16,18,21,.18), inset 0 0 0 1px var(--line)}
+  /* centred on the whole dock, not on the theme line beside the × */
+  .ob__aside[data-open="true"] .thm{position:static}
+  .ob__aside[data-open="true"] .thm__tray{left:50%; right:auto; bottom:calc(100% + 16px); transform:translateX(-50%)}
+  .ob__aside[data-open="true"] .aside__close{order:5; display:grid; place-items:center; width:36px; height:36px; padding:0;
+    border-radius:50%; background:var(--ink); color:var(--ink-invert)}
+  .ob__aside[data-open="true"] .aside__close span{display:none}
+}
+
+/* ── laptop: a slim bar along the top ── */
+@media (min-width:600px){
+  .ob__aside[data-open="true"] .aside__inner{padding-top:56px}
+  .ob__aside[data-open="true"] .pvc{
+    display:flex; align-items:center; gap:8px; position:absolute; z-index:6; top:0; left:0; right:0; height:56px;
+    padding:0 12px; background:var(--ground); box-shadow:0 1px 0 var(--line)}
+  .ob__aside[data-open="true"] .aside__close{display:inline-flex; align-items:center; gap:6px; order:-1;
+    padding:8px 12px 8px 10px; border-radius:999px; background:none; font-size:var(--fs-xs); font-weight:var(--fw-bold)}
+  .ob__aside[data-open="true"] .aside__close:hover{background:var(--ground-soft)}
+  .ob__aside[data-open="true"] .devs{position:absolute; left:50%; transform:translateX(-50%)}
+  .ob__aside[data-open="true"] .aside__share{margin-left:auto}
+  .ob__aside[data-open="true"] .thm{margin-left:auto}
+  .ob__aside[data-open="true"] .aside__share:not([hidden]) + .thm{margin-left:0}
+  .ob__aside[data-open="true"] .thm__tray{top:-2px; bottom:auto; right:0; left:auto}
+  .ob__aside[data-open="true"] .phone[data-device="mobile"]{width:auto; height:min(800px, calc(100svh - 56px - 64px)); aspect-ratio:9/19.5}
+}
 </style>
 
 <svg class="defs" aria-hidden="true" focusable="false">
   <defs>
-    <linearGradient id="igGrad" x1="0" y1="1" x2="1" y2="0">
-      <stop offset="0" stop-color="#FEDA75"/><stop offset=".35" stop-color="#FA7E1E"/>
-      <stop offset=".62" stop-color="#D62976"/><stop offset="1" stop-color="#962FBF"/>
-    </linearGradient>
+    <!-- Instagram's own glow: yellow from the bottom-left corner, through
+         orange and pink, to blue at the top (Garry, 2026-10-07 — the old
+         straight diagonal did not read as the real icon) -->
+    <radialGradient id="igGrad" cx=".3" cy="1.07" r="1.5">
+      <stop offset="0" stop-color="#FDF497"/><stop offset=".05" stop-color="#FDF497"/>
+      <stop offset=".45" stop-color="#FD5949"/><stop offset=".6" stop-color="#D6249F"/>
+      <stop offset=".9" stop-color="#285AEB"/>
+    </radialGradient>
   </defs>
 </svg>
 
@@ -995,7 +1149,7 @@ body[data-showing]{overflow:hidden}
     </div>
 
     <a class="ob__exit" href="homepage.html" id="exit">Save &amp; exit</a>
-    <a class="ob__exit ob__dash" href="dashboard/home.html" id="toDash" hidden>
+    <a class="ob__exit ob__dash" href="dashboard/2-page-live/home.html" id="toDash" hidden>
       <span>Go to dashboard</span>
       <svg class="arw" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h11m0 0-4.3-4.3M15 10l-4.3 4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </a>
@@ -1019,11 +1173,10 @@ body[data-showing]{overflow:hidden}
                 <button class="photo__btn" type="button" id="photoBtn">Add photo</button>
                 <button class="photo__clear" type="button" id="photoClear" hidden>Remove</button>
               </div>
-              <p class="photo__hint">Square works best. JPG or PNG.</p>
+              <p class="photo__hint">Your photo or your logo. JPG or PNG.</p>
             </div>
             <input class="sr" type="file" id="photoInput" accept="image/*">
           </div>
-
           <div class="fld">
             <div class="fld__top"><label class="fld__lbl" for="name">Your name</label></div>
             <div class="inp"><input id="name" type="text" maxlength="40" autocomplete="name" placeholder="Gurdeep Singh"></div>
@@ -1135,13 +1288,13 @@ body[data-showing]{overflow:hidden}
             </button>
           </div>
 
-          <button class="me__link" type="button" id="shareQR" aria-label="Share my page">
-            <span class="me__url" id="liveUrl">codemarca.com/gurdeep</span>
-            <span class="me__share">
-              <svg viewBox="0 0 20 20" fill="none"><path d="M10 13V3m0 0L6.6 6.4M10 3l3.4 3.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 11.5v4.2c0 .7.6 1.3 1.3 1.3h8.4c.7 0 1.3-.6 1.3-1.3v-4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-              <span id="shareT">Share</span>
-            </span>
-          </button>
+          <!-- the address with copy, and Share beside it — option B (Garry, 2026-10-10) -->
+          <div class="me__row">
+            <div class="me__link">
+              <span class="me__url" id="liveUrl">codemarca.com/gurdeep</span>
+            </div>
+            <button class="me__share" type="button" id="shareQR" aria-label="Share my page"><svg viewBox="0 0 20 20" fill="none"><path d="M10 13V3m0 0L6.6 6.4M10 3l3.4 3.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 11.5v4.2c0 .7.6 1.3 1.3 1.3h8.4c.7 0 1.3-.6 1.3-1.3v-4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span id="shareT">Share</span></button>
+          </div>
 
           <div class="me__acts">
             <button class="me__btn" type="button" id="copyUrl">
@@ -1203,7 +1356,8 @@ body[data-showing]{overflow:hidden}
           <a class="btn btn--go" href="select-pack.html?built=1" id="getPack">Get your FREE pack</a>
         </div>
 
-        <p class="status" id="doneStatus" role="status" aria-live="polite"></p>
+        <!-- screen readers only: the button already says "Copied" / "Saved" on screen (Garry, 2026-10-10) -->
+        <p class="status sr" id="doneStatus" role="status" aria-live="polite"></p>
       </section>
 
       <!-- ══ FOOTER ACTIONS ════════════════════════════════════════════ -->
@@ -1222,26 +1376,55 @@ body[data-showing]{overflow:hidden}
     <aside class="ob__aside" id="aside" aria-label="Preview">
       <div class="aside__inner">
         <p class="aside__label" id="asideLabel">What a person sees when they scan your code</p>
-        <div class="devs" id="devs" role="group" aria-label="Preview size">
-          <button type="button" data-d="mobile" aria-pressed="true">Mobile</button>
-          <button type="button" data-d="desktop" aria-pressed="false">Desktop</button>
-        </div>
         <div class="phone" data-theme="light" data-device="mobile" id="phoneFrame">
+          <span class="phone__island" aria-hidden="true"></span>
           <div class="win" aria-hidden="true"><i></i><i></i><i></i><span class="win__u" id="winUrl">codemarca.com</span></div>
           <div class="phone__scr" id="scr"></div>
           <!-- the glass themes carry their own layout, so they preview as the
                real page in a frame, scaled down to fit — see section 13b -->
+          <!-- Web only, in the column: open the page full size (Garry, 2026-10-10) -->
+          <button class="pv-full" type="button" id="pvFull" aria-label="Open full screen"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3.5 7.5v-4h4M16.5 7.5v-4h-4M3.5 12.5v4h4M16.5 12.5v4h-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <div class="phone__lv" id="lv" hidden><iframe id="lvFrame" title="Your page, as a scan shows it" tabindex="-1"></iframe></div>
         </div>
-        <button class="aside__share" type="button" id="asideShare" hidden>
-          <svg viewBox="0 0 20 20" fill="none"><path d="M10 13V3m0 0L6.6 6.4M10 3l3.4 3.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 11.5v4.2c0 .7.6 1.3 1.3 1.3h8.4c.7 0 1.3-.6 1.3-1.3v-4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-          Share my page
-        </button>
-        <div class="themes" id="themes" role="group" aria-label="Page theme"></div>
+        <!-- the controls. In the column they sit around the phone as before;
+             full screen they become a dock (phones) or a top bar (laptops) -->
+        <div class="pvc" id="pvc">
+          <div class="devs" id="devs" role="group" aria-label="Preview size">
+            <button type="button" data-d="mobile" aria-pressed="true">Mobile</button>
+            <button type="button" data-d="desktop" aria-pressed="false">Web</button>
+          </div>
+          <button class="aside__share" type="button" id="asideShare" hidden>
+            <svg viewBox="0 0 20 20" fill="none"><path d="M10 13V3m0 0L6.6 6.4M10 3l3.4 3.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 11.5v4.2c0 .7.6 1.3 1.3 1.3h8.4c.7 0 1.3-.6 1.3-1.3v-4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span>Share my page</span>
+          </button>
+          <!-- closed, the theme is one line of text; Change opens the swatches
+               in a tray with a × — same as the dashboard's previews (Garry, 2026-10-09) -->
+          <div class="thm" id="thm" data-open="false">
+            <button class="thm__tt" type="button" id="thmOpen" aria-expanded="false"><span class="thm__th">Theme · <b></b></span><span class="thm__chg">Change</span></button>
+            <div class="thm__tray">
+              <div class="thm__top"><span class="thm__th">Theme · <b></b></span>
+                <button class="thm__x" type="button" id="thmClose" aria-label="Close themes"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
+              <div class="themes" id="themes" role="group" aria-label="Page theme"></div>
+            </div>
+          </div>
+          <button class="aside__close" type="button" id="asideClose" aria-label="Close preview"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Close preview</span></button>
+        </div>
       </div>
-      <button class="aside__close" type="button" id="asideClose">Close preview</button>
     </aside>
   </main>
+</div>
+
+<!-- Asked when the preview or the theme tray closes on a theme that was
+     only being tried — the dashboard's CM.dialog, ported. -->
+<div class="dlg" id="dlg" hidden>
+  <div class="dlg__box" role="alertdialog" aria-modal="true" aria-labelledby="dlgT" aria-describedby="dlgB">
+    <h2 class="dlg__t" id="dlgT"></h2>
+    <p class="dlg__b" id="dlgB"></p>
+    <div class="dlg__acts">
+      <button class="btn btn--go" type="button" data-dlg="yes">Yes, switch</button>
+      <button class="btn btn--ghost" type="button" data-dlg="no" id="dlgNo"></button>
+    </div>
+  </div>
 </div>
 
 <!-- Share — the dashboard's sheet (CM.shareSheet), ported. -->
@@ -1296,6 +1479,7 @@ body[data-showing]{overflow:hidden}
 
 <script src="pack.js"></script>
 <script src="lightbox.js"></script>
+<script src="photo-kit.js"></script>
 <script>
 (function () {
   "use strict";
@@ -1421,7 +1605,7 @@ body[data-showing]{overflow:hidden}
      order[] is the whole layout model. Rows only render when their field
      is filled, so the array can safely hold keys that are not live yet. */
   var S = {
-    step:1, photo:null, name:"", handle:"gurdeep", bio:"",
+    step:1, photo:null, face:null, name:"", handle:"gurdeep", bio:"",
     phone:"", phoneOn:true, waSame:true, wa:"", waOn:true, email:"", emailOn:true,
     links:{},                 /* k -> { v:"", on:true } */
     customs:[],               /* { id, title, url, on } */
@@ -1441,57 +1625,39 @@ body[data-showing]{overflow:hidden}
      Three routes land here — claim signup, post-order dashboard, first
      scan of a fresh code. All three arrive with a handle. */
   var q = new URLSearchParams(location.search);
-  var customAccount = null;
-  try {
-    var raw = localStorage.getItem("cm.account.custom");
-    if (raw) customAccount = JSON.parse(raw);
-  } catch(e) {}
+  if (q.get("handle")) S.handle = cleanHandle(q.get("handle"));
+  if (q.get("name"))   S.name   = q.get("name").slice(0, 40);
 
-  var qH = q.get("handle");
-  var storedH = "";
-  try { storedH = localStorage.getItem("cm.username") || (customAccount && customAccount.profile && customAccount.profile.handle) || ""; } catch(e) {}
-  if (qH) S.handle = cleanHandle(qH);
-  else if (storedH) S.handle = cleanHandle(storedH);
+  /* WHERE "DONE" GOES — added 2026-09-16 with the flow folders.
+     Most people arrive here with no pack, so finishing lands them on the
+     page-live dashboard and the loud button is still "get your pack".
 
-  var qN = q.get("name");
-  var storedN = "";
-  try {
-    storedN = localStorage.getItem("cm.name") || (customAccount && customAccount.user && customAccount.user.name) || (customAccount && customAccount.profile && customAccount.profile.title) || "";
-    if (storedN === "Garry Singh" || storedN === "Garry" || storedN === "Gurdeep Singh" || storedN === "Your Name" || storedN === "User") {
-      storedN = "";
-      localStorage.removeItem("cm.name");
-    }
-  } catch(e) {}
-  if (qN && qN !== "Garry Singh" && qN !== "Garry" && qN !== "Gurdeep Singh" && qN !== "Your Name") S.name = qN.slice(0, 40);
-  else if (storedN) S.name = storedN.slice(0, 40);
-
-  var qP = q.get("phone");
-  var storedP = "";
-  try { storedP = localStorage.getItem("cm.phone") || (customAccount && customAccount.profile && customAccount.profile.phone) || ""; } catch(e) {}
-  if (qP) S.phone = qP.replace(/\D/g, "").slice(0, 10);
-  else if (storedP) S.phone = storedP.replace(/\D/g, "").slice(0, 10);
-
-  var qE = q.get("email");
-  var storedE = "";
-  try { storedE = localStorage.getItem("cm.email") || (customAccount && customAccount.user && customAccount.user.email) || ""; } catch(e) {}
-  if (qE) S.email = qE.trim();
-  else if (storedE) S.email = storedE.trim();
-
+     ?ordered=1 is the other way round: they bought the pack FIRST and are
+     only now building the page — the flow-3 screens send them here with
+     it. For them the pack is already paid for and in a van, so offering
+     to sell them one would be the product not paying attention. They get
+     the photos only — no price, no button — and "Done" goes to flow 2's
+     pack-on-the-way state. */
+  /* built off a gifted sticker (scan.html → ?claim=<code>): the stickers in
+     their hand switch on with this page, and their own free pack is still
+     unclaimed — flow 2's `gifted` state (2026-10-08) */
+  if (q.get("claim") && !q.get("ordered")) {
+    var gd = document.getElementById("toDash");
+    if (gd) { gd.href = "dashboard/2-page-live/home.html?state=gifted"; }
+  }
   if (q.get("ordered")) {
     var dash = document.getElementById("toDash");
     var pack = document.getElementById("getPack");
-    if (dash) {
-      dash.href = "dashboard/home.html";
-      try {
-        localStorage.setItem("cm.stage", "page-live");
-        localStorage.setItem("cm.substage", "coming");
-      } catch(e) {}
-    }
+    /* page live + pack in the van = flow 2's `coming` state (2026-09-29);
+       a pack that has already landed means the stickers work the moment
+       this page is live — that is the active account (2026-10-08) */
+    var landed = q.get("ordered") === "landed";
+    if (dash) { dash.href = landed ? "dashboard/4-active/home.html" : "dashboard/2-page-live/home.html?state=coming"; }
     /* same photos, but no price and no button (Garry, 2026-09-29) — the pack
        is already paid for; the photos only show where it can go */
     if (pack) { pack.hidden = true; }
-    document.getElementById("sellEye").textContent = "Your pack is on the way";
-    document.getElementById("sellH").textContent = "Here is where people put theirs.";
+    document.getElementById("sellEye").textContent = landed ? "Your stickers work now" : "Your pack is on the way";
+    document.getElementById("sellH").textContent = landed ? "Scan one. It opens this page." : "Here is where people put theirs.";
     document.getElementById("sellPrice").hidden = true;
   }
 
@@ -1661,52 +1827,20 @@ body[data-showing]{overflow:hidden}
     $("aside").dataset.open = "false";
     $("next").textContent = n === 2 ? "Publish my page" : "Continue";
     if (n === 3) {
-      if ($("toDash")) $("toDash").href = "dashboard/home.html";
-      if ($("getPack")) $("getPack").href = "select-pack.html?built=1&handle=" + encodeURIComponent(S.handle);
-      $("liveUrl").textContent = "codemarca.com/" + S.handle;
+      $("liveUrl").innerHTML = "<span>codemarca.com/</span><b>" + esc(S.handle) + "</b>";
       $("meName").textContent = S.name.trim() || S.handle;
       $("meAv").innerHTML = S.photo ? '<img src="' + S.photo + '" alt="">' : esc(initial());
       $("winUrl").textContent = "codemarca.com/" + S.handle;
       drawQR(S.handle);
-      if (paintDone() !== "bare") celebrate();
+      paintDone(); celebrate();   /* every way in gets the burst (Garry, 2026-10-07) */
       paintPlaces();                         /* the row has a width now */
       requestAnimationFrame(paintPlaces);    /* …and again once fonts settle */
-
-      try {
-        localStorage.setItem("cm.username", S.handle);
-        localStorage.setItem("cm.name", S.name.trim());
-        if (S.phone) localStorage.setItem("cm.phone", S.phone);
-        if (S.email) localStorage.setItem("cm.email", S.email);
-        if (S.tag) localStorage.setItem("cm.tag", S.tag);
-        if (S.bio) localStorage.setItem("cm.bio", S.bio);
-        if (S.theme) localStorage.setItem("cm.theme", S.theme);
-        if (S.themeColor) localStorage.setItem("cm.themeColor", S.themeColor);
-        if (S.photo) localStorage.setItem("cm.photo", S.photo);
-        localStorage.setItem("cm.stage", "page-live");
-
-        var custom = {};
-        try { custom = JSON.parse(localStorage.getItem("cm.account.custom") || "{}"); } catch(e){}
-        custom.user = custom.user || {};
-        custom.profile = custom.profile || {};
-        custom.profile.brand = custom.profile.brand || {};
-        custom.user.username = S.handle;
-        custom.user.name = S.name.trim();
-        custom.profile.name = S.name.trim();
-        custom.profile.headline = S.tag || "";
-        custom.profile.bio = S.bio || "";
-        custom.profile.phone = S.phone || "";
-        custom.user.email = S.email || custom.user.email || "";
-        custom.profile.brand.theme = S.theme || "light";
-        if (S.themeColor) custom.profile.brand.color = S.themeColor;
-        if (S.photo) custom.profile.photo = S.photo;
-        localStorage.setItem("cm.account.custom", JSON.stringify(custom));
-      } catch(e) {}
     } else {
       closeShow();
       stopCelebrating();
       setDevice("mobile");   /* the desktop frame belongs to the done overlay only */
     }
-    Array.prototype.forEach.call(document.querySelectorAll(".preview button"), function (b) {
+    Array.prototype.forEach.call(document.querySelectorAll(".preview button[data-go]"), function (b) {
       b.setAttribute("aria-pressed", String(b.dataset.go === String(n)));
     });
     window.scrollTo(0, 0);
@@ -1736,7 +1870,7 @@ body[data-showing]{overflow:hidden}
   function paintExit() {
     var ok = canSave();
     $("exit").textContent = ok ? "Save & exit" : "Exit";
-    $("exit").href = ok ? "#" : "dashboard/home.html";
+    $("exit").href = ok ? "#" : "dashboard/1-empty/home.html";
   }
   $("exit").addEventListener("click", function (e) {
     if (!canSave()) return;          /* nothing saved — let the link leave */
@@ -1777,19 +1911,25 @@ body[data-showing]{overflow:hidden}
     d.innerHTML = S.photo ? '<img src="' + S.photo + '" alt="">' :
       '<svg class="face" viewBox="0 0 96 96" aria-hidden="true"><rect width="96" height="96" fill="#E7E9EE"/><circle cx="48" cy="38" r="16" fill="#B3B8C2"/><path d="M16 96c4-19 17-28 32-28s28 9 32 28z" fill="#B3B8C2"/></svg>';
     $("photoClear").hidden = !S.photo;
-    $("photoBtn").textContent = S.photo ? "Change photo" : "Add photo";
+    $("photoBtn").textContent = S.photo && !S.face ? "Change photo" : "Add photo";
   }
 
-  $("photoBtn").addEventListener("click", function () { $("photoInput").click(); });
-  $("photoInput").addEventListener("change", function (e) {
-    var f = e.target.files && e.target.files[0];
-    if (!f) return;
-    var r = new FileReader();
-    r.onload = function () { S.photo = r.result; paintPhoto(); refresh(); };
-    r.readAsDataURL(f);
+  /* ── faces, zodiac and the crop dialog come from photo-kit.js, the same
+     kit the dashboard's Profile tab uses — one set of faces for both
+     (Garry, 2026-10-08). A pick is stored as a PNG in S.photo, so the
+     preview, the done card and the checklist need no second path. SUBS is
+     declared further down, hence the getter. ── */
+  var kit = PhotoKit.mount({
+    disc: $("photoDisc"), input: $("photoInput"),
+    after: document.querySelector(".photo"),
+    get leaf() { return (typeof SUBS !== "undefined" && SUBS && SUBS.leaf) || []; },
+    get: function () { return { photo: S.photo, face: S.face || null, theme: S.theme }; },
+    set: function (photo, face) { S.photo = photo; S.face = face || null; paintPhoto(); refresh(); }
   });
+
+  $("photoBtn").addEventListener("click", function () { $("photoInput").click(); });
   $("photoClear").addEventListener("click", function () {
-    S.photo = null; $("photoInput").value = ""; paintPhoto(); refresh();
+    S.photo = null; S.face = null; $("photoInput").value = ""; paintPhoto(); kit.repaint(); refresh();
   });
 
   $("name").value = S.name;
@@ -2172,17 +2312,19 @@ body[data-showing]{overflow:hidden}
   var SUBS = {
     leaf:  [ { t:"leaf", n:"Green", c:"#A3BF5A" }, { t:"leaf-blue", n:"Blue", c:"#0062FE" },
              { t:"leaf-orange", n:"Orange", c:"#F45C30" }, { t:"leaf-violet", n:"Violet", c:"#6741FF" } ],
+    light: [ { t:"light", n:"Light", c:"#F2F2F7" }, { t:"light-dark", n:"Dark", c:"#000000" } ],
     soft:  [ { t:"soft", n:"Light", c:"#E8E7E5" }, { t:"soft-dark", n:"Dark", c:"#1E1E1C" } ],
     photo: [ { t:"photo", n:"Light", c:"#C4CBD4" }, { t:"photo-dark", n:"Dark", c:"#191C22" } ]
   };
   var lastSub = {};
-  function themeBase(t) { var m = /^(leaf|soft|photo)/.exec(t || ""); return m ? m[1] : t; }
+  function themeBase(t) { var m = /^(light|leaf|soft|photo)/.exec(t || ""); return m ? m[1] : t; }
   $("themes").insertAdjacentHTML("afterend", '<div class="subs" id="subs" role="group" aria-label="Theme version" data-on="false"></div>');
   function setTheme(t) {
     var base = themeBase(t);
     if (SUBS[base]) { lastSub[base] = t; }
     S.theme = t;
     $("phoneFrame").dataset.theme = S.theme;
+    kit.theme();
     Array.prototype.forEach.call($("themes").children, function (x) {
       x.setAttribute("aria-pressed", String(x.dataset.t === base));
     });
@@ -2193,6 +2335,7 @@ body[data-showing]{overflow:hidden}
              '" aria-pressed="' + (x.t === t) + '" style="--dot:' + x.c + '"></button>';
     }).join("");
     paintLive();
+    paintThemeName();
   }
   $("themes").addEventListener("click", function (e) {
     var b = e.target.closest(".sw"); if (!b) return;
@@ -2203,6 +2346,54 @@ body[data-showing]{overflow:hidden}
   $("subs").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (b && b.dataset.t) { setTheme(b.dataset.t); }
   });
+
+  /* ── the tray, and the question when it closes ─────────────────────
+     Picking a swatch only previews it (Garry, 2026-10-09). Folding the
+     tray, or closing the preview, with a different theme showing asks
+     first: yes keeps it, no puts the old one back. Esc / tapping outside
+     the question leaves them where they were. */
+  function themeName(t) {
+    var base = themeBase(t), n = t, v = (SUBS[base] || []).filter(function (x) { return x.t === t; })[0];
+    THEMES.forEach(function (x) { if (x.t === base) { n = x.n; } });
+    return n + (v && v.n !== n ? " \u00b7 " + v.n : "");
+  }
+  function paintThemeName() {
+    Array.prototype.forEach.call(document.querySelectorAll(".thm__th b"), function (b) { b.textContent = themeName(S.theme); });
+  }
+  var trayFrom = null, dlgDone = null;
+  function thmTray(open) {
+    $("thm").dataset.open = String(open);
+    $("thmOpen").setAttribute("aria-expanded", String(open));
+  }
+  function settleTheme(done) {
+    if (trayFrom === null || S.theme === trayFrom) { trayFrom = null; thmTray(false); done(); return; }
+    if (dlgDone) { return; }
+    $("dlgT").textContent = "Switch your page to " + themeName(S.theme) + "?";
+    $("dlgB").textContent = "It\u2019s on " + themeName(trayFrom) + " right now. You can change it again any time from your dashboard.";
+    $("dlgNo").textContent = "Keep " + themeName(trayFrom);
+    dlgDone = done;
+    $("dlg").hidden = false;
+    void $("dlg").offsetWidth;
+    $("dlg").setAttribute("data-on", "");
+    $("dlg").querySelector("[data-dlg]").focus();
+  }
+  function dlgAnswer(id) {
+    var done = dlgDone; dlgDone = null;
+    $("dlg").removeAttribute("data-on");
+    setTimeout(function () { if (!$("dlg").hasAttribute("data-on")) { $("dlg").hidden = true; } }, 240);
+    if (!id) { return; }
+    if (id === "no") { setTheme(trayFrom); }
+    trayFrom = null;
+    thmTray(false);
+    if (done) { done(); }
+  }
+  $("dlg").addEventListener("click", function (e) {
+    if (e.target === $("dlg")) { dlgAnswer(null); return; }
+    var b = e.target.closest("[data-dlg]"); if (b) { dlgAnswer(b.dataset.dlg); }
+  });
+  $("thmOpen").addEventListener("click", function () { trayFrom = S.theme; setTheme(S.theme); thmTray(true); });
+  paintThemeName();
+  $("thmClose").addEventListener("click", function () { settleTheme(function () {}); });
 
   /* ══ 13b. THE GLASS THEMES — the real page, scaled ═══════════════════
      Copper, Bronze and Blush glass are their own layouts (profile.html 2b,
@@ -2235,6 +2426,9 @@ body[data-showing]{overflow:hidden}
     var box = $("lv"), fr = $("lvFrame");
     if (box.hidden || !box.clientWidth) { return; }
     var vw = $("phoneFrame").dataset.device === "desktop" ? 1280 : 375;
+    /* full screen, the page is drawn at the screen's own width — real size,
+       not a scaled copy — wherever it fills the screen (9b) */
+    if (isFull() && ($("phoneFrame").dataset.device === "desktop" || isSmall())) { vw = box.clientWidth; }
     var s = box.clientWidth / vw;
     fr.style.width = vw + "px";
     fr.style.height = Math.ceil(box.clientHeight / s) + "px";
@@ -2321,20 +2515,43 @@ body[data-showing]{overflow:hidden}
                  "View my page" on the live screen is asking for. */
   var PREVIEW_AS = "visitor";
 
+  /* ── full screen (9b) ─────────────────────────────────────────────
+     A phone gets the phone page edge to edge; a laptop opens on Web at
+     full size and can flip to Mobile, which stays framed. The column's
+     own Mobile / Web comes back on close. */
+  function isSmall() { return !window.matchMedia("(min-width:600px)").matches; }
+  function isFull() { return $("aside").dataset.open === "true"; }
+  var colDev = "mobile";
+  $("pvFull").addEventListener("click", function () { openPreview(PREVIEW_AS === "owner" ? "owner" : "visitor"); });
+
   function openPreview(as) {
+    colDev = $("phoneFrame").dataset.device;
     PREVIEW_AS = as;
-    $("asideShare").hidden = as !== "owner";
+    /* "View my page" on the done screen: just the page and its theme — no
+       Mobile / Web, no Share; the done screen has Share already (Garry, 2026-10-10) */
+    $("asideShare").hidden = true;
+    $("aside").dataset.as = as;
     /* the visitor preview needs saying what it is; your own page does not */
     $("asideLabel").hidden = as === "owner";
     $("asideLabel").textContent = "What a person sees when they scan your code";
     paintPreview();
     $("aside").dataset.open = "true";
+    setDevice(isSmall() ? "mobile" : "desktop");
+    requestAnimationFrame(fitLive);
   }
 
   $("peek").addEventListener("click", function () { openPreview("visitor"); });
-  $("asideClose").addEventListener("click", function () { $("aside").dataset.open = "false"; });
+  function closePreview() {
+    settleTheme(function () {
+      $("aside").dataset.open = "false";
+      setDevice(colDev);
+    });
+  }
+  $("asideClose").addEventListener("click", closePreview);
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && $("aside").dataset.open === "true") $("aside").dataset.open = "false";
+    if (e.key !== "Escape") { return; }
+    if (dlgDone) { dlgAnswer(null); return; }
+    if ($("aside").dataset.open === "true") { closePreview(); }
   });
 
   /* ══ 13b. BRINGING A CARD INTO VIEW ══════════════════════════════════
@@ -2744,13 +2961,13 @@ body[data-showing]{overflow:hidden}
   function refresh() { paintOrder(); paintPreview(); refreshGate(); }
 
   /* ══ 16. BOOT ════════════════════════════════════════════════════════ */
-  paintPhoto(); paintGrid(); paintAdded(); paintCustoms();
+  paintPhoto(); kit.repaint(); paintGrid(); paintAdded(); paintCustoms();
   sayHandle("ok", "<b>codemarca.com/" + esc(S.handle) + "</b> is yours. You can change it later from your dashboard.");
   setStep(1);
   paintLive();   /* the real page in the preview from the first screen */
 
   /* Review tool — delete this loop and the .preview block before launch. */
-  Array.prototype.forEach.call(document.querySelectorAll(".preview button"), function (b) {
+  Array.prototype.forEach.call(document.querySelectorAll(".preview button[data-go]"), function (b) {
     b.addEventListener("click", function () { setStep(Number(b.dataset.go)); });
   });
   /* ?go=2|3 — the same review jump from the address bar (user-flow shots) */

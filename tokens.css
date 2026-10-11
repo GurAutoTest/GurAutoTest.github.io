@@ -75,6 +75,7 @@
   --fs-lead:    clamp(1.0625rem, 1.5vw, 1.3125rem); /* the line under an H1/H2 */
   --fs-body:    1.0625rem;                        /* 17px — never go below */
   --fs-sm:      0.9375rem;
+  --fs-xs:      0.8125rem;                        /* supporting lines — scan, not-found, flows used it undefined */
   --fs-label:   0.75rem;                          /* mono eyebrows only */
 
   --lh-tight: 0.98;   /* display */

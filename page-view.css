@@ -1,0 +1,166 @@
+/* ==========================================================================
+   CODEMARCA — THE PAGE, FULL SCREEN  (page-view.js)
+   The iPhone / browser-window frame, and the page full screen with its dock
+   (phones) or top bar (600px up). Shared by My QR and Home (2026-10-10).
+   ========================================================================== */
+
+/* ── THE DEVICES (Garry, 2026-10-08) ────────────────────────────────────
+   One frame, two bodies. Phone: an iPhone — slim black bezel, dynamic
+   island, side buttons. Web: a browser window. No drop shadows: they read
+   as blur on this screen. tab-qr.js scales the real page into .dv__view. */
+.dv{display:flex; flex-direction:column; align-items:center; width:100%}
+.dv__lid{position:relative}
+.dv__scr{position:relative; overflow:hidden; background:#fff; display:flex; flex-direction:column}
+.dv__view{position:relative; flex:1; min-height:0; overflow:hidden}
+.dv__view iframe{position:absolute; top:0; left:0; border:0; transform-origin:top left; display:block}
+.dv__island, .dv__bar{display:none}
+
+/* iPhone */
+.dv[data-dev="phone"] .dv__lid{
+  width:var(--dv-pw, 250px); padding:5px; border-radius:42px; background:#141416;   /* slim bezel (Garry, 2026-10-08) */
+  box-shadow:inset 0 0 0 1.5px #3A3A3F, 0 0 0 1px #0B0B0C;
+}
+/* volume and power keys, outside the edge */
+.dv[data-dev="phone"] .dv__lid::before,
+.dv[data-dev="phone"] .dv__lid::after{content:""; position:absolute; width:3px; border-radius:2px; background:#2A2A2E}
+.dv[data-dev="phone"] .dv__lid::before{left:-3px; top:22%; height:16%; box-shadow:0 -34px 0 0 #2A2A2E}
+.dv[data-dev="phone"] .dv__lid::after{right:-3px; top:28%; height:20%}
+.dv[data-dev="phone"] .dv__scr{aspect-ratio:9/19.5; border-radius:37px}
+.dv[data-dev="phone"] .dv__island{top:8px}
+.dv[data-dev="phone"] .dv__island{display:block; position:absolute; z-index:2; top:9px; left:50%;
+  transform:translateX(-50%); width:31%; height:22px; border-radius:20px; background:#000}
+
+/* Web: a browser window on its own — no laptop around it (Garry,
+   2026-10-08). Traffic lights and the URL in the bar, a faint hairline
+   edge instead of a shadow, the same as onboarding's desktop frame. */
+.dv[data-dev="web"] .dv__lid{width:100%; border-radius:12px; overflow:hidden}
+.dv[data-dev="web"] .dv__lid::after{content:""; position:absolute; inset:0; z-index:3; border-radius:inherit;
+  pointer-events:none; box-shadow:inset 0 0 0 1px rgba(16,18,21,.14)}
+.dv[data-dev="web"] .dv__scr{aspect-ratio:16/10.5}
+.dv[data-dev="web"] .dv__bar{display:flex; flex:none; align-items:center; gap:5px; height:clamp(18px,3.4vw,30px);
+  padding:0 10px; background:#1B1D22}
+/* dark, like the profile tab's and onboarding's browser frame — the three
+   previews read as one window (Garry, 2026-10-09) */
+.dv__bar i{width:clamp(6px,.9vw,9px); aspect-ratio:1; border-radius:50%; background:rgba(255,255,255,.26); flex:none}
+/* the address sits left, beside the lights, small — and copies on a tap */
+.dv__url{position:relative; margin-left:8px; padding:2px 10px; border:0; border-radius:5px; background:rgba(255,255,255,.10); color:rgba(255,255,255,.62);
+  font-family:var(--font-mono); font-size:clamp(.375rem,.75vw,.5625rem); letter-spacing:-.01em; line-height:1.5;
+  white-space:nowrap; max-width:55%; cursor:pointer; transition:background var(--dur-fast) var(--ease)}
+.dv__url:hover{background:rgba(255,255,255,.16); color:#fff}
+.dv__u{display:block; overflow:hidden; text-overflow:ellipsis; transition:opacity var(--dur-fast) var(--ease)}
+.dv__ok{position:absolute; inset:0; display:grid; place-items:center; border-radius:inherit;
+  background:var(--ok-tint); color:var(--ok); font-family:var(--font-sans); font-weight:var(--fw-bold);
+  opacity:0; pointer-events:none; transition:opacity .4s var(--ease)}
+.dv__url[data-copied="true"] .dv__ok{opacity:1; transition-duration:.12s}
+.dv__url[data-copied="true"] .dv__u{opacity:0}
+
+/* ── OPEN: the page full screen (Garry, 2026-10-10) ─────────────────────
+   The same as onboarding's. Phones: the mobile page edge to edge, a dock
+   at the bottom (Theme · ×). Laptops: a slim top bar — × Close preview ·
+   Mobile | Web · Theme — with Web at full size and Mobile in its frame. */
+.pvx{position:fixed; inset:0; z-index:95; background:var(--ground);
+  transform:translateY(100%); visibility:hidden;
+  transition:transform var(--dur) var(--ease), visibility var(--dur) var(--ease)}
+.pvx[data-open="true"]{transform:none; visibility:visible}
+.pvx__stage{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; overflow:hidden}
+.pvx__devs{display:flex; gap:4px; padding:4px; border-radius:var(--r-pill); background:var(--ground-sunk)}
+.pvx__devs button{border:0; background:none; cursor:pointer; padding:7px 16px; border-radius:var(--r-pill);
+  font:inherit; font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-mid)}
+.pvx__devs button[aria-pressed="true"]{background:var(--ground); color:var(--ink); box-shadow:var(--shadow-md)}
+.pvx__close{border:0; background:none; cursor:pointer; font:inherit; color:var(--ink)}
+.pvx__close svg{width:16px; height:16px; flex:none}
+.pvx .pvx__themes{min-height:0; width:auto}
+/* the line stays put while the tray is open, so the dock / bar never jumps */
+.pvx .pvx__themes[data-open="true"] .pvx__tt{display:inline-flex}
+.pvx .pvx__tray{width:min(320px, calc(100vw - 24px))}
+/* Web: the page itself, no window around it */
+.pvx[data-dev="web"] .dv{width:100%; height:100%}
+.pvx[data-dev="web"] .dv__lid{width:100%; height:100%; border-radius:0}
+.pvx[data-dev="web"] .dv__lid::after, .pvx[data-dev="web"] .dv__bar{display:none}
+.pvx[data-dev="web"] .dv__scr{aspect-ratio:auto; height:100%}
+
+@media (max-width:599px){
+  .pvx .dv, .pvx .dv__lid{width:100%; height:100%}
+  .pvx .dv[data-dev="phone"] .dv__lid{width:100%; height:100%; padding:0; border-radius:0; background:none; box-shadow:none}
+  .pvx .dv[data-dev="phone"] .dv__lid::before, .pvx .dv[data-dev="phone"] .dv__lid::after,
+  .pvx .dv[data-dev="phone"] .dv__island{display:none}
+  .pvx .dv[data-dev="phone"] .dv__scr{aspect-ratio:auto; height:100%; border-radius:0}
+  .pvx__devs{display:none}
+  .pvx__ctl{display:flex; align-items:center; gap:4px; position:absolute; z-index:6; left:50%; transform:translateX(-50%);
+    bottom:calc(16px + env(safe-area-inset-bottom)); padding:5px; border-radius:999px; white-space:nowrap;
+    background:rgba(255,255,255,.94); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+    box-shadow:0 1px 2px rgba(16,18,21,.08), 0 10px 30px rgba(16,18,21,.18), inset 0 0 0 1px var(--line)}
+  /* centred on the whole dock, not on the theme line beside the × */
+  .pvx .pvx__themes{position:static}
+  .pvx .pvx__tray{left:50%; right:auto; bottom:calc(100% + 16px); transform:translateX(-50%)}
+  .pvx__close{order:5; display:grid; place-items:center; width:36px; height:36px; padding:0; border-radius:50%; background:var(--ink); color:var(--ink-invert)}
+  .pvx__close span{display:none}
+}
+@media (min-width:600px){
+  .pvx__stage{top:56px}
+  .pvx__ctl{display:flex; align-items:center; gap:8px; position:absolute; z-index:6; top:0; left:0; right:0; height:56px;
+    padding:0 12px; background:var(--ground); box-shadow:0 1px 0 var(--line)}
+  .pvx__close{display:inline-flex; align-items:center; gap:6px; padding:8px 12px 8px 10px; border-radius:999px;
+    font-size:var(--fs-xs); font-weight:var(--fw-bold)}
+  .pvx__close:hover{background:var(--ground-soft)}
+  .pvx__devs{position:absolute; left:50%; transform:translateX(-50%)}
+  .pvx .pvx__themes{margin-left:auto}
+  .pvx .pvx__tray{top:-2px; bottom:auto; right:0; left:auto}
+  .pvx .dv[data-dev="phone"]{--dv-pw:min(370px, calc((100svh - 56px - 64px) * 9 / 19.5 + 10px))}
+}
+
+
+/* ⤢ in the card's browser bar, right side — Web only (Garry, 2026-10-10) */
+.dv__full{display:none}
+.dv[data-dev="web"] .dv__full{display:grid; place-items:center; margin-left:auto; width:clamp(16px,2.4vw,22px); aspect-ratio:1;
+  padding:0; border:0; border-radius:5px; cursor:pointer; background:none; color:rgba(255,255,255,.7);
+  transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease)}
+.dv__full:hover{background:rgba(255,255,255,.12); color:#fff}
+.dv__full svg{width:70%; height:70%}
+
+/* ── OPEN: theme line + tray (Garry, 2026-10-09) ────────────────────────
+   Same as the profile tab's preview: closed it is one line, "Theme · Leaf ·
+   Green  Change"; Change opens the swatches in a small tray with a ×. The
+   tray rises over the line's spot, so the device above never moves. */
+.pvx__themes{position:relative; width:min(320px, 100%); min-height:36px; display:flex; flex-direction:column; align-items:center; flex:none}
+.pvx__th{font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:var(--ls-soft)}
+.pvx__th b{color:var(--ink); font-weight:var(--fw-bold)}
+.pvx__tt{display:inline-flex; align-items:center; gap:10px; padding:8px 14px; border:0; border-radius:999px;
+  background:none; cursor:pointer; font:inherit; transition:background var(--dur-fast) var(--ease)}
+.pvx__tt:hover{background:var(--ground-soft)}
+.pvx__chg{font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink); letter-spacing:var(--ls-soft);
+  text-decoration:underline; text-underline-offset:3px}
+.pvx__tray{display:none; position:absolute; left:0; right:0; bottom:0; z-index:2; width:100%; flex-direction:column; gap:10px; padding:12px 14px 10px; border-radius:18px;
+  background:var(--ground); box-shadow:0 1px 2px rgba(16,18,21,.06), 0 8px 24px rgba(16,18,21,.10), inset 0 0 0 1px var(--line)}
+.pvx__themes[data-open="true"] .pvx__tt{display:none}
+.pvx__themes[data-open="true"] .pvx__tray{display:flex}
+.pvx__tray-top{display:flex; align-items:center; justify-content:space-between; gap:8px}
+.pvx__tc{display:grid; place-items:center; width:28px; height:28px; padding:0; border:0; border-radius:50%;
+  background:var(--ground-soft); color:var(--ink); cursor:pointer}
+.pvx__tc:hover{background:var(--line)}
+.pvx__tc svg{width:14px; height:14px}
+.pvx__sws{display:flex; flex-wrap:wrap; gap:8px}
+.pvx__sw{position:relative; width:32px; height:32px; padding:0; border:0; border-radius:10px; background:none; cursor:pointer;
+  box-shadow:inset 0 0 0 1px rgba(16,18,21,.12); transition:transform var(--dur-fast) var(--ease)}
+.pvx__sw:hover{transform:translateY(-1px)}
+.pvx__sw[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ground), 0 0 0 3.5px var(--ok)}
+.pvx__sw i{display:none; position:absolute; top:-6px; right:-6px; width:16px; height:16px; border-radius:50%;
+  background:var(--ok); color:#fff; place-items:center; box-shadow:0 0 0 2px var(--ground)}
+.pvx__sw i svg{width:10px; height:10px}
+.pvx__sw[aria-pressed="true"] i{display:grid}
+/* the swatch itself — a flat chip of the theme's ground (the profile tab's
+   tiny-page swatch, minus the page, at this size) */
+.pvx__sw .theme__sw{display:block; width:100%; height:100%; border-radius:inherit}
+.pvx__sw .theme__sw[data-t="light"]{background:#F2F2F7}
+.pvx__sw .theme__sw[data-t="leaf"]{background:#A3BF5A}
+.pvx__sw .theme__sw[data-t="soft"]{background:#E8E7E5; box-shadow:inset 0 0 0 4px #fff}
+.pvx__sw .theme__sw[data-t="photo"]{background:#E7E9EE}
+.pvx__sw .theme__sw[data-t="glass-copper"]{background:url("assets/profile-bg/pv1hd.jpg") 30% 50% / cover no-repeat, #150E0B}
+.pvx__sw .theme__sw[data-t="glass-bronze"]{background:url("assets/profile-bg/pv3hd.jpg") 45% 50% / cover no-repeat, #7A5440}
+.pvx__subs{display:flex; align-items:center; gap:10px; min-height:26px; margin-top:2px}
+.pvx__subs[data-on="false"]{display:none}
+.pvx__subs span{font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-soft); letter-spacing:var(--ls-soft); margin-right:2px}
+.pvx__subs button{width:22px; height:22px; padding:0; border:0; border-radius:50%; cursor:pointer;
+  background:var(--dot); box-shadow:inset 0 0 0 1px rgba(16,18,21,.14); transition:transform var(--dur-fast) var(--ease)}
+.pvx__subs button:hover{transform:scale(1.08)}
+.pvx__subs button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ground), 0 0 0 4px var(--ok)}

@@ -45,7 +45,61 @@
     { k: "delivered", t: "Delivered" }
   ];
 
+  /* WHEN A PARCEL GOES WRONG — 2026-10-08. `o.issue` is one of
+       late       still moving, past its date        newEta
+       failed     the courier could not hand it over  failedOn, retryOn
+       returned   it went back after the last try     returnedOn
+       cancelled  stopped before it shipped           cancelledOn, refundOn
+     The problem shows on the closed card too: nobody should have to open
+     an accordion to learn their parcel came back. */
+  var ISSUE = {
+    late:      { chip: '<span class="chip chip--warn">Running late</span>' },
+    failed:    { chip: '<span class="chip chip--bad">Delivery failed</span>' },
+    returned:  { chip: '<span class="chip chip--bad">Came back to us</span>' },
+    cancelled: { chip: '<span class="chip chip--flat">Cancelled</span>' }
+  };
+  function issueText(o) {
+    switch (o.issue) {
+      case "late":
+        return "Running behind. The courier now expects it by <b>" + o.newEta + "</b> instead of " + o.eta + ". Nothing to do — it is moving.";
+      case "failed":
+        return "The courier could not hand it over on " + o.failedOn + ". They try again on <b>" + o.retryOn +
+               "</b>. If the address or phone is wrong, fix it before then.";
+      case "returned":
+        return "After three tries the parcel came back to us on " + o.returnedOn + ". Your code is fine — " +
+               "we can send the same stickers out again. Delivery is charged once more.";
+      case "cancelled":
+        return "Cancelled on " + o.cancelledOn + ". <b>" + CM.money(o.total) + "</b> goes back to the way you paid by " +
+               o.refundOn + ". Your code and your link stay yours.";
+    }
+    return "";
+  }
+  function issueRow(o) {
+    if (!o.issue) { return ""; }
+    var kind = o.issue === "late" ? "note--info" : o.issue === "cancelled" ? "note--quiet" : "note--warn";
+    return '<p class="note ' + kind + ' oc__issue">' + CM.icon(o.issue === "late" ? "truck" : "help") +
+           "<span>" + issueText(o) + "</span></p>";
+  }
+  /* the one or two things worth doing about it, in place of Track parcel */
+  function issueActs(o) {
+    var again = CM.ROOT + "checkout.html?pack=free&reason=resend" + (a.profile ? "&built=1" : "");
+    switch (o.issue) {
+      case "failed":
+        return '<button class="btn btn--go btn--sm btn--grow" type="button" data-soon="Opens the delivery details form">' +
+                 CM.icon("pen") + "Fix address or phone</button>" +
+               '<button class="btn btn--ghost btn--sm btn--grow" type="button" data-soon="Calls the courier">' +
+                 CM.icon("truck") + "Talk to the courier</button>";
+      case "returned":
+        return '<a class="btn btn--go btn--sm btn--grow" href="' + again + '">' + CM.icon("truck") + "Send it again</a>";
+      case "cancelled":
+        return '<a class="btn btn--ghost btn--sm btn--grow" href="' + CM.ROOT + "select-pack.html" +
+                 (a.profile ? "?built=1" : "") + '">' + CM.icon("box") + "Order again</a>";
+    }
+    return null;
+  }
+
   function chip(o) {
+    if (o.issue && ISSUE[o.issue]) { return ISSUE[o.issue].chip; }
     if (o.status === "delivered") { return '<span class="chip chip--ok">Delivered</span>'; }
     if (o.status === "shipped")   { return '<span class="chip chip--warn">On the way</span>'; }
     return '<span class="chip chip--flat">Placed</span>';
@@ -53,8 +107,18 @@
 
   function timeline(o) {
     var at = STAGES.map(function (s) { return s.k; }).indexOf(o.status);
-    return '<ol class="tl">' + STAGES.map(function (s, i) {
-      var mark = i < at || (i === at && s.k === "delivered") ? "data-done"
+    /* a cancelled order stops after "placed"; one that failed or came back
+       ends on a red last step instead of "Delivered" */
+    var stages = o.issue === "cancelled"
+      ? [STAGES[0], { k: "cancelled", t: "Cancelled" }]
+      : o.issue === "failed" || o.issue === "returned"
+      ? STAGES.slice(0, 3).concat([{ k: o.issue, t: o.issue === "failed" ? "Delivery attempt failed" : "Returned to us" }])
+      : STAGES;
+    if (o.issue === "cancelled" || o.issue === "failed" || o.issue === "returned") { at = stages.length - 1; }
+    return '<ol class="tl">' + stages.map(function (s, i) {
+      var bad = i === at && (s.k === "cancelled" || s.k === "failed" || s.k === "returned");
+      var mark = bad ? "data-bad"
+               : i < at || (i === at && s.k === "delivered") ? "data-done"
                : i === at ? "data-now" : "";
       var sub =
         s.k === "placed"    ? o.placed :
@@ -62,11 +126,15 @@
                                 ? "Printed with the code that goes with this pack"
                                 : "Printed with your code — the same one as always") :
         s.k === "shipped"   ? o.courier + ' · <span class="mono">' + o.awb + "</span>" :
-        /* delivered */       (o.status === "delivered" ? o.eta : "Expected " + o.eta);
-      var icon = s.k === "shipped" ? "truck" : "check";
+        s.k === "cancelled" ? o.cancelledOn + " · refund by " + o.refundOn :
+        s.k === "failed"    ? o.failedOn + " · next try " + o.retryOn :
+        s.k === "returned"  ? o.returnedOn :
+        /* delivered */       (o.status === "delivered" ? o.eta
+                               : o.issue === "late" ? "Now expected " + o.newEta : "Expected " + o.eta);
+      var icon = s.k === "shipped" ? "truck" : bad ? "close" : "check";
       return '<li class="tl__step" ' + mark + '>' +
         '<span class="tl__mark"><span class="tl__dot">' + CM.icon(icon) + "</span>" +
-          (i < STAGES.length - 1 ? '<span class="tl__line"></span>' : "") + "</span>" +
+          (i < stages.length - 1 ? '<span class="tl__line"></span>' : "") + "</span>" +
         '<span class="tl__txt"><span class="tl__t">' + s.t + "</span>" +
           '<span class="tl__s">' + sub + "</span></span>" +
       "</li>";
@@ -132,6 +200,7 @@
       "</button>" +
 
       (gift && o.claimed ? claimedRow(o) : "") +
+      issueRow(o) +
 
       '<div class="oc__body" id="' + bodyId + '" hidden>' +
         timeline(o) +
@@ -146,6 +215,8 @@
           "</div>" +
           '<div class="sum__row"><dt>Delivery</dt><dd>' + CM.money(o.ship) + "</dd></div>" +
           '<div class="sum__row sum__row--total"><dt>Paid</dt><dd>' + CM.money(o.total) + "</dd></div>" +
+          (o.issue === "cancelled"
+            ? '<div class="sum__row sum__row--free"><dt>Refunded</dt><dd>' + CM.money(o.total) + "</dd></div>" : "") +
         "</dl>" +
 
         (gift && !o.claimed
@@ -158,8 +229,12 @@
         '<div class="card__foot">' +
           '<a class="btn btn--ghost btn--sm btn--grow" href="' + invoice(o) +
             '" target="_blank" rel="noopener">' + CM.icon("down") + "Invoice</a>" +
-          (o.status !== "delivered"
-            ? '<button class="btn btn--ghost btn--sm btn--grow" type="button" ' +
+          (issueActs(o) !== null ? issueActs(o)
+          : o.status !== "delivered"
+            ? (o.status === "placed" && o.forSelf !== false
+                ? '<button class="btn btn--ghost btn--sm btn--grow" type="button" data-cancel="' + o.id + '">' +
+                    CM.icon("close") + "Cancel order</button>" : "") +
+              '<button class="btn btn--ghost btn--sm btn--grow" type="button" ' +
                 'data-soon="Opens the courier\'s tracking page">' +
                 CM.icon("truck") + "Track parcel</button>"
             : gift ? ""
@@ -177,6 +252,21 @@
   if (box && orders.length) {
     box.innerHTML = orders.map(card).join("");
     box.addEventListener("click", function (e) {
+      /* cancelling is only possible before it is printed — after that the
+         stickers exist and carry the code */
+      var c = e.target.closest("[data-cancel]");
+      if (c) {
+        CM.dialog({
+          title: "Cancel order " + c.getAttribute("data-cancel") + "?",
+          body: "It has not been printed yet, so nothing is lost. The money goes back the way you paid within 5–7 days. Your code and your link stay yours.",
+          actions: [
+            { id: "yes", label: "Cancel order", kind: "bad" },
+            { id: "no",  label: "Keep it",      kind: "quiet" }
+          ],
+          onPick: function (id) { if (id === "yes") { CM.toast("Order cancelled — refund on its way"); } }
+        });
+        return;
+      }
       var h = e.target.closest(".oc__head");
       if (!h) { return; }
       var open = h.getAttribute("aria-expanded") !== "true";

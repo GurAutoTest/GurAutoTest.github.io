@@ -124,6 +124,14 @@
   if (R.claimed) {
     one("[data-claimed]").hidden = false;
     one("[data-hint]").textContent = "Claimed";
+    if (R.tee) {
+      var tl = one("[data-claimed]").lastElementChild;
+      if (tl) {
+        tl.textContent = R.tee.status === "delivered"
+          ? "Your " + R.tee.design + " tee (size " + R.tee.size + ") was delivered on " + R.tee.eta + "."
+          : "Your " + R.tee.design + " tee (size " + R.tee.size + ") is on its way — arriving by " + R.tee.eta + ".";
+      }
+    }
   } else if (unlocked) {
     tees.setAttribute("data-open", "");
     one("[data-hint]").textContent = "Pick one";
@@ -232,7 +240,7 @@
   function sub(g, st) {
     if (st === "counted") { return "Page live · " + CM.url(g.claimedBy.handle); }
     if (st === "claimed") { return "Signed in · counts once their page is up"; }
-    if (st === "waiting") { return "Delivered · waiting for them to scan it"; }
+    if (st === "waiting") { return g.idle ? "Delivered " + g.idle + " ago · not scanned yet" : "Delivered · waiting for them to scan it"; }
     return [stickers(g), "sent " + g.placed].filter(Boolean).join(" · ");
   }
 
@@ -249,6 +257,21 @@
         '<span class="row__end">' + look.chip + "</span>" +
       "</a>";
     }).join("");
+    /* A GIFT GONE QUIET (2026-10-08): delivered a while ago and nobody has
+       signed in on it. The buyer is the one who can nudge — so they get the
+       words, ready to send. */
+    gifts.filter(function (g) { return stage(g) === "waiting" && g.idle; }).forEach(function (g) {
+      var msg = "Hey " + g.to + "! The Codemarca stickers I sent you need one scan to switch on. " +
+                "Scan any of them, sign in with your email, and the page is yours.";
+      gbox.insertAdjacentHTML("afterend",
+        '<div class="note note--warn" data-stale style="margin-top:var(--s-3)">' + CM.icon("help") +
+          "<span style=\"flex:1; min-width:12rem\"><b>" + g.to + " hasn’t scanned theirs yet.</b> Delivered " + g.idle + " ago. " +
+          "A quick message usually does it.</span>" +
+          '<a class="btn btn--go btn--sm" href="https://wa.me/?text=' + encodeURIComponent(msg + " https://codemarca.com/how-it-works") +
+            '" target="_blank" rel="noopener" style="margin-left:auto">' +
+            CM.icon("share") + "Remind " + g.to + " on WhatsApp</a>" +
+        "</div>");
+    });
     var counted = gifts.filter(function (g) { return stage(g) === "counted"; }).length;
     one("[data-sum]").innerHTML =
       "<b>" + gifts.length + "</b> sent · <b>" + counted + "</b> counted";

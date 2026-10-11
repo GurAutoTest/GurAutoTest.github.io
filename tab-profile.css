@@ -205,22 +205,33 @@ input:-webkit-autofill:active{
 }
 .theme:hover{box-shadow:inset 0 0 0 1.5px var(--line-strong)}
 .theme[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--ok)}   /* chosen theme = green (Garry, 2026-10-03) */
+/* each swatch is a tiny page in that theme: photo, name, and two buttons
+   at the foot — read as "a profile", not as three stripes (Garry, 2026-10-08) */
 .theme__sw{
   width:100%; aspect-ratio:3/4; border-radius:var(--r-sm);
   box-shadow:inset 0 0 0 1px rgba(16,18,21,.12);
-  display:flex; flex-direction:column; justify-content:flex-end; gap:4px; padding:6px;
+  display:flex; flex-direction:column; align-items:center; gap:5px; padding:16% 10% 10%;
+  --sk-av:#D1D1D6; --sk-nm:#101215; --sk-bt:#FFFFFF; --sk-edge:none; --sk-r:5px;
 }
-.theme__sw i{display:block; height:5px; border-radius:var(--r-pill); background:currentColor; opacity:.85}
-.theme__sw i:first-child{width:60%; height:7px; opacity:1}
+.theme__sw i{display:block; position:relative; flex:none}
+.theme__sw i:nth-child(1){width:32%; aspect-ratio:1/1; border-radius:50%; background:var(--sk-av); box-shadow:var(--sk-av-edge, none)}
+.theme__sw i:nth-child(2){width:52%; height:5px; border-radius:var(--r-pill); background:var(--sk-nm)}
+.theme__sw i:nth-child(3){width:100%; height:11px; margin-top:auto; border-radius:var(--sk-r); background:var(--sk-bt); box-shadow:var(--sk-edge)}
+.theme__sw i:nth-child(3)::before{content:""; position:absolute; left:0; right:0; bottom:calc(100% + 4px); height:11px;
+  border-radius:inherit; background:inherit; box-shadow:inherit}
 .theme__n{font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-mid)}
 .theme[aria-pressed="true"] .theme__n{color:var(--ok)}
 /* the five, matching profile.html exactly (Dark + Violet retired 2026-10-03; Leaf replaced Cream 2026-10-04) */
-.theme__sw[data-t="light"]   {background:#FFFFFF; color:#101215}
-.theme__sw[data-t="leaf"]    {background:#A3BF5A; color:#0A0A0A}
-.theme__sw[data-t="soft"]    {background:#E8E7E5; color:#0B0B0C; box-shadow:inset 0 0 0 6px #fff, inset 0 0 0 7px rgba(16,18,21,.08)}
-.theme__sw[data-t="photo"]   {background:linear-gradient(#E7E9EE 0 46%, #fff 46%); color:#1497F5; box-shadow:inset 0 0 0 5px #C4CBD4}
-.theme__sw[data-t="glass-copper"]{color:#FFFFFF; background:url("assets/profile-bg/pv1hd.jpg") 30% 50% / cover no-repeat, #150E0B}
-.theme__sw[data-t="glass-bronze"]{color:#FFFFFF; background:url("assets/profile-bg/pv3hd.jpg") 45% 50% / cover no-repeat, #7A5440}
+.theme__sw[data-t="light"]   {background:#F2F2F7}
+.theme__sw[data-t="leaf"]    {background:#A3BF5A; --sk-av:#FFFFFF; --sk-av-edge:0 0 0 1.5px #0A0A0A; --sk-nm:#0A0A0A; --sk-edge:inset 0 0 0 1.5px #0A0A0A; --sk-r:6px}
+.theme__sw[data-t="soft"]    {background:#E8E7E5; --sk-av:#CFCFCB; --sk-nm:#0B0B0C; box-shadow:inset 0 0 0 6px #fff, inset 0 0 0 7px rgba(16,18,21,.08)}
+/* Photo leads with a wide photo, not a round one */
+.theme__sw[data-t="photo"]   {background:#E7E9EE; --sk-av:#C4CBD4; --sk-bt:#FFFFFF; --sk-r:6px; padding-top:10%}
+.theme__sw[data-t="photo"] i:nth-child(1){width:100%; aspect-ratio:16/11; border-radius:5px}
+.theme__sw[data-t="photo"] i:nth-child(2){align-self:flex-start; width:46%}
+.theme__sw[data-t^="glass-"]{--sk-av:rgba(255,255,255,.32); --sk-nm:#FFFFFF; --sk-bt:rgba(255,255,255,.14); --sk-edge:inset 0 0 0 1px rgba(255,255,255,.45); --sk-r:999px}
+.theme__sw[data-t="glass-copper"]{background:url("assets/profile-bg/pv1hd.jpg") 30% 50% / cover no-repeat, #150E0B}
+.theme__sw[data-t="glass-bronze"]{background:url("assets/profile-bg/pv3hd.jpg") 45% 50% / cover no-repeat, #7A5440; --sk-r:7px}
 /* the glass swatches show the panel, not just the ground — the frosted
    sheet is the whole point of these two and a flat chip would hide it */
 .theme__sw[data-t^="glass-"]{position:relative; overflow:hidden}
@@ -253,17 +264,33 @@ input:-webkit-autofill:active{
 .pp-wrap{flex:1; display:flex; justify-content:center; align-items:flex-start; width:100%; min-width:0}
 .pp-wrap > .view{margin-inline:0}
 .pp{display:none}
-.pp__in{display:flex; flex-direction:column; gap:var(--s-4)}
-.pp__head{display:flex; align-items:center; gap:var(--s-3)}
-.pp__head .pp__t{margin-left:auto}   /* tabs left, the live label right */
-.pp__t{display:inline-flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:var(--fs-label);
-  font-weight:var(--fw-semibold); letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--ink-soft)}
-.pp__t i{width:7px; height:7px; border-radius:50%; background:var(--ok); box-shadow:0 0 0 3px rgba(23,145,79,.18)}
-.pp__x{display:none; width:36px; height:36px; border:0; border-radius:50%; background:var(--ground-soft); cursor:pointer;
-  place-items:center; color:var(--ink)}
-.pp__x svg{width:18px; height:18px}
-.pp__phone{width:300px; padding:10px; background:var(--ink); border-radius:44px; box-shadow:0 30px 70px rgba(16,18,21,.22)}
-.pp__scr{position:relative; width:280px; height:560px; border-radius:34px; overflow:hidden; background:#fff}
+.pp__in{position:relative; display:flex; flex-direction:column; align-items:center; gap:var(--s-4)}
+/* in the column the controls sit around the device: Mobile / Web over it,
+   the theme line under it; × only exists full screen */
+.pp__ctl{display:contents}
+.pp__devs{order:1} .pp__phone{order:2} .pp__themes{order:3}
+.pp__x{display:none; border:0; cursor:pointer; font:inherit; color:var(--ink); background:none}
+.pp__x svg{width:16px; height:16px; flex:none}
+/* ⤢ — Web only, in the column, right side of the browser bar */
+.pp__full{display:none}
+.pp:not([data-open="true"]) .pp__phone[data-device="web"] .pp__full{
+  display:grid; place-items:center; position:absolute; z-index:4; top:2px; right:6px;
+  width:20px; height:20px; padding:0; border:0; border-radius:6px; cursor:pointer;
+  background:none; color:rgba(255,255,255,.7); transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease)}
+.pp:not([data-open="true"]) .pp__phone[data-device="web"] .pp__full:hover{background:rgba(255,255,255,.12); color:#fff}
+.pp__full svg{width:13px; height:13px}
+/* the same iPhone as My QR's (Garry, 2026-10-10): slim bezel, dynamic
+   island, side keys. No drop shadow — it blurred the column (2026-10-08). */
+.pp__phone{position:relative; width:300px; padding:5px; background:#141416; border-radius:42px;
+  box-shadow:inset 0 0 0 1.5px #3A3A3F, 0 0 0 1px #0B0B0C}
+.pp__phone:not([data-device="web"])::before,
+.pp__phone:not([data-device="web"])::after{content:""; position:absolute; width:3px; border-radius:2px; background:#2A2A2E}
+.pp__phone:not([data-device="web"])::before{left:-3px; top:22%; height:16%; box-shadow:0 -34px 0 0 #2A2A2E}
+.pp__phone:not([data-device="web"])::after{right:-3px; top:28%; height:20%}
+.pp__island{position:absolute; z-index:2; top:14px; left:50%; transform:translateX(-50%);
+  width:31%; height:24px; border-radius:20px; background:#000; pointer-events:none}
+.pp__phone[data-device="web"] .pp__island{display:none}
+.pp__scr{position:relative; width:290px; height:580px; border-radius:37px; overflow:hidden; background:#fff}
 .pp__scr iframe{position:absolute; top:0; left:0; width:375px; height:750px; border:0;
   transform:scale(.7467); transform-origin:top left}
 .pp__devs{display:flex; gap:4px; padding:4px; border-radius:999px; background:var(--ground-soft)}
@@ -271,13 +298,34 @@ input:-webkit-autofill:active{
   font:inherit; font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-mid)}
 .pp__devs button[aria-pressed="true"]{background:var(--ground); color:var(--ink); box-shadow:0 1px 3px rgba(16,18,21,.12)}
 /* Web: a browser window instead of a phone — three dots in a top bar */
-.pp__phone[data-device="web"]{padding:24px 0 0; border-radius:14px; position:relative; background:#1B1D22}
+.pp__phone[data-device="web"]{padding:24px 0 0; border-radius:14px; position:relative; background:#1B1D22; box-shadow:none; width:300px}
+/* the browser frame gets no drop shadow, just a faint edge all round — the
+   same as onboarding's (Garry, 2026-10-07/08). Drawn on top, inside, so the
+   page in the frame cannot cover it. */
+.pp__phone[data-device="web"]::after{content:""; position:absolute; inset:0; z-index:3; border-radius:inherit;
+  pointer-events:none; box-shadow:inset 0 0 0 1px rgba(16,18,21,.14)}
 .pp__phone[data-device="web"]::before{content:""; position:absolute; top:9px; left:12px; width:42px; height:7px;
   background:radial-gradient(circle 3.5px at 3.5px 50%, rgba(255,255,255,.3) 98%, transparent) 0 0 / 14px 7px repeat-x}
 .pp__phone[data-device="web"] .pp__scr{width:300px; height:200px; border-radius:0 0 14px 14px}
-.pp__themes{max-width:300px; display:flex; flex-direction:column; gap:8px}
+.pp__themes{width:300px; display:flex; flex-direction:column; align-items:center}
 .pp__th{font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:var(--ls-soft)}
 .pp__th b{color:var(--ink); font-weight:var(--fw-bold)}
+/* closed: one line — the theme's name and a Change link */
+.pp__tt{display:inline-flex; align-items:center; gap:10px; padding:8px 14px; border:0; border-radius:999px;
+  background:none; cursor:pointer; font:inherit; transition:background var(--dur-fast) var(--ease)}
+.pp__tt:hover{background:var(--ground-soft)}
+.pp__chg{font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink); letter-spacing:var(--ls-soft);
+  text-decoration:underline; text-underline-offset:3px}
+/* open: the swatches in a small white tray with a × */
+.pp__tray{display:none; width:100%; flex-direction:column; gap:10px; padding:12px 14px 10px; border-radius:18px;
+  background:var(--ground); box-shadow:0 1px 2px rgba(16,18,21,.06), 0 8px 24px rgba(16,18,21,.10), inset 0 0 0 1px var(--line)}
+.pp__themes[data-open="true"] .pp__tt{display:none}
+.pp__themes[data-open="true"] .pp__tray{display:flex}
+.pp__tray-top{display:flex; align-items:center; justify-content:space-between; gap:8px}
+.pp__tc{display:grid; place-items:center; width:28px; height:28px; padding:0; border:0; border-radius:50%;
+  background:var(--ground-soft); color:var(--ink); cursor:pointer}
+.pp__tc:hover{background:var(--line)}
+.pp__tc svg{width:14px; height:14px}
 .pp__sws{display:flex; flex-wrap:wrap; gap:8px}
 .pp__sw{position:relative; width:32px; height:32px; padding:0; border:0; border-radius:10px; background:none; cursor:pointer;
   box-shadow:inset 0 0 0 1px rgba(16,18,21,.12); transition:transform var(--dur-fast) var(--ease)}
@@ -296,6 +344,7 @@ input:-webkit-autofill:active{
 .subs, .pp__subs{display:flex; align-items:center; gap:10px; min-height:32px; margin-top:var(--s-4)}
 .pp__subs{margin-top:2px; min-height:26px}
 .subs[data-on="false"], .pp__subs[data-on="false"]{visibility:hidden}
+.pp__tray .pp__subs[data-on="false"]{display:none}   /* the tray has no form under it to hold still */
 .subs span, .pp__subs span{font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-soft); letter-spacing:var(--ls-soft); margin-right:2px}
 .subs button, .pp__subs button{width:28px; height:28px; padding:0; border:0; border-radius:50%; cursor:pointer;
   background:var(--dot); box-shadow:inset 0 0 0 1px rgba(16,18,21,.14); transition:transform var(--dur-fast) var(--ease)}
@@ -322,16 +371,86 @@ input:-webkit-autofill:active{
 /* the save bar owns the bottom while it is up */
 body[data-editing] .pp-fab{bottom:calc(var(--tabs-h) + 84px)}  /* the demo pill parks while editing */
 @media (min-width:1024px){ body[data-editing] .pp-fab{bottom:96px} }
-@media (max-width:1279px){
-  .pp[data-open="true"]{display:grid; place-items:center; position:fixed; inset:0; z-index:90;
-    background:rgba(16,18,21,.55); padding:16px; overflow:auto}
-  .pp[data-open="true"] .pp__in{background:var(--ground); border-radius:28px; padding:16px 16px 18px; align-items:center}
-  .pp[data-open="true"] .pp__head{align-self:stretch}
-  .pp__x{display:grid}
-  .pp[data-open="true"] .pp__phone{width:min(300px, calc(100vw - 64px))}
+/* ── FULL SCREEN (Garry, 2026-10-10) — the same as onboarding's ──────────
+   Phones: the page edge to edge, a floating dock at the bottom. Laptops: a
+   slim bar along the top — × Close preview · Mobile | Web · Theme — with
+   Web at full size and Mobile in its frame. */
+.pp[data-open="true"]{display:block; position:fixed; inset:0; z-index:90; padding:0; background:var(--ground)}
+.pp[data-open="true"] .pp__in{height:100%; gap:0; justify-content:center; overflow:hidden}
+.pp[data-open="true"] .pp__themes{width:auto; position:relative}
+/* the line stays put while the tray is open, so the dock / bar never jumps */
+.pp[data-open="true"] .pp__themes[data-open="true"] .pp__tt{display:inline-flex}
+.pp[data-open="true"] .pp__tray{position:absolute; z-index:2; width:min(320px, calc(100vw - 24px))}
+.pp[data-open="true"] .pp__phone[data-device="web"]{width:100%; height:100%; padding:0; border-radius:0; box-shadow:none}
+.pp[data-open="true"] .pp__phone[data-device="web"]::before,
+.pp[data-open="true"] .pp__phone[data-device="web"]::after{display:none}
+.pp[data-open="true"] .pp__phone[data-device="web"] .pp__scr{width:100%; height:100%; border-radius:0}
+@media (max-width:599px){
+  .pp[data-open="true"] .pp__phone{width:100%; height:100%; padding:0; border-radius:0; box-shadow:none; background:none}
+  .pp[data-open="true"] .pp__phone::before, .pp[data-open="true"] .pp__phone::after,
+  .pp[data-open="true"] .pp__island{display:none}
+  .pp[data-open="true"] .pp__scr{width:100%; height:100%; border-radius:0}
+  .pp[data-open="true"] .pp__devs{display:none}
+  .pp[data-open="true"] .pp__ctl{
+    display:flex; align-items:center; gap:4px; position:absolute; z-index:6; left:50%; transform:translateX(-50%);
+    bottom:calc(16px + env(safe-area-inset-bottom)); padding:5px; border-radius:999px; white-space:nowrap;
+    background:rgba(255,255,255,.94); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+    box-shadow:0 1px 2px rgba(16,18,21,.08), 0 10px 30px rgba(16,18,21,.18), inset 0 0 0 1px var(--line)}
+  /* centred on the whole dock, not on the theme line beside the × */
+  .pp[data-open="true"] .pp__themes{position:static}
+  .pp[data-open="true"] .pp__tray{left:50%; bottom:calc(100% + 16px); transform:translateX(-50%)}
+  .pp[data-open="true"] .pp__x{order:5; display:grid; place-items:center; width:36px; height:36px; padding:0;
+    border-radius:50%; background:var(--ink); color:var(--ink-invert)}
+  .pp[data-open="true"] .pp__x span{display:none}
 }
-@media (max-height:760px) and (max-width:1279px){
-  .pp[data-open="true"] .pp__phone{transform:scale(.85); transform-origin:top center; margin-bottom:-90px}
+@media (min-width:600px){
+  .pp[data-open="true"] .pp__in{padding-top:56px}
+  .pp[data-open="true"] .pp__ctl{
+    display:flex; align-items:center; gap:8px; position:absolute; z-index:6; top:0; left:0; right:0; height:56px;
+    padding:0 12px; background:var(--ground); box-shadow:0 1px 0 var(--line)}
+  .pp[data-open="true"] .pp__x{display:inline-flex; align-items:center; gap:6px; order:-1;
+    padding:8px 12px 8px 10px; border-radius:999px; font-size:var(--fs-xs); font-weight:var(--fw-bold)}
+  .pp[data-open="true"] .pp__x:hover{background:var(--ground-soft)}
+  .pp[data-open="true"] .pp__devs{position:absolute; left:50%; transform:translateX(-50%)}
+  .pp[data-open="true"] .pp__themes{margin-left:auto; position:relative}
+  .pp[data-open="true"] .pp__tray{top:-2px; right:0}
+  .pp[data-open="true"] .pp__phone[data-device="mobile"]{width:auto; height:min(800px, calc(100svh - 56px - 64px)); aspect-ratio:9/19.5}
+  .pp[data-open="true"] .pp__phone[data-device="mobile"] .pp__scr{width:100%; height:100%}
 }
+body[data-pp-open] .pp-fab{display:none}
 
 @media (min-width:1280px){ .pp-fab{display:none} }
+
+/* ══ THE "ME" CARD, FOLDED (Garry, 2026-10-10) ═══════════════════════════
+   Starts closed: photo, name, Live and a chevron. The header opens it to the
+   QR, the link field (copy + Share) and View page. The height eases on a
+   grid row (0fr → 1fr), so nothing below it jumps; .me__in clips only while
+   it moves (data-settled lifts the clip so the copy tooltip shows). */
+.me--fold{gap:0}
+.me__head{display:flex; align-items:center; gap:var(--s-4); width:100%; padding:0; border:0; background:none;
+  color:inherit; font:inherit; text-align:left; cursor:pointer}
+.me__chev{flex:none; display:grid; place-items:center; width:40px; height:40px; border-radius:50%;
+  background:rgba(255,255,255,.08); box-shadow:inset 0 0 0 1px var(--line-invert); color:var(--ink-invert);
+  transition:background var(--dur-fast) var(--ease)}
+.me__head:hover .me__chev{background:rgba(255,255,255,.14)}
+.me__chev svg{width:18px; height:18px; transform:rotate(90deg); transition:transform .32s var(--ease)}
+.me--fold[data-open] .me__chev svg{transform:rotate(-90deg)}
+.me__body{display:grid; grid-template-rows:0fr; transition:grid-template-rows .32s var(--ease)}
+.me--fold[data-open] .me__body{grid-template-rows:1fr}
+.me__in{min-height:0; overflow:hidden}
+.me--fold[data-settled] .me__in{overflow:visible}
+.me__grid{display:grid; grid-template-columns:auto 1fr; grid-template-areas:"qr row" "qr view";
+  gap:10px var(--s-4); align-items:center; padding-top:var(--s-5);
+  opacity:0; transition:opacity .24s var(--ease)}
+.me--fold[data-open] .me__grid{opacity:1; transition-delay:.06s}
+.me__grid .me__qr{grid-area:qr; align-self:stretch; width:120px}
+.me__grid .me__qr svg{height:100%; object-fit:contain}
+.me__grid .me__row{grid-area:row}
+.me__grid .me__view{grid-area:view}
+@media (max-width:559px){
+  .me__grid{grid-template-areas:"row row" "qr view"}
+  .me__grid .me__qr{width:64px; align-self:center}
+}
+@media (prefers-reduced-motion:reduce){
+  .me__body, .me__grid, .me__chev svg{transition:none}
+}

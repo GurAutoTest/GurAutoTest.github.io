@@ -216,7 +216,7 @@ img,svg{display:block; max-width:100%}
   position:absolute; top:3px; right:1px;
   min-width:17px; height:17px; padding-inline:4px; border-radius:var(--r-pill);
   display:grid; place-items:center;
-  background:var(--brand-violet); color:var(--ink-invert);
+  background:#E5372C; color:#fff;   /* red, the way every app counts unread — not violet (Garry, 2026-10-08) */
   box-shadow:0 0 0 2px var(--ground);
   font-size:.625rem; font-weight:var(--fw-black); line-height:1; letter-spacing:0;
 }
@@ -618,6 +618,10 @@ img,svg{display:block; max-width:100%}
 .tl__step[data-now] .tl__dot{background:var(--brand-violet); color:#fff;
   box-shadow:0 0 0 4px var(--brand-violet-tint)}
 .tl__step[data-now] .tl__t{color:var(--ink)}
+/* the step where it went wrong — cancelled, failed, came back (2026-10-08) */
+.tl__step[data-bad] .tl__dot{background:var(--bad); color:#fff}
+.tl__step[data-bad] .tl__t{color:var(--bad)}
+.tl__step[data-bad] .tl__s{color:var(--ink-mid)}
 .tl__step[data-now] .tl__s{color:var(--brand-violet); font-weight:var(--fw-bold)}
 
 /* ── 16. LINK FIELD — the share row ────────────────────────────────────── */
@@ -676,7 +680,7 @@ textarea.fld__in{height:auto; min-height:96px; padding-block:var(--s-3);
   transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
 }
 .toast[data-on]{opacity:1; transform:translate(-50%,0)}
-.toast svg{width:16px; height:16px; color:var(--brand-violet-lift)}
+.toast svg{width:16px; height:16px; color:#fff}   /* white, not violet (Garry, 2026-10-10) */
 @media (min-width:1024px){ .toast{bottom:var(--s-6)} }
 
 /* ── 20. DEMO STATE SWITCHER ───────────────────────────────────────────
@@ -684,7 +688,6 @@ textarea.fld__in{height:auto; min-height:96px; padding-block:var(--s-3);
    through in all four account states without a backend. In React the
    state comes from the session — delete this whole block. */
 .demo{
-  display:none !important;
   position:fixed; z-index:50; right:var(--s-4);
   bottom:calc(var(--tabs-h) + var(--s-4) + env(safe-area-inset-bottom));
   display:flex; align-items:center; gap:var(--s-2);
@@ -857,7 +860,7 @@ body[data-showing]{overflow:hidden}
    save bar, and the ground behind it dims rather than disappears — unlike
    Show my code, this one IS a dialog: a question about the page behind. */
 .dlg{
-  position:fixed; inset:0; z-index:90;
+  position:fixed; inset:0; z-index:100;   /* above the full-screen previews, which ask questions too */
   display:flex; align-items:flex-end; justify-content:center;
   padding:var(--s-3); padding-bottom:calc(var(--s-3) + env(safe-area-inset-bottom));
   background:rgba(16,18,21,.42);
@@ -1007,9 +1010,10 @@ body[data-showing]{overflow:hidden}
   letter-spacing:var(--ls-display); line-height:1.1; overflow-wrap:anywhere}
 .me__live{display:inline-flex; align-items:center; gap:var(--s-2);
   padding:4px 10px 4px 8px; border-radius:var(--r-pill);
-  background:var(--ok-tint); color:var(--ok); font-family:var(--font-mono); font-size:var(--fs-label);
+  background:var(--ok-tint); color:var(--ok); box-shadow:inset 0 0 0 1px rgba(23,145,79,.16); font-family:var(--font-mono); font-size:var(--fs-label);
   font-weight:var(--fw-bold); letter-spacing:var(--ls-label); text-transform:uppercase}
 .me__live i{width:6px; height:6px; border-radius:50%; background:currentColor}
+.me__live[data-off]{background:var(--warn-tint); color:var(--warn); box-shadow:none}
 .me__qr{flex-shrink:0; width:84px; padding:6px; border:0; border-radius:var(--r-md);
   background:#fff; cursor:pointer; box-shadow:var(--shadow-sm);
   transition:transform var(--dur-fast) var(--ease)}
@@ -1017,53 +1021,72 @@ body[data-showing]{overflow:hidden}
 .me__qr svg{display:block; width:100%; height:auto}
 @media (min-width:640px){ .me__qr{width:104px} .me__av{width:76px; height:76px} }
 
-/* The link IS the share button. Grey with a hairline round it read as a
-   disabled input, so on the light skin it takes the same green wash as the
-   LIVE chip beside it and drops the border — the card is a live page, and
-   the link is the live part of it (Garry, 2026-09-23). The dark skin below
-   keeps its own white-on-black treatment. */
+/* The address and Share — option B (Garry, 2026-10-10). A quiet grey
+   field holds the address and a copy icon (tooltip "Copy", then "Copied");
+   Share stands beside it as its own dark button, the field's height.
+   Copying and sharing are two jobs, so they are two controls. */
+.me__row{display:flex; align-items:stretch; gap:10px}
 .me__link{
-  display:flex; align-items:center; gap:var(--s-3); width:100%;
-  padding:var(--s-2) var(--s-2) var(--s-2) var(--s-4); border:0; border-radius:var(--r-pill);
-  background:var(--ok-tint); box-shadow:none;
-  color:var(--ink); cursor:pointer; text-align:left;
-  transition:background var(--dur-fast) var(--ease);
+  flex:1; min-width:0; display:flex; align-items:center; gap:var(--s-2); min-height:60px;
+  padding:0 8px 0 var(--s-5); border-radius:var(--r-md);
+  background:#F4F5F4; box-shadow:inset 0 0 0 1px var(--line); color:var(--ink);
 }
-.me__link:hover{background:rgba(23,145,79,.16)}
 .me__url{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-  font-family:var(--font-mono); font-size:var(--fs-sm)}
+  font-family:inherit; font-size:var(--fs-body); font-weight:var(--fw-medium); letter-spacing:-.01em}
 .me__url span{color:var(--ink-soft)}
-.me__url b{font-weight:var(--fw-bold)}
-.me__share{flex-shrink:0; display:inline-flex; align-items:center; gap:var(--s-2);
-  height:36px; padding-inline:var(--s-4); border-radius:var(--r-pill);
-  background:var(--ink); color:var(--ink-invert); font-size:var(--fs-xs); font-weight:var(--fw-bold)}
-.me__share svg{width:16px; height:16px}
+.me__url b{font-weight:var(--fw-bold); color:var(--ink)}
+.me__copy{position:relative; flex:none; display:grid; place-items:center; width:40px; height:40px; padding:0;
+  border:0; border-radius:var(--r-sm); background:none; color:var(--ink-mid); cursor:pointer;
+  transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease)}
+.me__copy:hover{background:rgba(16,18,21,.06); color:var(--ink)}
+.me__copy svg{width:17px; height:17px}
+.me__copy[data-copied]{color:var(--ok)}
+/* the tooltip — "Copy" on hover, "Copied" for a moment after a tap */
+.me__copy::after{content:attr(data-tip); position:absolute; left:50%; bottom:calc(100% + 8px); z-index:5;
+  transform:translate(-50%,4px); padding:5px 9px; border-radius:7px; background:var(--ink); color:#fff;
+  font-family:var(--font-sans, inherit); font-size:.75rem; font-weight:var(--fw-semibold); letter-spacing:.14px; white-space:nowrap;
+  opacity:0; pointer-events:none; transition:opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease)}
+.me__copy:hover::after, .me__copy:focus-visible::after, .me__copy[data-copied]::after{opacity:1; transform:translate(-50%,0)}
+.me__share{flex:none; display:inline-flex; align-items:center; justify-content:center; gap:var(--s-2);
+  min-height:60px; padding:0 var(--s-5); border:0; border-radius:var(--r-md); cursor:pointer;
+  background:var(--ink); color:var(--ink-invert); font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-semibold);
+  transition:opacity var(--dur-fast) var(--ease)}
+.me__share:hover{opacity:.88}
+.me__share svg{width:17px; height:17px}
 /* on a phone the link gets the room — the share control drops to its icon */
 @media (max-width:479px){
-  .me__share{width:40px; height:40px; padding:0; justify-content:center}
+  .me__row{gap:8px}
+  .me__link{padding-left:14px; gap:4px}
+  .me__url{font-size:.9375rem}
+  .me__share{width:52px; padding:0}
   .me__share .me__share-t{display:none}
 }
 
 .me__acts{display:grid; grid-template-columns:1fr 1fr; gap:var(--s-2)}
 .me__btn{display:flex; align-items:center; justify-content:center; gap:var(--s-2);
-  height:44px; border:0; border-radius:var(--r-md); cursor:pointer;
-  background:var(--ground); box-shadow:inset 0 0 0 1.5px var(--line-strong); color:var(--ink);
-  font-size:var(--fs-xs); font-weight:var(--fw-bold)}
-.me__btn:hover{background:var(--ground-soft)}
-.me__btn svg{width:16px; height:16px}
+  height:50px; border:0; border-radius:var(--r-md); cursor:pointer;
+  background:var(--ground); box-shadow:inset 0 0 0 1px var(--line-strong); color:var(--ink);
+  font-size:var(--fs-sm); font-weight:var(--fw-semibold)}
+.me__btn:hover{background:#F7F8F7}
+.me__btn svg{width:17px; height:17px}
 
 /* the black skin */
 .me--dark > .me__mark{color:#fff}
 .me--dark .me__av{background:rgba(255,255,255,.1); box-shadow:inset 0 0 0 1px var(--line-invert); color:var(--ink-invert)}
 .me--dark .me__name{color:var(--ink-invert)}
 .me--dark .me__live{background:rgba(74,222,128,.10); box-shadow:inset 0 0 0 1px rgba(74,222,128,.26); color:var(--ok-lift)}
+.me--dark .me__live[data-off]{background:rgba(255,183,77,.12); box-shadow:inset 0 0 0 1px rgba(255,183,77,.3); color:#FFB74D}
 .me--dark .me__qr{box-shadow:none}
-.me--dark .me__link{background:rgba(255,255,255,.08); box-shadow:inset 0 0 0 1px var(--line-invert); color:var(--ink-invert)}
-.me--dark .me__link:hover{background:rgba(255,255,255,.13)}
+.me--dark .me__link{background:rgba(255,255,255,.06); box-shadow:inset 0 0 0 1px var(--line-invert); color:var(--ink-invert)}
+.me--dark .me__copy{color:rgba(255,255,255,.7)}
+.me--dark .me__copy:hover{background:rgba(255,255,255,.1); color:#fff}
+.me--dark .me__copy[data-copied]{color:var(--ok-lift)}
+.me--dark .me__copy::after{background:#fff; color:var(--ink)}
 .me--dark .me__url span{color:rgba(255,255,255,.55)}
+.me--dark .me__url b{color:var(--ink-invert)}
 .me--dark .me__share{background:var(--ink-invert); color:var(--ink)}
-.me--dark .me__btn{background:rgba(255,255,255,.07); box-shadow:inset 0 0 0 1px var(--line-invert); color:var(--ink-invert)}
-.me--dark .me__btn:hover{background:rgba(255,255,255,.13)}
+.me--dark .me__btn{background:rgba(255,255,255,.04); box-shadow:inset 0 0 0 1px var(--line-invert); color:var(--ink-invert)}
+.me--dark .me__btn:hover{background:rgba(255,255,255,.1)}
 
 /* ── 25e. PHOTO STRIP ──────────────────────────────────────────────────
    Product photos and nothing else — no caption, no heading inside a shot
@@ -1207,7 +1230,7 @@ input:-webkit-autofill:active{
   border-radius:var(--r-md); background:var(--brand-violet-tint); color:var(--brand-violet);
 }
 .item__ic svg{width:24px; height:24px}
-.item__txt{flex:1; min-width:0}
+.item__txt{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px}   /* title over its line, never run together */
 .item__t{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
 .item__s{font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:var(--ls-soft)}
 
@@ -1415,3 +1438,49 @@ input:-webkit-autofill:active{
   font-size:var(--fs-label); font-weight:var(--fw-bold); letter-spacing:0;
 }
 .seg__b[aria-selected="true"] .seg__n{background:var(--ink); color:var(--ink-invert)}
+
+
+/* ── STICKER TAGS on the free-tee cards (Garry, 2026-10-08) ──────────────
+   The website's about / how-it-works stickers, brought in: white, a black
+   outline and a hard black shadow, slapped on at an angle. FREE is the big
+   one, so the word the offer hangs on can't be missed; the green one says
+   what makes it free. They are decoration — aria-hidden, the card's own
+   text already says both things. Named tee-stk: My QR's sticker list
+   already owns .stk / .stks. */
+.tee-stks{position:absolute; inset:0; pointer-events:none; z-index:2}
+.tee-stk{
+  position:absolute; display:inline-flex; align-items:center; gap:.35em; padding:.45em .85em;
+  background:#fff; color:var(--ink); border:2px solid var(--ink); border-radius:12px;
+  font-weight:var(--fw-black); letter-spacing:-.02em; white-space:nowrap; line-height:1;
+  box-shadow:4px 4px 0 var(--ink); transform:rotate(var(--r,-6deg));
+  animation:teeStkSlap .55s cubic-bezier(.3,1.6,.5,1) both; animation-delay:var(--d,.2s);
+}
+.tee-stk--free{top:var(--s-12); right:var(--s-12); --r:-8deg; font-size:clamp(2rem,3.4vw,2.75rem); padding:.3em .55em .32em}
+/* the green one rides on FREE's top-right corner, over it */
+.tee-stk--ok{top:calc(var(--s-12) - 22px); right:calc(var(--s-12) - 18px); --r:7deg; --d:.38s;
+  font-size:.9375rem; background:var(--ok-lift); box-shadow:3px 3px 0 var(--ink)}
+@keyframes teeStkSlap{
+  from{opacity:0; transform:scale(1.6) rotate(calc(var(--r,-6deg) * -2.5))}
+  to{opacity:1; transform:rotate(var(--r,-6deg))}
+}
+/* under 720px there is no empty right half: FREE moves onto the card's top
+   edge, half off it like a sticker on a box, and the green one sits out */
+@media (max-width:719px){
+  .tee-stk--free{top:-18px; right:18px; font-size:1.5rem; box-shadow:3px 3px 0 var(--ink)}
+  .tee-stk--ok{display:none}
+}
+@media (prefers-reduced-motion:reduce){ .tee-stk{animation:none} }
+
+/* ── THE FREE-TEE CARDS, ONE LOOK (Garry, 2026-10-08) ────────────────────
+   Home's tee photo card (.rf--tee), the Gift tab's purple card (.rf--dark)
+   and 4-active's Refer card (.ref): a green Invite button, a link box as
+   tall as that button with a prefix you can read, and a green meter that
+   glows and never reads empty. */
+.card--dark:is(.rf--tee,.rf--dark,.ref) .btn--go{background:var(--ok-lift); color:var(--ink)}
+.card--dark:is(.rf--tee,.rf--dark,.ref) .btn--go:hover{background:#6BE896; color:var(--ink)}
+:is(.rf--tee,.rf--dark,.ref) .linkbox{min-height:var(--btn-h)}
+.card--dark:is(.rf--tee,.rf--dark,.ref) .linkbox__url span{color:rgba(255,255,255,.72)}
+:is(.rf--tee,.rf--dark) .rf__bar, .ref .ref__bar{height:10px; background:rgba(74,222,128,.14); box-shadow:inset 0 0 0 1px rgba(74,222,128,.2); overflow:visible}
+:is(.rf--tee,.rf--dark) .rf__fill, .ref .ref__fill{min-width:10px; background:var(--ok-lift); box-shadow:0 0 14px rgba(74,222,128,.55)}
+/* twice the card's gap above the five designs */
+.rf__designs{margin-top:var(--s-5)}

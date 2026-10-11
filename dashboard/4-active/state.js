@@ -35,24 +35,41 @@ window.CM_FLOW = {
   states: [
     { k: "active",  label: "1 · Steady — code live" },
     { k: "reorder", label: "2 · Second pack on the way" },
-    { k: "tee",     label: "3 · 50 referrals, tee unlocked" }
+    { k: "tee",     label: "3 · 50 referrals, tee unlocked" },
+    { k: "offline", label: "4 · Page switched off" },
+    { k: "giftwait", label: "5 · A gift nobody has scanned" },
+    { k: "teeship", label: "6 · Tee on its way" },
+    { k: "teedone", label: "7 · Tee delivered" }
   ]
 };
 
-var USER = { name: "", email: "", phone: "", joined: "Recently" };
+var USER = { name: "Garry Singh", email: "garry@example.com", phone: "+91 98765 43210", joined: "12 Aug 2026" };
 
-/* THE PAGE, IN ONE SHAPE */
+/* THE PAGE, IN ONE SHAPE — Garry, 2026-09-24.
+   This is the builder's state, the API's response and what the Profile tab
+   loads: the same object, so Home's checklist, the editor and the live page
+   can never disagree about what has been filled in. The editor used to keep
+   its own hardcoded copy, which is how Home came to say "add your links"
+   over a page that already had six. */
 var PROFILE = {
-  live: true, theme: "light", updated: "just now",
-  handle: "", name: "", title: "",
-  bio: "",
-  photo: null,
-  phone: "", phoneOn: true,
-  waSame: true, wa: "", waOn: true,
-  email: "", emailOn: true,
-  links: {},
+  live: true, theme: "soft", updated: "4 days ago",
+  handle: "garry", name: "Garry Singh", title: "Garry Singh",
+  bio: "Designing things people actually use. Usually somewhere near a coffee.",
+  photo: null,   /* no photo yet — the dashboard draws the grey face (2026-10-03) */
+  phone: "9876543210", phoneOn: true,
+  waSame: false, wa: "9876501234", waOn: true,
+  email: "garry@example.com", emailOn: true,
+  links: {
+    instagram: { v: "@garry.designs",              on: true  },
+    linkedin:  { v: "linkedin.com/in/garrysingh",  on: true  },
+    x:         { v: "@garrymakes",                 on: true  },
+    threads:   { v: "@garry.designs",              on: true  },
+    website:   { v: "garry.design",                on: true  },
+    spotify:   { v: "open.spotify.com/user/garry", on: false }
+  },
   customs: [],
   order: ["call","wa","email","vcard","socials","website","directions","review"],
+  /* the icon row's own order */
   socialOrder: ["instagram","linkedin","x","threads","spotify"]
 };
 
@@ -111,9 +128,20 @@ var GIFTS = [
          claimed: true, claimedOn: "13 Sep 2026", claimedBy: { name: "Simran K.", handle: "simran" } })
 ];
 
-function referrals(counted, claimedTee) {
+/* the tee as a parcel — free, shipped like any pack */
+function TEE_ORDER(status) {
   return {
-    link: "",
+    id: "CM-6017", placed: "1 Oct 2026", status: status, eta: status === "delivered" ? "5 Oct 2026" : "6 Oct 2026",
+    courier: "Delhivery", awb: "SR7719209931", items: "Codemarca tee \u2014 Pocket, size L",
+    goods: 0, ship: 0, total: 0, free: true, forSelf: true, tee: true,
+    address: "H.No 214, Sector 22-A, Chandigarh 160022"
+  };
+}
+
+function referrals(counted, claimedTee, tee) {
+  return {
+    tee: tee || null,             /* { design, size, status, eta, awb } once claimed */
+    link: "codemarca.com/r/garry",
     goal: 50,
     counted: counted,
     waiting: 6,
@@ -149,6 +177,69 @@ window.CM_STATES = {
     orders: [SECOND_ORDER, FIRST_ORDER],
     gifts: GIFTS,
     referrals: referrals(31, false)
+  },
+
+  /* PAGE OFF — 2026-10-08. Stickers are out in the world and the owner
+     switched the page off from My QR: a scan gets the "not available" note. */
+  offline: {
+    state: "offline",
+    user: USER, profile: (function () { var p = {}, k; for (k in PROFILE) { p[k] = PROFILE[k]; } p.live = false; return p; })(),
+    code: CODE,
+    order: FIRST_ORDER,
+    orders: [FIRST_ORDER],
+    gifts: GIFTS,
+    referrals: referrals(23, false),
+    notes: [
+      { "id": "f-off", "tab": "account", "icon": "eye", "title": "Your page is off",
+        "body": "Your stickers and link show a “not available” note until you switch it back on.", "when": "Yesterday", "unread": true, "href": "qr.html" }
+    ]
+  },
+
+  /* A GIFT NOBODY HAS SCANNED — 2026-10-08. Dad's ten stickers landed three
+     weeks ago and nobody has signed in on them. The buyer is the only one
+     who can nudge, so the Gift tab hands them the words. */
+  giftwait: {
+    state: "giftwait",
+    user: USER, profile: PROFILE, code: CODE,
+    order: FIRST_ORDER,
+    orders: [FIRST_ORDER],
+    gifts: [ gift({ id: "CM-5188", to: "Dad", placed: "13 Sep 2026", status: "delivered", eta: "17 Sep 2026",
+                    awb: "SR7719207702", items: "Gift \u2014 10 stickers", lines: "L:6,S:4",
+                    goods: 1330, ship: 49, total: 1379, code: "b2h6t9", idle: "3 weeks",
+                    address: "Kothi 88, Model Town, Ludhiana 141002" }) ].concat(GIFTS.slice(1)),
+    referrals: referrals(23, false),
+    notes: [
+      { "id": "w-dad", "tab": "refer", "icon": "gift", "title": "Dad hasn’t scanned his stickers yet",
+        "body": "They landed 3 weeks ago. A quick message usually does it.", "when": "Today", "unread": true, "href": "gift.html#gift" }
+    ]
+  },
+
+  /* THE TEE, AFTER THE CLAIM — 2026-10-08. Picked, printed, posted; then
+     delivered. It shows on Home's referral card and as a free parcel on
+     Orders, like any other. */
+  teeship: {
+    state: "teeship",
+    user: USER, profile: PROFILE, code: CODE,
+    order: FIRST_ORDER,
+    orders: [TEE_ORDER("shipped"), FIRST_ORDER],
+    gifts: GIFTS,
+    referrals: referrals(50, true, { design: "Pocket", size: "L", status: "shipped", eta: "6 Oct 2026" }),
+    notes: [
+      { "id": "t-ship", "tab": "refer", "icon": "truck", "title": "Your tee has shipped",
+        "body": "Pocket, size L · Delhivery · arriving by 6 Oct.", "when": "2h ago", "unread": true, "href": "orders.html" }
+    ]
+  },
+  teedone: {
+    state: "teedone",
+    user: USER, profile: PROFILE, code: CODE,
+    order: FIRST_ORDER,
+    orders: [TEE_ORDER("delivered"), FIRST_ORDER],
+    gifts: GIFTS,
+    referrals: referrals(54, true, { design: "Pocket", size: "L", status: "delivered", eta: "5 Oct 2026" }),
+    notes: [
+      { "id": "t-done", "tab": "refer", "icon": "check", "title": "Your tee was delivered",
+        "body": "Wear it — the code on it opens your page like any sticker.", "when": "Yesterday", "unread": true, "href": "home.html" }
+    ]
   },
 
   /* the payoff — 50 counted, tee unlocked, five designs to pick from */

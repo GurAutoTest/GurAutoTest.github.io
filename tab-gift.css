@@ -112,8 +112,9 @@
 .rf--dark .rf__p{color:rgba(255,255,255,.72)}
 .rf--dark .rf__p b{color:var(--ink-invert)}
 .rf--dark .rf__of{color:rgba(255,255,255,.5)}
-.rf--dark .rf__bar{background:rgba(255,255,255,.12)}
-.rf--dark .rf__fill{background:var(--brand-violet-lift)}
+.rf--dark{position:relative; overflow:visible}   /* anchors the FREE stickers */
+/* the green meter, Invite button and link box are shared with Home's tee
+   card — see the end of dashboard.css */
 .rf--dark .rf__sub{color:rgba(255,255,255,.62)}
 .rf--dark .rf__sub b{color:var(--ink-invert)}
 .rf--dark .rf__hint{color:rgba(255,255,255,.5)}

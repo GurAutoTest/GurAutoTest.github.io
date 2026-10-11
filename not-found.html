@@ -1,0 +1,154 @@
+<title>Codemarca — Page not found</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="tokens.css">
+
+<!-- ==========================================================================
+     CODEMARCA — NO PAGE AT THIS LINK (2026-10-08)
+     What codemarca.com/<handle> opens when nobody has that handle: a typo,
+     a link copied wrong, or a page that was deleted. Scans never land here
+     — a code that is not ours gets scan.html's "unknown" card instead.
+
+     TWO JOBS, in this order: help the visitor who was looking for someone
+     (check the spelling), and — because the handle is free — offer it to
+     whoever is holding the phone. ?handle= stands in for the path.
+     ========================================================================== -->
+<style>
+*{box-sizing:border-box; margin:0; padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  min-height:100dvh; display:flex; flex-direction:column;
+  font-family:var(--font-sans); background:var(--ground-soft); color:var(--ink);
+  letter-spacing:var(--ls-body); line-height:var(--lh-body);
+  padding:var(--s-5) var(--gutter) calc(var(--s-10) + env(safe-area-inset-bottom));
+}
+:focus-visible{outline:none; box-shadow:var(--focus-ring); border-radius:var(--r-xs)}
+
+.wrap{width:100%; max-width:26rem; margin-inline:auto; display:flex; flex-direction:column; gap:var(--s-5)}
+.brand{display:flex; justify-content:center; padding-block:var(--s-2)}
+.brand svg{height:var(--logo-h, 24px); width:auto}   /* tokens.css has no --logo-h */
+
+.card{
+  display:flex; flex-direction:column; gap:var(--s-4);
+  padding:var(--s-6) var(--s-5); border-radius:var(--r-lg);
+  background:var(--ground); box-shadow:var(--shadow-md);
+}
+.ic{
+  display:grid; place-items:center; width:52px; height:52px; border-radius:50%;
+  background:var(--ground-sunk); color:var(--ink);
+}
+.ic svg{width:24px; height:24px}
+.ic--gift{background:var(--brand-violet-tint); color:var(--brand-violet)}
+.ic--off{background:var(--caution-tint); color:var(--caution)}
+
+.h{font-size:clamp(1.375rem,5.4vw,1.75rem); font-weight:var(--fw-black);
+  letter-spacing:var(--ls-display); line-height:1.12; text-wrap:balance}
+.p{font-size:var(--fs-sm); color:var(--ink-mid); letter-spacing:var(--ls-soft)}
+.p b{color:var(--ink); font-weight:var(--fw-bold)}
+
+/* the buyer's note — the first thing on the screen, in their words */
+.note{
+  padding:var(--s-5); border-radius:var(--r-md);
+  background:var(--brand-violet-tint); box-shadow:inset 0 0 0 1px var(--brand-violet-edge);
+}
+.note__q{font-size:1.0625rem; line-height:1.5; font-weight:var(--fw-semibold); color:var(--ink)}
+.note__from{display:block; margin-top:var(--s-3); font-size:var(--fs-xs);
+  color:var(--brand-violet-press); font-weight:var(--fw-bold); letter-spacing:var(--ls-soft)}
+
+.lbl{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.inp{
+  display:flex; align-items:center; min-height:var(--control-h); padding-inline:var(--s-4);
+  border-radius:var(--r-md); background:var(--ground); box-shadow:inset 0 0 0 1.5px var(--line-strong);
+  transition:box-shadow var(--dur) var(--ease);
+}
+.inp:focus-within{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.inp input{flex:1; min-width:0; border:0; background:none; outline:none; font:inherit;
+  font-size:var(--fs-body); font-weight:var(--fw-semibold); color:var(--ink)}
+.inp input::placeholder{color:var(--ink-faint); font-weight:var(--fw-medium)}
+
+.btn{
+  display:flex; align-items:center; justify-content:center; gap:var(--s-3);
+  height:var(--btn-h); padding-inline:var(--s-5); border:0; cursor:pointer;
+  border-radius:var(--r-pill); font:inherit; font-size:var(--fs-sm); font-weight:var(--fw-bold);
+  text-decoration:none; transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.btn--go{background:var(--ink); color:var(--ink-invert)}
+.btn--go:hover{background:var(--ink-strong)}
+.btn--ghost{background:var(--ground); color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+.btn--ghost:hover{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.btn svg{width:18px; height:18px}
+
+.code{font-family:var(--font-mono); font-size:var(--fs-xs); color:var(--ink-faint);
+  text-align:center; letter-spacing:var(--ls-soft)}
+
+/* what this thing even is — for someone who has never heard of us */
+.what{display:flex; gap:var(--s-4); align-items:center; padding:var(--s-4) var(--s-5);
+  border-radius:var(--r-lg); background:var(--ground); box-shadow:var(--shadow-sm);
+  text-decoration:none; color:inherit}
+.what:hover .what__t{text-decoration:underline; text-underline-offset:3px}
+.what__t{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.what__s{font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:var(--ls-soft)}
+.what svg{width:20px; height:20px; color:var(--brand-violet); flex-shrink:0}
+
+[hidden]{display:none !important}
+
+/* review tool — delete with the demo switcher */
+.demo{position:fixed; left:50%; bottom:var(--s-4); transform:translateX(-50%); z-index:60;
+  display:flex; align-items:center; gap:var(--s-3); padding:var(--s-2) var(--s-3) var(--s-2) var(--s-5);
+  border-radius:var(--r-pill); background:var(--ink); box-shadow:var(--shadow-lg)}
+.demo span{font-family:var(--font-mono); font-size:var(--fs-label); text-transform:uppercase;
+  letter-spacing:var(--ls-label); color:rgba(255,255,255,.55)}
+.demo select{border:0; border-radius:var(--r-pill); padding:6px var(--s-3);
+  background:rgba(255,255,255,.1); color:#fff; font:inherit; font-size:var(--fs-xs); font-weight:var(--fw-bold)}
+.handle{font-family:var(--font-mono); font-size:var(--fs-sm); font-weight:var(--fw-semibold);
+  padding:var(--s-3) var(--s-4); border-radius:var(--r-md); background:var(--ground-soft); color:var(--ink);
+  overflow-wrap:anywhere}
+.handle span{color:var(--ink-soft)}
+.claim{display:flex; flex-direction:column; gap:var(--s-3); padding-top:var(--s-4); box-shadow:inset 0 1px 0 var(--line)}
+.claim__t{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+</style>
+
+<div class="wrap">
+  <a class="brand" href="homepage.html" aria-label="Codemarca"></a>
+
+  <div class="card">
+    <span class="ic" data-ic="help"></span>
+    <h1 class="h">There’s no page here.</h1>
+    <p class="handle"><span>codemarca.com/</span><b data-handle>simrann</b></p>
+    <p class="p">Nobody uses this link. If you were looking for someone, check the
+       spelling — or ask them to send their link again.</p>
+
+    <div class="claim">
+      <p class="claim__t">It’s free. Want it?</p>
+      <p class="p">Put your number, WhatsApp and socials behind this link — one page,
+         and a QR sticker that opens it.</p>
+      <a class="btn btn--go" data-claim href="signup.html"><span>Claim codemarca.com/<span data-handle>simrann</span></span></a>
+    </div>
+  </div>
+
+  <a class="what" href="homepage.html">
+    <span data-ic="spark"></span>
+    <span>
+      <span class="what__t">What is Codemarca?</span>
+      <span class="what__s">One QR sticker. Your number, links and socials, one tap away.</span>
+    </span>
+  </a>
+</div>
+
+<script src="dashboard.js"></script>
+<script>
+(function () {
+  "use strict";
+  var q = new URLSearchParams(location.search);
+  /* the path in the real build; the same cleaning the claim box uses */
+  var h = String(q.get("handle") || "simrann").toLowerCase().replace(/[^a-z0-9._-]/g, "").slice(0, 24) || "simrann";
+  function all(s, fn) { Array.prototype.forEach.call(document.querySelectorAll(s), fn); }
+  document.querySelector(".brand").innerHTML = CM.wordmark();
+  all("[data-handle]", function (el) { el.textContent = h; });
+  document.querySelector("[data-claim]").href = "signup.html?handle=" + encodeURIComponent(h);
+  all("[data-ic]", function (el) { el.insertAdjacentHTML("afterbegin", CM.icon(el.getAttribute("data-ic"))); });
+})();
+</script>

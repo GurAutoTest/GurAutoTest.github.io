@@ -128,6 +128,15 @@ img,svg{display:block; max-width:100%}
   color:var(--ink-soft); padding:var(--s-2); border-radius:var(--r-sm);
 }
 .sp__exit:hover{color:var(--ink)}
+/* the way back to the dashboard reads exactly as it does on onboarding's
+   done screen (Garry, 2026-10-07): black text and an arrow. On hover the
+   text underlines and the arrow steps to the right. */
+.sp__exit[data-dash]{display:inline-flex; align-items:center; gap:var(--s-2); color:var(--ink)}
+.sp__exit[data-dash] > span{text-underline-offset:3px}
+.sp__exit[data-dash]:hover > span{text-decoration:underline}
+.sp__exit .arw{width:17px; height:17px; flex-shrink:0; transition:transform var(--dur) var(--ease)}
+.sp__exit[data-dash]:hover .arw,
+.sp__exit[data-dash]:focus-visible .arw{transform:translateX(3px)}
 @media (min-width:520px){ .sp__logo .wm{display:block} .sp__logo .mk{display:none} }
 
 /* No progress bar here. Checkout owns the three-segment run; this screen sits
@@ -923,19 +932,24 @@ input:-webkit-autofill:active{
      `built` means there is a page to go back to; `freeUsed` means the free
      pack is already spent, which only happens once a pack has been
      delivered — so that is the active account. */
+  function toDashLink() {
+    var x = $("exit");
+    x.dataset.dash = "";
+    x.innerHTML = '<span>Back to dashboard</span><svg class="arw" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h11m0 0-4.3-4.3M15 10l-4.3 4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
   if (O.gift) {
     /* a gift was started on the Gift & Refer tab, so that is where it goes back to */
-    var giftBack = "dashboard/gift.html";
+    var giftBack = "dashboard/" + P.flowOr(O.from) + "/gift.html";
     sp.dataset.gift = "1";
     document.title = "Codemarca — Send a gift";
     $("h1b").hidden = true;
     $("h1g").hidden = false;
-    $("exit").textContent = "Back to dashboard";
+    toDashLink();
     $("exit").href = giftBack;
     $("logoLink").href = giftBack;
   } else if (O.built) {
-    var back = "dashboard/home.html";
-    $("exit").textContent = "Back to dashboard";
+    var back = "dashboard/" + (O.freeUsed ? "4-active" : "2-page-live") + "/home.html";
+    toDashLink();
     $("exit").href = back;
     $("logoLink").href = back;
   }
@@ -1278,14 +1292,7 @@ input:-webkit-autofill:active{
   $("next").addEventListener("click", function () {
     var s = Number(sp.dataset.step);
     if (s === 1 && O.kind === "custom") { setStep(2); return; }
-    var qStr = P.orderQuery(O);
-    var pParams = new URLSearchParams(location.search);
-    var forward = new URLSearchParams(qStr.slice(1));
-    ["handle", "name", "phone", "email"].forEach(function(k) {
-      var v = pParams.get(k) || (window.localStorage ? window.localStorage.getItem(k === "handle" ? "cm.username" : ("cm." + k)) : "");
-      if (v && !forward.has(k)) forward.set(k, v);
-    });
-    location.href = "checkout.html?" + forward.toString();
+    location.href = "checkout.html" + P.orderQuery(O);
   });
   $("back").addEventListener("click", function () { setStep(1); });
 

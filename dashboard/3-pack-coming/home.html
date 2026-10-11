@@ -1,16 +1,5 @@
 <title>Home · Codemarca</title>
 <meta charset="utf-8">
-<script>
-(function() {
-  try {
-    var q = new URLSearchParams(location.search);
-    if (q.get("username")) localStorage.setItem("cm.username", q.get("username"));
-    localStorage.setItem("cm.stage", "pack-coming");
-    if (q.get("state")) localStorage.setItem("cm.substage", q.get("state"));
-  } catch(e) {}
-  location.replace("../home.html");
-})();
-</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -86,6 +75,58 @@
            name — and the parcel is nearly at your door.</p>
       </header>
 
+      <header class="head" data-when="late">
+        <h1>Your pack is running late.</h1>
+        <p>The courier now expects it by <b data-fill="order.newEta">21 Sep 2026</b>.
+           It is moving — and it buys you a few more days to finish your page.</p>
+      </header>
+
+      <header class="head" data-when="failed">
+        <h1>The courier couldn’t deliver it.</h1>
+        <p>They try again on <b data-fill="order.retryOn">19 Sep 2026</b>. If your
+           address or phone is wrong, fix it before then.</p>
+      </header>
+
+      <header class="head" data-when="returned">
+        <h1>Your pack came back to us.</h1>
+        <p>Three tries didn’t work, so the parcel returned. The stickers and
+           your code are fine — send them out again whenever you’re ready.</p>
+      </header>
+
+      <header class="head" data-when="cancelled">
+        <h1>Your order is cancelled.</h1>
+        <p>The money goes back the way you paid by <b data-fill="order.refundOn">19 Sep 2026</b>.
+           Your link is still yours, and so is your free pack.</p>
+      </header>
+
+      <!-- ══ WHAT WENT WRONG — the one thing to do about it (2026-10-08) ══ -->
+      <section class="card" data-when="failed returned cancelled">
+        <div class="card__head">
+          <span class="card__title">Order <span class="mono" data-fill="order.id">CM-5190</span></span>
+          <span class="chip chip--bad" data-when="failed">Delivery failed</span>
+          <span class="chip chip--bad" data-when="returned">Came back to us</span>
+          <span class="chip chip--flat" data-when="cancelled">Cancelled</span>
+        </div>
+        <div class="item">
+          <span class="item__ic" data-ic="box"></span>
+          <span class="item__txt">
+            <span class="item__t" data-fill="order.items">Codemarca pack — 2 stickers</span>
+            <span class="item__s" data-when="failed">Tried <span data-fill="order.failedOn">18 Sep</span> · next try <span data-fill="order.retryOn">19 Sep</span></span>
+            <span class="item__s" data-when="returned">Returned <span data-fill="order.returnedOn">23 Sep</span> · delivery is charged again</span>
+            <span class="item__s" data-when="cancelled">Refund by <span data-fill="order.refundOn">19 Sep</span></span>
+          </span>
+        </div>
+        <div class="card__foot">
+          <button class="btn btn--go btn--sm btn--grow" type="button" data-when="failed"
+                  data-soon="Opens the delivery details form">Fix address or phone</button>
+          <a class="btn btn--go btn--sm btn--grow" data-when="returned"
+             href="../../checkout.html?pack=free&amp;reason=resend">Send it again</a>
+          <a class="btn btn--go btn--sm btn--grow" data-when="cancelled"
+             href="../../select-pack.html">Order my free pack again</a>
+          <a class="btn btn--ghost btn--sm btn--grow" href="orders.html">Order details</a>
+        </div>
+      </section>
+
       <header class="head" data-when="delivered">
         <h1>Your stickers are here.</h1>
         <p>A scan shows just your name so far. Two minutes adds your number
@@ -96,7 +137,7 @@
 
 
 
-      <section class="card card--dark card--close card--act race">
+      <section class="card card--dark card--close card--act race" data-when="placed shipped delivered late failed returned">
 
         <!-- the drawing 1-empty opens with: sticker, scan, page. Seeded on
              their REAL code, so the square in it is the one already printed
@@ -106,18 +147,18 @@
         <div class="race__say">
         <div>
           <span class="card__title">Before they land</span>
-          <p class="race__h" style="margin-top:var(--s-2)" data-when="placed shipped">
+          <p class="race__h" style="margin-top:var(--s-2)" data-when="placed shipped late failed returned">
             Finish your page first.</p>
           <p class="race__h" style="margin-top:var(--s-2)" data-when="delivered">
             Finish your page now.</p>
         </div>
 
-        <div class="race__clock" data-when="placed shipped">
+        <div class="race__clock" data-when="placed shipped late">
           <span class="race__n" data-fill="daysLeft">6</span>
           <span class="race__u">days until they arrive</span>
         </div>
 
-        <p class="race__p" data-when="placed shipped">
+        <p class="race__p" data-when="placed shipped late failed returned">
           Your photo, and the things you actually hand out — phone, WhatsApp,
           Instagram. It takes about <b>two minutes</b>, and the stickers are
           worth scanning the day they land.
@@ -151,11 +192,12 @@
       </section>
 
       <!-- the parcel — context, not the subject; the timeline lives on Orders -->
-      <section class="card">
+      <section class="card" data-when="placed shipped delivered late">
         <div class="card__head">
           <span class="card__title">Order <span class="mono" data-fill="order.id">CM-5190</span></span>
           <span class="chip chip--flat" data-when="placed">Placed</span>
           <span class="chip chip--warn" data-when="shipped">On the way</span>
+          <span class="chip chip--warn" data-when="late">Running late</span>
           <span class="chip chip--ok"   data-when="delivered">Delivered</span>
         </div>
 
@@ -163,6 +205,8 @@
           <span class="item__ic" data-ic="box"></span>
           <span class="item__txt">
             <span class="item__t" data-fill="order.items">Codemarca pack — 2 stickers</span>
+            <span class="item__s" data-when="late">Now expected
+              <span data-fill="order.newEta">21 Sep 2026</span></span>
             <span class="item__s" data-when="placed shipped">Expected
               <span data-fill="order.eta">18 Sep 2026</span></span>
             <span class="item__s" data-when="delivered">Delivered

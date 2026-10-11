@@ -23,7 +23,11 @@ window.CM_FLOW = {
   states: [
     { k: "placed",    label: "1 · Just ordered" },
     { k: "shipped",   label: "2 · On the way" },
-    { k: "delivered", label: "3 · Landed, nobody set it up" }
+    { k: "delivered", label: "3 · Landed, nobody set it up" },
+    { k: "late",      label: "4 · Running late" },
+    { k: "failed",    label: "5 · Delivery attempt failed" },
+    { k: "returned",  label: "6 · Came back to us" },
+    { k: "cancelled", label: "7 · Cancelled, refunded" }
   ]
 };
 
@@ -85,7 +89,15 @@ window.CM_STATES = {
   shipped:   account("shipped",   { status: "shipped" }, { daysLeft: 2 }),
 
   /* the bad one: stickers in hand, nothing behind them */
-  delivered: account("delivered", { status: "delivered", eta: "17 Sep 2026" }, { daysLeft: 0 })
+  delivered: account("delivered", { status: "delivered", eta: "17 Sep 2026" }, { daysLeft: 0 }),
+
+  /* WHEN THE PARCEL GOES WRONG — 2026-10-08. The same account, the same
+     free pack; only the parcel's story changes. tab-orders.js draws the
+     problem from `issue`, Home says it in one line. */
+  late:      account("late",      { status: "shipped", issue: "late", newEta: "21 Sep 2026" }, { daysLeft: 3 }),
+  failed:    account("failed",    { status: "shipped", issue: "failed", failedOn: "18 Sep 2026", retryOn: "19 Sep 2026" }, { daysLeft: 1 }),
+  returned:  account("returned",  { status: "shipped", issue: "returned", returnedOn: "23 Sep 2026" }, { daysLeft: 0 }),
+  cancelled: account("cancelled", { status: "placed", issue: "cancelled", cancelledOn: "12 Sep 2026", refundOn: "19 Sep 2026" }, { daysLeft: 0 })
 };
 
 
@@ -165,6 +177,28 @@ window.CM_STATES["shipped"].notes = [
     "unread": false,
     "href": "orders.html"
   }
+];
+window.CM_STATES["late"].notes = [
+  { "id": "x-late", "tab": "orders", "icon": "truck", "title": "Your pack is running late",
+    "body": "Delhivery now expects it by 21 Sep. It is moving — nothing to do.", "when": "2h ago", "unread": true, "href": "orders.html" },
+  { "id": "x-shipped", "tab": "orders", "icon": "truck", "title": "Your pack has shipped",
+    "body": "Delhivery · SR7719206640.", "when": "15 Sep", "unread": false, "href": "orders.html" }
+];
+window.CM_STATES["failed"].notes = [
+  { "id": "x-failed", "tab": "orders", "icon": "help", "title": "The courier couldn’t deliver your pack",
+    "body": "They try again on 19 Sep. Check your address and phone before then.", "when": "1h ago", "unread": true, "href": "orders.html" },
+  { "id": "x-shipped", "tab": "orders", "icon": "truck", "title": "Your pack has shipped",
+    "body": "Delhivery · SR7719206640.", "when": "15 Sep", "unread": false, "href": "orders.html" }
+];
+window.CM_STATES["returned"].notes = [
+  { "id": "x-returned", "tab": "orders", "icon": "help", "title": "Your pack came back to us",
+    "body": "Three delivery tries didn’t work. Send it out again from Orders.", "when": "Today", "unread": true, "href": "orders.html" },
+  { "id": "x-failed", "tab": "orders", "icon": "help", "title": "The courier couldn’t deliver your pack",
+    "body": "Third try on 22 Sep.", "when": "22 Sep", "unread": false, "href": "orders.html" }
+];
+window.CM_STATES["cancelled"].notes = [
+  { "id": "x-cancel", "tab": "orders", "icon": "close", "title": "Order CM-5190 cancelled",
+    "body": "₹99 goes back the way you paid by 19 Sep.", "when": "12 Sep", "unread": true, "href": "orders.html" }
 ];
 window.CM_STATES["delivered"].notes = [
   {

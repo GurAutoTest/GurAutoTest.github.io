@@ -1,21 +1,11 @@
 <title>Home · Codemarca</title>
 <meta charset="utf-8">
-<script>
-(function() {
-  try {
-    var q = new URLSearchParams(location.search);
-    if (q.get("username")) localStorage.setItem("cm.username", q.get("username"));
-    localStorage.setItem("cm.stage", "page-live");
-    if (q.get("state")) localStorage.setItem("cm.substage", q.get("state"));
-  } catch(e) {}
-  location.replace("../home.html");
-})();
-</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../../dashboard.css">
+<link rel="stylesheet" href="../../page-view.css">
 <link rel="stylesheet" href="../../home.css">
 
 <!-- ==========================================================================
@@ -70,6 +60,25 @@
         </div>
       </header>
 
+      <header class="head" data-when="gifted">
+        <div class="head__row">
+          <div>
+            <h1>Your stickers work now.</h1>
+            <p><b data-fill="giftedBy.name">Arjun M.</b> sent them, and the code on
+               them is yours for good. Scan one and this page opens.</p>
+          </div>
+        </div>
+      </header>
+
+      <header class="head" data-when="offline">
+        <div class="head__row">
+          <div>
+            <h1>Your page is off.</h1>
+            <p>Nothing is deleted. Switch it back on and every scan opens it again.</p>
+          </div>
+        </div>
+      </header>
+
       <header class="head" data-when="settled">
         <div class="head__row">
           <div>
@@ -100,19 +109,42 @@
                   aria-label="Show my QR full screen"></button>
         </div>
 
-        <button class="me__link" type="button" data-share-page aria-label="Share my page">
-          <span class="me__url"><span>codemarca.com/</span><b data-fill="profile.handle">garry</b></span>
-          <span class="me__share"><span data-ic-in="share"></span><span class="me__share-t">Share</span></span>
-        </button>
+        <!-- the address with copy, and Share beside it — option B (Garry, 2026-10-10) -->
+        <div class="me__row">
+          <div class="me__link">
+            <span class="me__url"><span>codemarca.com/</span><b data-fill="profile.handle">garry</b></span>
+            <button class="me__copy" type="button" data-tip="Copy" aria-label="Copy page link"><span data-ic-in="copy"></span></button>
+          </div>
+          <button class="me__share" type="button" data-share-page aria-label="Share my page"><span data-ic-in="share"></span><span class="me__share-t">Share</span></button>
+        </div>
 
         <div class="me__acts">
           <a class="me__btn" href="profile.html"><span data-ic-in="pen"></span>Edit page</a>
           <a class="me__btn" href="../../profile.html?view=owner&amp;handle=garry"
-             target="_blank" rel="noopener" data-owner-view><span data-ic-in="eye"></span>View page</a>
+             data-owner-view><span data-ic-in="eye"></span>View page</a>
         </div>
       </section>
 
 
+
+
+      <!-- ══ PAGE OFF — 2026-10-08. The owner switched it off on My QR or in
+           Profile. Nothing is broken; this card says what a scan gets now
+           and puts the switch back in reach. -->
+      <section class="card card--off" data-when="offline">
+        <div class="item">
+          <span class="item__ic" data-ic="eye"></span>
+          <span class="item__txt">
+            <span class="item__t">Your page is off</span>
+            <span class="item__s">Scans and your link both show a short “not available” note.
+              Your details, your code and your stickers are all still here.</span>
+          </span>
+        </div>
+        <div class="card__foot">
+          <a class="btn btn--go btn--sm btn--grow" href="home.html?state=settled">Turn it back on</a>
+          <a class="btn btn--ghost btn--sm btn--grow" href="../../scan.html?state=paused" target="_blank" rel="noopener">See what a scan shows</a>
+        </div>
+      </section>
 
       <!-- ══ WHAT IS STILL MISSING ════════════════════════════════════════
            Onboarding's Save & exit lets people leave with a live page that
@@ -123,12 +155,13 @@
 
       <!-- ══ THE ASK ═════════════════════════════════════════════════════ -->
 
-      <section class="card card--dark card--close card--act" data-when="fresh settled">
+      <section class="card card--dark card--close card--act" data-when="fresh settled gifted offline">
         <div class="pack2">
 
           <div class="pack2__say">
             <span class="card__title">Next</span>
-            <p class="card__h" style="margin-top:var(--s-2)">Get your two stickers.</p>
+            <p class="card__h" style="margin-top:var(--s-2)" data-when="fresh settled offline">Get your two stickers.</p>
+            <p class="card__h" style="margin-top:var(--s-2)" data-when="gifted">Your own free pack is still here.</p>
             <p class="card__note" style="margin-top:var(--s-2)">
               A 4″ for the car, bike or shutter and a 1.5″ for a laptop, bottle
               or phone case — both printed with <b>the code you already have</b>.
@@ -188,13 +221,17 @@
       <!-- ══ FREE TEE ════════════════════════════════════════════════════
            The referral, sold before the pack is. The tee needs no order —
            not from this person and not from their friends — so it is the
-           one reward a page-only account can already earn. Paper, not dark:
-           the pack card above stays the one dark object on the screen. -->
+           one reward a page-only account can already earn. The black tee
+           itself is the ground (Garry, 2026-10-08) — this is the only white
+           version of the card; the others already sit on the dark gradient. -->
 
-      <section class="card rf">
+      <section class="card card--dark rf rf--tee">
+        <div class="tee-stks" aria-hidden="true">
+          <span class="tee-stk tee-stk--free">FREE</span>
+          <span class="tee-stk tee-stk--ok">no order needed ✓</span>
+        </div>
 
         <div class="rf__say">
-          <span class="card__title">Free tee · no order needed</span>
           <h2 class="rf__h">Bring 50 friends. Wear your code.</h2>
           <p class="rf__p">A black tee printed with your own QR, free, in one of five
              designs. A friend counts once they <b>sign up with your link and
@@ -221,12 +258,15 @@
           </button>
         </div>
 
-        <div>
+        <div class="rf__designs">
           <div class="rf__head">
             <span class="card__title" id="teesTitle">The five designs</span>
             <span class="rf__hint">You pick one at 50</span>
           </div>
           <div class="rf__tees" id="tees" aria-labelledby="teesTitle"></div>
+          <!-- a faint rail under the strip: phones hide scrollbars until you
+               swipe, so nothing said there were more tees (Garry, 2026-10-08) -->
+          <div class="rf__rail" id="teesRail" aria-hidden="true"><i></i></div>
         </div>
       </section>
 
@@ -237,6 +277,7 @@
 
 <script src="state.js"></script>
 <script src="../../dashboard.js"></script>
+<script src="../../page-view.js"></script>
 <script>
 (function () {
   "use strict";
@@ -271,10 +312,18 @@
   });
   document.querySelector("[data-mark]").innerHTML = CM.mark();
 
+  /* View page — the page full screen (page-view.js), not a new tab
+     (Garry, 2026-10-10). The link stays as the no-script fallback. */
   var owner = document.querySelector("[data-owner-view]");
-  owner.href = CM.ROOT + "profile.html?view=owner&handle=" +
-    encodeURIComponent(a.profile.handle) +
-    "&theme=" + encodeURIComponent((a.profile.theme || "").toLowerCase());
+  var ownerSrc = function () {
+    return CM.ROOT + "profile.html?view=owner&chrome=0&handle=" + encodeURIComponent(a.profile.handle) +
+      "&theme=" + encodeURIComponent((a.profile.theme || "light").toLowerCase());
+  };
+  owner.href = ownerSrc().replace("&chrome=0", "");
+  owner.addEventListener("click", function (e) {
+    e.preventDefault();
+    CM.openPage({ src: ownerSrc(), url: CM.url(a.profile.handle), profile: a.profile });
+  });
 
   CM.carousel(document.querySelector("[data-shots]"));
 
@@ -285,5 +334,24 @@
     "profile.at": a.profile.handle,
     "fee":        CM.money(49)
   }));
+
+  /* the tee strip's rail: thumb width = how much is on screen, position =
+     how far along. Hidden once all five fit (desktop shows them in a row). */
+  (function () {
+    var strip = document.getElementById("tees"), rail = document.getElementById("teesRail");
+    if (!strip || !rail) return;
+    var thumb = rail.firstElementChild;
+    function paint() {
+      var all = strip.scrollWidth, seen = strip.clientWidth;
+      rail.hidden = all <= seen + 1;
+      if (rail.hidden) return;
+      thumb.style.width = (seen / all * 100) + "%";
+      thumb.style.transform = "translateX(" + (strip.scrollLeft / seen * 100) + "%)";
+    }
+    strip.addEventListener("scroll", paint, { passive: true });
+    window.addEventListener("resize", paint);
+    if (window.ResizeObserver) new ResizeObserver(paint).observe(strip);
+    paint();
+  })();
 })();
 </script>

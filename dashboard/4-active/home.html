@@ -1,21 +1,11 @@
 <title>Home · Codemarca</title>
 <meta charset="utf-8">
-<script>
-(function() {
-  try {
-    var q = new URLSearchParams(location.search);
-    if (q.get("username")) localStorage.setItem("cm.username", q.get("username"));
-    localStorage.setItem("cm.stage", "active");
-    if (q.get("state")) localStorage.setItem("cm.substage", q.get("state"));
-  } catch(e) {}
-  location.replace("../home.html");
-})();
-</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../../dashboard.css">
+<link rel="stylesheet" href="../../page-view.css">
 <link rel="stylesheet" href="../../home.css">
 
 <!-- ==========================================================================
@@ -241,7 +231,7 @@ button.tee:hover{background:rgba(255,255,255,.1)}
   <div class="app__main">
     <main class="view">
 
-      <header class="head">
+      <header class="head" data-when="active reorder tee giftwait teeship teedone">
         <div class="head__row">
           <div>
             <h1>Hey, <span data-fill="user.first">Garry</span>.</h1>
@@ -249,6 +239,34 @@ button.tee:hover{background:rgba(255,255,255,.1)}
           </div>
         </div>
       </header>
+
+      <header class="head" data-when="offline">
+        <div class="head__row">
+          <div>
+            <h1>Your page is off.</h1>
+            <p>Your stickers still carry your code. Switch the page back on and every scan opens it again.</p>
+          </div>
+        </div>
+      </header>
+
+      <!-- ══ PAGE OFF — 2026-10-08. The owner switched it off on My QR or in
+           Profile. Nothing is broken; this card says what a scan gets now
+           and puts the switch back in reach. -->
+      <section class="card card--off" data-when="offline">
+        <div class="item">
+          <span class="item__ic" data-ic="eye"></span>
+          <span class="item__txt">
+            <span class="item__t">Your page is off</span>
+            <span class="item__s">Scans and your link both show a short “not available” note.
+              Your details, your code and your stickers are all still here.</span>
+          </span>
+        </div>
+        <div class="card__foot">
+          <a class="btn btn--go btn--sm btn--grow" href="home.html?state=active">Turn it back on</a>
+          <a class="btn btn--ghost btn--sm btn--grow" href="../../scan.html?state=paused" target="_blank" rel="noopener">See what a scan shows</a>
+        </div>
+      </section>
+
 
 
       <!-- ══ YOU ═════════════════════════════════════════════════════════
@@ -269,15 +287,19 @@ button.tee:hover{background:rgba(255,255,255,.1)}
                   aria-label="Show my QR full screen"></button>
         </div>
 
-        <button class="me__link" type="button" data-share-page aria-label="Share my page">
-          <span class="me__url"><span>codemarca.com/</span><b data-fill="profile.handle">garry</b></span>
-          <span class="me__share"><span data-ic-in="share"></span><span class="me__share-t">Share</span></span>
-        </button>
+        <!-- the address with copy, and Share beside it — option B (Garry, 2026-10-10) -->
+        <div class="me__row">
+          <div class="me__link">
+            <span class="me__url"><span>codemarca.com/</span><b data-fill="profile.handle">garry</b></span>
+            <button class="me__copy" type="button" data-tip="Copy" aria-label="Copy page link"><span data-ic-in="copy"></span></button>
+          </div>
+          <button class="me__share" type="button" data-share-page aria-label="Share my page"><span data-ic-in="share"></span><span class="me__share-t">Share</span></button>
+        </div>
 
         <div class="me__acts">
           <a class="me__btn" href="profile.html"><span data-ic-in="pen"></span>Edit page</a>
           <a class="me__btn" href="../../profile.html?view=owner&amp;handle=garry"
-             target="_blank" rel="noopener" data-owner-view><span data-ic-in="eye"></span>View page</a>
+             data-owner-view><span data-ic-in="eye"></span>View page</a>
         </div>
       </section>
 
@@ -297,6 +319,10 @@ button.tee:hover{background:rgba(255,255,255,.1)}
            at 50 they become a choice, with size and address underneath. -->
 
       <section class="card card--dark card--close ref" id="ref">
+        <div class="tee-stks" aria-hidden="true">
+          <span class="tee-stk tee-stk--free">FREE</span>
+          <span class="tee-stk tee-stk--ok">no order needed ✓</span>
+        </div>
 
         <div class="ref__say">
           <span class="card__title">Refer friends</span>
@@ -348,8 +374,8 @@ button.tee:hover{background:rgba(255,255,255,.1)}
 
         <div class="ref__done" id="claimed" hidden>
           <span data-ic-in="check"></span>
-          <span><b>Your tee is claimed.</b> <span id="claimedWhat">Pocket, size L</span> — we
-            print it with your code and send it to the address above.</span>
+          <span><b id="claimedT">Your tee is claimed.</b> <span id="claimedWhat">Pocket, size L</span> — <span id="claimedS">we
+            print it with your code and send it to the address above.</span></span>
         </div>
       </section>
 
@@ -458,6 +484,7 @@ button.tee:hover{background:rgba(255,255,255,.1)}
 
 <script src="state.js"></script>
 <script src="../../dashboard.js"></script>
+<script src="../../page-view.js"></script>
 <script>
 (function () {
   "use strict";
@@ -476,6 +503,12 @@ button.tee:hover{background:rgba(255,255,255,.1)}
   Array.prototype.forEach.call(document.querySelectorAll("[data-when]"), function (el) {
     if (el.getAttribute("data-when").split(" ").indexOf(a.state) === -1) { el.hidden = true; }
   });
+  /* a page switched off says so on the "you" card (2026-10-08) */
+  if (a.profile.live === false) {
+    Array.prototype.forEach.call(document.querySelectorAll(".me__live"), function (el) {
+      el.dataset.off = ""; el.innerHTML = "<i></i>Off";
+    });
+  }
 
   var R = a.referrals;
   var pageUrl = "https://" + CM.url(a.profile.handle);
@@ -508,9 +541,18 @@ button.tee:hover{background:rgba(255,255,255,.1)}
     CM.shareSheet({ title: "Share your page", url: pageUrl, name: a.profile.title });
   });
   document.querySelector("[data-mark]").innerHTML = CM.mark();
+  /* View page — the page full screen (page-view.js), not a new tab
+     (Garry, 2026-10-10). The link stays as the no-script fallback. */
   var owner = document.querySelector("[data-owner-view]");
-  owner.href = CM.ROOT + "profile.html?view=owner&handle=" + encodeURIComponent(a.profile.handle) +
-    "&theme=" + encodeURIComponent((a.profile.theme || "").toLowerCase());
+  var ownerSrc = function () {
+    return CM.ROOT + "profile.html?view=owner&chrome=0&handle=" + encodeURIComponent(a.profile.handle) +
+      "&theme=" + encodeURIComponent((a.profile.theme || "light").toLowerCase());
+  };
+  owner.href = ownerSrc().replace("&chrome=0", "");
+  owner.addEventListener("click", function (e) {
+    e.preventDefault();
+    CM.openPage({ src: ownerSrc(), url: CM.url(a.profile.handle), profile: a.profile });
+  });
 
   CM.carousel(document.querySelector("[data-shots]"));
   /* the two sticker photos open full screen too — they are photos, not a
@@ -623,6 +665,28 @@ button.tee:hover{background:rgba(255,255,255,.1)}
     document.getElementById("refShare").hidden = open;
     document.getElementById("claim").hidden = !open;
     document.getElementById("claimed").hidden = true;
+
+    /* AFTER THE CLAIM (2026-10-08): the pick, and where the parcel is */
+    if (R.claimed && R.tee) {
+      var T = R.tee, at = DESIGNS.map(function (d) { return d.n; }).indexOf(T.design);
+      document.getElementById("refH").textContent = T.status === "delivered"
+        ? "Your tee is here. Wear your code." : "Your tee is on its way.";
+      document.getElementById("refP").innerHTML = T.status === "delivered"
+        ? "The QR on it opens your page, the same as any sticker. Friends who join still get their own page."
+        : "Printed with <b>your own code</b>. Delhivery expects it by <b>" + T.eta + "</b>.";
+      document.getElementById("refSub").innerHTML = "<b>Goal reached.</b> Keep sharing — friends who join still get their own page.";
+      document.getElementById("refShare").hidden = false;
+      document.getElementById("claim").hidden = true;
+      document.getElementById("claimedWhat").textContent = T.design + ", size " + T.size;
+      document.getElementById("claimedT").textContent = T.status === "delivered" ? "Delivered." : "Shipped.";
+      document.getElementById("claimedS").textContent = T.status === "delivered"
+        ? "delivered on " + T.eta + "." : "on its way, arriving by " + T.eta + ".";
+      document.getElementById("claimed").hidden = false;
+      drawTees(false);
+      if (at >= 0) { teesEl.children[at].setAttribute("aria-checked", "true"); }
+      document.getElementById("teesHint").textContent = "Your pick";
+      return;
+    }
     pick = { design: null, size: null };
     Array.prototype.forEach.call(sizesEl.children, function (x) { x.setAttribute("aria-checked", "false"); });
     readyClaim();

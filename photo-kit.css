@@ -1,0 +1,118 @@
+/* ==========================================================================
+   CODEMARCA — PHOTO KIT (styles) — faces & zodiac, the crop dialog, the
+   blurred glass ground behind a face. Goes with photo-kit.js. It sits at
+   the web root, so its asset paths work from any folder that links it.
+   ========================================================================== */
+.photo__disc{position:relative}
+.photo__disc img{position:relative; z-index:1}
+/* blurred, the way the glass card blurs it on the page (Garry, 2026-10-07) */
+.photo__disc[data-ground]:not([data-ground=""])::before{
+  content:""; position:absolute; inset:-12px; filter:blur(10px); transform:scale(1.1);
+}
+.photo__disc[data-ground="glass-bronze"]{background:#7A5440}
+.photo__disc[data-ground="glass-copper"]{background:#150E0B}
+.photo__disc[data-ground="glass-bronze"]::before{background:url("assets/profile-bg/pv3hd.jpg") 45% 50% / cover no-repeat}
+.photo__disc[data-ground="glass-copper"]::before{background:url("assets/profile-bg/pv1hd.jpg") 30% 50% / cover no-repeat}
+.photo__disc .face{display:block; width:100%; height:100%}
+/* Remove sits BESIDE the button, not under it (Garry, 2026-09-24) — stacked,
+   it appeared the moment a photo landed and shunted the button upwards. The
+   8px gap plus the link's own padding reads as the 16px he asked for. */
+.photo__acts{display:flex; flex-direction:column; align-items:flex-start; gap:var(--s-1)}
+.photo__row{display:flex; align-items:center; gap:var(--s-2)}
+/* white with a light hairline, not a grey fill (Garry, 2026-10-07) */
+.photo__btn{
+  border:0; background:#fff; box-shadow:inset 0 0 0 1.5px var(--line-strong); cursor:pointer; border-radius:var(--r-pill);
+  padding:10px var(--s-4); font-size:var(--fs-sm); font-weight:var(--fw-bold);
+}
+.photo__btn:hover{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.photo__clear{border:0; background:none; cursor:pointer; padding:6px var(--s-2);
+  font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-soft); border-radius:var(--r-sm)}
+.photo__clear:hover{color:var(--bad)}
+.photo__hint{font-size:var(--fs-xs); color:var(--ink-soft)}
+
+/* faces — for anyone who would rather not upload a photo (Garry,
+   2026-10-07). Netflix-profile style: flat colour, one expression each. */
+.faces{display:flex; flex-direction:column; gap:var(--s-3)}
+.faces__top{display:flex; align-items:center; justify-content:space-between; gap:var(--s-3)}
+.faces__lbl{font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-soft); letter-spacing:.14px}
+/* white, not grey, with the same soft lift as the tooltip (Garry, 2026-10-07);
+   the chosen side a very light grey, the other one text on white */
+.faces__tabs{display:flex; gap:2px; padding:3px; border-radius:var(--r-pill); background:#fff;
+  box-shadow:0 1px 2px rgba(16,18,21,.06), 0 4px 12px rgba(16,18,21,.08), inset 0 0 0 1px var(--line)}
+.faces__tabs button{border:0; background:none; cursor:pointer; padding:5px 12px; border-radius:var(--r-pill);
+  font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-mid); letter-spacing:.14px;
+  transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease)}
+.faces__tabs button:hover{color:var(--ink)}
+.faces__tabs button[aria-pressed="true"]{background:var(--ground-soft); color:var(--ink)}   /* black took the focus off the faces */
+/* one height for both tabs — zodiac discs come out a few px smaller than
+   faces, and the form under them jumped on every switch */
+.faces__row{display:flex; flex-wrap:wrap; align-items:center; gap:var(--s-2); min-height:44px}
+.face-btn{position:relative; flex-shrink:0; width:44px; height:44px; padding:0; border:0; border-radius:50%; cursor:pointer;
+  background:none; transition:transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease)}
+.face-btn:hover{transform:translateY(-1px)}
+.face-btn img{width:100%; height:100%; display:block; border-radius:50%}
+/* all twelve signs on one line — the row shares the card's width out evenly */
+.faces__row[data-set]{display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); align-items:center; gap:6px}
+.faces__row[data-set] .face-btn{width:100%; max-width:44px; height:auto; aspect-ratio:1/1}
+/* a phone is too narrow for a full row of tappable discs: faces and zodiac
+   both become one line that swipes, so the two tabs look the same */
+@media (max-width:519.98px){
+  .faces__row, .faces__row[data-set="faces"], .faces__row[data-set="zodiac"]{display:flex; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; padding:4px; margin:-4px}
+  .faces__row::-webkit-scrollbar{display:none}
+  .faces__row .face-btn, .faces__row[data-set="faces"] .face-btn, .faces__row[data-set="zodiac"] .face-btn{width:40px; height:40px; flex:0 0 40px}
+}
+/* our own tooltip, not the browser's grey one: white, rounded, a hairline */
+@media (hover:hover){
+  .face-btn::after{
+    content:attr(data-tip); position:absolute; z-index:5; left:50%; bottom:calc(100% + 8px);
+    transform:translate(-50%,4px); padding:6px 10px; border-radius:var(--r-sm);
+    background:#fff; color:var(--ink); font-size:var(--fs-xs); font-weight:var(--fw-bold); letter-spacing:.14px;
+    white-space:nowrap; box-shadow:var(--shadow-md), inset 0 0 0 1px var(--line);
+    opacity:0; pointer-events:none; transition:opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  }
+  .face-btn:hover::after{opacity:1; transform:translate(-50%,0)}
+}
+.face-btn[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ground), 0 0 0 4px var(--ok)}
+
+/* ── 5b. CROP — LinkedIn-style: drag to move, slider or wheel to zoom ──── */
+.crop{position:fixed; inset:0; z-index:96; display:flex; align-items:flex-end; justify-content:center}
+.crop[hidden]{display:none}
+.crop__panel{
+  position:relative; width:100%; max-width:480px; background:var(--ground); color:var(--ink);
+  border-radius:var(--r-xl) var(--r-xl) 0 0;
+  padding:var(--s-5) var(--s-5) calc(var(--s-5) + env(safe-area-inset-bottom));
+  display:flex; flex-direction:column; gap:var(--s-4);
+  animation:pkRise var(--dur) var(--ease);
+}
+.crop__head{display:flex; align-items:center; justify-content:space-between}
+.crop__t{font-size:1.125rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display)}
+.crop__stage{
+  position:relative; width:min(100%,56svh); aspect-ratio:1/1; margin-inline:auto;
+  border-radius:var(--r-lg); overflow:hidden; background:#101215;
+  cursor:grab; touch-action:none; user-select:none;
+}
+.crop__stage:active{cursor:grabbing}
+.crop__stage img{position:absolute; left:50%; top:50%; max-width:none; pointer-events:none;
+  -webkit-user-drag:none}
+/* the circle is what lands on the page; everything outside it is dimmed */
+.crop__ring{position:absolute; inset:8%; border-radius:50%; pointer-events:none;
+  box-shadow:0 0 0 999px rgba(16,18,21,.58), inset 0 0 0 2px rgba(255,255,255,.9)}
+.crop__zoom{display:flex; align-items:center; gap:var(--s-3); color:var(--ink-soft)}
+.crop__zoom svg{width:18px; height:18px; flex-shrink:0}
+.crop__zoom input{flex:1; accent-color:var(--ink); height:24px; cursor:pointer}
+.crop__hint{font-size:var(--fs-xs); color:var(--ink-soft); text-align:center; letter-spacing:.14px}
+.crop__acts{display:flex; gap:var(--s-3)}
+.crop__acts .btn{flex:1}
+@media (min-width:640px){
+  .crop{align-items:center}
+  .crop__panel{border-radius:var(--r-xl); animation:pkPop var(--dur) var(--ease)}
+}
+
+
+.crop__scrim{position:absolute; inset:0; background:rgba(16,18,21,.52)}
+.crop__x{width:32px; height:32px; display:grid; place-items:center; border:0; border-radius:50%;
+  background:var(--ground-soft); color:var(--ink-mid); cursor:pointer}
+.crop__x:hover{background:var(--line); color:var(--ink)}
+.crop__x svg{width:15px; height:15px}
+@keyframes pkRise{from{transform:translateY(24px)}}
+@keyframes pkPop{from{transform:scale(.965); opacity:0}}

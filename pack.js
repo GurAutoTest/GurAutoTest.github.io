@@ -170,6 +170,9 @@
   function priceOrder(o) {
     var gift  = !!(o && o.gift);
     var kind  = gift || (o && o.kind === "custom") ? "custom" : "free";
+    /* a lost or damaged sticker: the same pair as the free pack, the same
+       code printed again, delivery only (Garry, 2026-10-08) */
+    var reprint = !gift && kind === "free" && o && o.reprint ? o.reprint : false;
     var items = kind === "custom" ? cleanItems(o.items) : [];
     var lines = items.map(function (it) {
       var s = sizeFor(it.size);
@@ -180,7 +183,12 @@
     var zone  = zoneFor(o && o.state);
 
     var title, blurb;
-    if (kind === "free") {
+    if (reprint === "resend") {
+      /* a parcel that came back after the courier's last try (2026-10-08) */
+      title = "Your pack, sent again"; blurb = "The same stickers, the same code \u00b7 out for delivery again";
+    } else if (reprint) {
+      title = "A new pair"; blurb = "Your same code, printed again \u00b7 4\u2033 and 1.5\u2033";
+    } else if (kind === "free") {
       title = FREE.name; blurb = FREE.blurb;
     } else if (!lines.length) {
       title = gift ? "A gift" : "Custom stickers"; blurb = "Pick at least one size";
@@ -197,6 +205,7 @@
     return {
       kind:  kind,
       gift:  gift,
+      reprint: reprint,
       items: items,
       lines: lines,                          /* [{ size, qty, amount }] */
       qty:   qty,                            /* stickers in the order */
@@ -238,6 +247,8 @@
       freeUsed: q.get("free") === "used",
       gift:     gift,
       from:     q.get("from") ? flowOr(q.get("from")) : null,
+      /* "lost" — a new pair of the same code; "resend" — a returned parcel out again */
+      reprint:  q.get("reason") === "lost" || q.get("reason") === "resend" ? q.get("reason") : false,
       state:    null
     };
   }
@@ -266,6 +277,7 @@
     if (o.freeUsed) bits.push("free=used");
     if (o.gift) bits.push("gift=1");
     if (o.from) bits.push("from=" + flowOr(o.from));
+    if (o.reprint && !custom) bits.push("reason=" + o.reprint);
     return "?" + bits.join("&");
   }
 
@@ -273,7 +285,7 @@
      The slider in the checkout summary reads this list. The frame is
      square, so every shot here is square or taller — a crop only trims
      top and bottom, never the product. Files live in assets/photos/
-     `cap` is the caption AND the image's alt. */
+     (see the README there). `cap` is the caption AND the image's alt. */
   var SHOTS = [
     { src:"assets/photos/codemarca-qr-sticker-pack-on-wooden-desk-square.jpg",        cap:"The Codemarca pack as it arrives \u2014 both stickers on one card" },
     { src:"assets/photos/codemarca-qr-sticker-peel-from-pack-square.jpg",             cap:"Peel a Codemarca QR sticker straight off the pack" },

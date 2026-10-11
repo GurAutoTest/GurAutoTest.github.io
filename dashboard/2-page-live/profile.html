@@ -6,10 +6,11 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../../dashboard.css">
 <link rel="stylesheet" href="../../tab-profile.css">
+<link rel="stylesheet" href="../../photo-kit.css">
 
 <!-- ==========================================================================
      CODEMARCA — YOUR PAGE  ·  flow 2, page live
-     The page exists in both states of this flow, so this is the editor,
+     The page exists in every state of this flow, so this is the editor,
      always. onboarding.html made it; this screen changes it.
      ========================================================================== -->
 
@@ -23,7 +24,7 @@
 
       <!-- ══ EDITOR ══════════════════════════════════════════════════════ -->
 
-      <header class="head" data-when="fresh settled">
+      <header class="head" data-when="fresh settled coming gifted offline">
         <div class="head__row">
           <div>
             <h1>Your page</h1>
@@ -39,37 +40,43 @@
            It shows the SAVED page: typing a new handle or name below does
            not change it until Save. The link is the share button. -->
 
-      <section class="card card--dark me me--dark" data-when="fresh settled">
+      <section class="card card--dark me me--dark me--fold" data-when="fresh settled coming gifted offline">
         <span class="me__mark" id="meMark"></span>
 
-        <div class="me__top">
+        <!-- Folded by default; the header opens it (Garry, 2026-10-10). The
+             copy icon in the field replaces the old Copy link button, as on Home. -->
+        <button class="me__head" type="button" id="meHead" aria-expanded="false" aria-controls="meBody">
           <span class="me__av" id="meAv">G</span>
           <span class="me__who">
             <span class="me__name" id="meName">Garry Singh</span>
             <span class="me__live"><i></i>Live</span>
           </span>
-          <button class="me__qr" type="button" id="meQr" aria-label="Show my QR full screen"></button>
-        </div>
-
-        <button class="me__link" type="button" id="meShare" aria-label="Share my page">
-          <span class="me__url"><span>codemarca.com/</span><b id="meHandle">garry</b></span>
-          <span class="me__share"><span data-ic-in="share"></span><span class="me__share-t">Share</span></span>
+          <span class="me__chev" aria-hidden="true"><span data-ic-in="chev"></span></span>
         </button>
 
-        <div class="me__acts">
-          <button class="me__btn" type="button" id="meCopy"
-                  data-copy="https://codemarca.com/garry" data-copy-msg="Profile link copied">
-            <span data-ic-in="copy"></span>Copy link
-          </button>
-          <a class="me__btn" id="meView" href="../../profile.html?view=owner&amp;handle=garry&amp;theme=violet"
-             target="_blank" rel="noopener"><span data-ic-in="eye"></span>View page</a>
+        <div class="me__body" id="meBody">
+          <div class="me__in">
+            <div class="me__grid">
+              <button class="me__qr" type="button" id="meQr" aria-label="Show my QR full screen"></button>
+              <!-- the address with copy, and Share beside it — option B -->
+              <div class="me__row">
+                <div class="me__link">
+                  <span class="me__url"><span>codemarca.com/</span><b id="meHandle">garry</b></span>
+                  <button class="me__copy" type="button" data-tip="Copy" aria-label="Copy page link"><span data-ic-in="copy"></span></button>
+                </div>
+                <button class="me__share" type="button" id="meShare" aria-label="Share my page"><span data-ic-in="share"></span><span class="me__share-t">Share</span></button>
+              </div>
+              <a class="me__btn me__view" id="meView" href="../../profile.html?view=owner&amp;handle=garry&amp;theme=violet"
+                 target="_blank" rel="noopener"><span data-ic-in="eye"></span>View page</a>
+            </div>
+          </div>
         </div>
       </section>
 
 
       <!-- ── BASICS ──────────────────────────────────────────────────────── -->
 
-      <section class="card" data-when="fresh settled">
+      <section class="card" data-when="fresh settled coming gifted offline">
         <span class="card__title">Basics</span>
 
         <div class="photo">
@@ -79,14 +86,14 @@
               <button class="photo__btn" type="button" id="photoBtn">Change photo</button>
               <button class="photo__clear" type="button" id="photoClear" hidden>Remove</button>
             </div>
-            <p class="photo__hint">Square works best. JPG or PNG.</p>
+            <p class="photo__hint">Your photo or your logo. JPG or PNG.</p>
           </div>
           <input class="sr" type="file" id="photoInput" accept="image/*">
         </div>
 
         <div class="fld">
           <div class="fld__top"><label class="fld__lbl" for="name">Your name</label></div>
-          <div class="inp"><input id="name" type="text" maxlength="40" autocomplete="name" placeholder="Your name"></div>
+          <div class="inp"><input id="name" type="text" maxlength="40" autocomplete="name" placeholder="Gurdeep Singh"></div>
         </div>
 
         <div class="fld">
@@ -104,14 +111,14 @@
            land in someone's phonebook, so they are the first thing to be
            correctable — not just hideable. -->
 
-      <section class="card" data-when="fresh settled">
+      <section class="card" data-when="fresh settled coming gifted offline">
         <span class="card__title">Contact</span>
 
         <div class="fld">
           <div class="fld__top"><label class="fld__lbl" for="phone">Phone</label></div>
           <div class="inp">
             <span class="inp__pre">+91</span>
-            <input id="phone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="10-digit mobile number">
+            <input id="phone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="98765 43210">
             <button class="eye" type="button" id="phoneEye" aria-pressed="true" aria-label="Hide phone on your page"></button>
           </div>
         </div>
@@ -125,7 +132,7 @@
           </label>
           <div class="inp" id="waWrap">
             <span class="inp__pre">+91</span>
-            <input id="wa" type="tel" inputmode="numeric" maxlength="10" placeholder="WhatsApp number if different">
+            <input id="wa" type="tel" inputmode="numeric" maxlength="10" placeholder="Business number">
             <button class="eye" type="button" id="waEye" aria-pressed="true" aria-label="Hide WhatsApp on your page"></button>
           </div>
         </div>
@@ -146,7 +153,7 @@
            The builder's grid and rows. Tap a platform to add it, type the
            handle straight into its row, the eye hides it, × removes it. -->
 
-      <section class="card" data-when="fresh settled" id="linksCard">
+      <section class="card" data-when="fresh settled coming gifted offline" id="linksCard">
         <div class="card__head">
           <span class="card__title">Links</span>
           <span class="chip chip--flat" id="linkCount">5 shown</span>
@@ -163,7 +170,7 @@
 
       <!-- ── ORDER ───────────────────────────────────────────────────────── -->
 
-      <section class="card" data-when="fresh settled" id="orderCard">
+      <section class="card" data-when="fresh settled coming gifted offline" id="orderCard">
         <span class="card__title">Order on your page</span>
         <p class="card__note">Every button is the same size — the order is the only hierarchy. Drag, or use the arrows.</p>
         <ul class="order" id="order"></ul>
@@ -172,36 +179,33 @@
 
       <!-- ── THEME ───────────────────────────────────────────────────────── -->
 
-      <section class="card" data-when="fresh settled">
+      <section class="card" data-when="fresh settled coming gifted offline">
         <span class="card__title">Theme</span>
         <div class="themes" role="group" aria-label="Page theme">
+          <!-- final order (Garry, 2026-10-06) -->
           <button class="theme" type="button" aria-pressed="false" data-theme="light">
             <span class="theme__sw" data-t="light"><i></i><i></i><i></i></span>
             <span class="theme__n">Light</span>
           </button>
-          <button class="theme" type="button" aria-pressed="false" data-theme="dark">
-            <span class="theme__sw" data-t="dark"><i></i><i></i><i></i></span>
-            <span class="theme__n">Dark</span>
+          <button class="theme" type="button" aria-pressed="false" data-theme="glass-bronze">
+            <span class="theme__sw" data-t="glass-bronze"><i></i><i></i><i></i></span>
+            <span class="theme__n">Bronze glass</span>
           </button>
-          <button class="theme" type="button" aria-pressed="true" data-theme="violet">
-            <span class="theme__sw" data-t="violet"><i></i><i></i><i></i></span>
-            <span class="theme__n">Violet</span>
+          <button class="theme" type="button" aria-pressed="false" data-theme="leaf">
+            <span class="theme__sw" data-t="leaf"><i></i><i></i><i></i></span>
+            <span class="theme__n">Leaf</span>
           </button>
-          <button class="theme" type="button" aria-pressed="false" data-theme="cream">
-            <span class="theme__sw" data-t="cream"><i></i><i></i><i></i></span>
-            <span class="theme__n">Cream</span>
+          <button class="theme" type="button" aria-pressed="false" data-theme="glass-copper">
+            <span class="theme__sw" data-t="glass-copper"><i></i><i></i><i></i></span>
+            <span class="theme__n">Copper glass</span>
           </button>
-          <button class="theme" type="button" aria-pressed="false" data-theme="gradient">
-            <span class="theme__sw" data-t="gradient"><i></i><i></i><i></i></span>
-            <span class="theme__n">Gradient</span>
+          <button class="theme" type="button" aria-pressed="false" data-theme="soft">
+            <span class="theme__sw" data-t="soft"><i></i><i></i><i></i></span>
+            <span class="theme__n">Soft</span>
           </button>
-          <button class="theme" type="button" aria-pressed="false" data-theme="glass-ember">
-            <span class="theme__sw" data-t="glass-ember"><i></i><i></i><i></i></span>
-            <span class="theme__n">Ember glass</span>
-          </button>
-          <button class="theme" type="button" aria-pressed="false" data-theme="glass-violet">
-            <span class="theme__sw" data-t="glass-violet"><i></i><i></i><i></i></span>
-            <span class="theme__n">Violet glass</span>
+          <button class="theme" type="button" aria-pressed="false" data-theme="photo">
+            <span class="theme__sw" data-t="photo"><i></i><i></i><i></i></span>
+            <span class="theme__n">Photo</span>
           </button>
         </div>
       </section>
@@ -212,7 +216,7 @@
            sticker, a job change. It is not the same as deleting the account,
            so it lives here and not in settings. -->
 
-      <section class="card" data-when="fresh settled">
+      <section class="card" data-when="fresh settled coming gifted offline">
         <div class="row row--static" style="padding:0">
           <span class="row__txt">
             <span class="row__t">Page is live</span>
@@ -240,4 +244,5 @@
 
 <script src="state.js"></script>
 <script src="../../dashboard.js"></script>
+<script src="../../photo-kit.js"></script>
 <script src="../../tab-profile.js"></script>

@@ -92,7 +92,6 @@
   --ease:cubic-bezier(.22,.61,.36,1); --ease-out:cubic-bezier(.16,1,.3,1);
   --carousel-interval:3400ms;
 
-  --mini-scale:.6333;   /* hero cards: the mini profile is authored at 300px wide; the hero arc script resets it to the card width */
 }
 @media (max-width:760px){
   :root{
@@ -348,40 +347,11 @@ h1,h2,h3{font-weight:var(--fw-black); text-wrap:balance}
   will-change:transform;
 }
 .wcard img{width:100%; height:100%; object-fit:cover; display:block; transition:transform var(--dur) var(--ease-out)}
+/* The edge sits ON TOP of the image: the inset shadow above is painted under
+   it, so a near-white card (the Light theme) lost its edge on the page. */
+.wcard::after{content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  box-shadow:inset 0 0 0 1px var(--line-strong)}
 .wcard:hover img{transform:scale(1.04)}
-
-/* Mini profile rendered inside a hero arc card */
-/* The mini profile is authored once at the 300x408 design size and scaled to
-   whatever the card is, so nothing reflows or clips at any arc size. */
-.mini{
-  width:300px; height:408px; flex-shrink:0;
-  display:flex; flex-direction:column; background:var(--ground);
-  padding:var(--s-6) var(--s-5);
-  transform:scale(var(--mini-scale)); transform-origin:0 0;
-}
-.mini__top{display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center}
-.mini__ava{
-  width:60px; height:60px; border-radius:50%; flex-shrink:0;
-  background:linear-gradient(150deg,var(--brand-violet),var(--brand-violet-lift));
-  display:grid; place-items:center; color:#fff; font-weight:var(--fw-black);
-  font-size:1.25rem; letter-spacing:-.03em;
-}
-.mini__name{font-size:1.0625rem; font-weight:var(--fw-black); letter-spacing:-.03em; line-height:1.2}
-.mini__handle{font-family:var(--font-mono); font-size:.6875rem; color:var(--ink-soft); letter-spacing:-.02em}
-.mini__links{display:flex; flex-direction:column; gap:7px; margin-top:var(--s-5); flex:1}
-.mini__link{
-  height:36px; border-radius:var(--r-sm); background:var(--ground-soft);
-  display:flex; align-items:center; padding-inline:12px; gap:9px;
-  font-size:.75rem; font-weight:var(--fw-bold); letter-spacing:-.01em;
-}
-.mini__link i{width:14px; height:14px; border-radius:4px; background:var(--ink-faint); flex-shrink:0; display:block}
-.mini__link--live{background:var(--brand-violet); color:#fff}
-.mini__link--live i{background:rgba(255,255,255,.6)}
-.mini__foot{
-  display:flex; align-items:center; justify-content:space-between; gap:var(--s-3);
-  margin-top:var(--s-4); padding-top:var(--s-3); border-top:1px solid var(--line);
-}
-.mini__foot span{font-family:var(--font-mono); font-size:.5625rem; color:var(--ink-soft); letter-spacing:.06em; text-transform:uppercase}
 
 /* QR block — drawn from tokens, stands in for the real generated code */
 .qr{display:grid; grid-template-columns:repeat(9,1fr); gap:1px; width:34px; height:34px; flex-shrink:0}
@@ -785,147 +755,27 @@ input:-webkit-autofill:active{
       </div>
     </div>
 
-    <!-- The arc: 18 cards — two studio product shots, then a profile, on
-         repeat — moving along a wide curve. Product photos open the lightbox. -->
+    <!-- The arc: 18 cards — two studio product shots, then a real profile page in one
+         of the six themes (assets/themes/), on repeat — moving along a wide curve. Product photos open the lightbox. -->
     <div class="arc" id="arc" data-lightbox aria-label="Codemarca stickers on everyday things, and the pages they open">
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-helmet-studio-tall.jpg" alt="Codemarca QR sticker on a black motorcycle helmet" width="1536" height="2752"></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-gift-box-studio-tall.jpg" alt="Codemarca QR sticker on a gift box" width="1536" height="2752"></figure>
-        <div class="wcard" aria-hidden="true">
-          <div class="mini">
-            <div class="mini__top">
-              <div class="mini__ava">GS</div>
-              <div>
-                <p class="mini__name">Gurdeep Singh</p>
-                <p class="mini__handle">codemarca.com/gurdeep</p>
-              </div>
-            </div>
-            <div class="mini__links">
-                <span class="mini__link mini__link--live"><i></i>Call me</span>
-                <span class="mini__link"><i></i>WhatsApp</span>
-                <span class="mini__link"><i></i>Instagram</span>
-                <span class="mini__link"><i></i>Save contact</span>
-            </div>
-            <div class="mini__foot">
-              <span>Scan · Live</span>
-              <div class="qr" data-qr aria-hidden="true"></div>
-            </div>
-          </div>
-        </div>
+        <figure class="wcard"><img src="assets/themes/codemarca-profile-theme-light.jpg" alt="Gurdeep Singh's Codemarca page in the Light theme" width="600" height="816" loading="lazy"></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-laptop-palm-rest-studio-tall.jpg" alt="Codemarca QR sticker on a laptop palm rest" width="1536" height="2752" loading="lazy"></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-wallet-studio-tall.jpg" alt="Codemarca QR sticker on a leather wallet" width="1536" height="2752" loading="lazy"></figure>
-        <div class="wcard" aria-hidden="true">
-          <div class="mini">
-            <div class="mini__top">
-              <div class="mini__ava">NM</div>
-              <div>
-                <p class="mini__name">Nikk Martin</p>
-                <p class="mini__handle">codemarca.com/nikk</p>
-              </div>
-            </div>
-            <div class="mini__links">
-                <span class="mini__link mini__link--live"><i></i>Book a shoot</span>
-                <span class="mini__link"><i></i>Portfolio</span>
-                <span class="mini__link"><i></i>YouTube</span>
-                <span class="mini__link"><i></i>Email me</span>
-            </div>
-            <div class="mini__foot">
-              <span>Scan · Live</span>
-              <div class="qr" data-qr aria-hidden="true"></div>
-            </div>
-          </div>
-        </div>
+        <figure class="wcard"><img src="assets/themes/codemarca-profile-theme-photo.jpg" alt="Nikk Martin's Codemarca page in the Photo theme" width="600" height="816" loading="lazy"></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-plant-pot-studio-tall.jpg" alt="Codemarca QR sticker on a terracotta plant pot" width="1536" height="2752" loading="lazy"></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-power-bank-studio-tall.jpg" alt="Codemarca QR sticker on a power bank" width="1536" height="2752" loading="lazy"></figure>
-        <div class="wcard" aria-hidden="true">
-          <div class="mini">
-            <div class="mini__top">
-              <div class="mini__ava">SK</div>
-              <div>
-                <p class="mini__name">Simran Kaur</p>
-                <p class="mini__handle">codemarca.com/simran</p>
-              </div>
-            </div>
-            <div class="mini__links">
-                <span class="mini__link mini__link--live"><i></i>Order a cake</span>
-                <span class="mini__link"><i></i>Menu</span>
-                <span class="mini__link"><i></i>Instagram</span>
-                <span class="mini__link"><i></i>Directions</span>
-            </div>
-            <div class="mini__foot">
-              <span>Scan · Live</span>
-              <div class="qr" data-qr aria-hidden="true"></div>
-            </div>
-          </div>
-        </div>
+        <figure class="wcard"><img src="assets/themes/codemarca-profile-theme-leaf-orange.jpg" alt="Nancy Wills's Codemarca page in the Leaf theme" width="600" height="816" loading="lazy"></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-guitar-studio-tall.jpg" alt="Codemarca QR sticker on an acoustic guitar" width="1536" height="2752" loading="lazy"></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-pet-collar-studio-tall.jpg" alt="Codemarca QR tag on a pet collar" width="1536" height="2752" loading="lazy"></figure>
-        <div class="wcard" aria-hidden="true">
-          <div class="mini">
-            <div class="mini__top">
-              <div class="mini__ava">AM</div>
-              <div>
-                <p class="mini__name">Arjun Mehta</p>
-                <p class="mini__handle">codemarca.com/arjun</p>
-              </div>
-            </div>
-            <div class="mini__links">
-                <span class="mini__link mini__link--live"><i></i>Book a ride</span>
-                <span class="mini__link"><i></i>WhatsApp</span>
-                <span class="mini__link"><i></i>Google review</span>
-                <span class="mini__link"><i></i>Save contact</span>
-            </div>
-            <div class="mini__foot">
-              <span>Scan · Live</span>
-              <div class="qr" data-qr aria-hidden="true"></div>
-            </div>
-          </div>
-        </div>
+        <figure class="wcard"><img src="assets/themes/codemarca-profile-theme-copper.jpg" alt="Garry Gill's Codemarca page in the Copper theme" width="600" height="816" loading="lazy"></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-laptop-and-phone-studio-tall.jpg" alt="Codemarca QR stickers on a laptop and a phone" width="1536" height="2752" loading="lazy"></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-notebook-flatlay-studio-tall.jpg" alt="Codemarca QR sticker on a black notebook" width="1536" height="2752" loading="lazy"></figure>
-        <div class="wcard" aria-hidden="true">
-          <div class="mini">
-            <div class="mini__top">
-              <div class="mini__ava">PS</div>
-              <div>
-                <p class="mini__name">Priya Sharma</p>
-                <p class="mini__handle">codemarca.com/priya</p>
-              </div>
-            </div>
-            <div class="mini__links">
-                <span class="mini__link mini__link--live"><i></i>Join a class</span>
-                <span class="mini__link"><i></i>Timetable</span>
-                <span class="mini__link"><i></i>Instagram</span>
-                <span class="mini__link"><i></i>Call me</span>
-            </div>
-            <div class="mini__foot">
-              <span>Scan · Live</span>
-              <div class="qr" data-qr aria-hidden="true"></div>
-            </div>
-          </div>
-        </div>
+        <figure class="wcard"><img src="assets/themes/codemarca-profile-theme-soft.jpg" alt="Rhea Malhotra's Codemarca page in the Soft theme" width="600" height="816" loading="lazy"></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-bottle-and-stickers-studio-tall.jpg" alt="Codemarca QR sticker on a water bottle" width="1536" height="2752" loading="lazy"></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-notebook-flatlay-studio-tall-3.jpg" alt="Codemarca QR sticker on a diary cover" width="1536" height="2752"></figure>
-        <div class="wcard" aria-hidden="true">
-          <div class="mini">
-            <div class="mini__top">
-              <div class="mini__ava">RV</div>
-              <div>
-                <p class="mini__name">Dr. Rohan Verma</p>
-                <p class="mini__handle">codemarca.com/drrohan</p>
-              </div>
-            </div>
-            <div class="mini__links">
-                <span class="mini__link mini__link--live"><i></i>Book a visit</span>
-                <span class="mini__link"><i></i>Clinic hours</span>
-                <span class="mini__link"><i></i>Directions</span>
-                <span class="mini__link"><i></i>Call clinic</span>
-            </div>
-            <div class="mini__foot">
-              <span>Scan · Live</span>
-              <div class="qr" data-qr aria-hidden="true"></div>
-            </div>
-          </div>
-        </div>
+        <figure class="wcard"><img src="assets/themes/codemarca-profile-theme-bronze.jpg" alt="Dr. Rohan Verma's Codemarca page in the Bronze theme" width="600" height="816" loading="lazy"></figure>
     </div>
 
     <div class="shell stack center gap-4">
@@ -1311,7 +1161,6 @@ input:-webkit-autofill:active{
       arc.style.setProperty("--cw", G.cw + "px");
       arc.style.setProperty("--ch", G.ch + "px");
       arc.style.setProperty("--arc-h", Math.round(G.ch + G.drop * .72) + "px");
-      document.documentElement.style.setProperty("--mini-scale", (G.cw / 300).toFixed(4));
       G.speed = G.step / 4200;   /* one card-width every 4.2s */
     }
     function paint() {

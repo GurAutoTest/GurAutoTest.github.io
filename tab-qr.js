@@ -97,7 +97,8 @@
            so it goes, leaving one button that is worth pressing. */
         each("[data-pv-do]", function (el) {
           if (a.profile) { return; }
-          el.href = CM.ROOT + "onboarding.html" + (a.order ? "?ordered=1" : "");
+          el.href = CM.ROOT + "onboarding.html" + (a.state === "scanned" ? "?claim=" + encodeURIComponent(a.code.id)
+          : !a.order ? "" : a.state === "delivered" ? "?ordered=landed" : "?ordered=1");
           el.innerHTML = CM.icon("plus") + "Build my page";
         });
         if (!a.profile) {
@@ -115,13 +116,40 @@
               : "This is all a scan opens today — your name, and nothing else.";
         }
 
+        /* REAL DEVICES (Garry, 2026-10-08): Phone is an iPhone, Web is a
+           browser window. The page renders at a real width —
+           390px or 1280px — and is scaled into the screen, so Web is tiny
+           but reads as a website, not a stretched phone. */
+        var urlText = slug ? CM.url(slug) : "codemarca.com/c/" + (c ? c.id : "");
+        var box = one(".pv__frame");
+        var dev = CM.pageDevice(frame, urlText, { onFull: function () { openFull(); } });
+        box.parentNode.replaceChild(dev.el, box);
+        dev.set("phone");
+
         each("[data-pv-tab]", function (b) {
           b.addEventListener("click", function () {
             pv.setAttribute("data-view", b.dataset.pvTab);
             each("[data-pv-tab]", function (x) {
               x.setAttribute("aria-selected", String(x === b));
             });
+            dev.set(b.dataset.pvTab);
           });
+        });
+
+        /* OPEN — the page full screen (page-view.js), never a new tab. The
+           top card's View page too, now (Garry, 2026-10-10). A theme picked
+           in there carries back to the card and to the next Open. */
+        var openFull = function () {
+          CM.openPage({ src: src, url: urlText, profile: a.profile, onClose: function () {
+            if (a.profile && a.profile.theme && !new RegExp("[?&]theme=" + a.profile.theme + "(&|$)").test(src)) {
+              src = CM.withTheme(src, a.profile.theme);
+              frame.src = src;
+            }
+          } });
+        };
+        each("[data-view]", function (el) {
+          el.removeAttribute("target");
+          el.addEventListener("click", function (e) { e.preventDefault(); openFull(); });
         });
 
         /* ONE SWITCH (Garry, 2026-09-27). There used to be two — one for
@@ -132,6 +160,7 @@
         var liveRow = one("[data-live-row]") || (live && live.closest(".onoff"));
         if (live && slug) {
           if (liveRow) { liveRow.hidden = false; }
+          live.checked = !(a.profile && a.profile.live === false);
           var paintLive = function () {
             var off = !live.checked;
             pv.toggleAttribute("data-off", off);
@@ -244,7 +273,7 @@
           ],
           onPick: function (id) {
             if (id !== "reprint") { return; }
-            window.location.href = CM.ROOT + "select-pack.html?built=1&reason=lost";
+            window.location.href = CM.ROOT + "checkout.html?pack=free&built=1&free=used&reason=lost";
           }
         });
       });

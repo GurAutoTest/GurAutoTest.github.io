@@ -57,3 +57,8 @@
 .oc__claim-t,
 .oc__claim-url,
 .oc__claim-s{ letter-spacing:var(--ls-soft) }
+
+/* a parcel that went wrong says so on the closed card (2026-10-08) */
+.oc__issue{margin-top:var(--s-4); flex-wrap:nowrap}
+.oc__issue > span{flex:1; min-width:0}
+.oc__issue b{color:var(--ink)}
