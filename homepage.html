@@ -1105,6 +1105,7 @@ input:-webkit-autofill:active{
 <script src="lightbox.js"></script>
 <script src="fun.js"></script>
 <script src="site-end.js"></script>
+<script src="pack-counter.js"></script>
 <script>
 (function () {
   "use strict";
@@ -1261,47 +1262,31 @@ input:-webkit-autofill:active{
   }
   wireClaim("claimForm", "handle", "claimStatus");
 
-  /* ── Packs-left counter ──────────────────────────────────────────────
-     Reads data-claimed / data-total off the element, so wiring this to a
-     real number later means writing one attribute server-side. The count
-     must be genuine — a counter caught faking it costs more trust than it
-     ever buys. */
-  var offer = document.getElementById("offer");
-  if (offer) {
-    var total = Math.max(1, parseInt(offer.dataset.total, 10) || 100);
-    var claimed = Math.min(total, Math.max(0, parseInt(offer.dataset.claimed, 10) || 0));
-    var left = total - claimed;
-    var soldOut = left <= 0;
-
-    offer.dataset.state = soldOut ? "out" : "open";
-    offer.querySelector("[data-offer-n]").textContent = soldOut ? "0" : String(left);
-    offer.querySelector("[data-offer-of]").textContent =
-      soldOut ? "packs left — join the waitlist" : "of " + total + " packs left";
-    offer.querySelector("[data-offer-meta]").textContent =
-      claimed + " claimed so far";
-
-    /* The nav pill is the same two numbers, said shorter. Written from here
-       so there is one counter on the page, not two that can disagree. */
-    var pill = document.getElementById("packsPill");
-    if (pill) {
-      pill.dataset.state = soldOut ? "out" : "open";
-      pill.querySelector("[data-packs-n]").textContent = soldOut ? "All" : String(left);
-      pill.querySelector("[data-packs-of]").textContent =
-        soldOut ? " " + total + " packs claimed" : " of " + total + " packs left";
-      pill.querySelector(".packs__short").textContent = soldOut ? " claimed" : " left";
-      pill.setAttribute("aria-label",
-        soldOut ? "All " + total + " early bird packs claimed"
-                : left + " of " + total + " early bird packs left");
-    }
-
-    var fill = offer.querySelector("[data-offer-fill]");
-    var pct = Math.round((claimed / total) * 100);
-    if (reduced) {
-      fill.style.width = pct + "%";
-    } else {
-      requestAnimationFrame(function () {
-        setTimeout(function () { fill.style.width = pct + "%"; }, 220);
-      });
+  /* ── Packs-left counter (DB Driven) ──────────────────────────────────
+     Reads live count from Supabase via CMPacks, updates both the header
+     nav pill and the early-bird offer meter section dynamically. */
+  if (window.CMPacks && typeof window.CMPacks.fetch === "function") {
+    window.CMPacks.fetch();
+  } else {
+    var offer = document.getElementById("offer");
+    if (offer) {
+      var total = Math.max(1, parseInt(offer.dataset.total, 10) || 100);
+      var claimed = Math.min(total, Math.max(0, parseInt(offer.dataset.claimed, 10) || 0));
+      var left = total - claimed;
+      var soldOut = left <= 0;
+      offer.dataset.state = soldOut ? "out" : "open";
+      var on = offer.querySelector("[data-offer-n]"); if (on) on.textContent = soldOut ? "0" : String(left);
+      var oof = offer.querySelector("[data-offer-of]"); if (oof) oof.textContent = soldOut ? "packs left — join the waitlist" : "of " + total + " packs left";
+      var om = offer.querySelector("[data-offer-meta]"); if (om) om.textContent = claimed + " claimed so far";
+      var pill = document.getElementById("packsPill");
+      if (pill) {
+        pill.dataset.state = soldOut ? "out" : "open";
+        var pn = pill.querySelector("[data-packs-n]"); if (pn) pn.textContent = soldOut ? "All" : String(left);
+        var pof = pill.querySelector("[data-packs-of]"); if (pof) pof.textContent = soldOut ? " " + total + " packs claimed" : " of " + total + " packs left";
+        var ps = pill.querySelector(".packs__short"); if (ps) ps.textContent = soldOut ? " claimed" : " left";
+      }
+      var fill = offer.querySelector("[data-offer-fill]");
+      if (fill) fill.style.width = Math.round((claimed / total) * 100) + "%";
     }
   }
 
