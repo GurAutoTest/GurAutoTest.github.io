@@ -2255,12 +2255,69 @@ input:-webkit-autofill:active{
   if (q.get("theme"))  P.theme  = q.get("theme");
   if (q.get("view"))   pg.dataset.view = q.get("view");
 
-  /* ?bare=1 — the page a Google sign-up produces before anyone edits it:
-     a name, a handle, and nothing else. This is what the code of a claimed
-     gift sticker actually opens, and the dashboard previews it with this
-     flag. Without it the preview showed the full demo page while the
-     profile tab said "no page yet" — two screens contradicting each other
-     (Garry, 2026-09-28). */
+  /* Overlay saved profile from localStorage if in preview, owner view, or matching handle */
+  try {
+    var storedAcc = JSON.parse(window.localStorage.getItem("cm.account.custom") || "{}");
+    var sp = storedAcc.profile || null;
+    var storedHandle = window.localStorage.getItem("cm.username") || (sp && sp.handle) || "";
+    var isPreviewOrOwner = q.get("chrome") === "0" || q.get("view") === "owner" || q.get("preview") === "1";
+    var handleMatches = storedHandle && P.handle && storedHandle.toLowerCase() === P.handle.toLowerCase();
+    if (isPreviewOrOwner || handleMatches || !P.handle || P.handle === "garry" || P.handle === "gurdeep") {
+      if (storedHandle) P.handle = storedHandle;
+      var savedName = window.localStorage.getItem("cm.name") || (sp && sp.name);
+      if (savedName) P.name = savedName;
+      var savedBio = window.localStorage.getItem("cm.bio");
+      if (savedBio !== null) P.bio = savedBio;
+      else if (sp && sp.bio !== undefined) P.bio = sp.bio;
+
+      var savedPhoto = window.localStorage.getItem("cm.photo") || (sp && sp.photo);
+      if (savedPhoto) P.photo = savedPhoto;
+
+      var savedTheme = q.get("theme") || window.localStorage.getItem("cm.theme") || (sp && sp.theme);
+      if (savedTheme) P.theme = savedTheme;
+
+      if (sp && sp.phone) P.phone = sp.phone;
+      if (sp && sp.wa) P.wa = sp.wa;
+      if (sp && sp.email) P.email = sp.email;
+      if (sp && sp.links) {
+        var cl = {};
+        for (var lk in sp.links) {
+          var item = sp.links[lk];
+          if (typeof item === "string") cl[lk] = item;
+          else if (item && item.v && item.on !== false) cl[lk] = item.v;
+        }
+        if (Object.keys(cl).length) P.links = cl;
+      }
+      if (sp && sp.customs && sp.customs.length) P.customs = sp.customs;
+      if (sp && sp.order && sp.order.length) P.order = sp.order;
+      if (sp && sp.socialOrder && sp.socialOrder.length) P.socialOrder = sp.socialOrder;
+    }
+  } catch(e) {}
+
+  /* Fetch live profile from Supabase DB */
+  if (P.handle && P.handle !== "gurdeep" && P.handle !== "garry") {
+    fetch("https://inzigrmttewawjjkggbd.supabase.co/rest/v1/profiles?username=eq." + encodeURIComponent(P.handle) + "&select=*", {
+      headers: {
+        "apikey": "sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg",
+        "Authorization": "Bearer sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg"
+      }
+    }).then(function (r) { return r.json(); }).then(function (rows) {
+      if (rows && rows[0]) {
+        var row = rows[0];
+        if (row.display_name) P.name = row.display_name;
+        if (row.bio !== undefined && row.bio !== null) P.bio = row.bio;
+        if (row.avatar_url) P.photo = row.avatar_url;
+        if (row.theme && !q.get("theme")) P.theme = row.theme;
+        if (row.phone) P.phone = row.phone;
+        if (row.whatsapp) P.wa = row.whatsapp;
+        if (row.email) P.email = row.email;
+        applyTheme(P.theme);
+        render();
+      }
+    }).catch(function () {});
+  }
+
+  /* ?bare=1 — the page a Google sign-up produces before anyone edits it */
   if (q.get("bare") === "1") {
     if (q.get("name")) { P.name = q.get("name").slice(0, 40); }
     P.bio = ""; P.photo = null;
@@ -2270,50 +2327,29 @@ input:-webkit-autofill:active{
     pg.dataset.bare = "1";
   }
 
-  /* ?chrome=0 — the page as the dashboard embeds it in a preview. It is
-     the OWNER looking at their own page, so three things come off: the
-     review switcher, the "This is your page / Edit" bar (they are already
-     in the dashboard), and anything that sells Codemarca to a stranger.
-     Never show the owner "Get your own Codemarca" — Garry, repeatedly. */
+  /* ?chrome=0 — the page as the dashboard embeds it in a preview */
   if (q.get("chrome") === "0") {
-    /* hidden, not removed — the review script still fills these in below
-       and would trip over a missing node */
     [".rev", ".bar", "#brandBtn"].forEach(function (sel) {
       var el = document.querySelector(sel);
       if (el) { el.hidden = true; }
     });
   }
 
-  /* A preview frame starts EMPTY, not on the demo page: the editor fills it
-     a moment later, and until then it must show only what the person has
-     typed — nothing (Garry, 2026-10-03). */
-  if (q.get("preview") === "1") {
-    P.name = ""; P.bio = ""; P.photo = null;
-    P.phone = ""; P.wa = ""; P.email = "";
-    P.links = {}; P.customs = []; P.socialOrder = []; P.order = [];
-  }
-
   applyTheme(P.theme);
   render();
 
-  /* ?preview=1 — the dashboard's live preview (Garry + Gurdeep, 2026-09-30).
-     The Profile tab posts its UNSAVED state here on every change, so the
-     phone beside the editor shows the page before it is saved. Same origin
-     only; the payload is the same shape as P. */
-  if (q.get("preview") === "1") {
-    window.addEventListener("message", function (e) {
-      if ((e.origin !== location.origin && location.protocol !== "file:") || !e.data || e.data.type !== "cm-preview") { return; }
-      var d = e.data.page, k;
-      for (k in d) { if (Object.prototype.hasOwnProperty.call(d, k)) { P[k] = d[k]; } }
-      applyTheme(P.theme);
-      delete pg.dataset.bare;
-      render();
-    });
-    /* opened from disk (file://) every page is its own opaque origin and a
-       same-origin target never arrives — so "*" there, same-origin on a host */
-    if (window.parent !== window) {
-      try { window.parent.postMessage({ type: "cm-preview-ready" }, (location.protocol === "file:" ? "*" : location.origin)); } catch (err) {}
-    }
+  /* Listen for cm-preview from dashboard tabs */
+  window.addEventListener("message", function (e) {
+    if ((e.origin !== location.origin && location.protocol !== "file:") || !e.data || e.data.type !== "cm-preview") { return; }
+    var d = e.data.page, k;
+    if (!d) return;
+    for (k in d) { if (Object.prototype.hasOwnProperty.call(d, k)) { P[k] = d[k]; } }
+    applyTheme(P.theme);
+    delete pg.dataset.bare;
+    render();
+  });
+  if (window.parent !== window) {
+    try { window.parent.postMessage({ type: "cm-preview-ready" }, (location.protocol === "file:" ? "*" : location.origin)); } catch (err) {}
   }
 
   /* an unclaimed code has no owner yet, so it must not carry one in the

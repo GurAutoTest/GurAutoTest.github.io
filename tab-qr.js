@@ -77,11 +77,10 @@
          us a name and nothing else. Preview it as it really is (bare=1),
          or the owner sees a full page here and an empty one on the profile
          tab. */
+      var activeTheme = (a.profile && a.profile.theme) || window.localStorage.getItem("cm.theme") || "light";
       var src = slug
-        ? CM.ROOT + "profile.html?view=owner&chrome=0&handle=" + encodeURIComponent(slug) +
-          (a.profile
-            ? (a.profile.theme ? "&theme=" + encodeURIComponent(a.profile.theme.toLowerCase()) : "")
-            : "&bare=1&name=" + encodeURIComponent(a.user.name || ""))
+        ? CM.ROOT + "profile.html?view=owner&chrome=0&preview=1&handle=" + encodeURIComponent(slug) +
+          "&theme=" + encodeURIComponent(activeTheme.toLowerCase())
         : c ? CM.ROOT + "scan.html?chrome=0&state=waiting&code=" + encodeURIComponent(c.id)
             : null;
 
@@ -91,6 +90,60 @@
         pv.hidden = false;
         frame.src = src;
         each("[data-view]", function (el) { el.href = src; });
+
+        function postToFrame() {
+          if (!frame || !frame.contentWindow) return;
+          var p = a.profile || {};
+          var themeVal = (p.theme || window.localStorage.getItem("cm.theme") || "light").toLowerCase();
+          var photoVal = p.photo || window.localStorage.getItem("cm.photo") || null;
+          var nameVal = p.name || window.localStorage.getItem("cm.name") || a.user.name || "";
+          var bioVal = p.bio !== undefined ? p.bio : (window.localStorage.getItem("cm.bio") || "");
+          var links = {};
+          if (p.links) {
+            for (var k in p.links) {
+              var lv = p.links[k];
+              if (typeof lv === "string") links[k] = lv;
+              else if (lv && lv.v && lv.on !== false) links[k] = lv.v;
+            }
+          }
+          try {
+            frame.contentWindow.postMessage({
+              type: "cm-preview",
+              page: {
+                handle: p.handle || slug,
+                name: nameVal,
+                bio: bioVal,
+                photo: photoVal,
+                theme: themeVal,
+                phone: p.phone || "",
+                wa: p.wa || "",
+                email: p.email || "",
+                links: links,
+                customs: p.customs || [],
+                order: p.order || [],
+                socialOrder: p.socialOrder || []
+              }
+            }, "*");
+          } catch (err) {}
+        }
+
+        frame.addEventListener("load", postToFrame);
+        setTimeout(postToFrame, 200);
+        setTimeout(postToFrame, 700);
+
+        window.addEventListener("message", function (e) {
+          if (e.data && e.data.type === "cm-preview-ready") {
+            postToFrame();
+          }
+        });
+        window.addEventListener("cm-profile-synced", function () {
+          a = CM.account();
+          postToFrame();
+        });
+        window.addEventListener("cm-profile-updated", function () {
+          a = CM.account();
+          postToFrame();
+        });
 
         /* Edit or Build, depending on whether there is anything to edit.
            And with nothing on the page yet, "Open" would open a blank —

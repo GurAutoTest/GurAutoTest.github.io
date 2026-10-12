@@ -58,6 +58,13 @@
     if (SUBS[base]) { lastSub[base] = t; }
     S.theme = t;
     paintTheme();
+    try { window.localStorage.setItem("cm.theme", t); } catch (e) {}
+    try {
+      var ca = JSON.parse(window.localStorage.getItem("cm.account.custom") || "{}");
+      ca.profile = ca.profile || {};
+      ca.profile.theme = t;
+      window.localStorage.setItem("cm.account.custom", JSON.stringify(ca));
+    } catch (e) {}
     dirty();
   }
   var themes = document.querySelectorAll(".theme");
@@ -187,8 +194,9 @@
      the rest of the dashboard described two different pages. Now the flow's
      state.js is the only copy, and Discard goes back to it. The defaults
      below only fill gaps in an older saved page. */
+  var savedTheme = window.localStorage.getItem("cm.theme") || (a.profile && a.profile.theme) || "light";
   var SAVED = merge({
-    live:true, theme:"light",
+    live:true, theme: savedTheme,
     photo:null, name:"", handle:"", bio:"",
     phone:"", phoneOn:true,
     waSame:true, wa:"", waOn:true,
@@ -197,6 +205,7 @@
     order:["call","wa","email","vcard","socials","website","directions","review"],
     socialOrder:[]
   }, a.profile || {});
+  SAVED.theme = savedTheme;
 
   function merge(base, extra) {
     var out = JSON.parse(JSON.stringify(base)), k;
@@ -703,8 +712,14 @@
       } else {
         try { window.localStorage.removeItem("cm.photo"); } catch(e) {}
       }
+      if (S.face) window.localStorage.setItem("cm.face", S.face);
+      if (S.theme) window.localStorage.setItem("cm.theme", S.theme);
+
+      if (CM.saveProfile) {
+        CM.saveProfile(S);
+      }
     } catch(e) {}
-    CM.toast("Page updated");
+    CM.toast("Page updated · Synced to DB");
     return true;
   }
   function discard() {
@@ -712,6 +727,33 @@
     paintAll();
     clean();
   }
+
+  window.addEventListener("cm-profile-synced", function (e) {
+    var fresh = e.detail;
+    if (!fresh) return;
+    if (!bar.hasAttribute("data-on")) {
+      if (fresh.theme && fresh.theme !== S.theme) {
+        S.theme = fresh.theme;
+        SAVED.theme = fresh.theme;
+        paintTheme();
+      }
+      if (fresh.name && fresh.name !== S.name) {
+        S.name = fresh.name;
+        SAVED.name = fresh.name;
+        paintBasics();
+      }
+      if (fresh.bio !== undefined && fresh.bio !== S.bio) {
+        S.bio = fresh.bio;
+        SAVED.bio = fresh.bio;
+        paintBasics();
+      }
+      if (fresh.photo && fresh.photo !== S.photo) {
+        S.photo = fresh.photo;
+        SAVED.photo = fresh.photo;
+        paintPhoto();
+      }
+    }
+  });
 
   document.getElementById("save").addEventListener("click", save);
   document.getElementById("undo").addEventListener("click", function () {

@@ -183,9 +183,197 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         if (customAccount.profile.socialOrder) acc.profile.socialOrder = customAccount.profile.socialOrder;
         if (customAccount.profile.live !== undefined) acc.profile.live = customAccount.profile.live;
       }
+
+      var customTheme = window.localStorage.getItem("cm.theme") ||
+                        (customAccount && customAccount.profile && customAccount.profile.theme) ||
+                        "";
+      if (customTheme) {
+        acc.profile.theme = customTheme;
+      }
+      var customFace = window.localStorage.getItem("cm.face") ||
+                       (customAccount && customAccount.profile && customAccount.profile.face) || null;
+      if (customFace) {
+        acc.profile.face = customFace;
+      }
+
+      if (customUsername && !CM._syncTriggered) {
+        CM._syncTriggered = true;
+        setTimeout(function () {
+          CM.syncProfileFromDB(customUsername);
+        }, 120);
+      }
     } catch (e) {}
 
     return acc;
+  };
+
+  CM.SUPABASE_URL = "https://inzigrmttewawjjkggbd.supabase.co";
+  CM.SUPABASE_ANON = "sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg";
+  CM.SUPABASE_KEY = CM.SUPABASE_ANON;
+
+  CM.saveProfile = function (profileData, callback) {
+    if (!profileData) return;
+    try {
+      var customAccount = JSON.parse(window.localStorage.getItem("cm.account.custom") || "{}");
+      customAccount.profile = customAccount.profile || {};
+      customAccount.user = customAccount.user || {};
+
+      var username = profileData.handle || window.localStorage.getItem("cm.username") || (customAccount.profile && customAccount.profile.handle) || "";
+      if (username) username = username.toLowerCase().trim();
+
+      for (var k in profileData) {
+        if (profileData[k] !== undefined) {
+          customAccount.profile[k] = profileData[k];
+        }
+      }
+      if (profileData.name) {
+        customAccount.user.name = profileData.name;
+        customAccount.profile.title = profileData.name;
+        window.localStorage.setItem("cm.name", profileData.name);
+      }
+      if (profileData.bio !== undefined) {
+        window.localStorage.setItem("cm.bio", profileData.bio);
+      }
+      if (profileData.theme) {
+        window.localStorage.setItem("cm.theme", profileData.theme);
+      }
+      if (profileData.photo) {
+        try { window.localStorage.setItem("cm.photo", profileData.photo); } catch (e) {}
+      } else if (profileData.photo === null) {
+        try { window.localStorage.removeItem("cm.photo"); } catch (e) {}
+      }
+      if (profileData.face) {
+        window.localStorage.setItem("cm.face", profileData.face);
+      }
+      if (profileData.phone) window.localStorage.setItem("cm.phone", profileData.phone);
+      if (profileData.email) window.localStorage.setItem("cm.email", profileData.email);
+      if (username) window.localStorage.setItem("cm.username", username);
+
+      window.localStorage.setItem("cm.account.custom", JSON.stringify(customAccount));
+      window.localStorage.setItem("cm.profile", JSON.stringify(customAccount.profile));
+
+      // ── Remote Sync: Supabase Direct PATCH ──
+      if (username) {
+        var patchPayload = {
+          updated_at: new Date().toISOString()
+        };
+        if (profileData.name !== undefined) patchPayload.display_name = profileData.name;
+        if (profileData.bio !== undefined) patchPayload.bio = profileData.bio;
+        if (profileData.theme !== undefined) patchPayload.theme = profileData.theme;
+        if (profileData.photo !== undefined) patchPayload.avatar_url = profileData.photo;
+        if (profileData.phone !== undefined) patchPayload.phone = profileData.phone;
+        if (profileData.phoneOn !== undefined) patchPayload.phone_visible = profileData.phoneOn;
+        if (profileData.wa !== undefined) patchPayload.whatsapp = profileData.wa;
+        if (profileData.waOn !== undefined) patchPayload.whatsapp_visible = profileData.waOn;
+        if (profileData.email !== undefined) patchPayload.email = profileData.email;
+        if (profileData.emailOn !== undefined) patchPayload.email_visible = profileData.emailOn;
+        if (profileData.live !== undefined) patchPayload.is_live = profileData.live;
+
+        fetch(CM.SUPABASE_URL + "/rest/v1/profiles?username=eq." + encodeURIComponent(username), {
+          method: "PATCH",
+          headers: {
+            "apikey": CM.SUPABASE_KEY,
+            "Authorization": "Bearer " + CM.SUPABASE_KEY,
+            "Content-Type": "application/json",
+            "Prefer": "return=representation"
+          },
+          body: JSON.stringify(patchPayload)
+        }).then(function (res) {
+          return res.json();
+        }).then(function (data) {
+          if (callback) callback(null, data);
+        }).catch(function (err) {
+          if (callback) callback(err);
+        });
+
+        // Also hit Next.js get-values POST route if running
+        fetch("/api/dashboard/get-values", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: username,
+            profile: profileData
+          })
+        }).catch(function () {});
+      }
+      try {
+        window.dispatchEvent(new CustomEvent("cm-profile-updated", { detail: customAccount.profile }));
+      } catch (e) {}
+    } catch (err) {
+      console.warn("CM.saveProfile error:", err);
+      if (callback) callback(err);
+    }
+  };
+
+  CM.syncProfileFromDB = function (username, callback) {
+    if (!username) {
+      username = window.localStorage.getItem("cm.username") || "";
+      if (!username) {
+        try {
+          var ca = JSON.parse(window.localStorage.getItem("cm.account.custom") || "{}");
+          username = (ca.profile && ca.profile.handle) || "";
+        } catch (e) {}
+      }
+    }
+    if (!username || username === "garry" || username === "gurdeep") return;
+    username = username.toLowerCase().trim();
+
+    fetch(CM.SUPABASE_URL + "/rest/v1/profiles?username=eq." + encodeURIComponent(username) + "&select=*", {
+      headers: {
+        "apikey": CM.SUPABASE_ANON,
+        "Authorization": "Bearer " + CM.SUPABASE_ANON
+      }
+    }).then(function (res) {
+      return res.json();
+    }).then(function (rows) {
+      if (!rows || !rows[0]) return;
+      var dbRow = rows[0];
+      var customAccount = JSON.parse(window.localStorage.getItem("cm.account.custom") || "{}");
+      customAccount.profile = customAccount.profile || {};
+      customAccount.user = customAccount.user || {};
+
+      if (dbRow.display_name) {
+        customAccount.profile.name = dbRow.display_name;
+        customAccount.profile.title = dbRow.display_name;
+        customAccount.user.name = dbRow.display_name;
+        window.localStorage.setItem("cm.name", dbRow.display_name);
+      }
+      if (dbRow.bio !== undefined && dbRow.bio !== null) {
+        customAccount.profile.bio = dbRow.bio;
+        window.localStorage.setItem("cm.bio", dbRow.bio);
+      }
+      if (dbRow.theme) {
+        customAccount.profile.theme = dbRow.theme;
+        window.localStorage.setItem("cm.theme", dbRow.theme);
+      }
+      if (dbRow.avatar_url) {
+        customAccount.profile.photo = dbRow.avatar_url;
+        try { window.localStorage.setItem("cm.photo", dbRow.avatar_url); } catch (e) {}
+      }
+      if (dbRow.phone) {
+        customAccount.profile.phone = dbRow.phone;
+        window.localStorage.setItem("cm.phone", dbRow.phone);
+      }
+      if (dbRow.whatsapp) customAccount.profile.wa = dbRow.whatsapp;
+      if (dbRow.email) {
+        customAccount.profile.email = dbRow.email;
+        customAccount.user.email = dbRow.email;
+        window.localStorage.setItem("cm.email", dbRow.email);
+      }
+      if (dbRow.is_live !== undefined && dbRow.is_live !== null) {
+        customAccount.profile.live = dbRow.is_live;
+      }
+
+      window.localStorage.setItem("cm.account.custom", JSON.stringify(customAccount));
+      window.localStorage.setItem("cm.profile", JSON.stringify(customAccount.profile));
+
+      try {
+        window.dispatchEvent(new CustomEvent("cm-profile-synced", { detail: customAccount.profile }));
+      } catch (e) {}
+      if (callback) callback(null, customAccount.profile);
+    }).catch(function (err) {
+      if (callback) callback(err);
+    });
   };
 
   CM.setState = function (k) {
