@@ -1290,10 +1290,34 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     showEl.querySelector("[data-name]").textContent = opts.title || "";
     showEl.querySelector("[data-sub]").textContent = opts.sub != null ? opts.sub : (opts.url || "");
 
+    var acc = (typeof CM.account === "function") ? CM.account() : null;
+    var uname = "";
+    if (opts.handle) {
+      uname = opts.handle;
+    } else if (opts.username) {
+      uname = opts.username;
+    } else if (opts.sub && typeof opts.sub === "string") {
+      var matchSub = opts.sub.match(/codemarca\.com\/([a-z0-9._-]+)/i);
+      if (matchSub) uname = matchSub[1];
+    }
+    if (!uname && opts.url && typeof opts.url === "string") {
+      var matchUrl = opts.url.match(/codemarca\.com\/([a-z0-9._-]+)/i);
+      if (matchUrl && matchUrl[1] !== "c") uname = matchUrl[1];
+    }
+    if (!uname && acc && acc.profile && acc.profile.handle) {
+      uname = acc.profile.handle;
+    }
+    if (!uname) {
+      try { uname = window.localStorage.getItem("cm.username") || ""; } catch (e) {}
+    }
+    if (!uname) {
+      uname = String(opts.seed || "code");
+    }
+    uname = String(uname).replace(/^@/, "").replace(/[^a-z0-9._-]+/gi, "-").toLowerCase();
+
     /* 1024px is the size a print shop asks for and a phone wallpaper can
        take — one size covers both rather than offering a menu. */
-    var file = "codemarca-" +
-      String(opts.seed || "code").replace(/[^a-z0-9]+/gi, "-").toLowerCase() + ".png";
+    var file = "codemarca-scanner-" + uname + ".png";
 
     showEl.querySelector("[data-link]").onclick = function () {
       CM.copy(opts.url, "Link copied");

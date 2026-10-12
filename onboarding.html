@@ -2831,7 +2831,7 @@ body[data-showing]{overflow:hidden}
       roundRect(g, mx + ms * 0.52, my + ms * 0.52, ms * 0.38, ms * 0.38, ms * 0.12, "#6E27E6");
     }
 
-    return c.toDataURL("image/jpeg", .94);
+    return c.toDataURL("image/png");
   }
 
   function say(m) { var el = $("doneStatus"); if (el) el.textContent = m; }
@@ -2853,14 +2853,16 @@ body[data-showing]{overflow:hidden}
   $("shareQR").addEventListener("click", shareSheet);
 
   $("dlQR").addEventListener("click", function () {
+    var uname = String(S.handle || window.localStorage.getItem("cm.username") || "code")
+      .replace(/^@/, "").replace(/[^a-z0-9._-]+/gi, "-").toLowerCase();
     var a = document.createElement("a");
     a.href = qrJPEG();
-    a.download = "codemarca-" + (S.handle || "code") + "-qr.jpg";
+    a.download = "codemarca-scanner-" + uname + ".png";
     document.body.appendChild(a);   /* Firefox ignores a click on a detached <a> */
     a.click();
     a.remove();
     flash(this.querySelector("span"), "Saved", this);
-    say("QR code saved as a JPG.");
+    say("QR code saved as a PNG.");
   });
 
   $("copyUrl").addEventListener("click", function () {
@@ -3006,12 +3008,14 @@ body[data-showing]{overflow:hidden}
   showEl.addEventListener("click", function (e) { if (e.target === showEl) closeShow(); });
 
   $("showDl").addEventListener("click", function () {
+    var uname = String(S.handle || window.localStorage.getItem("cm.username") || "code")
+      .replace(/^@/, "").replace(/[^a-z0-9._-]+/gi, "-").toLowerCase();
     var a = document.createElement("a");
     a.href = qrJPEG();
-    a.download = "codemarca-" + (S.handle || "code") + "-qr.jpg";
+    a.download = "codemarca-scanner-" + uname + ".png";
     document.body.appendChild(a); a.click(); a.remove();
     flash(this.querySelector("span"), "Saved", this);
-    say("QR code saved as a JPG.");
+    say("QR code saved as a PNG.");
   });
   $("showCopy").addEventListener("click", function () {
     if (navigator.clipboard) navigator.clipboard.writeText("codemarca.com/" + S.handle);
@@ -3022,10 +3026,13 @@ body[data-showing]{overflow:hidden}
      a desktop gets the link on the clipboard instead */
   $("showShare").addEventListener("click", function () {
     var btn = this, url = "https://codemarca.com/" + S.handle;
+    var uname = String(S.handle || window.localStorage.getItem("cm.username") || "code")
+      .replace(/^@/, "").replace(/[^a-z0-9._-]+/gi, "-").toLowerCase();
+    var fileName = "codemarca-scanner-" + uname + ".png";
     jpegBlob(function (blob) {
       var data = { title: S.name.trim() || "My Codemarca page", url: url };
       if (blob && window.File && navigator.canShare) {
-        var f = new File([blob], "codemarca-" + (S.handle || "code") + "-qr.jpg", { type: "image/jpeg" });
+        var f = new File([blob], fileName, { type: "image/png" });
         if (navigator.canShare({ files: [f] })) data.files = [f];
       }
       if (navigator.share) { navigator.share(data).catch(function () {}); return; }

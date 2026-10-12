@@ -2022,7 +2022,8 @@ input:-webkit-autofill:active{
     var blob = new Blob([lines.join("\r\n")], { type: "text/vcard;charset=utf-8" });
     var a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = P.handle + ".vcf";
+    var uname = String(P.handle || "contact").replace(/^@/, "").replace(/[^a-z0-9._-]+/gi, "-").toLowerCase();
+    a.download = "codemarca-scanner-" + uname + ".vcf";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

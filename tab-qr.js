@@ -243,11 +243,14 @@
         CM.toast("Resume the code before showing it");
         return;
       }
+      var slug = (a.profile && a.profile.handle) || a.handle || window.localStorage.getItem("cm.username") || "";
       CM.showCode({
         title: a.profile ? a.profile.title : "My code",
-        sub:   a.profile ? CM.url(a.profile.handle) : "",
+        sub:   a.profile ? CM.url(a.profile.handle) : (slug ? CM.url(slug) : ""),
         url:   url,
-        seed:  c.id
+        seed:  c.id,
+        handle: slug,
+        username: slug
       });
     };
     each("[data-show]", function (el) { el.addEventListener("click", show); });
