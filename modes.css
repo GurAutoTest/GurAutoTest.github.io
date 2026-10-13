@@ -1,0 +1,82 @@
+/* ==========================================================================
+   CODEMARCA — MODES CARD + FORM (Phase-1, 2026-10-13)
+   Home's Travel / Lost switches and the sheet that sets each one up.
+   Behaviour in modes.js. Uses the shell's .card, .sw, .fld, .btn, .grid2.
+   ========================================================================== */
+
+.modes{gap:var(--s-3)}
+.modes__h{margin-top:calc(var(--s-1) * -1)}
+.modes__rows{display:flex; flex-direction:column; margin-inline:calc(var(--s-5) * -1)}
+@media (min-width:1024px){ .modes__rows{margin-inline:calc(var(--s-6) * -1)} }
+
+.mrow{
+  display:flex; align-items:center; gap:var(--s-3);
+  padding:var(--s-3) var(--s-5);
+}
+@media (min-width:1024px){ .mrow{padding-inline:var(--s-6)} }
+.mrow + .mrow{box-shadow:inset 0 1px 0 var(--line)}
+.mrow__ic{
+  flex-shrink:0; display:grid; place-items:center; width:38px; height:38px;
+  border-radius:var(--r-sm); background:var(--ground-soft); color:var(--ink-mid);
+}
+.mrow__ic svg{width:19px; height:19px}
+.mrow__txt{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
+.mrow__t{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.mrow__s{font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:var(--ls-soft); line-height:1.4}
+.mrow__edit{
+  flex-shrink:0; height:32px; padding-inline:var(--s-3); border:0; border-radius:var(--r-sm);
+  background:none; cursor:pointer; font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink);
+}
+.mrow__edit:hover{background:var(--ground-soft)}
+
+/* a mode that is on: the icon takes the mode's own colour, quietly */
+.mrow[data-k="travel"][data-on] .mrow__ic{background:var(--info-tint); color:var(--info)}
+.mrow[data-k="lost"][data-on] .mrow__ic{background:var(--bad-tint); color:var(--bad)}
+.mrow[data-k="lost"][data-on] .mrow__s{color:var(--bad)}
+
+/* Lost on: the card itself says so — it is the one thing on Home that matters today */
+.modes[data-live="lost"]{box-shadow:var(--shadow-sm), inset 0 0 0 1.5px var(--bad)}
+
+.modes__see{align-self:flex-start}
+.modes__see svg{width:16px; height:16px}
+.modes__note{letter-spacing:var(--ls-soft)}
+
+/* ── THE FORM (inside CM.sheet) ─────────────────────────────────────────── */
+.mf{display:flex; flex-direction:column; gap:var(--s-5)}
+.mf__lead{font-size:var(--fs-sm); color:var(--ink-mid); line-height:1.5; margin:0}
+.mp{border:0; margin:0; padding:0; min-width:0; display:flex; flex-direction:column; gap:var(--s-3)}
+.mp__lg{
+  display:flex; align-items:center; width:100%; padding:0; margin-bottom:var(--s-1);
+  font-size:var(--fs-sm); font-weight:var(--fw-black);
+}
+.mp__rm{
+  margin-left:auto; border:0; background:none; cursor:pointer; padding:4px 8px; border-radius:var(--r-xs);
+  font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-soft);
+}
+.mp__rm:hover{color:var(--bad); background:var(--bad-tint)}
+.mf__people{display:flex; flex-direction:column; gap:var(--s-5)}
+.mf__add{
+  align-self:flex-start; display:inline-flex; align-items:center; gap:6px;
+  border:0; background:none; cursor:pointer; padding:6px 0;
+  font-size:var(--fs-sm); font-weight:var(--fw-bold); color:var(--ink);
+}
+.mf__add svg{width:16px; height:16px}
+.mf__add:hover{text-decoration:underline; text-underline-offset:3px}
+select.fld__in{appearance:none; padding-right:var(--s-8);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235B5D68' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 14px center; background-size:16px}
+.fld__top{display:flex; align-items:baseline; justify-content:space-between; gap:var(--s-3)}
+.mf__opt{font-weight:var(--fw-medium); color:var(--ink-soft)}
+.mf__count{font-size:var(--fs-xs); color:var(--ink-faint); font-variant-numeric:tabular-nums; letter-spacing:var(--ls-soft)}
+textarea.mf__note{min-height:72px}
+
+.mf__chips{display:flex; flex-wrap:wrap; gap:var(--s-2)}
+.mf__chip{
+  height:38px; padding-inline:var(--s-4); border:0; border-radius:var(--r-pill); cursor:pointer;
+  background:var(--ground-soft); box-shadow:inset 0 0 0 1px var(--line);
+  font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-mid);
+}
+.mf__chip:hover{color:var(--ink); box-shadow:inset 0 0 0 1px var(--line-strong)}
+.mf__chip[aria-checked="true"]{background:var(--ink); color:var(--ink-invert); box-shadow:none}
+
+.mf__acts{display:flex; flex-direction:column; gap:var(--s-2); margin-top:var(--s-1)}

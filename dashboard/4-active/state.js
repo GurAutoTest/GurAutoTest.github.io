@@ -39,7 +39,9 @@ window.CM_FLOW = {
     { k: "offline", label: "4 · Page switched off" },
     { k: "giftwait", label: "5 · A gift nobody has scanned" },
     { k: "teeship", label: "6 · Tee on its way" },
-    { k: "teedone", label: "7 · Tee delivered" }
+    { k: "teedone", label: "7 · Tee delivered" },
+    { k: "travel",  label: "8 · Travel mode on" },
+    { k: "lost",    label: "9 · Lost mode on" }
   ]
 };
 
@@ -156,6 +158,12 @@ function referrals(counted, claimedTee, tee) {
   };
 }
 
+/* the two people on the Kasol trip — Travel and Lost share them */
+var TRIP_PEOPLE = [
+  { name: "Rahul",  rel: "Travel buddy", phone: "98140 22310" },
+  { name: "Simran", rel: "Trip host",    phone: "98722 41907" }
+];
+
 window.CM_STATES = {
 
   /* nothing in transit — the screen is pure refer + reorder */
@@ -239,6 +247,34 @@ window.CM_STATES = {
     notes: [
       { "id": "t-done", "tab": "refer", "icon": "check", "title": "Your tee was delivered",
         "body": "Wear it — the code on it opens your page like any sticker.", "when": "Yesterday", "unread": true, "href": "home.html" }
+    ]
+  },
+
+  /* MODES — Phase-1, 2026-10-13. Travel: a trip to Kasol, two people a
+     finder can call, switches itself off on the 20th. Lost: the phone went
+     missing at Manikaran; same two people, page turned into a return note. */
+  travel: {
+    state: "travel",
+    user: USER, profile: PROFILE, code: CODE,
+    order: FIRST_ORDER, orders: [FIRST_ORDER], gifts: GIFTS,
+    referrals: referrals(23, false),
+    modes: {
+      travel: { on: true, until: "2026-10-20", note: "Group trip with Wanderlust Treks, bus HP 01 4521.", people: TRIP_PEOPLE },
+      lost:   { on: false, since: "", item: "phone", note: "", people: [] }
+    }
+  },
+  lost: {
+    state: "lost",
+    user: USER, profile: PROFILE, code: CODE,
+    order: FIRST_ORDER, orders: [FIRST_ORDER], gifts: GIFTS,
+    referrals: referrals(23, false),
+    modes: {
+      travel: { on: false, until: "2026-10-20", note: "Group trip with Wanderlust Treks, bus HP 01 4521.", people: TRIP_PEOPLE },
+      lost:   { on: true, since: "2026-10-14", item: "phone", note: "Lost near the Manikaran bus stand. Small reward, thank you!", people: TRIP_PEOPLE }
+    },
+    notes: [
+      { "id": "m-lost", "tab": "account", "icon": "eye", "title": "Lost mode is on",
+        "body": "Every scan now asks the finder to call Rahul or Simran.", "when": "Today", "unread": true, "href": "home.html" }
     ]
   },
 
@@ -443,5 +479,49 @@ window.CM_STATES["tee"].notes = [
     "href": "gift.html"
   }
 ];
+
+
+/* FOLLOW + QUICK CHAT — Phase-1, Garry 2026-10-13. The API's shape:
+   who follows, who this account follows, views (owner-only), the day's
+   500-character budget (shared by every chat, replies included), message
+   requests from strangers, and accepted chats. Seen messages disappear 24
+   hours after they are seen — `left` is that countdown. */
+var SOCIAL = {
+  chat: true, showCounts: true, showList: true,
+  views: { week: 59, total: 412, sticker: 41, link: 18 },
+  followers: 128, following: 96,
+  people: {
+    followers: [
+      { name: "Simran Kaur",  handle: "simran" }, { name: "Arjun Mehta", handle: "arjun" },
+      { name: "Neha Sharma",  handle: "neha"   }, { name: "Rohit Bansal", handle: "rohit" },
+      { name: "Karan Dhillon", handle: "karan" }, { name: "Aisha Khan",  handle: "aisha" }
+    ],
+    following: [
+      { name: "Gurdeep Singh", handle: "gurdeep" }, { name: "Rhea Malhotra", handle: "rhea" },
+      { name: "Nikk Martin",   handle: "nikk"    }, { name: "Dr Rohan",      handle: "drrohan" }
+    ]
+  },
+  usage: { used: 180, limit: 500 },
+  requests: [
+    { id: "r1", name: "Aman Verma", handle: "aman.v", source: "sticker", when: "12 min ago", unread: true,
+      bio: "Product designer at a fintech. Chai over coffee, always.", socials: ["Instagram", "LinkedIn"],
+      text: "Hey Garry! Saw the sticker on your laptop at Third Wave, Koramangala. I’m a product designer too — would love to swap notes sometime." },
+    { id: "r2", name: "Priya Nair", handle: "priyan", source: "link", when: "3h ago", unread: true,
+      bio: "Founder, small candle studio in Kochi.", socials: ["Instagram"],
+      text: "Hi! A friend shared your page. Do you take freelance packaging work? Happy to share details." }
+  ],
+  chats: [
+    { id: "c1", name: "Simran Kaur", handle: "simran", when: "1h ago", unread: true, left: "22h",
+      msgs: [ { me: false, text: "Thanks for accepting! The sticker on your car is genius btw 😄" },
+              { me: true,  text: "Haha thanks! Took two minutes to set up." },
+              { me: false, text: "Ordering one for my scooty now." } ] },
+    { id: "c2", name: "Arjun Mehta", handle: "arjun", when: "Yesterday", unread: false, left: "6h",
+      msgs: [ { me: false, text: "Met you at the Kasol meetup — scanned your bag. Great chatting!" },
+              { me: true,  text: "Same here, Arjun. Let’s plan the Kheerganga trek." } ] }
+  ]
+};
+Object.keys(window.CM_STATES).forEach(function (k) {
+  if (!window.CM_STATES[k].social) { window.CM_STATES[k].social = SOCIAL; }
+});
 
 })(window);

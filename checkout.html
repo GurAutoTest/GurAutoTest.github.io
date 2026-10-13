@@ -624,6 +624,13 @@ input:-webkit-autofill:active{
 .done__acts{display:flex; flex-direction:column; gap:var(--s-3); width:100%; max-width:420px}
 .done__acts .btn{width:100%}
 .done__acts .btn--go{flex:none}
+.done__pair{display:flex; gap:var(--s-3); width:100%}
+.done__pair .btn{flex:1 1 0; min-width:0; padding-inline:var(--s-3); white-space:nowrap}
+.done__pair .btn[hidden]{display:none}
+/* "Nothing else to do" is a note, not a step — so it sits light, and the
+   black stays with the dashboard button under it (Garry, 2026-10-11) */
+.next--calm{background:var(--ground); color:var(--ink); box-shadow:inset 0 0 0 1px var(--line)}
+.next--calm p{color:var(--ink-soft)}
 
 /* An own pack with no page yet shows the "Build my page" card, which has
    its own black button — so the dashboard button steps back rather than
@@ -1019,18 +1026,20 @@ input:-webkit-autofill:active{
         </div>
 
         <!-- gift branch -->
-        <div class="next" id="nextGift" hidden>
+        <div class="next next--calm" id="nextGift" hidden>
           <div>
             <h2>Nothing else to do</h2>
             <p>It goes straight to <b id="giftTo">them</b>. They scan any sticker and sign in with their own email, and the code becomes theirs. Once their page is up, it counts as one of your referrals.</p>
           </div>
         </div>
 
-          </div>
-        </div>
-
         <div class="done__acts">
-          <button class="btn btn--go btn--dash" type="button" id="toDash">Go to my dashboard</button>
+          <!-- a gift: both ways on, side by side — the dashboard is the one
+               in black (Garry, 2026-10-11) -->
+          <div class="done__pair">
+            <a class="btn btn--ghost" id="toGifts" href="dashboard/2-page-live/gift.html" hidden>See my gifts</a>
+            <button class="btn btn--go btn--dash" type="button" id="toDash">Go to my dashboard</button>
+          </div>
           <a class="btn btn--ghost" id="toInvoice" href="invoice.html" target="_blank" rel="noopener">
             <svg viewBox="0 0 20 20" fill="none"><path d="M10 3v10m0 0 3.4-3.4M10 13 6.6 9.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15.5h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
             Download invoice
@@ -1733,7 +1742,9 @@ input:-webkit-autofill:active{
     $("shipTitle").textContent = "Their details";
     document.querySelector('label[for="name"]').textContent = "Their full name";
     document.querySelector('label[for="phone"]').textContent = "Their phone";
-    $("toDash").textContent = "See my gifts";
+    $("toDash").textContent = "Go to dashboard";
+    $("toGifts").hidden = false;
+    $("toGifts").href = "dashboard/" + P.flowOr(ORDER.from) + "/gift.html";
     /* the sample name is the buyer's own — on an empty gift field it reads as if it were filled in */
     f.name.el.placeholder = "Who it's going to";
     /* a gift is started from the dashboard, so Cancel goes back there, not to the website */
@@ -1775,7 +1786,7 @@ input:-webkit-autofill:active{
 
   $("toDash").addEventListener("click", function () {
     if (ck.dataset.gift === "other") {
-      location.href = "dashboard/" + P.flowOr(ORDER.from) + "/gift.html";
+      location.href = "dashboard/" + P.flowOr(ORDER.from) + "/home.html";
       return;
     }
     if (ck.dataset.built !== "1") { location.href = "dashboard/3-pack-coming/home.html"; return; }

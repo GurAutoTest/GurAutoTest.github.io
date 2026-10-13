@@ -157,11 +157,16 @@
    flows with nothing to put beside the square (1-empty, 3-pack-coming)
    keep the plain stacked card — before this was scoped, their content was
    squeezed into a second column 0px wide. */
+/* the split card borrows Home's link row and buttons (.me__row, .me__acts
+   in dashboard.css), so the two top cards read as one family */
+.big__r .me__row, .big__r .me__acts{width:100%}
+.big__r .me__btn svg{width:17px; height:17px}
+.big--split .big__r{gap:var(--s-3)}
 @media (min-width:720px){
-  .big--split .big__qr{width:190px}
+  .big--split .big__qr{width:150px}
   .big--split{
     display:grid; grid-template-columns:auto minmax(0,1fr);
-    gap:var(--s-8); align-items:center; text-align:left;
+    gap:var(--s-6); align-items:center; text-align:left;
   }
   .big--split .big__l{align-self:start}
   .big--split .big__r{align-items:flex-start}

@@ -1,6 +1,6 @@
 <title>Home · Codemarca</title>
-<link rel="icon" type="image/png" href="../../favicon.png">
-<link rel="apple-touch-icon" href="../../favicon.png">
+<link rel=icon type=image/png href="../../favicon.png">
+<link rel=apple-touch-icon href="../../favicon.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -9,6 +9,8 @@
 <link rel="stylesheet" href="../../dashboard.css">
 <link rel="stylesheet" href="../../page-view.css">
 <link rel="stylesheet" href="../../home.css">
+<link rel="stylesheet" href="../../modes.css">
+<link rel="stylesheet" href="../../social.css">
 
 <!-- ==========================================================================
      CODEMARCA — HOME, ACTIVE ACCOUNT
@@ -233,7 +235,7 @@ button.tee:hover{background:rgba(255,255,255,.1)}
   <div class="app__main">
     <main class="view">
 
-      <header class="head" data-when="active reorder tee giftwait teeship teedone">
+      <header class="head" data-when="active reorder tee giftwait teeship teedone travel lost">
         <div class="head__row">
           <div>
             <h1>Hey, <span data-fill="user.first">Garry</span>.</h1>
@@ -277,7 +279,6 @@ button.tee:hover{background:rgba(255,255,255,.1)}
            in the Profile tab, which "Edit page" opens. -->
 
       <section class="card me">
-        <span class="me__mark" data-mark></span>
 
         <div class="me__top">
           <span class="me__av" data-fill="user.initial">G</span>
@@ -304,6 +305,20 @@ button.tee:hover{background:rgba(255,255,255,.1)}
              data-owner-view><span data-ic-in="eye"></span>View page</a>
         </div>
       </section>
+
+      <!-- ══ MODES — Phase-1, 2026-10-13 ═══════════════════════════════════
+           Travel and Lost: what a scan shows, for a while. Drawn by
+           CM.mountModes (modes.js). Near the top on purpose — someone whose
+           phone is gone signs in from a friend's laptop and finds it here. -->
+
+      <section class="card modes" data-modes></section>
+
+      <!-- ══ YOUR PAGE — Phase-1, 2026-10-13 ═════════════════════════════
+           Views (only the owner sees them), followers, following, and the
+           way into Messages. Drawn by CM.mountStats (social.js). -->
+
+      <section class="card" data-stats></section>
+
 
 
 
@@ -487,6 +502,8 @@ button.tee:hover{background:rgba(255,255,255,.1)}
 <script src="state.js"></script>
 <script src="../../dashboard.js"></script>
 <script src="../../page-view.js"></script>
+<script src="../../modes.js"></script>
+<script src="../../social.js"></script>
 <script>
 (function () {
   "use strict";
@@ -499,6 +516,10 @@ button.tee:hover{background:rgba(255,255,255,.1)}
 
   /* what the builder was left without — nothing here when the page is done */
   CM.mountTodo(a);
+  /* Travel / Lost — modes.js (Phase-1, 2026-10-13) */
+  CM.mountModes(a);
+  /* views, followers, Messages — social.js (Phase-1, 2026-10-13) */
+  CM.mountStats(a);
 
   /* the conditional layer — the "more stickers on the way" row only exists
      while a reprint is actually in transit */
@@ -542,7 +563,6 @@ button.tee:hover{background:rgba(255,255,255,.1)}
   document.querySelector("[data-share-page]").addEventListener("click", function () {
     CM.shareSheet({ title: "Share your page", url: pageUrl, name: a.profile.title });
   });
-  document.querySelector("[data-mark]").innerHTML = CM.mark();
   /* View page — the page full screen (page-view.js), not a new tab
      (Garry, 2026-10-10). The link stays as the no-script fallback. */
   var owner = document.querySelector("[data-owner-view]");

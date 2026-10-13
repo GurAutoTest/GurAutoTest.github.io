@@ -413,6 +413,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     play:  '<path d="M8 5.5v13l11-6.5z"/>',
     trash: '<path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7"/>',
     down:  '<path d="M12 4v11m0 0 4-4m-4 4-4-4"/><path d="M5 19h14"/>',
+    chat:  '<path d="M20.5 11.5a8 8 0 0 1-11.8 7L3.5 20l1.6-4.7A8 8 0 1 1 20.5 11.5Z"/>',
     mail:  '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/>',
     phone: '<path d="M6.5 3.5h3l1.5 4-2 1.5a12 12 0 0 0 6 6L16.5 13l4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2Z"/>',
     shield:'<path d="M12 3.2 5 6v5.4c0 4 2.9 7.7 7 9.4 4.1-1.7 7-5.4 7-9.4V6z"/><path d="m9 12 2 2 4-4"/>',
@@ -469,6 +470,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     { id: "profile",  label: "Profile",      href: "profile.html",  icon: "user" },
     { id: "orders",   label: "Orders",       href: "orders.html",   icon: "box"  },
     { id: "qr",       label: "My QR",        href: "qr.html",       icon: "qr"   },
+    /* Quick chat inbox (Phase-1, 2026-10-13). Not in the phone's bottom bar —
+       the phone gets it as a chat icon beside the bell, like a DM inbox. */
+    { id: "messages", label: "Messages",     href: "messages.html", icon: "chat", tabs: false },
     { id: "gift",     label: "Gift & Refer", href: "gift.html",     icon: "gift",
       more: true, sub: "Gift a pack, invite friends, your tee" },
     { id: "settings", label: "Settings",     href: "settings.html", icon: "gear",
@@ -485,9 +489,19 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       orders: { locked: !a.order && !(a.gifts && a.gifts.length),
                 dot: !!(a.order && a.order.status !== "delivered") },
       qr:     { locked: false, dot: false },
-      profile:{ locked: !a.profile, dot: !a.profile }
+      profile:{ locked: !a.profile, dot: !a.profile },
+      messages:{ locked: false, dot: CM.unread(a) > 0 }
     };
   }
+
+  /* unread requests + unread chats — the chat icon's badge */
+  CM.unread = function (a) {
+    if (!a) { a = CM.account(); }
+    var s = a && a.social;
+    if (!s) { return 0; }
+    return (s.requests || []).filter(function (r) { return r.unread; }).length +
+           (s.chats || []).filter(function (c) { return c.unread; }).length;
+  };
 
   /* ══ 4. SHELL ═══════════════════════════════════════════════════════════ */
 
@@ -536,6 +550,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       /* The avatar used to sit here and open Settings. Settings moved into
          More on the bar (2026-09-24), so the corner is the bell's now. */
       '<span class="top__end">' +
+        '<a class="top__bell bell" href="messages.html" aria-label="Messages' + (CM.unread(a) ? ", " + CM.unread(a) + " unread" : "") + '">' +
+          CM.icon("chat") + '<span class="bell__n"' + (CM.unread(a) ? "" : " hidden") + ">" + CM.unread(a) + "</span></a>" +
         '<button class="top__bell bell" type="button" data-bell aria-haspopup="dialog" ' +
           'aria-label="Notifications">' + CM.icon("bell") + '<span class="bell__n" hidden></span></button>' +
       "</span>";
@@ -548,6 +564,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var dbar = document.createElement("div");
     dbar.className = "dbar";
     dbar.innerHTML =
+      '<a class="dbar__bell bell" href="messages.html" aria-label="Messages' + (CM.unread(a) ? ", " + CM.unread(a) + " unread" : "") + '">' +
+        CM.icon("chat") + '<span class="bell__n"' + (CM.unread(a) ? "" : " hidden") + ">" + CM.unread(a) + "</span></a>" +
       '<button class="dbar__bell bell" type="button" data-bell aria-haspopup="dialog" aria-expanded="false" ' +
         'aria-label="Notifications">' + CM.icon("bell") + '<span class="bell__n" hidden></span></button>';
     main.insertBefore(dbar, top.nextSibling);

@@ -1,6 +1,6 @@
 <title>My QR · Codemarca</title>
-<link rel="icon" type="image/png" href="../../favicon.png">
-<link rel="apple-touch-icon" href="../../favicon.png">
+<link rel=icon type=image/png href="../../favicon.png">
+<link rel=apple-touch-icon href="../../favicon.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,29 +50,26 @@
         <p class="big__hint">Tap to show it full screen</p>
         </div>
 
+        <!-- the same pieces as Home's top card — grey field with copy, a
+             black Share, then the two buttons (Garry, 2026-10-11) -->
         <div class="big__r">
 
-        <span class="big__url">
-          <span>codemarca.com/<b data-fill="profile.handle">garry</b></span>
-          <button type="button" data-copy-url aria-label="Copy my page link"></button>
-        </span>
-
-        <div class="big__acts">
-          <button class="btn btn--ghost btn--sm" type="button" data-download>
-            <span data-ic-in="down"></span>Download PNG
-          </button>
-          <button class="btn btn--ghost btn--sm" type="button" data-share-code>
-            <span data-ic-in="share"></span>Share
-          </button>
-          <a class="btn btn--ghost btn--sm" href="#" data-view target="_blank" rel="noopener">
-            <span data-ic-in="eye"></span>View page
-          </a>
-          <a class="btn btn--quiet btn--sm" href="profile.html">
-            <span data-ic-in="pen"></span>Edit what it opens
-          </a>
+        <div class="me__row">
+          <div class="me__link">
+            <span class="me__url"><span>codemarca.com/</span><b data-fill="profile.handle">garry</b></span>
+            <button class="me__copy" type="button" data-tip="Copy" aria-label="Copy page link"><span data-ic-in="copy"></span></button>
+          </div>
+          <button class="me__share" type="button" data-share-code aria-label="Share my QR"><span data-ic-in="share"></span><span class="me__share-t">Share</span></button>
         </div>
 
+        <div class="me__acts">
+          <button class="me__btn" type="button" data-download><span data-ic-in="down"></span>Download PNG</button>
+          <a class="me__btn" href="#" data-view target="_blank" rel="noopener"><span data-ic-in="eye"></span>View page</a>
+        </div>
 
+        <a class="btn btn--quiet btn--sm big__edit" href="profile.html">
+          <span data-ic-in="pen"></span>Edit what it opens
+        </a>
 
         </div>
       </section>

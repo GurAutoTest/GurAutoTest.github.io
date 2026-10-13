@@ -1,0 +1,163 @@
+/* ==========================================================================
+   CODEMARCA — FOLLOW + QUICK CHAT ON THE PUBLIC PAGE (Phase-1, 2026-10-13)
+   Behaviour in profile-social.js.
+
+   1. .sx   the block under the bio. It wears the page's theme: every theme
+            sets its own five colours below, so Follow sits in Light like an
+            iOS button, in Leaf like a Leaf button, on glass like glass.
+   2. .sxs  sign-in, finish-your-page, consent and follower-list sheets —
+            Codemarca's, on every theme (same rule as share and claim).
+   3. .cx   the chat — Codemarca's too.
+   ========================================================================== */
+
+/* ── 1. THE BLOCK ─────────────────────────────────────────────────────── */
+.sx-slot{width:100%; align-self:stretch}
+.sx-slot:empty{display:none}
+.sx{
+  --sx-solid:#101215; --sx-solid-fg:#fff;
+  --sx-soft:rgba(16,18,21,.06); --sx-soft-fg:#101215; --sx-soft-edge:none;
+  --sx-r:14px; --sx-mid:currentColor;
+  display:flex; flex-direction:column; align-items:center; gap:12px;
+  width:100%; max-width:360px; margin:14px auto 0;
+}
+.sx__n{display:flex; align-items:center; justify-content:center; gap:8px; font-size:.875rem; color:var(--sx-mid); letter-spacing:.14px}
+.sx__c{font:inherit; color:inherit; padding:2px 4px; border-radius:6px; background:none; border:0}
+button.sx__c{cursor:pointer}
+button.sx__c:hover{text-decoration:underline; text-underline-offset:3px}
+.sx__c b{font-weight:800; color:var(--sx-ink, inherit)}
+.sx__dot{opacity:.5}
+.sx__new{
+  display:inline-flex; align-items:center; height:26px; padding:0 12px; border-radius:999px;
+  font-size:.75rem; font-weight:700; letter-spacing:.14px;
+  background:var(--sx-soft); color:var(--sx-soft-fg); box-shadow:var(--sx-soft-edge);
+}
+.sx__b{display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%}
+.sx__b:has(> :only-child){grid-template-columns:1fr; max-width:220px; justify-self:center; margin-inline:auto}
+.sx__btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  height:44px; padding:0 14px; border:0; border-radius:var(--sx-r); cursor:pointer;
+  font:inherit; font-size:.9375rem; font-weight:700; letter-spacing:-.005em;
+  transition:transform .15s ease, filter .15s ease;
+}
+.sx__btn:active{transform:scale(.97)}
+.sx__btn:hover{filter:brightness(1.06)}
+.sx__btn svg{width:17px; height:17px; flex:none}
+.sx__btn--solid{background:var(--sx-solid); color:var(--sx-solid-fg)}
+.sx__btn--solid[aria-pressed="true"]{background:var(--sx-soft); color:var(--sx-soft-fg); box-shadow:var(--sx-soft-edge)}
+.sx__btn--soft{background:var(--sx-soft); color:var(--sx-soft-fg); box-shadow:var(--sx-soft-edge)}
+
+/* the owner looking at their own page sees the counts, never the buttons */
+.pg[data-view="owner"] .sx__b{display:none}
+/* Soft and Photo draw the whole page into #list, block included, so the
+   shared slot stays empty there */
+.pg[data-look="soft"] #sxSlot, .pg[data-look="photo"] #sxSlot{display:none}
+
+/* Light — Apple style: system blue, white secondary */
+.pg[data-theme="light"] .sx{--sx-solid:#007AFF; --sx-soft:#fff; --sx-soft-fg:#007AFF; --sx-soft-edge:inset 0 0 0 1px rgba(16,18,21,.08); --sx-r:12px; --sx-mid:#6C6C70; --sx-ink:#101215}
+.pg[data-theme="light-dark"] .sx{--sx-solid:#0A84FF; --sx-soft:#1C1C1E; --sx-soft-fg:#0A84FF; --sx-soft-edge:inset 0 0 0 1px #2D2D30; --sx-r:12px; --sx-mid:#8E8E93; --sx-ink:#fff}
+/* glass — white on smoke, the second button is glass */
+.pg[data-look="pill"] .sx, .pg[data-look="tile"] .sx{
+  --sx-solid:#fff; --sx-solid-fg:#101215;
+  --sx-soft:rgba(255,255,255,.14); --sx-soft-fg:#fff; --sx-soft-edge:inset 0 0 0 1px rgba(255,255,255,.38);
+  --sx-mid:rgba(255,255,255,.82); --sx-ink:#fff;
+}
+.pg[data-look="pill"] .sx{--sx-r:999px}
+.pg[data-look="tile"] .sx{--sx-r:12px}
+.pg[data-look="pill"] .sx__btn--soft, .pg[data-look="tile"] .sx__btn--soft{-webkit-backdrop-filter:blur(14px) saturate(1.4); backdrop-filter:blur(14px) saturate(1.4)}
+/* Leaf — inside its white card: black, and the outlined white Leaf button */
+.pg[data-look="deck"] .sx{--sx-solid:#0A0A0A; --sx-soft:#fff; --sx-soft-fg:#0A0A0A; --sx-soft-edge:inset 0 0 0 1.5px #0A0A0A; --sx-r:12px; --sx-mid:#3A3A3A; --sx-ink:#0A0A0A}
+/* Soft */
+.pg[data-theme="soft"] .sx{--sx-solid:#0B0B0C; --sx-soft:#fff; --sx-soft-fg:#0B0B0C; --sx-soft-edge:inset 0 0 0 2px #0B0B0C; --sx-r:999px; --sx-mid:#5C5C5A; --sx-ink:#0B0B0C}
+.pg[data-theme="soft-dark"] .sx{--sx-solid:#F2F2F0; --sx-solid-fg:#0B0B0C; --sx-soft:#272725; --sx-soft-fg:#F2F2F0; --sx-r:999px; --sx-mid:#9A9A96; --sx-ink:#F2F2F0}
+/* Photo — its own blue and tint */
+.pg[data-theme="photo"] .sx{--sx-solid:#1497F5; --sx-soft:#EEF6FF; --sx-soft-fg:#1497F5; --sx-r:12px; --sx-mid:#6B7280; --sx-ink:#0B0B0C; align-items:flex-start; margin-left:0; max-width:none}
+.pg[data-theme="photo-dark"] .sx{--sx-solid:#1497F5; --sx-soft:#1A2230; --sx-soft-fg:#5BB8FA; --sx-r:12px; --sx-mid:#8B93A1; --sx-ink:#fff; align-items:flex-start; margin-left:0; max-width:none}
+.pg[data-look="photo"] .sx__n{justify-content:flex-start}
+
+/* ── 2. SHEETS ────────────────────────────────────────────────────────── */
+.sxs .sheet__panel{gap:14px}
+.sxs h2{margin-top:4px}
+.sxs__av{display:grid; place-items:center; width:56px; height:56px; border-radius:50%; background:#E7E9EE; color:#5B5D68; font-weight:800; font-size:1.375rem}
+.sxs__wave{font-size:2rem; line-height:1}
+.sxs__google{
+  display:inline-flex; align-items:center; justify-content:center; gap:10px;
+  width:100%; height:52px; border-radius:14px; border:0; cursor:pointer;
+  background:#fff; color:#101215; font:inherit; font-size:.9375rem; font-weight:700;
+  box-shadow:inset 0 0 0 1.5px rgba(16,18,21,.16);
+}
+.sxs__google:hover{box-shadow:inset 0 0 0 1.5px #101215}
+.sxs__google svg{width:20px; height:20px}
+.sxs p.sxs__legal{font-size:.8125rem; color:#8C8E9C; letter-spacing:.14px; margin:0}
+.sxs__legal a{text-decoration:underline; text-underline-offset:2px}
+.sxs__go{width:100%; justify-content:center; text-decoration:none}
+.sxs__go:disabled{background:#EDEBF2; color:#B6B8C4; cursor:not-allowed}
+
+.sxs__todo, .sxs__rules, .sxs__ppl{list-style:none; margin:0; padding:0; width:100%; text-align:left}
+.sxs__todo li{display:flex; gap:12px; padding:10px 0; align-items:flex-start}
+.sxs__todo li + li{box-shadow:inset 0 1px 0 rgba(16,18,21,.08)}
+.sxs__chk{flex:none; width:20px; height:20px; margin-top:1px; border-radius:50%; box-shadow:inset 0 0 0 1.5px rgba(16,18,21,.22)}
+.sxs__todo b{display:block; font-size:.9375rem}
+.sxs__todo em{font-style:normal; font-size:.6875rem; font-weight:700; color:#C4342B; background:#FBEBEA; padding:2px 7px; border-radius:999px; margin-left:4px; vertical-align:2px}
+.sxs__todo small{display:block; font-size:.8125rem; color:#8C8E9C; letter-spacing:.14px}
+
+.sxs__rules{display:flex; flex-direction:column; gap:8px}
+.sxs__rules li{position:relative; padding-left:22px; font-size:.875rem; line-height:1.45; color:#33353D; letter-spacing:.14px}
+.sxs__rules li::before{content:""; position:absolute; left:4px; top:.55em; width:7px; height:7px; border-radius:50%; background:#17914F}
+.sxs__age{display:flex; align-items:center; gap:10px; width:100%; padding:12px 14px; border-radius:14px; background:#F4F3F7; font-size:.9375rem; font-weight:700; cursor:pointer; text-align:left}
+.sxs__age input{width:20px; height:20px; accent-color:#101215; margin:0}
+
+.sxs--list .sheet__panel{align-items:stretch; text-align:left}
+.sxs--list h2{padding-right:40px}
+.sxs__ppl li a, .sxs__prow{display:flex; align-items:center; gap:12px; padding:10px 8px; border-radius:12px}
+.sxs__ppl li a:hover{background:#F4F3F7}
+.sxs__pav{flex:none; display:grid; place-items:center; width:40px; height:40px; border-radius:50%; background:#E7E9EE; color:#5B5D68; font-weight:800}
+.sxs__pt{display:flex; flex-direction:column; min-width:0}
+.sxs__pt b{font-size:.9375rem}
+.sxs__pt small{font-family:var(--font-mono); font-size:.75rem; color:#8C8E9C}
+
+/* ── 3. THE CHAT ──────────────────────────────────────────────────────── */
+.cx{position:fixed; inset:0; z-index:80; display:flex; align-items:stretch; justify-content:center; font-family:var(--font-sans)}
+.cx__scrim{position:absolute; inset:0; background:rgba(16,18,21,.52)}
+.cx__box{
+  position:relative; width:100%; display:flex; flex-direction:column;
+  background:#fff; color:#101215;
+}
+@media (min-width:640px){
+  .cx{align-items:center; padding:24px}
+  .cx__box{max-width:440px; height:min(680px, 100%); border-radius:24px; overflow:hidden; box-shadow:0 30px 80px rgba(16,18,21,.3)}
+}
+.cx__head{display:flex; align-items:center; gap:12px; padding:14px 16px; box-shadow:inset 0 -1px 0 rgba(16,18,21,.08); padding-top:max(14px, env(safe-area-inset-top))}
+.cx__av{flex:none; display:grid; place-items:center; width:40px; height:40px; border-radius:50%; background:#E7E9EE; color:#5B5D68; font-weight:800}
+.cx__who{flex:1; min-width:0; display:flex; flex-direction:column}
+.cx__who b{font-size:1rem}
+.cx__who small{font-size:.8125rem; color:#8C8E9C; letter-spacing:.14px}
+.cx__x{display:grid; place-items:center; width:36px; height:36px; border-radius:50%; background:#F4F3F7; color:#5B5D68; border:0; cursor:pointer}
+.cx__x svg{width:15px; height:15px}
+.cx__body{flex:1; overflow:auto; padding:20px 16px; display:flex; flex-direction:column; gap:10px; background:#FAFAFB}
+.cx__sys{align-self:center; max-width:32ch; margin:0; text-align:center; font-size:.8125rem; line-height:1.45; color:#5B5D68; letter-spacing:.14px;
+  background:#fff; padding:10px 14px; border-radius:14px; box-shadow:inset 0 0 0 1px rgba(16,18,21,.07)}
+.cx__sys--soft{background:none; box-shadow:none; padding:0 14px; color:#8C8E9C}
+.cx__msg{align-self:flex-end; max-width:82%; margin-top:8px; display:flex; flex-direction:column; align-items:flex-end; gap:4px}
+.cx__msg p{margin:0; padding:10px 14px; border-radius:18px 18px 6px 18px; background:#101215; color:#fff; font-size:.9375rem; line-height:1.4; white-space:pre-wrap; overflow-wrap:anywhere}
+.cx__msg small{font-size:.75rem; color:#8C8E9C; letter-spacing:.14px}
+.cx__foot{display:flex; flex-direction:column; gap:10px; padding:12px 16px calc(14px + env(safe-area-inset-bottom)); box-shadow:inset 0 1px 0 rgba(16,18,21,.08)}
+.cx__use{display:flex; align-items:center; gap:10px; font-size:.75rem; color:#8C8E9C; letter-spacing:.14px}
+.cx__use-t{font-weight:700; color:#5B5D68}
+.cx__bar{flex:1; height:6px; border-radius:999px; background:#EDEBF2; overflow:hidden}
+.cx__bar i{display:block; height:100%; border-radius:inherit; background:#17914F; transition:width .2s ease}
+.cx__use[data-low="true"] .cx__bar i{background:#D99A00}
+.cx__use-n{font-variant-numeric:tabular-nums; white-space:nowrap}
+.cx__use-n b{color:#101215}
+.cx__warn{font-size:.8125rem; font-weight:600; color:#C4342B; background:#FBEBEA; padding:8px 12px; border-radius:10px}
+.cx__in{display:flex; align-items:flex-end; gap:8px}
+.cx__in textarea{
+  flex:1; min-height:46px; max-height:140px; resize:none; padding:12px 14px; border:0; border-radius:16px;
+  background:#F4F3F7; font:inherit; font-size:.9375rem; line-height:1.4; color:#101215;
+}
+.cx__in textarea:focus{outline:none; box-shadow:inset 0 0 0 1.5px #101215; background:#fff}
+.cx__send{flex:none; display:grid; place-items:center; width:46px; height:46px; border-radius:50%; border:0; cursor:pointer; background:#101215; color:#fff}
+.cx__send:disabled{background:#EDEBF2; color:#B6B8C4; cursor:not-allowed}
+.cx__send svg{width:20px; height:20px}
+.cx__lock{display:flex; gap:8px; align-items:flex-start; margin:0; font-size:.8125rem; line-height:1.45; color:#5B5D68; letter-spacing:.14px}
+.cx__lock svg{flex:none; width:16px; height:16px; margin-top:1px}
+.cx__open{display:inline-flex; align-items:center; justify-content:center; height:46px; border-radius:14px; background:#101215; color:#fff; font-weight:700; font-size:.9375rem; text-decoration:none}

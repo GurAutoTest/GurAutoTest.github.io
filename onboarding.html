@@ -428,6 +428,43 @@ input:-webkit-autofill:active{
 .thm .subs{justify-content:flex-start; margin-top:2px; min-height:26px}
 .thm .subs[data-on="false"]{display:none}
 .thm .subs button{width:22px; height:22px}
+/* on a laptop, every load: a tip over Change, so the themes get found —
+   the line alone is quiet (Garry, 2026-10-11). Rises in after the page
+   settles over a dim that takes the rest of the screen back, so the tip
+   and the Change line are the only lit things. ×, "Try a theme", Change,
+   Esc or a click on the dim puts it away until the next load.
+   Phones don't get it: there the preview is its own screen. */
+.thm-dim{display:none; position:fixed; inset:0; z-index:1; background:rgba(16,18,21,.5);
+  opacity:0; transition:opacity .4s var(--ease)}
+.thm-dim[data-on]{opacity:1}
+@media (min-width:960px){
+  .thm-dim:not([hidden]){display:block}
+  .ob__aside[data-tip]{z-index:45}
+  .ob__aside[data-tip] .thm{z-index:2}
+  .ob__aside[data-tip] .thm__tt{position:relative; z-index:2; background:var(--ground)}
+}
+.thm-tip{display:none; position:absolute; left:50%; bottom:calc(100% + 10px); z-index:5; width:264px;
+  padding:14px 16px 14px; border-radius:16px; background:#101215; color:#fff; text-align:left;
+  box-shadow:0 10px 30px rgba(16,18,21,.22);
+  opacity:0; transform:translate(-50%, 8px); transition:opacity .4s var(--ease), transform .4s var(--ease)}
+.thm-tip::after{content:""; position:absolute; left:50%; bottom:-6px; width:12px; height:12px; margin-left:-6px;
+  background:#101215; border-radius:2px; transform:rotate(45deg)}
+.thm-tip[data-on]{opacity:1; transform:translate(-50%, 0)}
+@media (min-width:960px){ .thm-tip:not([hidden]){display:block} }
+.thm[data-open="true"] .thm-tip,
+.thm[data-open="true"] .thm-dim,
+.ob__aside[data-open="true"] .thm-tip,
+.ob__aside[data-open="true"] .thm-dim{display:none}
+.thm-tip__t{margin:0 28px 4px 0; font-size:var(--fs-sm); font-weight:var(--fw-bold); line-height:1.3}
+.thm-tip__b{margin:0 0 12px; font-size:var(--fs-xs); line-height:1.45; color:rgba(255,255,255,.72); letter-spacing:var(--ls-soft)}
+.thm-tip__go{border:0; cursor:pointer; padding:8px 14px; border-radius:999px; background:#101215; color:#fff;
+  box-shadow:inset 0 0 0 1.5px #fff;
+  font:inherit; font-size:var(--fs-xs); font-weight:var(--fw-bold); letter-spacing:var(--ls-soft)}
+.thm-tip__go:hover{background:rgba(255,255,255,.12)}
+.thm-tip__x{position:absolute; top:10px; right:10px; display:grid; place-items:center; width:26px; height:26px;
+  padding:0; border:0; border-radius:50%; background:rgba(255,255,255,.1); color:#fff; cursor:pointer}
+.thm-tip__x:hover{background:rgba(255,255,255,.2)}
+.thm-tip__x svg{width:12px; height:12px}
 /* the question asked when a tried theme is left on screen */
 .dlg{position:fixed; inset:0; z-index:100; display:flex; align-items:flex-end; justify-content:center;
   padding:var(--s-3); background:rgba(16,18,21,.42); opacity:0; transition:opacity var(--dur) var(--ease)}
@@ -1409,6 +1446,13 @@ body[data-showing]{overflow:hidden}
                in a tray with a × — same as the dashboard's previews (Garry, 2026-10-09) -->
           <div class="thm" id="thm" data-open="false">
             <button class="thm__tt" type="button" id="thmOpen" aria-expanded="false"><span class="thm__th">Theme · <b></b></span><span class="thm__chg">Change</span></button>
+            <div class="thm-dim" id="thmDim" hidden></div>
+            <div class="thm-tip" id="thmTip" role="dialog" aria-labelledby="thmTipT" hidden>
+              <button class="thm-tip__x" type="button" id="thmTipX" aria-label="Dismiss tip"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+              <p class="thm-tip__t" id="thmTipT">Your page, your look</p>
+              <p class="thm-tip__b">There are more themes than this one. Try them on here — nothing changes until you pick.</p>
+              <button class="thm-tip__go" type="button" id="thmTipGo">Try a theme</button>
+            </div>
             <div class="thm__tray">
               <div class="thm__top"><span class="thm__th">Theme · <b></b></span>
                 <button class="thm__x" type="button" id="thmClose" aria-label="Close themes"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
@@ -2461,6 +2505,38 @@ body[data-showing]{overflow:hidden}
     var b = e.target.closest("[data-dlg]"); if (b) { dlgAnswer(b.dataset.dlg); }
   });
   $("thmOpen").addEventListener("click", function () { trayFrom = S.theme; setTheme(S.theme); thmTray(true); });
+
+  /* ── the tip over Change ────────────────────────────────────────────
+     Laptop column only, on every load (Garry, 2026-10-11 — once per
+     browser hid it from him after the first look). Shown after the page
+     has settled so it arrives, rather than being there already. */
+  var tipT = null;
+  function tipHide() {
+    clearTimeout(tipT);
+    var t = $("thmTip"), d = $("thmDim"); if (t.hidden) { return; }
+    var hadFocus = t.contains(document.activeElement);
+    t.removeAttribute("data-on"); d.removeAttribute("data-on");
+    setTimeout(function () { t.hidden = true; d.hidden = true; $("aside").removeAttribute("data-tip"); }, REDUCE ? 0 : 400);
+    if (hadFocus) { $("thmOpen").focus({ preventScroll: true }); }
+  }
+  if (window.matchMedia("(min-width:960px)").matches) {
+    tipT = setTimeout(function () {
+      if (S.step === 3 || $("thm").dataset.open === "true" || $("aside").dataset.open === "true") { return; }
+      var t = $("thmTip"), d = $("thmDim");
+      $("aside").setAttribute("data-tip", "");
+      t.hidden = false; d.hidden = false;
+      void t.offsetWidth;
+      t.setAttribute("data-on", ""); d.setAttribute("data-on", "");
+      $("thmTipGo").focus({ preventScroll: true });
+    }, 1200);
+  }
+  $("thmDim").addEventListener("click", tipHide);
+  $("thmTipX").addEventListener("click", tipHide);
+  $("thmTipGo").addEventListener("click", function () { tipHide(); $("thmOpen").click(); });
+  $("thmOpen").addEventListener("click", tipHide);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && $("thmTip").hasAttribute("data-on")) { tipHide(); }
+  });
   paintThemeName();
   $("thmClose").addEventListener("click", function () { settleTheme(function () {}); });
 

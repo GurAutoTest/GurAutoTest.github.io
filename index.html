@@ -715,6 +715,46 @@ input:-webkit-autofill:active{
   caret-color:var(--ink);
   transition:background-color 600000s 0s, color 600000s 0s;
 }
+
+/* ── 12. MORE THAN A STICKER — Phase-1 (Garry, 2026-10-13) ─────────────────
+   Travel mode told as a four-frame story, then the four things the page
+   can do now: Travel, Lost, Quick chat, Follow. The frames are placeholders
+   with a written brief until the Gemini shots land (prompts in
+   v4/story-prompts.md). On a phone the story swipes sideways. */
+.story{
+  display:grid; grid-auto-flow:column; grid-auto-columns:minmax(240px, 78%);
+  gap:var(--s-4); overflow-x:auto; scroll-snap-type:x mandatory; padding-bottom:var(--s-2);
+  scrollbar-width:none; margin-inline:calc(var(--gutter) * -1); padding-inline:var(--gutter);
+}
+.story::-webkit-scrollbar{display:none}
+.story > *{scroll-snap-align:start}
+@media (min-width:900px){
+  .story{grid-auto-flow:row; grid-template-columns:repeat(4, minmax(0,1fr)); overflow:visible; margin-inline:0; padding-inline:0}
+}
+.frame{display:flex; flex-direction:column; gap:var(--s-3)}
+.frame .ph{aspect-ratio:4/5}
+.frame__n{font-family:var(--font-mono); font-size:.75rem; font-weight:var(--fw-semibold); color:var(--ink-soft); letter-spacing:.14px}
+.frame__t{font-size:var(--fs-body); font-weight:var(--fw-bold); line-height:1.35}
+.feats{display:grid; gap:var(--s-4); grid-template-columns:1fr}
+@media (min-width:640px){ .feats{grid-template-columns:1fr 1fr} }
+@media (min-width:1024px){ .feats{grid-template-columns:repeat(4, minmax(0,1fr))} }
+.feat{
+  display:flex; flex-direction:column; gap:var(--s-2); padding:var(--s-6);
+  border-radius:var(--r-lg); background:var(--ground-soft);
+}
+.feat__ic{display:grid; place-items:center; width:44px; height:44px; border-radius:12px; background:var(--ground); box-shadow:inset 0 0 0 1px var(--line); margin-bottom:var(--s-2)}
+.feat__ic svg{width:22px; height:22px}
+.feat h3{margin:0; font-size:1.125rem; font-weight:var(--fw-black); letter-spacing:-.02em}
+.feat p{margin:0; font-size:var(--fs-sm); color:var(--ink-mid); line-height:1.5; letter-spacing:.14px}
+.bulkline{
+  display:flex; flex-direction:column; gap:var(--s-3); align-items:flex-start;
+  padding:var(--s-6); border-radius:var(--r-lg); background:var(--ground-dark); color:var(--ink-invert);
+}
+.bulkline p{margin:0; color:rgba(255,255,255,.7); font-size:var(--fs-sm); line-height:1.5; letter-spacing:.14px; max-width:56ch}
+.bulkline b{font-size:1.25rem; font-weight:var(--fw-black); letter-spacing:-.02em}
+@media (min-width:900px){
+  .bulkline{flex-direction:row; align-items:center; justify-content:space-between}
+}
 </style>
 
 <!-- ══ TICKER ═══════════════════════════════════════════════════════════ -->
@@ -1033,6 +1073,68 @@ input:-webkit-autofill:active{
             </div>
           </div>
         </div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 5b. MORE THAN A STICKER — Phase-1 (Garry, 2026-10-13) ══════════
+       Travel mode as a story first — it is the one people feel — then the
+       four new things in a row. Frames are .ph placeholders with the brief
+       written on them; Gemini prompts for each are in v4/story-prompts.md. -->
+  <section class="section fold" id="more">
+    <div class="shell stack gap-8">
+      <div class="stack gap-5 rise">
+        <span class="eyebrow">More than a sticker</span>
+        <h2 class="h2 measure">Phone gone on a trip? Your sticker still knows who to call.</h2>
+        <p class="lead measure">Switch on Travel mode before you leave. If your phone or bag goes missing, whoever finds it scans the sticker and sees your travel buddy’s number first — no app, no sign-up, one tap to call.</p>
+      </div>
+
+      <div class="story rise" aria-label="Travel mode, in four frames">
+        <figure class="frame">
+          <div class="ph"><span class="ph__tag">Photo · frame 1</span><span class="ph__desc">A tempo traveller of 20 young travellers heading into the hills. Each one is sticking a small Codemarca QR on the back of their phone.</span></div>
+          <span class="frame__n">01</span><figcaption class="frame__t">Twenty strangers, one bus, everyone sticks their code on.</figcaption>
+        </figure>
+        <figure class="frame">
+          <div class="ph"><span class="ph__tag">Photo · frame 2</span><span class="ph__desc">A café table by the river in Kasol, chai glasses, and one phone left behind face down. The QR sticker shows on its back.</span></div>
+          <span class="frame__n">02</span><figcaption class="frame__t">A phone gets left behind at a café.</figcaption>
+        </figure>
+        <figure class="frame">
+          <div class="ph"><span class="ph__tag">Photo · frame 3</span><span class="ph__desc">The café owner scans the sticker with their own phone. The screen shows “Found this somewhere?” and a Call button for Rahul, travel buddy.</span></div>
+          <span class="frame__n">03</span><figcaption class="frame__t">Someone kind scans it. Travel mode shows who to call.</figcaption>
+        </figure>
+        <figure class="frame">
+          <div class="ph"><span class="ph__tag">Photo · frame 4</span><span class="ph__desc">Back at the bus, the friend takes the call and the owner gets their phone back, smiling. The group cheers in the background.</span></div>
+          <span class="frame__n">04</span><figcaption class="frame__t">One call later, the phone is back before the bus leaves.</figcaption>
+        </figure>
+      </div>
+
+      <div class="feats rise">
+        <article class="feat">
+          <span class="feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg></span>
+          <h3>Travel mode</h3>
+          <p>Up to two people a finder can call, a short note, and a date it switches itself off.</p>
+        </article>
+        <article class="feat">
+          <span class="feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.2"/><path d="M12 16.4v.01"/></svg></span>
+          <h3>Lost mode</h3>
+          <p>Lost your phone, bag or keys? Flip it on from any device and your page asks the finder to call.</p>
+        </article>
+        <article class="feat">
+          <span class="feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.5a8 8 0 0 1-11.8 7L3.5 20l1.6-4.7A8 8 0 1 1 20.5 11.5Z"/></svg></span>
+          <h3>Quick chat</h3>
+          <p>People who scan you can say hi — real profiles only, 500 characters a day, and you choose who to reply to.</p>
+        </article>
+        <article class="feat">
+          <span class="feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M19 8v6M16 11h6"/></svg></span>
+          <h3>Follow</h3>
+          <p>Liked someone’s sticker? Follow them on Codemarca and find their page again in a tap.</p>
+        </article>
+      </div>
+
+      <div class="bulkline rise">
+        <span class="stack gap-3"><b>Running group trips?</b>
+          <p>Get stickers for the whole bus. Every traveller gets their own page, and you can be everyone’s emergency contact.</p></span>
+        <a class="btn btn--invert" href="contact.html#bulk">Talk to us</a>
       </div>
     </div>
   </section>

@@ -1,0 +1,36 @@
+CODEMARCA — PHASE-1 v1 (2026-10-13)
+Everything below is new in this handoff. Open with a local server, hard refresh (Cmd+Shift+R).
+
+1. TRAVEL + LOST MODE
+   modes.js, modes.css          Home "Modes" card (2-page-live, 4-active): two switches, a sheet
+                                form (up to 2 people, note, Travel end date / Lost item). One mode at
+                                a time, Lost replaces Travel. Saved as a.modes.
+   profile.html                 Banner above the page (CSS 2h, renderMode, ?mode=travel|lost|{json}).
+                                Folded by default ("Who to call"); numbers masked until tapped, then
+                                a green Call. Calling needs no sign-up.
+   Try: dashboard/4-active/home.html?state=travel   ?state=lost    profile.html?mode=lost
+
+2. FOLLOW + QUICK CHAT (public page)
+   profile-social.js/.css       Followers · following + Follow + Message under the bio, in every theme.
+                                Message: Google sign-in -> own page must be filled (min 1 social) ->
+                                consent (18+, repeats every 14 days) -> chat request.
+                                Rules: first message is a request, text only, no links; 500 characters
+                                a DAY per person across all chats (owner replies too); usage bar always
+                                visible; seen messages disappear after 24h. Owner switches: chat on/off,
+                                hide counts, hide lists. Blocked = no buttons. Follow = list only, no feed.
+   Review panel rows on profile.html: Guest / New account / Full page / Blocked, Chat off / Counts hidden / 0 followers.
+
+3. OWNER SIDE: MESSAGES + VIEWS
+   social.js/.css               Home "Your page" card: views last 7 days (owner-only, sticker vs link),
+                                followers, following (lists in a sheet), row into Messages.
+   dashboard/*/messages.html    Quick chat switch, usage bar, Requests · Chats, thread with
+                                Accept / Ignore / Block / Report (reasons + "tell us more", keeps a copy,
+                                can block too), switches for counts/lists. 1-empty + 3-pack-coming show
+                                "Messages open once your page is live".
+   dashboard.js/.css            Messages in sidebar; phone = chat icon beside the bell, unread badge (CM.unread).
+   dashboard/*/state.js         a.social data. 4-active busy, 2-page-live?state=fresh = 0 followers + chat off.
+                                4-active new states: 8 Travel mode on, 9 Lost mode on.
+
+4. WEBSITE
+   homepage.html#more           "More than a sticker": Travel mode 4-frame story (placeholders for now),
+                                4 feature cards, bulk line for group trips -> contact.html#bulk.

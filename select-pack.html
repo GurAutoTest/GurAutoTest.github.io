@@ -429,36 +429,43 @@ img,svg{display:block; max-width:100%}
 }
 .stage__dim{font-size:var(--fs-sm); color:var(--ink-mid); font-variant-numeric:tabular-nums}
 
-/* Everything stands on one baseline, so the coin reads as a scale and not
-   as decoration. --stk and --coin are set from JS in real millimetres. */
+/* Everything is drawn in real millimetres: card, sticker and ruler share
+   one mm-to-px ratio (--k is never written; JS sets the px values). The
+   set is left-aligned like a measuring bench — card, then the sticker, its
+   left edge on the ruler's 0 — and the whole bench is centred. */
 .stage__floor{
-  position:absolute; left:var(--s-5); right:var(--s-5); bottom:19%; height:54%;
-  display:flex; align-items:flex-end; justify-content:center; gap:var(--s-5);
+  position:absolute; left:var(--s-5); right:var(--s-5); top:30%; bottom:15%;
+  display:flex; align-items:flex-end; justify-content:center;
 }
-.stage__floor::after{
-  content:""; position:absolute; left:10%; right:10%; bottom:-14px; height:24px;
-  border-radius:50%;
-  background:radial-gradient(closest-side,rgba(70,30,140,.16),rgba(70,30,140,0));
+.stage__set{display:flex; flex-direction:column; align-items:flex-start; gap:10px}
+.stage__row{display:flex; align-items:flex-end; gap:var(--gap,12px)}
+.stage__card{
+  position:relative; flex-shrink:0; width:var(--card-w,96px); height:var(--card-h,60px);
+  border-radius:calc(var(--card-w,96px) * .045);
+  background:linear-gradient(135deg,#3A3D47 0%,#101215 70%);
+  box-shadow:0 14px 30px rgba(16,18,21,.22); transform:rotate(-4deg);
+  transition:width 560ms cubic-bezier(.34,1.32,.5,1), height 560ms cubic-bezier(.34,1.32,.5,1);
 }
+.stage__chip{position:absolute; left:10%; top:28%; width:16%; aspect-ratio:1.3; border-radius:3px;
+  background:linear-gradient(135deg,#E9D58B,#B8973E)}
+.stage__cardt{position:absolute; left:10%; bottom:12%; font-family:var(--font-mono); font-size:.5625rem;
+  color:rgba(255,255,255,.6); letter-spacing:.04em; white-space:nowrap}
 .stage__stk{
   position:relative; z-index:1; flex-shrink:0;
   width:var(--stk,120px); height:var(--stk,120px);
   filter:drop-shadow(0 10px 18px rgba(40,20,90,.18)) drop-shadow(0 2px 3px rgba(40,20,90,.12));
   transition:width 560ms cubic-bezier(.34,1.32,.5,1), height 560ms cubic-bezier(.34,1.32,.5,1);
 }
-.stage__coin{
-  position:relative; z-index:1; flex-shrink:0;
-  width:var(--coin,28px); height:var(--coin,28px); border-radius:50%;
-  display:grid; place-items:center;
-  background:
-    radial-gradient(circle,#E4E5EA 0 57%,#B9BBC3 58% 61%,#D6B46A 62% 88%,#B8913F 90% 100%);
-  box-shadow:0 4px 8px rgba(40,20,90,.18), inset 0 1px 1px rgba(255,255,255,.7);
-  transition:width 560ms cubic-bezier(.34,1.32,.5,1), height 560ms cubic-bezier(.34,1.32,.5,1);
+/* 0–6″, ticks every half inch, starting under the sticker's left edge */
+.stage__ruler{
+  position:relative; width:calc(var(--inch,24px) * 6); height:24px;
+  margin-left:calc(var(--card-w,96px) + var(--gap,12px));
+  border-top:2px solid var(--ink);
+  background:repeating-linear-gradient(90deg, var(--ink) 0 1.5px, transparent 1.5px calc(var(--inch,24px) / 2)) top left / 100% 7px no-repeat;
+  display:flex; justify-content:space-between;
 }
-.stage__coin span{
-  font-size:calc(var(--coin,28px) * .3); font-weight:var(--fw-black);
-  color:rgba(16,18,21,.38); letter-spacing:-.04em; line-height:1;
-}
+.stage__ruler span{position:relative; top:10px; width:0; display:flex; justify-content:center; white-space:nowrap;
+  font-family:var(--font-mono); font-size:.625rem; color:var(--ink-soft)}
 .stage__cap{
   position:absolute; left:0; right:0; bottom:var(--s-4); text-align:center;
   font-size:var(--fs-xs); color:var(--ink-mid);
@@ -466,7 +473,7 @@ img,svg{display:block; max-width:100%}
 
 /* The first measured paint snaps into place; only later picks animate. */
 .stage:not([data-ready]) .stage__stk,
-.stage:not([data-ready]) .stage__coin{transition:none}
+.stage:not([data-ready]) .stage__card{transition:none}
 
 /* A real photo covers the whole stage and retires the drawing and caption. */
 .stage__photo{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
@@ -843,10 +850,15 @@ input:-webkit-autofill:active{
             <span class="stage__dim" id="stageDim"></span>
           </span>
           <span class="stage__floor" id="stageFloor">
-            <svg class="stage__stk" viewBox="0 0 40 40"><use href="#stk"/></svg>
-            <span class="stage__coin"><span>10</span></span>
+            <span class="stage__set">
+              <span class="stage__row">
+                <span class="stage__card"><span class="stage__chip"></span><span class="stage__cardt">for scale</span></span>
+                <svg class="stage__stk" viewBox="0 0 40 40"><use href="#stk"/></svg>
+              </span>
+              <span class="stage__ruler"><span>0</span><span>1″</span><span>2″</span><span>3″</span><span>4″</span><span>5″</span><span>6″</span></span>
+            </span>
           </span>
-          <span class="stage__cap">Shown next to a &#8377;10 coin</span>
+          <span class="stage__cap">Shown to scale, next to a bank card</span>
           <img class="stage__photo" id="stagePhoto" alt="" hidden>
         </div>
 
@@ -1052,7 +1064,7 @@ input:-webkit-autofill:active{
      Five chips, each a checkbox: on = that size is in the order. The stage
      above shows whichever size was tapped last, to scale. */
   var span = P.SIZES.length - 1;
-  var COIN_MM = 27;
+  var CARD_W = 85.6, CARD_H = 53.98, INCH = 25.4, GAP_MM = 10;   /* a bank card is ISO ID-1 */
   var BIGGEST = parseFloat(P.SIZES[span].mm);
   var RS = "\u20B9";
 
@@ -1094,10 +1106,16 @@ input:-webkit-autofill:active{
 
     var floor = $("stageFloor");
     if (!floor.clientHeight) return;
-    var fit = Math.min(floor.clientHeight * 0.9, floor.clientWidth * 0.62);
-    var k = fit / BIGGEST;
-    floor.style.setProperty("--stk",  Math.round(parseFloat(s.mm) * k) + "px");
-    floor.style.setProperty("--coin", Math.round(COIN_MM * k) + "px");
+    /* the bench is card + gap + 6″ of ruler wide, and the biggest sticker
+       plus the ruler's 34px tall — whichever runs out first sets the scale */
+    var k = Math.min((floor.clientHeight - 34) / BIGGEST,
+                     floor.clientWidth / (CARD_W + GAP_MM + 6 * INCH));
+    var px = function (mm) { return Math.round(mm * k) + "px"; };
+    floor.style.setProperty("--stk",    px(parseFloat(s.mm)));
+    floor.style.setProperty("--card-w", px(CARD_W));
+    floor.style.setProperty("--card-h", px(CARD_H));
+    floor.style.setProperty("--gap",    px(GAP_MM));
+    floor.style.setProperty("--inch",   (INCH * k).toFixed(2) + "px");
     if (!$("stage").dataset.ready) {
       requestAnimationFrame(function () { $("stage").dataset.ready = "1"; });
     }

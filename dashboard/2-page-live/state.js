@@ -326,4 +326,35 @@ window.CM_STATES["settled"].notes = [
   }
 ];
 
+
+/* FOLLOW + QUICK CHAT — Phase-1, Garry 2026-10-13. A page that has just
+   gone live: nobody follows yet, no views, and Quick chat starts OFF — the
+   owner chooses to let strangers message. "Live a while" has a little. */
+var SOCIAL_FRESH = {
+  chat: false, showCounts: true, showList: true,
+  views: { week: 0, total: 0, sticker: 0, link: 0 },
+  followers: 0, following: 0, people: { followers: [], following: [] },
+  usage: { used: 0, limit: 500 }, requests: [], chats: []
+};
+var SOCIAL_SOME = {
+  chat: true, showCounts: true, showList: true,
+  views: { week: 12, total: 31, sticker: 0, link: 12 },
+  followers: 4, following: 7,
+  people: {
+    followers: [ { name: "Simran Kaur", handle: "simran" }, { name: "Arjun Mehta", handle: "arjun" },
+                 { name: "Neha Sharma", handle: "neha" },   { name: "Rohit Bansal", handle: "rohit" } ],
+    following: [ { name: "Gurdeep Singh", handle: "gurdeep" }, { name: "Rhea Malhotra", handle: "rhea" } ]
+  },
+  usage: { used: 0, limit: 500 },
+  requests: [
+    { id: "r1", name: "Neha Sharma", handle: "neha", source: "link", when: "2h ago", unread: true,
+      bio: "Photographer, Chandigarh.", socials: ["Instagram"],
+      text: "Hi! Found your page through Simran. Loved the work on your Instagram — open to a collab shoot?" }
+  ],
+  chats: []
+};
+Object.keys(window.CM_STATES).forEach(function (k) {
+  if (!window.CM_STATES[k].social) { window.CM_STATES[k].social = k === "fresh" ? SOCIAL_FRESH : SOCIAL_SOME; }
+});
+
 })(window);

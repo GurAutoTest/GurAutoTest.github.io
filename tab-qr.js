@@ -155,7 +155,7 @@
           el.innerHTML = CM.icon("plus") + "Build my page";
         });
         if (!a.profile) {
-          Array.prototype.forEach.call(pv.querySelectorAll("[data-view]"), function (el) {
+          Array.prototype.forEach.call(pv.querySelectorAll("a[data-view]"), function (el) {
             el.remove();
           });
         }
@@ -200,7 +200,7 @@
             }
           } });
         };
-        each("[data-view]", function (el) {
+        each("a[data-view]", function (el) {
           el.removeAttribute("target");
           el.addEventListener("click", function (e) { e.preventDefault(); openFull(); });
         });
