@@ -1,0 +1,2741 @@
+<title>Codemarca Profile</title>
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="apple-touch-icon" href="../favicon.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Gurdeep Singh on Codemarca — call, WhatsApp, save contact.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+/* ==========================================================================
+   CODEMARCA — THE PUBLIC PROFILE PAGE
+   What a scan lands on. Three views, switched by <div class="pg" data-view>:
+     visitor    — a stranger who just scanned the code (the default)
+     owner      — the owner, logged in, gets a thin edit bar and nothing else
+     unclaimed  — a fresh code nobody has set up yet; the scan becomes the
+                  build moment
+
+   THE READER IS CURIOUS, NOT URGENT. Who is this, what do they do, let me
+   follow or save them. This page is not designed around an emergency.
+
+   HARD RULE: the core — photo, name, bio, top actions and the socials row —
+   must fit one 375px screen with no scroll. Extra links go below; the top of
+   the list never gets pushed down.
+
+   Order alone is the hierarchy. Every button is the same size. The owner
+   drags; this page renders exactly what it is given.
+
+   PERFORMANCE, because this page is the product: keep it under 100KB, fix
+   image dimensions so nothing shifts, webfont on swap so text paints first.
+   Before launch, self-host and subset both fonts rather than hitting Google.
+   ========================================================================== */
+
+/* ── 0. TOKENS ─────────────────────────────────────────────────────────── */
+:root {
+  --brand-violet:#6E27E6; --brand-violet-press:#5A1DC4;
+  --brand-violet-tint:#F1E9FE; --brand-violet-edge:#DCC9FB;
+  --ink:#101215; --ink-mid:#5B5D68; --ink-soft:#8C8E9C; --ink-faint:#B6B8C4;
+  --ground:#FFFFFF; --ground-soft:#F4F3F7;
+  --line:rgba(16,18,21,.09); --line-strong:rgba(16,18,21,.16);
+  --ok:#17914F;
+
+  --font-sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --ls-display:-.038em; --ls-body:-.011em; --ls-label:.13em; --ls-soft:.14px;
+  --fw-medium:500; --fw-semibold:600; --fw-bold:700; --fw-black:800;
+
+  --s-1:.25rem; --s-2:.5rem; --s-3:.75rem; --s-4:1rem; --s-5:1.25rem; --s-6:1.5rem; --s-8:2rem;
+  --r-xs:6px; --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px; --r-pill:999px;
+  --shadow-lg:0 20px 56px rgba(16,18,21,.11);
+  --dur-fast:140ms; --dur:240ms; --ease:cubic-bezier(.22,.61,.36,1);
+
+  --page:400px;          /* the column; a phone is the design target */
+  --btn-h:52px;
+}
+
+/* ── 1. BASE ───────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; font-family:var(--font-sans); font-weight:var(--fw-medium);
+  letter-spacing:var(--ls-body); -webkit-font-smoothing:antialiased;
+  background:var(--ground-soft);
+}
+h1,p,figure{margin:0}
+a{color:inherit; text-decoration:none}
+button{font:inherit; color:inherit; border:0; background:none; cursor:pointer}
+img,svg{display:block; max-width:100%}
+[hidden]{display:none !important}
+:focus-visible{outline:none; box-shadow:0 0 0 3px var(--ground),0 0 0 5px var(--ink); border-radius:var(--r-sm)}
+
+/* ── 2. THEMES ─────────────────────────────────────────────────────────────
+   The flat themes below (Light, Cream) change ground, ink, button fill and button
+   radius only. That is no longer the rule for themes in general: from the
+   glass looks on (2b), each theme is its own design and may change layout
+   too (Garry, 2026-10-03). New themes are drawn on profile-themes.html
+   first, then ported here.
+
+   Every pair here clears 4.5:1. The first gradient draft ran white text down
+   to a pale orange (~1.9:1) — unreadable on a phone held in sun, which is
+   exactly where this page gets read. The stops are darker for that reason. */
+.pg[data-theme="light"]   {--mark:#6E27E6; --av-bg:#E7E9EE; --av-fg:#FFFFFF; --bg:#FFFFFF; --fg:#101215; --mid:#5B5D68; --btn:#F4F3F7; --btn-fg:#101215; --edge:rgba(16,18,21,.10); --r-btn:14px}
+
+.pg{
+  min-height:100svh; background:var(--bg); color:var(--fg);
+  display:flex; flex-direction:column; align-items:center;
+}
+
+/* ── 2b. THE TWO GLASS LOOKS — Copper (pill) and Bronze (tile) ─────────────
+   Built and signed off on the design bench, profile-themes.html (Figma QR
+   272:444, Garry 2026-10-03). They replaced Ember glass and Violet glass.
+
+   Unlike the five flat themes, these two DO change the layout, because the
+   design does: call / WhatsApp / email become three round buttons under the
+   bio, Save contact becomes the "Add Contact" chip top-right, share moves
+   top-left, socials become pills (Copper) or tiles (Bronze) with the handle
+   under the name. The script sets data-look on .pg for these two, and
+   render() builds that markup — everything below keys off data-look.
+
+   The wallpaper is a POSITION:FIXED layer, not a background on .pg: a
+   background on a 2000px column would crop the 16:9 photo to a sliver.
+   Phone sizes first; 640px and up takes the Figma web numbers 1:1. */
+.pg[data-theme="glass-copper"]{
+  --mark:currentColor; --av-bg:rgba(75,75,75,.23); --av-fg:#FFFFFF;
+  --fg:#FFFFFF; --mid:rgba(255,255,255,.82); --btn:rgba(255,255,255,.05); --btn-fg:#FFFFFF;
+  --edge:rgba(255,255,255,.43); --r-btn:36px;
+  --scene:url("assets/profile-bg/pv1hd.jpg"); --bg:#150E0B;
+}
+.pg[data-theme="glass-bronze"]{
+  --mark:currentColor; --av-bg:rgba(255,255,255,.02); --av-fg:#FFFFFF;
+  --fg:#FFFFFF; --mid:rgba(255,255,255,.86); --btn:rgba(255,255,255,.05); --btn-fg:#FFFFFF;
+  --edge:rgba(255,255,255,.43); --r-btn:23px;
+  --scene:url("assets/profile-bg/pv3hd.jpg"); --bg:#7A5440;
+}
+/* isolation makes .pg the backdrop root, so the fixed wallpaper still
+   counts as backdrop for every backdrop-filter inside it */
+.pg[data-look]{isolation:isolate}
+.pg[data-look]::before{
+  content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background:var(--scene) center / cover no-repeat, var(--bg);
+}
+
+/* the panel */
+.pg[data-look] .card{
+  flex:none; width:calc(100% - 32px); max-width:562px; margin:16px auto 28px;
+  padding:72px 18px 22px; border-radius:30px;
+  /* a 5px rim at 3% — Garry's value from the inspector (2026-10-03) */
+  background:rgba(255,255,255,.05); box-shadow:inset 0 0 0 5px rgba(255,255,255,.03), 0 24px 60px -24px rgba(0,0,0,.45);
+  -webkit-backdrop-filter:blur(18px) saturate(1.1); backdrop-filter:blur(18px) saturate(1.1);
+}
+.pg[data-look="tile"] .card{background:rgba(255,255,255,.01); box-shadow:inset 0 0 0 5px rgba(255,255,255,.03), 0 24px 60px -24px rgba(0,0,0,.45)}
+
+/* top corners: share left, Add Contact right */
+.pg[data-look] .share{
+  top:18px; left:18px; right:auto; width:40px; height:40px;
+  background:rgba(0,0,0,.1); color:#fff; box-shadow:inset 0 0 0 1px rgba(255,255,255,.3);
+}
+.pg[data-look] .share svg{width:18px; height:18px}
+.addc{display:none}
+.pg[data-look] .addc{
+  display:inline-flex; align-items:center; gap:6px; position:absolute; top:18px; right:18px; z-index:5;
+  height:40px; padding:0 14px; border-radius:36px; color:#fff; font-size:14px; font-weight:500;
+  transition:transform var(--dur-fast) var(--ease);
+}
+.pg[data-look] .addc:active{transform:scale(.97)}
+.pg[data-look] .addc svg{width:13px; height:13px}
+.pg[data-look="pill"] .addc{background:rgba(65,195,0,.78); box-shadow:inset 0 0 0 1px #81C759, 0 0 18px rgba(65,195,0,.45)}
+.pg[data-look="tile"] .addc{background:#000; font-weight:600; box-shadow:inset 0 0 0 1px rgba(199,199,199,.38), 2px 3px 0 rgba(255,255,255,.9)}
+
+/* photo on its ring — a band of light travels round the ring's edge, slow
+   and endless. The element rotates (not the gradient), so it stays on the
+   compositor and never stutters. */
+.pg[data-look] .avatar{width:112px; height:112px; position:relative; overflow:visible; background:var(--av-bg)}
+.pg[data-look] .avatar img{width:96px; height:96px; border-radius:50%; position:relative; z-index:1}
+.pg[data-look] .avatar::before{
+  content:""; position:absolute; inset:0; border-radius:50%; pointer-events:none;
+  background:conic-gradient(from 0deg, transparent 0 62%, rgba(255,255,255,.35) 72%, #fff 80%, rgba(255,255,255,.35) 88%, transparent 96%);
+  -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 1.6px), #000 calc(100% - 1px));
+          mask:radial-gradient(farthest-side, transparent calc(100% - 1.6px), #000 calc(100% - 1px));
+  animation:ring 7s linear infinite;
+}
+@keyframes ring{to{transform:rotate(1turn)}}
+/* no photo: a person silhouette in the page's own white, on the same smoked
+   disc as the call / WhatsApp / email buttons — never the brand-violet chip */
+.pg[data-look] .avatar .ph{position:relative; z-index:1; width:96px; height:96px; border-radius:50%; overflow:hidden;
+  background:rgba(0,0,0,.12); color:#fff}
+.pg[data-look] .avatar .ph svg{width:100%; height:100%}
+@media (prefers-reduced-motion:reduce){ .pg[data-look] .avatar::before{animation:none} }
+
+.pg[data-look] .name{margin-top:12px; font-size:26px; font-weight:var(--fw-semibold); letter-spacing:-.02em; line-height:1.2}
+.pg[data-look="tile"] .name{text-shadow:-1px 1px 4px rgba(0,0,0,.12)}
+.pg[data-look] .handle{
+  margin-top:8px; gap:7px; padding:5px 12px; border-radius:999px; font-size:12px; letter-spacing:.14px;
+  color:rgba(255,255,255,.82); background:rgba(0,0,0,.1); box-shadow:inset 0 0 0 1px rgba(255,255,255,.22);
+}
+.pg[data-look] .handle:hover{background:rgba(0,0,0,.18); color:#fff}
+/* the bio matches the row titles: 15px phone, 18px web */
+.pg[data-look] .bio{margin-top:12px; max-width:290px; font-size:15px; font-weight:400; line-height:1.4; color:#fff}
+.pg[data-look="tile"] .bio{text-shadow:0 0 4px rgba(0,0,0,.16)}
+
+.pg[data-look] .list{margin-top:22px; gap:12px}
+
+/* call · WhatsApp · email */
+.acts{display:flex; justify-content:center; gap:14px; margin-bottom:16px}
+.acts a{width:58px; height:58px; border-radius:50%; display:grid; place-items:center;
+  background:rgba(0,0,0,.1); color:#fff; transition:background .15s}
+.acts a:hover{background:rgba(0,0,0,.18)}
+.acts svg{width:26px; height:26px}
+
+/* socials grid; minmax(0,…) so a long handle can't stretch its column */
+.sgrid{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px}
+.sgrid > :last-child:nth-child(odd){grid-column:1 / -1}
+.pg[data-look="pill"] .sgrid{grid-template-columns:minmax(0,1fr)}
+
+.pill, .tile{position:relative; isolation:isolate; min-width:0; color:#fff;
+  background:rgba(255,255,255,.05); box-shadow:inset 0 0 0 1px rgba(255,255,255,.43);
+  transition:background .3s ease, box-shadow .5s ease}
+.pill:hover, .tile:hover{box-shadow:inset 0 0 0 1px rgba(255,255,255,.7)}
+
+/* Copper — pills */
+.pill{display:flex; align-items:center; gap:11px; height:62px; padding:0 11px 0 7px; border-radius:36px; text-align:left}
+.pill:hover{background:rgba(255,255,255,.1)}
+.pill .disc{flex:none; width:46px; height:46px; border-radius:50%; background:#fff; color:#2A2220; display:grid; place-items:center}
+.pill .disc svg{width:27px; height:27px}
+.pill .disc svg.ro{width:22px; height:22px}
+.pill .disc--snap{background:#FFFC00}
+/* Pill: the disc is the brand's own colour now, the mark white (Garry,
+   2026-10-07) — the svg is the whole disc, so no white ground behind it */
+.pill .disc.disc--fill{background:none}
+.pill .disc.disc--fill svg{width:100%; height:100%}
+
+.pill .txt{flex:1; min-width:0}
+.pill .txt b, .tile .tx b{display:block; font-weight:500; line-height:1.15; letter-spacing:-.01em}
+.pill .txt b{font-size:15px}
+.pill small, .tile small{display:block; max-width:100%; font-size:11px; font-weight:500; opacity:.6;
+  text-transform:uppercase; letter-spacing:.08em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.pill small{margin-top:3px}
+
+/* Bronze — tiles */
+.tile{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; height:88px; border-radius:20px}
+.tile:hover{background:rgba(255,255,255,.09)}
+.tile svg{width:28px; height:28px; flex:none}
+.tile svg.ro{width:22px; height:22px; color:#fff}
+.tile .tx{display:flex; flex-direction:column; align-items:center; width:100%; min-width:0; padding:0 10px; text-shadow:0 0 4px rgba(0,0,0,.16)}
+.tile .tx b{font-size:16px}
+.tile small{margin-top:2px; font-size:10px}
+/* phone: the mark says which site it is — only the handle stays under it */
+.sgrid .tile .tx b{display:none}
+.sgrid .tile small{margin-top:0}
+/* link tiles: a row, content from the left, share on the right */
+.tile--row{flex-direction:row; justify-content:flex-start; height:62px; padding:0 11px 0 20px}
+.tile--row > a{flex:1; min-width:0; display:flex; align-items:center; gap:12px}
+.tile--row .tx{align-items:flex-start; padding:0; text-align:left}
+
+/* the row share, same in both looks */
+.pg[data-look] .rowshare{
+  position:static; transform:none; flex:none; width:36px; height:36px; border-radius:50%;
+  background:rgba(0,0,0,.12); color:#fff; opacity:1; box-shadow:none;
+}
+.pg[data-look] .rowshare svg{width:18px; height:18px}
+.pg[data-look] .rowshare:hover{background:rgba(0,0,0,.22)}
+
+/* outline shine on hover: only the edge lights up — a bright band sweeps
+   along the border, masked so the fill never changes. Transitions, not a
+   keyframe, so leaving mid-sweep fades out instead of snapping. */
+.pill::after, .tile::after{content:""; position:absolute; inset:0; border-radius:inherit; padding:1.5px; pointer-events:none;
+  background:linear-gradient(115deg, transparent 36%, rgba(255,255,255,.6) 45%, #fff 50%, rgba(255,255,255,.6) 55%, transparent 64%) 160% 0 / 260% 100% no-repeat;
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude; opacity:0;
+  transition:opacity .45s ease, background-position 0s linear .45s}
+.pill:hover::after, .tile:hover::after{opacity:1; background-position:-60% 0;
+  transition:opacity .25s ease, background-position 1.4s cubic-bezier(.45,.05,.35,1)}
+@media (prefers-reduced-motion:reduce){
+  .pill::after, .tile::after{transition:opacity .3s ease}
+  .pill:hover::after, .tile:hover::after{background-position:50% 0}
+}
+
+/* footer — a quiet text button on the glass */
+.pg[data-look] .brand{margin-top:20px; padding-top:0}
+.pg[data-look] .brand button{background:none; box-shadow:none; color:rgba(255,255,255,.75); padding:8px 12px; letter-spacing:.14px}
+.pg[data-look] .brand button:hover{transform:none; box-shadow:none; color:#fff}
+.pg[data-look] .brand button svg{color:currentColor; width:16px; height:16px}
+
+/* ── web: Figma numbers 1:1 ── */
+@media (min-width:640px){
+  .pg[data-look] .card{margin:65px auto 56px; padding:58px 32px 32px; border-radius:36px}
+  .pg[data-look] .share{top:35px; left:37px; width:45px; height:45px}
+  .pg[data-look] .share svg{width:20px; height:20px}
+  .pg[data-look] .addc{top:35px; right:37px; height:45px; padding:0 18px; font-size:17px}
+  .pg[data-look] .addc svg{width:15px; height:15px}
+  .pg[data-look] .avatar{width:136px; height:136px}
+  .pg[data-look] .avatar img, .pg[data-look] .avatar .ph{width:117px; height:117px}
+  .pg[data-look] .name{margin-top:14px; font-size:33px}
+  .pg[data-look] .handle{font-size:13px}
+  .pg[data-look] .bio{margin-top:14px; max-width:368px; font-size:18px}
+  .pg[data-look] .list{margin-top:28px; gap:16px}
+  .acts{gap:18px; margin-bottom:28px}
+  .acts a{width:73px; height:73px}
+  .acts svg{width:32px; height:32px}
+  .sgrid{gap:24px}
+  .pg[data-look="pill"] .sgrid{grid-template-columns:repeat(2, minmax(0,1fr))}
+  .pill{height:74px; gap:12px; padding:0 14px 0 9px}
+  .pill .disc{width:54px; height:54px}
+  .pill .disc svg{width:32px; height:32px}
+  .pill .disc svg.ro{width:26px; height:26px}
+  .pill .txt b{font-size:18px}
+  .pill small, .tile small{font-size:12px}
+  .tile{flex-direction:row; gap:10px; height:110px; border-radius:23px}
+  .tile svg{width:32px; height:32px}
+  .tile svg.ro{width:26px; height:26px}
+  .tile .tx{width:auto; align-items:flex-start; padding:0; text-align:left}
+  .tile .tx b{font-size:18px}
+  .tile small{margin-top:3px}
+  .sgrid .tile .tx b{display:block}
+  .sgrid .tile small{margin-top:3px}
+  .tile--row{justify-content:flex-start; gap:14px; height:76px; padding:0 15px 0 26px}
+  .tile--row > a{gap:14px}
+  .pg[data-look] .rowshare{width:40px; height:40px}
+  .pg[data-look] .brand{margin-top:28px}
+}
+
+/* ── 2d. LEAF — bench V4 "Deck" (Garry, 2026-10-04) ────────────────────────
+   Replaced Cream. Flat and graphic: a leaf-green page, white cards with a
+   thick black outline, the photo sitting ON the top edge of the profile
+   card, Add Contact inside that card. Socials are a deck — one card in
+   front, two peeking above — flipped by swipe, sideways scroll, arrow keys
+   or the black strip under it. The script sets data-look="deck", wraps the
+   top of the page in .card4 (layoutDeck) and renderDeck() builds the rest.
+   Every rule here outranks the glass-look rules above by coming later. */
+.pg[data-theme^="leaf"]{
+  --mark:currentColor; --av-bg:#FFFFFF; --av-fg:#0A0A0A; --fg:#0A0A0A; --mid:#1C1C1C;
+  --btn:#FFFFFF; --btn-fg:#0A0A0A; --edge:#0A0A0A; --r-btn:32px; --ink4:#0A0A0A;
+}
+/* Leaf in four colours (Garry, 2026-10-05) — one theme, the owner picks the
+   colour under it. Only these tokens move: page, the two peeking cards, Add
+   Contact, the link pill and the row share. "leaf" alone is the green. */
+.pg[data-theme="leaf"], .pg[data-theme="leaf-green"]{--bg:#A3BF5A; --pk1:#E8EFD8; --pk2:#C2D693; --add4:#C3E36A; --tint4:#EEF4DD; --tintInk4:#4F6128; --rs4:#EEF3E2; --rsInk4:#7FA03A}
+.pg[data-theme="leaf-blue"]  {--bg:#0062FE; --pk1:#DCE8FF; --pk2:#8DB6FF; --add4:#9CC0FF; --tint4:#E6EFFF; --tintInk4:#0047B8; --rs4:#E6EFFF; --rsInk4:#0062FE}
+.pg[data-theme="leaf-orange"]{--bg:#F45C30; --pk1:#FDE5DD; --pk2:#F9AE97; --add4:#FBB79F; --tint4:#FDECE6; --tintInk4:#B23A15; --rs4:#FDECE6; --rsInk4:#F45C30}
+.pg[data-theme="leaf-violet"]{--bg:#6741FF; --pk1:#E7E1FF; --pk2:#B3A2FF; --add4:#BFB0FF; --tint4:#EDE9FF; --tintInk4:#4A26DB; --rs4:#EDE9FF; --rsInk4:#6741FF}
+.pg[data-look="deck"]::before{background:var(--bg)}
+.pg[data-look="deck"] .card{
+  width:100%; max-width:562px; margin:0 auto; padding:92px 32px 56px; border-radius:0; color:var(--ink4);
+  background:none; box-shadow:none; -webkit-backdrop-filter:none; backdrop-filter:none;
+}
+.pg[data-look="deck"] .addc{display:none}
+.card4{position:relative; width:100%; padding:88px 32px 34px; text-align:center; display:flex; flex-direction:column; align-items:center;
+  background:#fff; border:4px solid var(--ink4); border-radius:52px; color:var(--ink4)}
+/* the photo straddles the card's top edge */
+.pg[data-look="deck"] .avatar{position:absolute; top:0; left:50%; transform:translate(-50%,-50%); margin:0; overflow:hidden;
+  width:132px; height:132px; background:#fff; border:4px solid var(--ink4); box-shadow:0 10px 24px -14px rgba(0,0,0,.45)}
+.pg[data-look="deck"] .avatar::before{display:none}
+.pg[data-look="deck"] .avatar img, .pg[data-look="deck"] .avatar .ph{width:116px; height:116px; border-radius:50%}
+.pg[data-look="deck"] .avatar .ph{background:#fff; color:var(--ink4)}
+.pg[data-look="deck"] .share{top:26px; left:28px; right:auto; width:44px; height:44px; background:var(--ink4); color:#fff; box-shadow:none}
+.pg[data-look="deck"] .share:hover{background:#2A2A2A; transform:none}
+.pg[data-look="deck"] .name{margin:0; font-size:33px; font-weight:700; letter-spacing:-.02em; color:var(--ink4); text-shadow:none}
+/* the link pill: a very light shade of the page's green, not grey */
+.pg[data-look="deck"] .handle{margin-top:8px; color:var(--tintInk4); background:var(--tint4); box-shadow:none}
+/* the link hovers like the row share in each of these themes, not with the
+   glass themes' dark grey (Garry, 2026-10-11) — same for Soft and Photo */
+.pg[data-look="deck"] .handle:hover{background:color-mix(in srgb, var(--tint4), var(--tintInk4) 14%); color:var(--tintInk4)}
+.pg[data-look="deck"] .bio{margin-top:14px; max-width:368px; font-size:18px; font-weight:400; color:#1C1C1C; text-shadow:none}
+.deckTop{display:flex; flex-direction:column; align-items:center; width:100%}
+.deckTop:empty{display:none}
+.pg[data-look="deck"] .acts{margin:28px 0 0}
+.pg[data-look="deck"] .acts a{width:73px; height:73px; background:var(--ink4); color:#fff; box-shadow:none; -webkit-backdrop-filter:none; backdrop-filter:none}
+.pg[data-look="deck"] .acts a:hover{background:#2A2A2A}
+.pg[data-look="deck"] .acts svg{width:32px; height:32px}
+.add4{display:inline-flex; align-items:center; justify-content:center; gap:8px; margin-top:28px;
+  height:54px; padding:0 34px; border-radius:999px; background:var(--add4);
+  color:var(--ink4); font-size:16px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+  transition:transform .15s, background .15s}
+.add4:hover{filter:brightness(.96)}
+.add4:active{transform:scale(.97)}
+.add4 svg{width:14px; height:14px}
+.pg[data-look="deck"] .list{margin-top:0; gap:0}
+
+/* the deck — a wheel, like the iOS date picker: thumb or wheel rolls it
+   continuously, a flick carries on and it settles on the nearest card. The
+   script places every card on every frame (no CSS transitions); touch-action
+   none keeps a swipe on the deck from scrolling the page. --pk1 / --pk2 are
+   the two peeking cards' colours. */
+.deck{position:relative; width:100%; height:216px; margin-top:132px; touch-action:none; user-select:none; outline:none; cursor:grab;
+  /* its own stacking layer: the cards run z-index up to 100 among themselves,
+     and without this they rose above the share sheet (z 70) */
+  isolation:isolate; z-index:0}
+.deck.dragging{cursor:grabbing}
+.deck[data-n="1"]{cursor:default}
+.dk{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:30px;
+  background:#fff; border:4px solid var(--ink4); border-radius:52px; color:var(--ink4);
+  transform-origin:50% 0; will-change:transform, opacity}
+.dk svg{width:66px; height:66px; flex:none}
+.dk .tx4{display:flex; flex-direction:column; align-items:flex-start; min-width:0; max-width:55%; text-align:left}
+.dk b{font-size:20px; font-weight:600; letter-spacing:-.01em; line-height:1.2}
+.dk small{margin-top:6px; max-width:100%; font-size:13px; font-weight:500; color:#5F6368; letter-spacing:.1em;
+  text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+/* a card's content fades with its distance from the front */
+.dk > *{opacity:var(--c,1)}
+
+/* the black strip — how many, and which is up; every mark is a button */
+.strip{display:flex; justify-content:center; gap:4px; width:max-content; max-width:100%; margin:14px auto 0;
+  padding:6px 8px; border-radius:999px; background:var(--ink4); overflow-x:auto; scrollbar-width:none}
+.strip::-webkit-scrollbar{display:none}
+.strip button{flex:none; width:34px; height:34px; border-radius:50%; padding:0; display:grid; place-items:center; transition:background .3s ease}
+.strip button:hover{background:#262626}
+.strip button[aria-current="true"]{background:#454545}
+.strip svg{width:18px; height:18px}
+
+/* link rows */
+.links4{display:grid; gap:18px; width:100%; margin-top:30px}
+.lrow{display:flex; align-items:center; gap:18px; height:96px; padding:0 18px 0 30px; background:#fff;
+  border:4px solid var(--ink4); border-radius:32px; color:var(--ink4); transition:transform .2s ease}
+.lrow:hover{transform:translateY(-2px)}
+.lrow > a{flex:1; min-width:0; display:flex; align-items:center; gap:22px; text-align:left}
+.lrow svg.ro{width:30px; height:30px; flex:none; color:var(--ink4)}
+.lrow .tx4{display:flex; flex-direction:column; min-width:0}
+.lrow b{font-size:18px; font-weight:600; letter-spacing:-.01em}
+.lrow small{margin-top:4px; font-size:13px; font-weight:500; color:#5F6368; letter-spacing:.1em;
+  text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+/* the row share: the same glyph as every theme, on a pale green */
+.pg[data-look="deck"] .rowshare{position:static; transform:none; flex:none; width:52px; height:52px; border-radius:50%;
+  background:var(--rs4); color:var(--rsInk4); opacity:1; box-shadow:none}
+/* hover deepens the theme's own tint — it used to pick up the glass
+   themes' rgba(0,0,0,.22) and go grey on every Leaf colour (Garry, 2026-10-11) */
+.pg[data-look="deck"] .rowshare:hover{background:color-mix(in srgb, var(--rs4), var(--rsInk4) 14%)}
+.pg[data-look="deck"] .rowshare svg{width:22px; height:22px}
+.pg[data-look="deck"] .brand{margin-top:30px; padding-top:0}
+.pg[data-look="deck"] .brand button{height:50px; padding:0 22px; border-radius:999px; background:var(--ink4); color:#fff; box-shadow:none}
+.pg[data-look="deck"] .brand button:hover{background:#2A2A2A; transform:none}
+.pg[data-look="deck"] .brand button svg{color:currentColor; width:16px; height:16px}
+
+@media (max-width:639px){
+  .pg[data-look="deck"] .card{padding:76px 16px 28px}
+  .card4{padding:72px 18px 24px; border-width:3px; border-radius:36px}
+  .pg[data-look="deck"] .avatar{width:108px; height:108px; border-width:3px}
+  .pg[data-look="deck"] .avatar img, .pg[data-look="deck"] .avatar .ph{width:94px; height:94px}
+  .pg[data-look="deck"] .share{top:16px; left:16px; width:38px; height:38px}
+  .pg[data-look="deck"] .name{font-size:26px}
+  .pg[data-look="deck"] .bio{margin-top:12px; max-width:290px; font-size:15px}
+  .pg[data-look="deck"] .acts{gap:14px; margin-top:22px}
+  .pg[data-look="deck"] .acts a{width:58px; height:58px}
+  .pg[data-look="deck"] .acts svg{width:26px; height:26px}
+  .add4{margin-top:20px; height:46px; padding:0 26px; font-size:14px}
+  .deck{height:150px; margin-top:96px}
+  .dk{border-width:3px; border-radius:34px; gap:20px}
+  .dk svg{width:48px; height:48px}
+  .dk b{font-size:16px}
+  .dk small{font-size:11px}
+  .strip{gap:2px; padding:5px 6px}
+  .strip button{width:28px; height:28px}
+  .strip svg{width:15px; height:15px}
+  .links4{gap:12px; margin-top:22px}
+  .lrow{height:72px; gap:12px; padding:0 11px 0 18px; border-width:3px; border-radius:24px}
+  .lrow > a{gap:14px}
+  .lrow svg.ro{width:24px; height:24px}
+  .lrow b{font-size:15px}
+  .lrow small{font-size:11px}
+  .pg[data-look="deck"] .rowshare{width:42px; height:42px}
+  .pg[data-look="deck"] .rowshare svg{width:19px; height:19px}
+  .pg[data-look="deck"] .brand{margin-top:22px}
+}
+
+/* ── 2e. SOFT and PHOTO — bench V3 and V5 (Garry, 2026-10-06) ─────────────
+   Soft replaced Blush glass. Each comes in a light and a dark version, and
+   the version is part of the theme id: soft / soft-dark, photo / photo-dark.
+   These two lay the whole page out themselves: renderSoft() / renderPhoto()
+   write it into #list and the shared top elements are hidden, so nothing
+   here depends on where those elements sit for the other themes. Ported
+   from profile-themes.html — the selectors are the bench's, re-scoped. */
+.pg[data-look="soft"]::before, .pg[data-look="photo"]::before{background:var(--bg)}
+.pg[data-look="soft"] .card, .pg[data-look="photo"] .card{
+  width:100%; max-width:594px; margin:0 auto; padding:40px 16px 56px; border-radius:0; text-align:center;
+  background:none; box-shadow:none; -webkit-backdrop-filter:none; backdrop-filter:none; align-items:center}
+.pg[data-look="photo"] .card{padding-top:65px}
+.pg[data-look="soft"] :is(#shareBtn, #addBtn, #avatar, #name, #handle, #bio),
+.pg[data-look="photo"] :is(#shareBtn, #addBtn, #avatar, #name, #handle, #bio){display:none}
+.pg[data-look="soft"] .list, .pg[data-look="photo"] .list{display:flex; flex-direction:column; align-items:center; gap:0; margin:0; width:100%}
+.pg[data-look="soft"] .handle, .pg[data-look="photo"] .handle{display:inline-flex}
+.pg[data-look="soft"] .brand, .pg[data-look="photo"] .brand{padding-top:0}
+.pg[data-look="soft"] .brand button svg, .pg[data-look="photo"] .brand button svg{color:currentColor}
+.pg[data-look="soft"] .rowshare, .pg[data-look="photo"] .rowshare{position:static; transform:none; flex:none; border-radius:50%; opacity:1; display:grid; place-items:center}
+.pg[data-theme^="soft"], .pg[data-theme^="photo"]{--mark:currentColor}
+
+/* ══ V3 · Soft ═════════════════════════════════════════════════════════
+   Figma: assets/profile-bgs/design-reference-profile-v4.png (Garry,
+   2026-10-05). Replaces the old V3 (Blush) on this bench. Quiet and soft:
+   a warm-grey ground and plain white rounded cards — the profile card
+   (name, round photo, bio, Call/WhatsApp pill + Email), a big Save Contact
+   card, the socials as app icons in one card, then the link rows. Share is
+   a white disc sitting above the card's top-right corner. */
+.pg[data-theme="soft"]{--bg:#E8E7E5}
+.pg[data-look="soft"] .card{--ink3:#0B0B0C; --line3:#E3E3E3; padding-top:40px}
+.pg[data-look="soft"] .top3{display:flex; justify-content:flex-end; width:562px; max-width:100%}
+.pg[data-look="soft"] .share{position:relative; top:auto; left:auto; margin:0 26px 16px 0;
+  width:58px; height:58px; background:#fff; color:var(--ink3); border:0; box-shadow:0 6px 16px -10px rgba(0,0,0,.25)}
+.pg[data-look="soft"] .share:hover{background:#F6F6F5}
+.pg[data-look="soft"] .share svg{width:22px; height:22px}
+.pg[data-look="soft"] .c3, .pg[data-look="soft"] .save3, .pg[data-look="soft"] .soc3, .pg[data-look="soft"] .lk3{width:562px; max-width:100%; background:#fff; color:var(--ink3)}
+.pg[data-look="soft"] .c3{display:flex; flex-direction:column; align-items:center; padding:52px 40px 44px; border-radius:64px; text-align:center}
+.pg[data-look="soft"] .name{margin:0; font-size:33px; font-weight:700; letter-spacing:-.02em; color:var(--ink3)}
+.pg[data-look="soft"] .handle{margin-top:10px; color:#55595F; background:#F3F3F2; border:0}
+.pg[data-look="soft"] .handle:hover{background:#EAEAE8; color:#55595F}
+.pg[data-look="soft"] .ph3{width:200px; height:200px; margin-top:28px; border-radius:50%; overflow:hidden; background:#F1ECE4}
+.pg[data-look="soft"] .ph3 img{width:100%; height:100%; object-fit:cover; display:block}
+.pg[data-look="soft"] .ph3 svg{width:100%; height:100%; display:block}
+.pg[data-look="soft"] .bio{margin:30px 0 0; max-width:380px; font-size:18px; font-weight:400; line-height:1.4; color:#1C1C1E}
+/* Call / WhatsApp in one pill, Email beside it */
+.pg[data-look="soft"] .ct3{display:flex; gap:20px; width:100%; margin-top:36px}
+.pg[data-look="soft"] .cw3{flex:1; min-width:0; display:flex; align-items:center; gap:4px; height:76px; padding:0 18px 0 12px;
+  border:1px solid var(--line3); border-radius:24px; text-align:left; transition:background .15s}
+.pg[data-look="soft"] .cw3:hover{background:#FAFAF9}
+.pg[data-look="soft"] .cw3 .wa3, .pg[data-look="soft"] .cw3 .tel3{flex:none; display:grid; place-items:center; width:46px; height:46px; border-radius:50%}
+.pg[data-look="soft"] .cw3 .wa3 svg{width:32px; height:32px}
+.pg[data-look="soft"] .cw3 .tel3 svg{width:28px; height:28px; color:var(--ink3)}
+.pg[data-look="soft"] .cw3 .num3{flex:1; min-width:0; display:flex; flex-direction:column; margin-left:10px; color:var(--ink3)}
+.pg[data-look="soft"] .cw3 b{font-size:18px; font-weight:500; letter-spacing:-.005em; white-space:nowrap}
+.pg[data-look="soft"] .cw3 small{margin-top:2px; font-size:13px; font-weight:500; color:#6B6E73; letter-spacing:.1em; white-space:nowrap}
+.pg[data-look="soft"] .em3{flex:none; display:grid; place-items:center; width:66px; height:76px; border:1px solid var(--line3); border-radius:24px;
+  color:var(--ink3); transition:background .15s}
+.pg[data-look="soft"] .em3:hover{background:#FAFAF9}
+.pg[data-look="soft"] .em3 svg{width:28px; height:28px}
+.pg[data-look="soft"] .save3{display:flex; align-items:center; justify-content:center; gap:14px; height:112px; margin-top:26px;
+  border:2px solid #0B0B0C;   /* a black 2px edge on light (Garry, 2026-10-10); dark clears it */
+  border-radius:999px; font-size:20px; font-weight:500; letter-spacing:-.005em; cursor:pointer; transition:background .15s}
+.pg[data-look="soft"] .save3:hover{background:#FAFAF9}
+.pg[data-look="soft"] .save3 svg{width:26px; height:26px}
+.pg[data-look="soft"] .soc3{display:flex; flex-wrap:wrap; justify-content:center; gap:14px 18px; margin-top:26px; padding:26px 36px; border-radius:60px}
+/* each icon sits in a padded tap target, so the mark itself stays modest */
+.pg[data-look="soft"] .soc3 a{display:grid; place-items:center; width:56px; height:56px; padding:9px; border-radius:16px; transition:transform .15s, background .15s}
+.pg[data-look="soft"] .soc3 a:hover{transform:translateY(-2px); background:#F6F6F5}
+.pg[data-look="soft"] .soc3 svg{width:100%; height:100%}
+/* custom CTAs under the socials */
+.pg[data-look="soft"] .lk3{display:grid; margin-top:26px; padding:6px 30px; border-radius:44px}
+.pg[data-look="soft"] .it3{display:flex; align-items:center; gap:18px; min-height:96px}
+.pg[data-look="soft"] .it3 + .it3{box-shadow:0 -1px 0 #F0F0EF}
+.pg[data-look="soft"] .it3 > a{flex:1; min-width:0; display:flex; align-items:center; gap:22px; text-align:left; color:var(--ink3)}
+.pg[data-look="soft"] .it3 svg.ro{width:28px; height:28px; flex:none; color:var(--ink3)}
+.pg[data-look="soft"] .it3 .tx3{display:flex; flex-direction:column; min-width:0}
+.pg[data-look="soft"] .it3 b{font-size:18px; font-weight:600; letter-spacing:-.01em}
+.pg[data-look="soft"] .it3 small{margin-top:4px; font-size:13px; font-weight:500; color:#6B6E73; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.pg[data-look="soft"] .rowshare{width:46px; height:46px; background:#F3F3F2; color:var(--ink3); box-shadow:none}
+.pg[data-look="soft"] .rowshare:hover{background:#EAEAE8}
+.pg[data-look="soft"] .rowshare svg{width:20px; height:20px}
+.pg[data-look="soft"] .brand{margin-top:28px}
+.pg[data-look="soft"] .brand button{display:inline-flex; align-items:center; gap:8px; height:50px; padding:0 22px; border-radius:999px; border:0;
+  background:var(--ink3); color:#fff; font-size:14px; font-weight:700; letter-spacing:.14px}
+.pg[data-look="soft"] .brand button svg{width:16px; height:16px}
+
+/* Soft at desktop size was built 1:1 off the Figma frame and read
+   oversized in a browser — 114px before the card even started, a 112px Save
+   Contact. Same placements, everything a step smaller (Garry, 2026-10-12). */
+@media (min-width:640px){
+  .pg[data-look="soft"] .card{padding-top:20px}
+  .pg[data-look="soft"] .top3, .pg[data-look="soft"] .c3, .pg[data-look="soft"] .save3,
+  .pg[data-look="soft"] .soc3, .pg[data-look="soft"] .lk3{width:500px}
+  .pg[data-look="soft"] .share{width:44px; height:44px; margin:0 18px 10px 0}
+  .pg[data-look="soft"] .share svg{width:19px; height:19px}
+  .pg[data-look="soft"] .c3{padding:38px 32px 32px; border-radius:48px}
+  .pg[data-look="soft"] .name{font-size:28px}
+  .pg[data-look="soft"] .ph3{width:150px; height:150px; margin-top:20px}
+  .pg[data-look="soft"] .bio{margin-top:20px; font-size:16px; max-width:340px}
+  .pg[data-look="soft"] .ct3{gap:12px; margin-top:26px}
+  .pg[data-look="soft"] .cw3{height:62px; border-radius:20px}
+  .pg[data-look="soft"] .cw3 .wa3, .pg[data-look="soft"] .cw3 .tel3{width:38px; height:38px}
+  .pg[data-look="soft"] .cw3 .wa3 svg{width:28px; height:28px}
+  .pg[data-look="soft"] .cw3 .tel3 svg{width:24px; height:24px}
+  .pg[data-look="soft"] .cw3 b{font-size:16px}
+  .pg[data-look="soft"] .cw3 small{font-size:12px}
+  .pg[data-look="soft"] .em3{width:58px; height:62px; border-radius:20px}
+  .pg[data-look="soft"] .em3 svg{width:24px; height:24px}
+  .pg[data-look="soft"] .save3{height:64px; margin-top:16px; gap:10px; font-size:17px}
+  .pg[data-look="soft"] .save3 svg{width:20px; height:20px}
+  .pg[data-look="soft"] .soc3{margin-top:16px; padding:20px 28px; gap:10px 14px; border-radius:40px}
+  .pg[data-look="soft"] .soc3 a{width:50px; height:50px; padding:8px}
+  .pg[data-look="soft"] .lk3{margin-top:16px; padding:4px 26px; border-radius:36px}
+  .pg[data-look="soft"] .it3{min-height:78px; gap:14px}
+  .pg[data-look="soft"] .it3 > a{gap:18px}
+  .pg[data-look="soft"] .it3 svg.ro{width:24px; height:24px}
+  .pg[data-look="soft"] .it3 b{font-size:16px}
+  .pg[data-look="soft"] .it3 small{font-size:12px}
+  .pg[data-look="soft"] .rowshare{width:42px; height:42px}
+  .pg[data-look="soft"] .rowshare svg{width:18px; height:18px}
+  .pg[data-look="soft"] .brand{margin-top:24px}
+}
+
+@media (max-width:639px){
+  .pg[data-look="soft"] .card{padding:0 16px 28px}   /* the page already clears the status bar (40px) */
+  .pg[data-look="soft"] .share{width:40px; height:40px; margin:0 10px 8px 0}
+  .pg[data-look="soft"] .share svg{width:17px; height:17px}
+  .pg[data-look="soft"] .c3{padding:28px 18px 22px; border-radius:36px}
+  .pg[data-look="soft"] .name{font-size:26px}
+  .pg[data-look="soft"] .ph3{width:150px; height:150px; margin-top:20px}
+  .pg[data-look="soft"] .bio{margin-top:20px; font-size:15px; max-width:290px}
+  .pg[data-look="soft"] .ct3{gap:10px; margin-top:24px}
+  .pg[data-look="soft"] .cw3{height:62px; padding:0 12px 0 8px; border-radius:18px; gap:0}
+  .pg[data-look="soft"] .cw3 .wa3, .pg[data-look="soft"] .cw3 .tel3{width:36px; height:36px}
+  .pg[data-look="soft"] .cw3 .wa3 svg{width:26px; height:26px}
+  .pg[data-look="soft"] .cw3 .tel3 svg{width:22px; height:22px}
+  .pg[data-look="soft"] .cw3 .num3{margin-left:6px}
+  .pg[data-look="soft"] .cw3 b{font-size:15px}
+  .pg[data-look="soft"] .cw3 small{font-size:11px}
+  .pg[data-look="soft"] .em3{width:54px; height:62px; border-radius:18px}
+  .pg[data-look="soft"] .em3 svg{width:22px; height:22px}
+  .pg[data-look="soft"] .save3{height:58px; margin-top:12px; font-size:16px}
+  .pg[data-look="soft"] .save3 svg{width:20px; height:20px}
+  /* phone: four to a row, a short last row centred */
+  .pg[data-look="soft"] .soc3{display:flex; flex-wrap:wrap; justify-content:center; gap:10px 0;
+    margin-top:16px; padding:18px 12px; border-radius:32px}
+  .pg[data-look="soft"] .soc3 a{flex:0 0 25%; width:auto; height:52px; padding:9px 0}
+  .pg[data-look="soft"] .soc3 svg{width:34px; height:34px}
+  .pg[data-look="soft"] .lk3{margin-top:16px; padding:4px 18px; border-radius:30px}
+  .pg[data-look="soft"] .it3{min-height:72px; gap:12px}
+  .pg[data-look="soft"] .it3 > a{gap:14px}
+  .pg[data-look="soft"] .it3 svg.ro{width:22px; height:22px}
+  .pg[data-look="soft"] .it3 b{font-size:15px}
+  .pg[data-look="soft"] .it3 small{font-size:11px}
+  .pg[data-look="soft"] .rowshare{width:38px; height:38px}
+  .pg[data-look="soft"] .rowshare svg{width:17px; height:17px}
+}
+
+
+/* ══ V5 · Photo ════════════════════════════════════════════════════════
+   Figma: assets/profile-bgs/design-reference-profile-v3.png (Garry,
+   2026-10-04). Calm and photographic: a cool-grey ground, one white card
+   led by a big photo panel, the name and bio set left, blue round buttons
+   with Add Contact beside them, and the socials and links as two white
+   grouped lists with hairline dividers. */
+.pg[data-theme="photo"]{--bg:#C4CBD4}
+.pg[data-look="photo"] .card{--ink5:#0B0B0C; --blue5:#1497F5; --tint5:#EEF6FF; --line5:#EEF0F3; gap:0}
+.pg[data-look="photo"] .card5, .pg[data-look="photo"] .grp{width:562px; max-width:100%; background:#fff; color:var(--ink5)}
+.pg[data-look="photo"] .card5{position:relative; padding:16px 16px 34px; border-radius:52px; text-align:left}
+.pg[data-look="photo"] .photo5{position:relative; height:452px; border-radius:40px; overflow:hidden; background:#E7E9EE}
+.pg[data-look="photo"] .photo5 img{width:100%; height:100%; object-fit:cover; display:block}
+.pg[data-look="photo"] .photo5 .face5{position:absolute; inset:0; display:grid; place-items:end center; color:#B3B8C2}
+.pg[data-look="photo"] .photo5 .face5 svg{width:62%; height:auto}
+/* share sits on the photo, top right — a white disc */
+.pg[data-look="photo"] .share{top:36px; right:36px; left:auto; width:56px; height:56px; background:#fff; color:var(--ink5); border:0;
+  box-shadow:0 6px 18px -8px rgba(0,0,0,.35)}
+.pg[data-look="photo"] .share:hover{background:#F4F6F8}
+.pg[data-look="photo"] .share svg{width:22px; height:22px}
+.pg[data-look="photo"] .body5{padding:0 18px}
+.pg[data-look="photo"] .name{margin:30px 0 0; font-size:33px; font-weight:700; letter-spacing:-.02em; color:var(--ink5); text-align:left}
+.pg[data-look="photo"] .handle{margin-top:10px; color:var(--blue5); background:var(--tint5); border:0}
+.pg[data-look="photo"] .handle:hover{background:#E0EEFF; color:var(--blue5)}
+.pg[data-look="photo"] .bio{margin:14px 0 0; max-width:420px; font-size:18px; font-weight:400; line-height:1.4; color:#1C1C1E; text-align:left}
+.pg[data-look="photo"] .row5{display:flex; align-items:center; gap:16px; margin-top:28px}
+.pg[data-look="photo"] .acts{margin:0; gap:14px; justify-content:flex-start}
+.pg[data-look="photo"] .acts a{width:73px; height:73px; background:var(--blue5); color:#fff}
+.pg[data-look="photo"] .acts a:hover{background:#0B86E0}
+.pg[data-look="photo"] .add5{margin-left:auto; height:50px; padding:0 26px; border-radius:999px; border:0; background:var(--tint5);
+  color:var(--blue5); font-size:17px; font-weight:600; letter-spacing:-.005em; white-space:nowrap; flex:none; transition:background .15s}
+.pg[data-look="photo"] .add5:hover{background:#E0EEFF}
+
+/* grouped lists */
+.pg[data-look="photo"] .grp{margin-top:28px; padding:8px 28px; border-radius:48px}
+.pg[data-look="photo"] .it{display:flex; align-items:center; gap:24px; min-height:122px; color:var(--ink5); text-align:left}
+.pg[data-look="photo"] .it + .it{box-shadow:0 -1px 0 var(--line5)}
+.pg[data-look="photo"] .it > a{flex:1; min-width:0; display:flex; align-items:center; gap:28px}
+.pg[data-look="photo"] .it svg{width:52px; height:52px; flex:none}
+.pg[data-look="photo"] .it svg.ro{width:30px; height:30px; margin-inline:11px; color:var(--ink5)}
+.pg[data-look="photo"] .it .tx5{display:flex; flex-direction:column; min-width:0}
+.pg[data-look="photo"] .it b{font-size:18px; font-weight:600; letter-spacing:-.01em}
+.pg[data-look="photo"] .it small{margin-top:5px; font-size:13px; font-weight:500; color:#5F6368; letter-spacing:.1em; text-transform:uppercase;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.pg[data-look="photo"] .it > a:hover b{color:var(--blue5)}
+.pg[data-look="photo"] .rowshare{width:46px; height:46px; background:var(--tint5); color:var(--blue5); box-shadow:none}
+.pg[data-look="photo"] .rowshare:hover{background:#E0EEFF}
+.pg[data-look="photo"] .rowshare svg{width:20px; height:20px}
+.pg[data-look="photo"] .brand{margin-top:28px}
+.pg[data-look="photo"] .brand button{display:inline-flex; align-items:center; gap:8px; height:50px; padding:0 22px; border-radius:999px; border:0;
+  background:#fff; color:var(--ink5); font-size:14px; font-weight:700; letter-spacing:.14px}
+.pg[data-look="photo"] .brand button:hover{background:#F4F6F8}
+.pg[data-look="photo"] .brand button svg{width:16px; height:16px}
+
+@media (max-width:639px){
+  .pg[data-look="photo"] .card{padding:16px 16px 28px}
+  .pg[data-look="photo"] .card5{padding:12px 12px 22px; border-radius:36px}
+  .pg[data-look="photo"] .photo5{height:330px; border-radius:26px}
+  .pg[data-look="photo"] .share{top:24px; right:24px; width:46px; height:46px}
+  .pg[data-look="photo"] .share svg{width:19px; height:19px}
+  .pg[data-look="photo"] .body5{padding:0 10px}
+  .pg[data-look="photo"] .name{margin-top:20px; font-size:26px}
+  .pg[data-look="photo"] .bio{margin-top:10px; font-size:15px}
+  .pg[data-look="photo"] .row5{gap:8px; margin-top:20px}
+  .pg[data-look="photo"] .acts{gap:8px}
+  .pg[data-look="photo"] .acts a{width:52px; height:52px}
+  .pg[data-look="photo"] .acts svg{width:24px; height:24px}
+  .pg[data-look="photo"] .add5{height:42px; padding:0 13px; font-size:14px}
+  .pg[data-look="photo"] .grp{margin-top:16px; padding:4px 18px; border-radius:32px}
+  .pg[data-look="photo"] .it{gap:16px; min-height:84px}
+  .pg[data-look="photo"] .it > a{gap:18px}
+  .pg[data-look="photo"] .it svg{width:38px; height:38px}
+  .pg[data-look="photo"] .it svg.ro{width:24px; height:24px; margin-inline:7px}
+  .pg[data-look="photo"] .it b{font-size:15px}
+  .pg[data-look="photo"] .it small{font-size:11px}
+  .pg[data-look="photo"] .rowshare{width:38px; height:38px}
+  .pg[data-look="photo"] .rowshare svg{width:17px; height:17px}
+}
+
+
+/* ══ Dark versions of V3 · Soft and V5 · Photo (Garry, 2026-10-06) ═════
+   Same layout, same sizes; only colour changes. Soft goes warm charcoal
+   (it was warm grey), Photo goes cool ink (it was cool grey) and keeps its
+   blue. Black brand marks (X, Threads) turn white so they still show. */
+.pg[data-theme$="-dark"] svg [fill="#000000"]{fill:#fff}
+
+/* Soft, dark */
+.pg[data-theme="soft-dark"]{--bg:#121211}
+.pg[data-theme="soft-dark"] .card{--ink3:#F2F2EF; --line3:#33332F}
+.pg[data-theme="soft-dark"] .share{background:#1E1E1C; color:#F2F2EF; box-shadow:0 6px 16px -10px rgba(0,0,0,.7)}
+.pg[data-theme="soft-dark"] .share:hover{background:#272725}
+.pg[data-theme="soft-dark"] .c3, .pg[data-theme="soft-dark"] .save3, .pg[data-theme="soft-dark"] .soc3, .pg[data-theme="soft-dark"] .lk3{background:#1E1E1C}
+.pg[data-theme="soft-dark"] .handle{color:#B8B8B2; background:#2A2A27}
+.pg[data-theme="soft-dark"] .handle:hover{background:#33332F; color:#B8B8B2}
+.pg[data-theme="soft-dark"] .bio{color:#D6D6D1}
+.pg[data-theme="soft-dark"] .ph3{background:#2A2A27}
+.pg[data-theme="soft-dark"] .ph3 svg rect{fill:#2A2A27}
+.pg[data-theme="soft-dark"] .ph3 svg circle, .pg[data-theme="soft-dark"] .ph3 svg path{fill:#5A5A54}
+.pg[data-theme="soft-dark"] .cw3:hover, .pg[data-theme="soft-dark"] .em3:hover{background:#262624}
+/* dark: Save contact a step lighter than the cards, no line (Garry, 2026-10-10) */
+.pg[data-theme="soft-dark"] .save3{background:#272725; border-color:transparent}
+.pg[data-theme="soft-dark"] .save3:hover{background:#2E2E2B}
+.pg[data-theme="soft-dark"] .cw3 small, .pg[data-theme="soft-dark"] .it3 small{color:#9A9A94}
+.pg[data-theme="soft-dark"] .soc3 a:hover{background:#2A2A27}
+.pg[data-theme="soft-dark"] .it3 + .it3{box-shadow:0 -1px 0 #2C2C29}
+.pg[data-theme="soft-dark"] .rowshare{background:#2A2A27; color:#F2F2EF}
+.pg[data-theme="soft-dark"] .rowshare:hover{background:#33332F}
+.pg[data-theme="soft-dark"] .brand button{background:#F2F2EF; color:#121211}
+
+/* Photo, dark */
+.pg[data-theme="photo-dark"]{--bg:#0E1014}
+.pg[data-theme="photo-dark"] .card{--ink5:#F3F5F8; --tint5:rgba(20,151,245,.16); --line5:#272B33}
+.pg[data-theme="photo-dark"] .card5, .pg[data-theme="photo-dark"] .grp{background:#191C22;
+  outline:1px solid #2C2F39; outline-offset:-1px}   /* an edge on the dark ground (Garry, 2026-10-07) */
+.pg[data-theme="photo-dark"] .photo5{background:#252932}
+.pg[data-theme="photo-dark"] .photo5 .face5{color:#454B56}
+.pg[data-theme="photo-dark"] .share{background:#191C22; color:#F3F5F8; box-shadow:0 6px 18px -8px rgba(0,0,0,.7)}
+.pg[data-theme="photo-dark"] .share:hover{background:#22262E}
+.pg[data-theme="photo-dark"] .handle{color:#6CC0FF}
+.pg[data-theme="photo-dark"] .handle:hover{background:rgba(20,151,245,.26); color:#6CC0FF}
+.pg[data-theme="photo-dark"] .bio{color:#D3D7DE}
+.pg[data-theme="photo-dark"] .add5{color:#6CC0FF}
+.pg[data-theme="photo-dark"] .add5:hover, .pg[data-theme="photo-dark"] .rowshare:hover{background:rgba(20,151,245,.26)}
+.pg[data-theme="photo-dark"] .it small{color:#8E949D}
+.pg[data-theme="photo-dark"] .it > a:hover b{color:#6CC0FF}
+.pg[data-theme="photo-dark"] .rowshare{color:#6CC0FF}
+.pg[data-theme="photo-dark"] .brand button{background:#F3F5F8; color:#0E1014}
+.pg[data-theme="photo-dark"] .brand button:hover{background:#fff}
+
+/* ── 2f. LIGHT, Apple-style (Garry, 2026-10-06) ───────────────────────────
+   Same layout as before — only the surface changes. The grey rows read as
+   disabled, so the page takes iOS Settings' grammar: a soft grey ground,
+   white rows that sit up off it, a coloured rounded tile in front of each
+   row naming what it does (later: plain glyphs, no tile — Garry), and Save
+   contact in system blue. light-dark is
+   the same thing on black. */
+.pg[data-theme="light"]{--bg:#F2F2F7; --fg:#000000; --mid:#6E6E73; --btn:#FFFFFF; --btn-fg:#000000; --edge:transparent; --r-btn:14px;
+  --row-sh:0 1px 2px rgba(0,0,0,.05), 0 0 0 .5px rgba(0,0,0,.05); --row-hover:#FAFAFA; --chev:#C7C7CC; --tint:#007AFF; --av-bg:#E5E5EA}
+.pg[data-theme="light-dark"]{--mark:currentColor; --bg:#000000; --fg:#FFFFFF; --mid:#8E8E93; --btn:#1C1C1E; --btn-fg:#FFFFFF; --edge:transparent; --r-btn:14px;
+  --row-sh:none; --row-hover:#242426; --chev:#48484A; --tint:#0A84FF; --av-bg:#2C2C2E; --av-fg:#FFFFFF}
+.pg[data-theme^="light"] .name{font-weight:var(--fw-bold); letter-spacing:-.02em}
+.pg[data-theme^="light"] .share{background:var(--btn); color:var(--tint); box-shadow:var(--row-sh)}
+.pg[data-theme^="light"] .share:hover{transform:none; background:var(--row-hover); box-shadow:var(--row-sh)}
+.pg[data-theme^="light"] .handle:hover{background:var(--btn)}
+/* rows: white cards, a coloured tile, 16px semibold text */
+.pg[data-theme^="light"] .list{gap:10px}
+.pg[data-theme^="light"] .btn{position:relative; min-height:54px; gap:14px; padding:11px 16px 11px 12px;
+  background:var(--btn); color:var(--btn-fg); box-shadow:var(--row-sh); font-size:16px; font-weight:var(--fw-semibold); letter-spacing:-.01em}
+.pg[data-theme^="light"] .btn:hover{background:var(--row-hover); box-shadow:var(--row-sh)}
+.pg[data-theme^="light"] .btn:active{transform:scale(.985)}
+/* row icons: plain line glyphs in the text colour — no tile behind them */
+.pg[data-theme^="light"] .btn svg{width:22px; height:22px; margin:0 4px; opacity:1; color:var(--btn-fg)}
+/* socials: one row of equal round marks, a touch smaller, with room to breathe */
+/* Each mark sits in a 48px tap box — the icon grows a little (36 → 38), the
+   rest is padding, so a thumb never has to aim (Garry, 2026-10-08). */
+.pg[data-theme^="light"] .socials{gap:12px 16px; padding-block:8px}
+.pg[data-theme^="light"] .socials a{display:grid; place-items:center; width:48px; height:48px; border-radius:50%}
+.pg[data-theme^="light"] .socials svg{width:38px; height:38px; display:block}
+/* on a phone, five to a row at most: 5 × 48 + 4 × 12 */
+@media (max-width:639.98px){
+  .pg[data-theme^="light"] .socials{gap:8px 12px; max-width:288px; margin-inline:auto}
+}
+/* a row with nothing on its right gets the iOS chevron */
+.pg[data-theme^="light"] .list > .btn:not(.btn--save)::after{content:""; margin-left:auto; flex:none; width:8px; height:8px;
+  border-top:2px solid var(--chev); border-right:2px solid var(--chev); transform:rotate(45deg); margin-right:4px}
+/* the row share, in the system tint */
+.pg[data-theme^="light"] .row .btn{padding-right:52px}
+.pg[data-theme^="light"] .rowshare{right:10px; width:34px; height:34px; color:var(--tint); opacity:1; border-radius:50%}
+.pg[data-theme^="light"] .rowshare:hover{background:rgba(0,122,255,.1); box-shadow:none}
+.pg[data-theme^="light"] .rowshare svg{width:18px; height:18px}
+/* Save contact: the one filled button, system blue */
+.pg[data-theme^="light"] .btn--save{justify-content:center; background:var(--tint); color:#fff; box-shadow:none}
+.pg[data-theme^="light"] .btn--save:hover{background:var(--tint); filter:brightness(1.06)}
+.pg[data-theme^="light"] .btn--save svg{display:none}   /* just the words (Garry) */
+.pg[data-theme^="light"] .btn--save span{flex:none}
+.pg[data-theme^="light"] .brand button{background:var(--btn); color:var(--fg); box-shadow:var(--row-sh)}
+.pg[data-theme^="light"] .brand button:hover{transform:none; box-shadow:var(--row-sh); background:var(--row-hover)}
+/* dark: X and Threads' near-black discs would vanish on black — lift them */
+.pg[data-theme="light-dark"] .socials .dsc[fill="#111214"]{fill:#2C2C2E}
+.pg[data-theme="light-dark"] .avatar .face rect{fill:#2C2C2E}
+.pg[data-theme="light-dark"] .avatar .face circle, .pg[data-theme="light-dark"] .avatar .face path{fill:#636366}
+.pg[data-theme="light-dark"] .rowshare:hover{background:rgba(10,132,255,.16)}
+/* on black the rows need an edge (Garry, 2026-10-07) */
+.pg[data-theme="light-dark"] .btn:not(.btn--save),
+.pg[data-theme="light-dark"] .share,
+.pg[data-theme="light-dark"] .brand button{box-shadow:inset 0 0 0 1px #2D2D30}
+
+/* ── 2h. MODE BANNER — Travel / Lost (Phase-1, Garry 2026-10-13) ─────────
+   The owner switched a mode on from Home, so the top of the page belongs to
+   whoever has found their phone or bag. Like the sheets, the banner is
+   Codemarca's, not the theme's: it looks the same on all six themes, so a
+   finder reads it as a notice and not as part of someone's design.
+   Numbers stay masked until a tap — a friend's number is not left lying in
+   plain sight for every curious scan. Calling needs no sign-up. */
+.mode{
+  position:relative; z-index:3; flex:none;
+  width:calc(100% - 32px); max-width:480px; margin:12px auto 0;
+  background:#fff; color:#101215; border-radius:20px; overflow:hidden;
+  box-shadow:0 12px 36px -12px rgba(16,18,21,.28), inset 0 0 0 1px rgba(16,18,21,.08);
+  font-family:var(--font-sans); text-align:left;
+}
+.mode__top{
+  display:flex; align-items:center; gap:8px; padding:12px 16px 0;
+  font-size:.75rem; font-weight:800; letter-spacing:.02em; text-transform:uppercase;
+}
+.mode__ic{display:grid; place-items:center; width:26px; height:26px; border-radius:8px; flex:none}
+.mode__ic svg{width:15px; height:15px}
+.mode__when{margin-left:auto; font-size:.75rem; font-weight:600; text-transform:none; letter-spacing:.14px; opacity:.72}
+.mode__head{display:flex; flex-direction:column; width:100%; padding:0; border:0; background:none; cursor:pointer; text-align:left; font:inherit; color:inherit}
+.mode__row{display:flex; align-items:center; gap:10px; padding:6px 16px 12px}
+.mode__row .mode__t{flex:1; min-width:0}
+.mode__cta{flex:none; display:inline-flex; align-items:center; gap:4px; height:32px; padding:0 12px; border-radius:999px;
+  background:#101215; color:#fff; font-size:.8125rem; font-weight:700}
+.mode__cta svg{width:14px; height:14px; transition:transform .25s ease}
+.mode[data-open] .mode__cta{background:#F4F3F7; color:#101215}
+.mode[data-open] .mode__cta svg{transform:rotate(180deg)}
+.mode__more{display:grid; grid-template-rows:0fr; transition:grid-template-rows .3s ease}
+.mode[data-open] .mode__more{grid-template-rows:1fr}
+.mode__in{overflow:hidden; min-height:0}
+.mode__body{padding:0 16px 14px; display:flex; flex-direction:column; gap:4px}
+.mode__t{font-size:1.0625rem; font-weight:800; letter-spacing:-.02em; line-height:1.25}
+.mode__s{font-size:.875rem; color:#5B5D68; line-height:1.45; letter-spacing:.14px}
+.mode__note{
+  margin-top:6px; padding:10px 12px; border-radius:12px; background:#F4F3F7;
+  font-size:.8125rem; line-height:1.45; color:#33353D; letter-spacing:.14px;
+}
+.mode__ppl{list-style:none; margin:8px 0 0; padding:0; display:flex; flex-direction:column}
+.mode__p{display:flex; align-items:center; gap:12px; padding:10px 0}
+.mode__p + .mode__p{box-shadow:inset 0 1px 0 rgba(16,18,21,.08)}
+.mode__av{
+  flex:none; display:grid; place-items:center; width:40px; height:40px; border-radius:50%;
+  background:#E7E9EE; color:#5B5D68; font-weight:800; font-size:1rem;
+}
+.mode__who{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
+.mode__who b{font-size:.9375rem; font-weight:700}
+.mode__who small{font-size:.8125rem; color:#8C8E9C; letter-spacing:.14px}
+.mode__who .mode__num{font-family:var(--font-mono); font-size:.75rem; letter-spacing:-.01em; color:#5B5D68}
+.mode__go{
+  flex:none; display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  height:40px; padding:0 16px; border-radius:999px; border:0; cursor:pointer;
+  background:#101215; color:#fff; font:inherit; font-size:.8125rem; font-weight:700;
+  transition:transform .15s ease, background .15s ease;
+}
+.mode__go:hover{background:#33353D}
+.mode__go:active{transform:scale(.97)}
+.mode__go svg{width:15px; height:15px}
+.mode__go--call{background:#17914F}
+.mode__go--call:hover{background:#127A42}
+
+/* travel: a quiet blue label — it is information, not an alarm */
+.mode[data-kind="travel"] .mode__top{color:#2F6FE4}
+.mode[data-kind="travel"] .mode__ic{background:#EFF5FF}
+/* lost: a red strip across the top — this one IS asking for help */
+.mode[data-kind="lost"] .mode__top{background:#C4342B; color:#fff; padding:10px 16px}
+.mode[data-kind="lost"] .mode__ic{background:rgba(255,255,255,.18)}
+.mode[data-kind="lost"] .mode__row{padding-top:12px}
+.mode[data-kind="lost"] .mode__t{font-size:1.25rem}
+
+/* an unclaimed code has no owner, so no mode either */
+.pg[data-view="unclaimed"] > .mode{display:none}
+@media (max-width:639px){
+  /* Photo's picture runs to the top edge, so the banner has to clear the notch itself */
+  .pg[data-look="photo"] > .mode{margin-top:52px}
+}
+@media (min-width:640px){
+  .mode{margin-top:24px}
+  .mode__top{padding:16px 20px 0}
+  .mode__row{padding:8px 20px 16px}
+  .mode__body{padding:0 20px 18px}
+  .mode[data-kind="lost"] .mode__top{padding:12px 20px}
+}
+
+/* ── 2g. CLEAR OF THE NOTCH (Garry, 2026-10-08) ──────────────────────────
+   On a phone the top ~50px is the status bar / dynamic island — the My QR
+   iPhone frame draws one, and a real phone may too. Every theme whose first
+   thing is a photo, a share button or a card edge starts below it. Photo is
+   the exception: its top IS the picture, which is meant to run up there.
+   When the owner's sticky "This is your page" bar is showing, it leads
+   instead — but previews (chrome=0, as in My QR) hide that bar. */
+@media (max-width:639px){
+  .pg:not([data-look="photo"]){padding-top:40px}
+  .pg[data-view="owner"]:has(> .bar:not([hidden])){padding-top:0}
+}
+
+/* ── 3. OWNER BAR — thin, and that is the whole point ──────────────────── */
+.bar{
+  position:sticky; top:0; z-index:20; width:100%;
+  display:flex; align-items:center; justify-content:center; gap:var(--s-3);
+  padding:10px var(--s-4);
+  background:var(--ink); color:#fff;
+  font-size:.8125rem; font-weight:var(--fw-semibold);
+}
+.bar__dot{width:7px; height:7px; border-radius:50%; background:#4ADE80; flex-shrink:0}
+.bar__txt{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.bar__edit{
+  flex-shrink:0; padding:6px var(--s-4); border-radius:var(--r-pill);
+  background:#fff; color:var(--ink); font-weight:var(--fw-bold); font-size:.8125rem;
+}
+.bar__edit:hover{background:var(--ink-strong, #33353D); color:#fff}
+
+/* ── 4. THE COLUMN ─────────────────────────────────────────────────────── */
+.card{
+  position:relative;
+  width:100%; max-width:var(--page); flex:1;
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  padding:var(--s-8) var(--s-5) var(--s-6);
+}
+
+/* photo — the default is the first letter on brand violet, never a broken
+   grey avatar; dimensions are fixed so nothing below it shifts on load */
+.avatar{
+  width:88px; height:88px; flex-shrink:0; border-radius:50%; overflow:hidden;
+  background:var(--av-bg); color:var(--av-fg); display:grid; place-items:center;
+  font-size:2.125rem; font-weight:var(--fw-black); letter-spacing:-.03em;
+  user-select:none;
+}
+.avatar img{width:88px; height:88px; object-fit:cover}
+.avatar .face{display:block; width:100%; height:100%}
+
+.name{margin-top:var(--s-4); font-size:1.625rem; font-weight:var(--fw-black);
+  line-height:1.12; letter-spacing:var(--ls-display); text-wrap:balance}
+.handle{margin-top:6px; font-family:var(--font-mono); font-size:.8125rem;
+  color:var(--mid); letter-spacing:-.02em}
+.bio{margin-top:var(--s-3); font-size:.9375rem; line-height:1.5; color:var(--mid); max-width:30ch}
+
+/* ── 5. THE LIST — one model for everything ────────────────────────────── */
+.list{width:100%; margin-top:var(--s-5); display:flex; flex-direction:column; gap:10px}
+
+.btn{
+  display:flex; align-items:center; gap:var(--s-3);
+  width:100%; min-height:var(--btn-h); padding:var(--s-3) var(--s-4);
+  border-radius:var(--r-btn); background:var(--btn); color:var(--btn-fg);
+  box-shadow:inset 0 0 0 1px var(--edge);
+  font-size:.9375rem; font-weight:var(--fw-bold); text-align:left;
+  transition:transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.btn:hover{box-shadow:inset 0 0 0 1.5px var(--fg)}
+/* Save contact hands over a file instead of opening an app, so it cannot
+   read as a third Call/Email row (Garry, 2026-09-24): it takes the page's
+   ink as its ground, in whatever theme is on. */
+.btn--save{background:var(--fg); color:var(--bg); box-shadow:none}
+.btn--save:hover{box-shadow:none; opacity:.9}
+.btn--save svg{opacity:1}
+.btn:active{transform:scale(.985)}
+.btn svg{width:19px; height:19px; flex-shrink:0; opacity:.9}
+.btn span{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+/* a share control per link, as on the reference. It sits inside the row
+   rather than after it, so the buttons stay one size and the order stays the
+   only hierarchy. */
+.row{position:relative; width:100%}
+.row .btn{padding-right:46px}
+.rowshare{
+  position:absolute; top:50%; right:7px; transform:translateY(-50%);
+  width:32px; height:32px; display:grid; place-items:center;
+  border-radius:var(--r-sm); color:var(--btn-fg); opacity:.42;
+  transition:opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.rowshare:hover{opacity:1; box-shadow:inset 0 0 0 1px var(--edge)}
+.rowshare svg{width:16px; height:16px}
+
+/* socials are a round icon row in their own brand colours — never
+   full-width buttons, which push the page down and read as Linktree */
+.socials{
+  display:flex; flex-wrap:wrap; justify-content:center; gap:var(--s-3);
+  width:100%; padding-block:var(--s-1);
+}
+.socials a{border-radius:var(--soc-r,50%); transition:transform var(--dur-fast) var(--ease)}
+.socials a:hover{transform:translateY(-2px)}
+.socials .ic{width:42px; height:42px}
+/* 12 of a 24-unit box is a circle; a theme that wants tiles lowers it */
+.socials .ic .disc{rx:var(--disc-rx,12px); ry:var(--disc-rx,12px)}
+
+/* the parked emergency block lands here without a redesign */
+.slot{width:100%}
+
+.brand{margin-top:auto; padding-top:var(--s-8)}
+.brand a{
+  font-size:.75rem; font-weight:var(--fw-bold); color:var(--mid);
+  letter-spacing:-.005em;
+}
+.brand a:hover{color:var(--fg)}
+
+/* ── 5b. SHARE, COPY AND THE BRAND CTA ─────────────────────────────────────
+   Read off linktr.ee/ziminit, which Garry gave as the reference. Two sheets,
+   not one: a share sheet from the icon top-right, and a claim sheet from the
+   brand button at the bottom. The brand button never navigates away — losing
+   a reader mid-scan to a marketing page is the one thing it must not do. */
+.share{
+  position:absolute; top:var(--s-5); right:var(--s-5); z-index:5;
+  width:40px; height:40px; display:grid; place-items:center; border-radius:50%;
+  background:var(--btn); color:var(--btn-fg); box-shadow:inset 0 0 0 1px var(--edge);
+  transition:transform var(--dur-fast) var(--ease);
+}
+.share:hover{transform:translateY(-1px); box-shadow:inset 0 0 0 1.5px var(--fg)}
+.share svg{width:19px; height:19px}
+
+/* the handle doubles as the copy control — it is the one string on the page
+   a reader might want to keep */
+.handle{
+  display:inline-flex; align-items:center; gap:6px; margin-top:6px;
+  padding:4px var(--s-2); border-radius:var(--r-sm);
+  font-family:var(--font-mono); font-size:.8125rem; color:var(--mid); letter-spacing:-.02em;
+  transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.handle:hover{background:var(--btn); color:var(--fg)}
+.handle svg{width:13px; height:13px; opacity:.75; flex-shrink:0}
+.handle .tick{display:none}
+.handle[data-copied="true"]{color:var(--fg)}
+.handle[data-copied="true"] .tick{display:block}
+.handle[data-copied="true"] .cp{display:none}
+
+/* the brand CTA — a button now, not a grey line. Every scan is an impression
+   and this is where that impression is cashed. */
+.brand{margin-top:auto; padding-top:var(--s-8)}
+.brand button{
+  display:inline-flex; align-items:center; gap:9px;
+  padding:11px var(--s-5); border-radius:var(--r-pill);
+  background:var(--btn); color:var(--btn-fg); box-shadow:inset 0 0 0 1px var(--edge);
+  font-size:.875rem; font-weight:var(--fw-bold);
+  transition:transform var(--dur-fast) var(--ease);
+}
+.brand button:hover{transform:translateY(-1px); box-shadow:inset 0 0 0 1.5px var(--fg)}
+.brand button svg{width:19px; height:19px; color:var(--mark); flex-shrink:0}
+
+/* ── 5c. SHEETS ────────────────────────────────────────────────────────────
+   Deliberately NOT themed. The page belongs to the owner; a sheet belongs to
+   Codemarca, and it should look like it wherever it opens. */
+.sheet{position:fixed; inset:0; z-index:70; display:flex; align-items:flex-end; justify-content:center}
+.sheet[hidden]{display:none}
+.sheet__scrim{position:absolute; inset:0; background:rgba(16,18,21,.52); animation:fade var(--dur) var(--ease)}
+.sheet__panel{
+  position:relative; width:100%; max-width:440px;
+  max-height:90svh; overflow:auto;
+  background:var(--ground); color:var(--ink);
+  border-radius:var(--r-xl) var(--r-xl) 0 0;
+  padding:var(--s-3) var(--s-5) var(--s-6);
+  display:flex; flex-direction:column; align-items:center; text-align:center; gap:var(--s-4);
+  animation:rise var(--dur) var(--ease);
+}
+@keyframes fade{from{opacity:0}}
+@keyframes rise{from{transform:translateY(24px)}}
+.sheet__grip{width:38px; height:4px; border-radius:var(--r-pill); background:var(--line-strong); flex-shrink:0}
+.sheet__x{
+  position:absolute; top:var(--s-4); right:var(--s-4);
+  width:32px; height:32px; display:grid; place-items:center; border-radius:50%;
+  background:var(--ground-soft); color:var(--ink-mid);
+}
+.sheet__x:hover{background:var(--line); color:var(--ink)}
+.sheet__x svg{width:15px; height:15px}
+.sheet h2{font-size:1.25rem; font-weight:var(--fw-black); letter-spacing:var(--ls-display); margin:0}
+.sheet p{font-size:.875rem; color:var(--ink-mid); line-height:1.5; max-width:34ch}
+
+.copyrow{
+  display:flex; align-items:center; gap:var(--s-3); width:100%;
+  padding:var(--s-3) var(--s-4); border-radius:var(--r-md); background:var(--ground-soft);
+}
+.copyrow span{flex:1; min-width:0; text-align:left; font-family:var(--font-mono);
+  font-size:.8125rem; font-weight:var(--fw-semibold); letter-spacing:-.02em;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.copyrow button{
+  flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  min-width:94px; min-height:28px; padding:6px var(--s-3); border-radius:var(--r-sm);
+  transition:min-width .2s var(--ease);
+  font-size:.8125rem; font-weight:var(--fw-bold); color:var(--brand-violet);
+}
+.copyrow button:hover{background:var(--ground-sunk, #EDEBF2)}
+.copyrow button[data-state="busy"]{color:var(--ink-soft); cursor:default; background:none}
+.copyrow button[data-state="done"]{color:var(--ok); background:none; min-width:128px}
+.copyrow button svg{width:14px; height:14px}
+/* three dots. The ring this replaced was a bare <span>: inline boxes take
+   neither width/height nor transform, so it rendered as an oval spilling out
+   of the button. Flex here blockifies the dots, so they size and move. */
+.dots{display:inline-flex; align-items:center; justify-content:center; gap:4px; height:14px}
+.dots i{
+  width:5px; height:5px; border-radius:50%; background:currentColor;
+  opacity:.28; animation:dot 1s var(--ease) infinite;
+}
+.dots i:nth-child(2){animation-delay:.16s}
+.dots i:nth-child(3){animation-delay:.32s}
+@keyframes dot{
+  0%,62%,100%{opacity:.28; transform:translateY(0)}
+  31%{opacity:1; transform:translateY(-3px)}
+}
+@media (prefers-reduced-motion:reduce){
+  @keyframes dot{0%,100%{opacity:.3}50%{opacity:1}}
+}
+
+/* one row that scrolls rather than a grid that orphans the last tile —
+   the count changes with what the browser supports */
+.targets{
+  display:flex; flex-wrap:nowrap; gap:6px; width:100%;
+  overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;
+}
+.targets::-webkit-scrollbar{display:none}
+.targets a,.targets button{
+  flex:0 0 auto; width:64px;
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  padding:var(--s-2) 2px; border-radius:var(--r-md);
+  font-size:.625rem; font-weight:var(--fw-bold); color:var(--ink-mid); line-height:1.2;
+}
+.targets a:hover,.targets button:hover{background:var(--ground-soft); color:var(--ink)}
+.targets svg{width:38px; height:38px}
+
+/* the promo block, as on the reference — the moment someone shares is the
+   best moment to tell them they can have one too */
+.promo{
+  display:flex; flex-direction:column; align-items:center; gap:var(--s-3);
+  width:100%; margin-top:var(--s-1); padding-top:var(--s-5);
+  border-top:1px solid var(--line);
+}
+.promo__go{
+  width:100%; min-height:52px; display:flex; align-items:center; justify-content:center; gap:9px;
+  border-radius:var(--r-pill); background:var(--ink); color:#fff; font-weight:var(--fw-bold);
+}
+.promo__go:hover{background:var(--ink-strong, #33353D)}
+.promo__go svg{width:19px; height:19px}
+
+/* the claim field, same shape as the homepage and signup */
+.field{
+  display:flex; align-items:center; width:100%; height:56px;
+  padding-inline:var(--s-5); border-radius:var(--r-pill); background:var(--ground);
+  box-shadow:inset 0 0 0 1.5px var(--line-strong);
+  transition:box-shadow var(--dur) var(--ease);
+}
+.field:focus-within{box-shadow:inset 0 0 0 1.5px var(--ink),0 0 0 4px rgba(16,18,21,.08)}
+.field__pre{font-family:var(--font-mono); font-size:.875rem; color:var(--ink-soft);
+  letter-spacing:-.02em; white-space:nowrap; user-select:none}
+.field input{
+  flex:1; min-width:0; border:0; background:none; outline:none; padding-inline:2px;
+  font-family:var(--font-mono); font-size:.875rem; font-weight:var(--fw-semibold);
+  letter-spacing:-.02em; color:var(--brand-violet); caret-color:var(--brand-violet);
+}
+.field input::placeholder{color:var(--ink-faint); font-weight:400}
+.field input:focus-visible{box-shadow:none}
+.sheet__wordmark svg{height:20px; width:auto}
+.sheet__small{font-size:.8125rem; font-weight:var(--fw-bold); color:var(--ink-soft);
+  text-decoration:underline; text-underline-offset:3px}
+.sheet__small:hover{color:var(--ink)}
+
+/* ── 6. UNCLAIMED — a fresh code, and the scan is the build moment ─────── */
+.claim{
+  width:100%; max-width:var(--page); flex:1;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; gap:var(--s-4); padding:var(--s-8) var(--s-5);
+}
+.claim__logo svg{height:22px; width:auto}
+/* An empty code, drawn. The screen was telling the reader its state in words
+   only; this shows it. The three corner squares stay crisp because they are
+   what the eye reads as "QR" — the data area is blurred and faded, so it
+   lands as *not filled in yet* rather than as loading or broken. Muted
+   enough that nobody tries to scan it. */
+.ghost{
+  width:132px; height:132px; padding:11px; flex-shrink:0;
+  border-radius:var(--r-md); background:#fff;
+  box-shadow:0 6px 20px rgba(16,18,21,.10);
+}
+.ghost svg{width:100%; height:100%}
+.ghost__data{filter:blur(1.15px); opacity:.34}
+.ghost__fix{opacity:.52}
+.claim__code{
+  font-family:var(--font-mono); font-size:.75rem; font-weight:var(--fw-medium);
+  letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--mid);
+  padding:6px var(--s-3); border-radius:var(--r-xs);
+  box-shadow:inset 0 0 0 1px var(--edge);
+}
+.claim h1{font-size:1.75rem; font-weight:var(--fw-black); line-height:1.1;
+  letter-spacing:var(--ls-display); text-wrap:balance}
+.claim p{font-size:.9375rem; color:var(--mid); line-height:1.5; max-width:32ch}
+.claim__go{
+  width:100%; min-height:var(--btn-h); display:flex; align-items:center; justify-content:center;
+  border-radius:var(--r-pill); background:var(--ink); color:#fff;
+  font-weight:var(--fw-bold); margin-top:var(--s-2);
+}
+.claim__go:hover{background:var(--ink-strong, #33353D)}
+.claim__no{font-size:.8125rem; color:var(--mid)}
+
+/* Switch views with explicit display values, never `display:revert` — revert
+   rolls back the whole author cascade for that property, so it was quietly
+   throwing away the bar's own `display:flex` and leaving it a block. */
+.bar{display:none}
+.pg[data-view="owner"] .bar{display:flex}
+.claim{display:none}
+.bare{font-size:var(--fs-sm); color:var(--ink-soft); text-align:center;
+  letter-spacing:var(--ls-soft); padding-block:var(--s-6)}
+.pg[data-view="unclaimed"] .card{display:none}
+.pg[data-view="unclaimed"] .claim{display:flex}
+
+/* The owner already owns a code. Both places that sell one — the footer under
+   the links, and the promo inside the share sheet — exist for strangers, so
+   the owner view drops them. The footer's `margin-top:auto` was the only thing
+   holding the card open to full height, so the list takes that job over. */
+.pg[data-view="owner"] .brand,
+.pg[data-view="owner"] .promo{display:none}
+.pg[data-view="owner"] .list{margin-bottom:auto}
+
+/* ── 7. WIDER SCREENS ──────────────────────────────────────────────────────
+   The page does not become a desktop layout — it is a phone page that
+   happens to be open on a laptop. It only gets a little more air. */
+@media (min-width:640px){
+  :root{ --page:420px }
+  .card{padding-top:var(--s-8)}
+
+  /* a panel sliding up from the bottom edge is a phone gesture; on a desktop
+     it just looks like it fell off the screen */
+  .sheet{align-items:center}
+  .sheet__panel{
+    max-width:420px; border-radius:var(--r-xl);
+    padding:var(--s-6) var(--s-6) var(--s-6);
+    animation:pop var(--dur) var(--ease);
+  }
+  .sheet__grip{display:none}
+}
+@keyframes pop{from{transform:scale(.965); opacity:0}}
+
+/* ── 8. REVIEW TOOL — delete this block, its CSS and its script loop ───── */
+/* the panel floats over the column, so the page gets room to clear it —
+   this padding goes when the panel goes */
+.pg{padding-bottom:104px}
+.rev{
+  position:fixed; right:var(--s-4); bottom:var(--s-4); z-index:60;
+  display:flex; flex-direction:column; gap:var(--s-2); padding:var(--s-2);
+  border-radius:var(--r-lg); background:#fff; box-shadow:var(--shadow-lg), inset 0 0 0 1px var(--line);
+}
+.rev__row{display:flex; gap:4px}
+/* scoped to the view row by id — these also matched the swatches, which are
+   buttons in a row of their own, and the pressed rule was painting the
+   selected swatch violet over its own colour */
+#revView button{
+  color:var(--ink-soft); font-size:.75rem; font-weight:var(--fw-bold);
+  padding:6px var(--s-3); border-radius:var(--r-pill); white-space:nowrap;
+}
+#revView button:hover{color:var(--ink)}
+#revView button[aria-pressed="true"]{background:var(--brand-violet); color:#fff}
+#revViewer button, #revOwner button{
+  color:var(--ink-soft); font-size:.75rem; font-weight:var(--fw-bold);
+  padding:6px var(--s-3); border-radius:var(--r-pill); white-space:nowrap;
+}
+#revViewer button:hover, #revOwner button:hover{color:var(--ink)}
+#revViewer button[aria-pressed="true"]{background:var(--ink); color:#fff}
+#revOwner button[aria-pressed="true"]{background:#C4342B; color:#fff}
+.rev__row{overflow-x:auto; scrollbar-width:none}
+#revMode button{
+  color:var(--ink-soft); font-size:.75rem; font-weight:var(--fw-bold);
+  padding:6px var(--s-3); border-radius:var(--r-pill); white-space:nowrap;
+}
+#revMode button:hover{color:var(--ink)}
+#revMode button[aria-pressed="true"]{background:var(--ink); color:#fff}
+.rev__sw{width:30px; height:30px; border-radius:var(--r-sm); box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+.rev__sw[aria-pressed="true"]{box-shadow:0 0 0 2px #fff,0 0 0 3px var(--ink)}
+.rev__sw[data-t="light"]{background:#fff}
+.rev__sw[data-t="leaf"]{background:#A3BF5A; box-shadow:inset 0 0 0 3px #fff, inset 0 0 0 5px #0A0A0A}
+.rev__sw[data-t="leaf-blue"]{background:#0062FE; box-shadow:inset 0 0 0 3px #fff, inset 0 0 0 5px #0A0A0A}
+.rev__sw[data-t="leaf-orange"]{background:#F45C30; box-shadow:inset 0 0 0 3px #fff, inset 0 0 0 5px #0A0A0A}
+.rev__sw[data-t="leaf-violet"]{background:#6741FF; box-shadow:inset 0 0 0 3px #fff, inset 0 0 0 5px #0A0A0A}
+.rev__sw[data-t="light-dark"]{background:#000; box-shadow:inset 0 0 0 6px #1C1C1E}
+.rev__sw[data-t="soft"]{background:#E8E7E5; box-shadow:inset 0 0 0 6px #fff}
+.rev__sw[data-t="soft-dark"]{background:#121211; box-shadow:inset 0 0 0 6px #1E1E1C}
+.rev__sw[data-t="photo"]{background:#C4CBD4; box-shadow:inset 0 0 0 6px #fff}
+.rev__sw[data-t="photo-dark"]{background:#0E1014; box-shadow:inset 0 0 0 6px #191C22}
+.rev__sw[data-t="glass-copper"]{background:url("assets/profile-bg/pv1hd.jpg") 30% 50% / cover no-repeat, #150E0B}
+.rev__sw[data-t="glass-bronze"]{background:url("assets/profile-bg/pv3hd.jpg") 45% 50% / cover no-repeat, #7A5440}
+    radial-gradient(96% 44% at 16% -6%,  rgba(178,132,255,.95), transparent 62%),
+    radial-gradient(90% 42% at 28% 106%, rgba(226,114,226,.82),transparent 62%),
+    #0A0616}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.001ms !important}
+}
+
+/* ── SUPPORTING TEXT ───────────────────────────────────────────────────
+   Headings and body copy run on negative tracking. The small grey lines
+   under them — subtitles, help, notes, values — do not: at 13–14px the
+   letters need the air back instead. Any new small line on this page
+   belongs in this list. */
+.bar,
+.bio,
+.claim p,
+.claim__no,
+.sheet__small{ letter-spacing:var(--ls-soft) }
+
+/* Chrome paints its own pale-blue block behind anything it autofills, which
+   overrides the field's own ground. Parking the transition indefinitely keeps
+   our background and ink; it is the one fix that does not need to know the
+   field's colour. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+  -webkit-text-fill-color:var(--ink);
+  caret-color:var(--ink);
+  transition:background-color 600000s 0s, color 600000s 0s;
+}
+</style>
+<!-- Follow + Quick chat (Phase-1, 2026-10-13) -->
+<link rel="stylesheet" href="../profile-social.css">
+
+<svg style="position:absolute;width:0;height:0" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- Instagram's own glow: yellow from the bottom-left corner, through
+         orange and pink, to blue at the top (Garry, 2026-10-07 — the old
+         straight diagonal did not read as the real icon) -->
+    <radialGradient id="igGrad" cx=".3" cy="1.07" r="1.5">
+      <stop offset="0" stop-color="#FDF497"/><stop offset=".05" stop-color="#FDF497"/>
+      <stop offset=".45" stop-color="#FD5949"/><stop offset=".6" stop-color="#D6249F"/>
+      <stop offset=".9" stop-color="#285AEB"/>
+    </radialGradient>
+  </defs>
+</svg>
+
+<div class="pg" data-theme="light" data-view="visitor">
+
+  <!-- ══ OWNER BAR — only when the owner is logged in and looking ═════ -->
+  <div class="bar">
+    <span class="bar__dot" aria-hidden="true"></span>
+    <span class="bar__txt">This is your page</span>
+    <a class="bar__edit" href="../dashboard/4-active/profile.html">Edit</a>
+  </div>
+
+  <!-- ══ MODE — Travel / Lost, when the owner switched one on (2h) ═══ -->
+  <aside class="mode" id="mode" hidden></aside>
+
+  <!-- ══ THE PAGE ════════════════════════════════════════════════════ -->
+  <main class="card">
+    <button class="share" type="button" id="shareBtn" aria-label="Share this page">
+      <svg viewBox="0 0 20 20" fill="none"><path d="M10 13V3m0 0L6.6 6.4M10 3l3.4 3.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 11.5v4.2c0 .7.6 1.3 1.3 1.3h8.4c.7 0 1.3-.6 1.3-1.3v-4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+    <!-- glass looks only: Save contact as a chip in the top-right corner -->
+    <button class="addc" type="button" id="addBtn">Add Contact</button>
+    <figure class="avatar" id="avatar" aria-hidden="true">G</figure>
+    <h1 class="name" id="name">Gurdeep Singh</h1>
+    <button class="handle" type="button" id="handle" aria-label="Copy this page's link">
+      <span id="handleTxt">codemarca.com/gurdeep</span>
+      <svg class="cp" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="5.4" y="5.4" width="8.2" height="8.2" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M10.6 5.4V4.4a2 2 0 0 0-2-2H4.4a2 2 0 0 0-2 2v4.2a2 2 0 0 0 2 2h1" stroke="currentColor" stroke-width="1.5"/></svg>
+      <svg class="tick" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.4 6.5 12 13 4.6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <p class="bio" id="bio"></p>
+    <!-- followers · following · Follow · Message (profile-social.js) -->
+    <div class="sx-slot" id="sxSlot"></div>
+
+    <div class="list" id="list"></div>
+
+    <!-- Reserved for the parked emergency block. Leave it here so that
+         block can land later without moving anything above it. -->
+    <div class="slot" hidden></div>
+
+    <footer class="brand">
+      <button type="button" id="brandBtn"><svg viewBox="0 0 40 40" fill="currentColor" aria-hidden="true"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></svg>Get your own Codemarca</button>
+    </footer>
+  </main>
+
+  <!-- ══ UNCLAIMED — the scan becomes the build moment ═══════════════ -->
+  <section class="claim">
+    <a class="claim__logo" href="../homepage.html" aria-label="Codemarca">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 257 40" fill="none" role="img" aria-label="Codemarca"><g fill="#6E27E6"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></g><g fill="#101215"><path d="M245.956 14.0999H252.172V34.82H245.956V32.8723C244.589 34.447 242.558 35.4002 239.782 35.4002C234.353 35.4002 229.877 30.6345 229.877 24.46C229.877 18.2854 234.353 13.5198 239.782 13.5198C242.558 13.5198 244.589 14.4729 245.956 16.0476V14.0999ZM241.025 29.5157C243.884 29.5157 245.956 27.568 245.956 24.46C245.956 21.352 243.884 19.4043 241.025 19.4043C238.165 19.4043 236.093 21.352 236.093 24.46C236.093 27.568 238.165 29.5157 241.025 29.5157Z"/><path d="M220.695 35.4002C214.396 35.4002 209.713 30.6345 209.713 24.46C209.713 18.2854 214.396 13.5198 220.695 13.5198C224.714 13.5198 228.278 15.6332 230.06 18.8241L224.631 21.9736C223.927 20.5232 222.435 19.6529 220.612 19.6529C217.918 19.6529 215.929 21.6006 215.929 24.46C215.929 27.3193 217.918 29.267 220.612 29.267C222.435 29.267 223.968 28.3968 224.631 26.9464L230.06 30.0544C228.278 33.2867 224.756 35.4002 220.695 35.4002Z"/><path d="M203.477 17.7881C204.306 15.0116 207.083 13.6855 209.693 13.6855V20.7304C207.124 20.316 203.477 21.352 203.477 25.4545V34.82H197.261V14.1H203.477V17.7881Z"/><path d="M187.728 14.0999H193.944V34.82H187.728V32.8723C186.361 34.447 184.33 35.4002 181.554 35.4002C176.125 35.4002 171.649 30.6345 171.649 24.46C171.649 18.2854 176.125 13.5198 181.554 13.5198C184.33 13.5198 186.361 14.4729 187.728 16.0476V14.0999ZM182.797 29.5157C185.656 29.5157 187.728 27.568 187.728 24.46C187.728 21.352 185.656 19.4043 182.797 19.4043C179.937 19.4043 177.865 21.352 177.865 24.46C177.865 27.568 179.937 29.5157 182.797 29.5157Z"/><path d="M161.806 13.5198C166.571 13.5198 169.679 16.9179 169.679 22.0979V34.82H163.463V22.6366C163.463 20.5646 162.469 19.2385 160.479 19.2385C158.407 19.2385 157.247 20.6889 157.247 23.1339V34.82H151.031V22.6366C151.031 20.5646 150.037 19.2385 148.047 19.2385C145.975 19.2385 144.815 20.6889 144.815 23.1339V34.82H138.599V14.0999H144.815V16.0062C145.768 14.5972 147.592 13.5198 150.368 13.5198C152.813 13.5198 154.636 14.5143 155.797 16.2548C156.957 14.5972 158.863 13.5198 161.806 13.5198Z"/><path d="M121.357 26.9464C122.144 29.1013 124.051 29.8472 126.33 29.8472C128.029 29.8472 129.479 29.1841 130.308 28.2725L135.281 31.1318C133.25 33.9497 130.184 35.4002 126.247 35.4002C119.161 35.4002 114.768 30.6345 114.768 24.46C114.768 18.2854 119.244 13.5198 125.791 13.5198C131.841 13.5198 136.317 18.2025 136.317 24.46C136.317 25.3302 136.234 26.159 136.068 26.9464H121.357ZM121.233 22.3051H130.142C129.479 19.9016 127.614 19.0313 125.75 19.0313C123.388 19.0313 121.813 20.1916 121.233 22.3051Z"/><path d="M106.271 5.81201H112.487V34.8201H106.271V32.8724C104.903 34.4471 102.873 35.4002 100.096 35.4002C94.6674 35.4002 90.1919 30.6346 90.1919 24.4601C90.1919 18.2855 94.6674 13.5199 100.096 13.5199C102.873 13.5199 104.903 14.473 106.271 16.0477V5.81201ZM101.339 29.5158C104.199 29.5158 106.271 27.5681 106.271 24.4601C106.271 21.3521 104.199 19.4044 101.339 19.4044C98.4799 19.4044 96.4079 21.3521 96.4079 24.4601C96.4079 27.5681 98.4799 29.5158 101.339 29.5158Z"/><path d="M77.9738 35.4002C71.8821 35.4002 66.9922 30.6345 66.9922 24.46C66.9922 18.2854 71.8821 13.5198 77.9738 13.5198C84.0655 13.5198 88.9554 18.2854 88.9554 24.46C88.9554 30.6345 84.0655 35.4002 77.9738 35.4002ZM77.9738 29.3499C80.6674 29.3499 82.7394 27.4022 82.7394 24.46C82.7394 21.5177 80.6674 19.57 77.9738 19.57C75.2802 19.57 73.2082 21.5177 73.2082 24.46C73.2082 27.4022 75.2802 29.3499 77.9738 29.3499Z"/><path d="M57.8088 35.4002C51.5099 35.4002 46.8271 30.6345 46.8271 24.46C46.8271 18.2854 51.5099 13.5198 57.8088 13.5198C61.8285 13.5198 65.3923 15.6332 67.1742 18.8241L61.7456 21.9736C61.0411 20.5232 59.5493 19.6529 57.7259 19.6529C55.0323 19.6529 53.0432 21.6006 53.0432 24.46C53.0432 27.3193 55.0323 29.267 57.7259 29.267C59.5493 29.267 61.0825 28.3968 61.7456 26.9464L67.1742 30.0544C65.3923 33.2867 61.8699 35.4002 57.8088 35.4002Z"/></g></svg>
+    </a>
+    <div class="ghost" aria-hidden="true"><svg id="ghost" viewBox="0 0 29 29" shape-rendering="crispEdges"></svg></div>
+    <span class="claim__code" id="code">CM-7F3K9</span>
+    <h1>This code is not set up yet</h1>
+    <p>If this sticker came in your pack, claim it now — your page takes about two minutes.</p>
+    <a class="claim__go" href="signup.html?next=build">This is mine — set it up</a>
+    <p class="claim__no">Not yours? Then nothing to see here yet.</p>
+  </section>
+
+  <!-- ══ SHARE SHEET ═════════════════════════════════════════════════ -->
+  <div class="sheet" id="shareSheet" hidden role="dialog" aria-modal="true" aria-label="Share this page">
+    <div class="sheet__scrim" data-close></div>
+    <div class="sheet__panel">
+      <button class="sheet__x" type="button" data-close aria-label="Close">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <div class="sheet__grip" aria-hidden="true"></div>
+      <h2 id="shareTitle">Share this page</h2>
+
+      <div class="copyrow">
+        <span id="shareUrl">codemarca.com/gurdeep</span>
+        <button type="button" id="shareCopy">Copy</button>
+      </div>
+
+      <div class="targets" id="targets"></div>
+
+      <div class="promo">
+        <p>Anyone can have one. Two stickers, one page you keep changing.</p>
+        <button class="promo__go" type="button" id="promoBtn"><svg viewBox="0 0 40 40" fill="currentColor" aria-hidden="true"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></svg>Get your own Codemarca</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CLAIM SHEET — the brand CTA opens this, it never navigates away ═ -->
+  <div class="sheet" id="claimSheet" hidden role="dialog" aria-modal="true" aria-label="Claim your link">
+    <div class="sheet__scrim" data-close></div>
+    <div class="sheet__panel">
+      <button class="sheet__x" type="button" data-close aria-label="Close">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <div class="sheet__grip" aria-hidden="true"></div>
+      <span class="sheet__wordmark">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 257 40" fill="none" role="img" aria-label="Codemarca"><g fill="#6E27E6"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></g><g fill="#101215"><path d="M245.956 14.0999H252.172V34.82H245.956V32.8723C244.589 34.447 242.558 35.4002 239.782 35.4002C234.353 35.4002 229.877 30.6345 229.877 24.46C229.877 18.2854 234.353 13.5198 239.782 13.5198C242.558 13.5198 244.589 14.4729 245.956 16.0476V14.0999ZM241.025 29.5157C243.884 29.5157 245.956 27.568 245.956 24.46C245.956 21.352 243.884 19.4043 241.025 19.4043C238.165 19.4043 236.093 21.352 236.093 24.46C236.093 27.568 238.165 29.5157 241.025 29.5157Z"/><path d="M220.695 35.4002C214.396 35.4002 209.713 30.6345 209.713 24.46C209.713 18.2854 214.396 13.5198 220.695 13.5198C224.714 13.5198 228.278 15.6332 230.06 18.8241L224.631 21.9736C223.927 20.5232 222.435 19.6529 220.612 19.6529C217.918 19.6529 215.929 21.6006 215.929 24.46C215.929 27.3193 217.918 29.267 220.612 29.267C222.435 29.267 223.968 28.3968 224.631 26.9464L230.06 30.0544C228.278 33.2867 224.756 35.4002 220.695 35.4002Z"/><path d="M203.477 17.7881C204.306 15.0116 207.083 13.6855 209.693 13.6855V20.7304C207.124 20.316 203.477 21.352 203.477 25.4545V34.82H197.261V14.1H203.477V17.7881Z"/><path d="M187.728 14.0999H193.944V34.82H187.728V32.8723C186.361 34.447 184.33 35.4002 181.554 35.4002C176.125 35.4002 171.649 30.6345 171.649 24.46C171.649 18.2854 176.125 13.5198 181.554 13.5198C184.33 13.5198 186.361 14.4729 187.728 16.0476V14.0999ZM182.797 29.5157C185.656 29.5157 187.728 27.568 187.728 24.46C187.728 21.352 185.656 19.4043 182.797 19.4043C179.937 19.4043 177.865 21.352 177.865 24.46C177.865 27.568 179.937 29.5157 182.797 29.5157Z"/><path d="M161.806 13.5198C166.571 13.5198 169.679 16.9179 169.679 22.0979V34.82H163.463V22.6366C163.463 20.5646 162.469 19.2385 160.479 19.2385C158.407 19.2385 157.247 20.6889 157.247 23.1339V34.82H151.031V22.6366C151.031 20.5646 150.037 19.2385 148.047 19.2385C145.975 19.2385 144.815 20.6889 144.815 23.1339V34.82H138.599V14.0999H144.815V16.0062C145.768 14.5972 147.592 13.5198 150.368 13.5198C152.813 13.5198 154.636 14.5143 155.797 16.2548C156.957 14.5972 158.863 13.5198 161.806 13.5198Z"/><path d="M121.357 26.9464C122.144 29.1013 124.051 29.8472 126.33 29.8472C128.029 29.8472 129.479 29.1841 130.308 28.2725L135.281 31.1318C133.25 33.9497 130.184 35.4002 126.247 35.4002C119.161 35.4002 114.768 30.6345 114.768 24.46C114.768 18.2854 119.244 13.5198 125.791 13.5198C131.841 13.5198 136.317 18.2025 136.317 24.46C136.317 25.3302 136.234 26.159 136.068 26.9464H121.357ZM121.233 22.3051H130.142C129.479 19.9016 127.614 19.0313 125.75 19.0313C123.388 19.0313 121.813 20.1916 121.233 22.3051Z"/><path d="M106.271 5.81201H112.487V34.8201H106.271V32.8724C104.903 34.4471 102.873 35.4002 100.096 35.4002C94.6674 35.4002 90.1919 30.6346 90.1919 24.4601C90.1919 18.2855 94.6674 13.5199 100.096 13.5199C102.873 13.5199 104.903 14.473 106.271 16.0477V5.81201ZM101.339 29.5158C104.199 29.5158 106.271 27.5681 106.271 24.4601C106.271 21.3521 104.199 19.4044 101.339 19.4044C98.4799 19.4044 96.4079 21.3521 96.4079 24.4601C96.4079 27.5681 98.4799 29.5158 101.339 29.5158Z"/><path d="M77.9738 35.4002C71.8821 35.4002 66.9922 30.6345 66.9922 24.46C66.9922 18.2854 71.8821 13.5198 77.9738 13.5198C84.0655 13.5198 88.9554 18.2854 88.9554 24.46C88.9554 30.6345 84.0655 35.4002 77.9738 35.4002ZM77.9738 29.3499C80.6674 29.3499 82.7394 27.4022 82.7394 24.46C82.7394 21.5177 80.6674 19.57 77.9738 19.57C75.2802 19.57 73.2082 21.5177 73.2082 24.46C73.2082 27.4022 75.2802 29.3499 77.9738 29.3499Z"/><path d="M57.8088 35.4002C51.5099 35.4002 46.8271 30.6345 46.8271 24.46C46.8271 18.2854 51.5099 13.5198 57.8088 13.5198C61.8285 13.5198 65.3923 15.6332 67.1742 18.8241L61.7456 21.9736C61.0411 20.5232 59.5493 19.6529 57.7259 19.6529C55.0323 19.6529 53.0432 21.6006 53.0432 24.46C53.0432 27.3193 55.0323 29.267 57.7259 29.267C59.5493 29.267 61.0825 28.3968 61.7456 26.9464L67.1742 30.0544C65.3923 33.2867 61.8699 35.4002 57.8088 35.4002Z"/></g></svg>
+      </span>
+      <h2>Get your own Codemarca</h2>
+      <p>Pick your link, print it on two stickers, change the page whenever you like.</p>
+      <div class="field">
+        <span class="field__pre">codemarca.com/</span>
+        <input id="claimInput" type="text" spellcheck="false" autocapitalize="off"
+               autocomplete="off" maxlength="24" placeholder="yourname" aria-label="Your link">
+      </div>
+      <button class="promo__go" type="button" id="claimGo">Claim your link</button>
+      <a class="sheet__small" href="../homepage.html">See how it works</a>
+    </div>
+  </div>
+</div>
+
+<!-- Review tool only — delete this block, its CSS section and its script loop. -->
+<div class="rev" role="group" aria-label="Review controls">
+  <div class="rev__row" id="revView">
+    <button type="button" data-v="visitor" aria-pressed="true">Visitor</button>
+    <button type="button" data-v="owner" aria-pressed="false">Owner</button>
+    <button type="button" data-v="unclaimed" aria-pressed="false">Unclaimed</button>
+  </div>
+  <div class="rev__row rev__row--sx" id="revViewer">
+    <button type="button" data-vw="guest" aria-pressed="true">Guest</button>
+    <button type="button" data-vw="new" aria-pressed="false">New account</button>
+    <button type="button" data-vw="full" aria-pressed="false">Full page</button>
+    <button type="button" data-vw="blocked" aria-pressed="false">Blocked</button>
+  </div>
+  <div class="rev__row rev__row--sx" id="revOwner">
+    <button type="button" data-ow="chat" aria-pressed="false">Chat off</button>
+    <button type="button" data-ow="counts" aria-pressed="false">Counts hidden</button>
+    <button type="button" data-ow="zero" aria-pressed="false">0 followers</button>
+  </div>
+  <div class="rev__row" id="revMode">
+    <button type="button" data-m="" aria-pressed="true">No mode</button>
+    <button type="button" data-m="travel" aria-pressed="false">Travel</button>
+    <button type="button" data-m="lost" aria-pressed="false">Lost</button>
+  </div>
+  <div class="rev__row" id="revTheme"></div>
+</div>
+
+<script src="../cm-chat.js"></script>
+<script src="../profile-social.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  };
+
+  /* ══ 1. THE PAYLOAD ══════════════════════════════════════════════════
+     This object IS the API response, and its shape matches the builder's
+     state one for one. A field the owner switched the eye off is simply
+     ABSENT here — never sent and CSS-hidden, or the number is readable in
+     the page source. `order` decides the whole layout; the page renders
+     what it is given and makes no hierarchy decisions of its own. */
+  var P = {
+    handle : "gurdeep",
+    name   : "Gurdeep Singh",
+    bio    : "Small business owner. Everything you need to reach us, in one place.",
+    photo  : null,
+    phone  : "9876543210",
+    wa     : "9876543210",
+    email  : "hello@gurdeep.in",
+    links  : {
+      instagram : "@gurdeep",
+      youtube   : "@gurdeep",
+      telegram  : "@gurdeep",
+      website   : "gurdeep.in",
+      review    : "g.page/gurdeep",
+      directions: "maps.app.goo.gl/xyz"
+    },
+    customs: [ { id:"c1", title:"Our catalogue", url:"https://gurdeep.in/catalogue" } ],
+    theme  : "light",
+    order  : ["socials","call","wa","email","vcard","website","directions","review","c1"],
+    socialOrder: ["instagram","youtube","telegram"],
+    /* Travel or Lost, when the owner switched one on — null otherwise.
+       { kind:"travel", until:"2026-10-20", note, people:[{name, rel, phone}] }
+       { kind:"lost",   since:"2026-10-14", item:"phone", note, people:[…] } */
+    mode   : null,
+    /* Follow + Quick chat (profile-social.js). The owner's three switches
+       are chat (Message button), showCounts and showList. No feed. */
+    social : {
+      followers: 128, following: 96, showCounts: true, showList: true, chat: true,
+      people: {
+        followers: [ { name: "Simran Kaur", handle: "simran" }, { name: "Arjun Mehta", handle: "arjun" },
+                     { name: "Neha Sharma", handle: "neha" }, { name: "Rohit Bansal", handle: "rohit" },
+                     { name: "Karan Dhillon", handle: "karan" } ],
+        following: [ { name: "Garry Singh", handle: "garry" }, { name: "Rhea Malhotra", handle: "rhea" },
+                     { name: "Nikk Martin", handle: "nikk" }, { name: "Dr Rohan", handle: "drrohan" } ]
+      }
+    }
+  };
+
+  /* ══ 2. ICONS ════════════════════════════════════════════════════════
+     Socials are drawn by fillIc / brandIc / monoIc further down, from the
+     official marks in SI. Row glyphs are monochrome so they take the
+     theme's ink. */
+  var ROWIC = {
+    call      : '<path d="M4.4 3.6h3l1.2 3-1.7 1.3a9.5 9.5 0 0 0 4.2 4.2l1.3-1.7 3 1.2v3c0 .7-.6 1.3-1.3 1.2A13.4 13.4 0 0 1 3.2 4.9c-.1-.7.5-1.3 1.2-1.3z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+    wa        : '<path d="M3.4 16.6 4.5 13a6.6 6.6 0 1 1 2.5 2.4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+    email     : '<rect x="2.6" y="4.4" width="14.8" height="11.2" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m3.4 6 6.6 4.6L16.6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+    vcard     : '<rect x="2.4" y="3.6" width="15.2" height="12.8" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="7.6" cy="8.8" r="1.9" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4.6 13.6c.5-1.4 1.7-2.1 3-2.1s2.5.7 3 2.1M12.4 8.4h3.2M12.4 11.4h3.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+    website   : '<circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.6"/><ellipse cx="10" cy="10" rx="2.8" ry="6.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.7 8h12.6M3.7 12h12.6" stroke="currentColor" stroke-width="1.6"/>',
+    directions: '<path d="M10 2.6a5.1 5.1 0 0 0-5.1 5.1c0 3.8 5.1 9.7 5.1 9.7s5.1-5.9 5.1-9.7A5.1 5.1 0 0 0 10 2.6z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="10" cy="7.6" r="1.9" fill="none" stroke="currentColor" stroke-width="1.5"/>',
+    review    : '<path d="m10 2.6 2.3 4.7 5.2.75-3.75 3.65.9 5.15L10 14.4l-4.65 2.45.9-5.15L2.5 8.05l5.2-.75z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+    custom    : '<path d="M8.6 11.4a2.9 2.9 0 0 0 4.3.3l2-2a2.9 2.9 0 1 0-4.1-4.1l-1 1M11.4 8.6a2.9 2.9 0 0 0-4.3-.3l-2 2a2.9 2.9 0 1 0 4.1 4.1l1-1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'
+  };
+  function rowIc(k) { return '<svg viewBox="0 0 20 20" aria-hidden="true">' + (ROWIC[k] || ROWIC.custom) + "</svg>"; }
+
+  /* ══ 3. LABELS AND LINKS ═════════════════════════════════════════════
+     Buttons are named by the ACTION, not the platform — "Call" not
+     "Phone", "Directions" not "Maps". */
+  var SOCIALS = ["instagram","youtube","facebook","snapchat","telegram",
+                 "linkedin","x","threads","spotify","pinterest","soundcloud"];
+
+  var LABEL = { call:"Call", wa:"WhatsApp", email:"Email", vcard:"Save contact",
+                website:"Website", directions:"Directions", review:"Review on Google" };
+
+  function http(v) { return /^https?:\/\//i.test(v) ? v : "https://" + v; }
+  function user(v) { return String(v).replace(/^@/, "").replace(/\/+$/, ""); }
+  function tel(v)  { return "+91" + String(v).replace(/[^0-9]/g, ""); }
+
+  var SOCIAL_URL = {
+    instagram : function (v) { return "https://instagram.com/" + user(v); },
+    youtube   : function (v) { return "https://youtube.com/@" + user(v); },
+    facebook  : function (v) { return http(v); },
+    snapchat  : function (v) { return "https://snapchat.com/add/" + user(v); },
+    telegram  : function (v) { return "https://t.me/" + user(v); },
+    linkedin  : function (v) { return http(v); },
+    x         : function (v) { return "https://x.com/" + user(v); },
+    threads   : function (v) { return "https://threads.net/@" + user(v); },
+    spotify   : function (v) { return http(v); },
+    pinterest : function (v) { return "https://pinterest.com/" + user(v); },
+    soundcloud: function (v) { return "https://soundcloud.com/" + user(v); }
+  };
+
+  /* The icon row's order is the OWNER'S, set in the builder and carried on
+     the page as `socialOrder` (Garry, 2026-09-24). SOCIALS is only the
+     fallback for a page saved before that existed, and the guard at the end
+     catches anything the owner's list does not mention. */
+  function liveSocials() {
+    var want = (P.socialOrder && P.socialOrder.length) ? P.socialOrder : SOCIALS;
+    var seen = {}, out = [];
+    want.concat(SOCIALS).forEach(function (k) {
+      if (!seen[k] && SOCIAL_URL[k] && P.links[k]) { seen[k] = 1; out.push(k); }
+    });
+    return out;
+  }
+  function custom(id) {
+    for (var i = 0; i < P.customs.length; i++) if (P.customs[i].id === id) return P.customs[i];
+    return null;
+  }
+
+  /* one row -> one href, or null when the payload has nothing for it */
+  function href(k) {
+    if (k === "call")   return P.phone ? "tel:" + tel(P.phone) : null;
+    if (k === "wa")     return P.wa ? "https://wa.me/" + tel(P.wa).replace("+", "") : null;
+    if (k === "email")  return P.email ? "mailto:" + P.email : null;
+    if (k === "vcard")  return "#vcard";
+    if (LABEL[k])       return P.links[k] ? http(P.links[k]) : null;
+    var c = custom(k);
+    return c && c.title && c.url ? http(c.url) : null;
+  }
+
+  /* ══ 3b. THE GLASS LOOKS — Copper (pill) and Bronze (tile) ═══════════
+     These two themes carry their own layout (CSS 2b). Brand marks here are
+     the official logo shapes from Simple Icons (CC0), one path each. */
+  var LOOK = { "glass-copper":"pill", "glass-bronze":"tile",
+               "soft":"soft", "soft-dark":"soft", "photo":"photo", "photo-dark":"photo",
+               "leaf":"deck", "leaf-green":"deck", "leaf-blue":"deck", "leaf-orange":"deck", "leaf-violet":"deck" };
+  var SI = {
+      "x": "M14.234 10.162 22.977 0h-2.072l-7.591 8.824L7.251 0H.258l9.168 13.343L.258 24H2.33l8.016-9.318L16.749 24h6.993zm-2.837 3.299-.929-1.329L3.076 1.56h3.182l5.965 8.532.929 1.329 7.754 11.09h-3.182z",
+      "instagram": "M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077",
+      "threads": "M18.263 11.097c-.03-3.486-1.92-5.586-5.111-5.586-2.13 0-3.922.963-4.863 2.499l2.062 1.438c.535-.843 1.272-1.543 2.628-1.543 1.528 0 2.318.85 2.544 2.431a15 15 0 0 0-2.236-.173c-4.125 0-6.068 1.867-6.068 4.336s1.943 3.99 4.804 3.99c3.139 0 5.013-2.115 5.781-4.735.798.361 1.348 1.204 1.348 2.47 0 3.387-3.907 5.232-7.22 5.232-4.885 0-8.077-3.207-8.077-8.424 0-6.392 4.223-10.487 9.9-10.487 3.808 0 5.69 1.671 6.97 3.914l2.108-1.475C21.44 2.078 18.331 0 13.663 0 6.227 0 1.168 5.277 1.168 12.934c0 7 4.953 11.066 10.856 11.066 4.878 0 9.809-2.846 9.809-7.716 0-2.545-1.46-4.231-3.569-5.187m-6.33 4.855c-1.077 0-2.026-.512-2.026-1.453 0-1.483 1.822-1.934 3.606-1.934.678 0 1.34.045 1.927.173-.422 1.927-1.671 3.215-3.508 3.214Z",
+      "telegram": "M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z",
+      "spotify": "M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z",
+      "snapchat": "M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12 1.033-.301.165-.088.344-.104.464-.104.182 0 .359.029.509.09.45.149.734.479.734.838.015.449-.39.839-1.213 1.168-.089.029-.209.075-.344.119-.45.135-1.139.36-1.333.81-.09.224-.061.524.12.868l.015.015c.06.136 1.526 3.475 4.791 4.014.255.044.435.27.42.509 0 .075-.015.149-.045.225-.24.569-1.273.988-3.146 1.271-.059.091-.12.375-.164.57-.029.179-.074.36-.134.553-.076.271-.27.405-.555.405h-.03c-.135 0-.313-.031-.538-.074-.36-.075-.765-.135-1.273-.135-.3 0-.599.015-.913.074-.6.104-1.123.464-1.723.884-.853.599-1.826 1.288-3.294 1.288-.06 0-.119-.015-.18-.015h-.149c-1.468 0-2.427-.675-3.279-1.288-.599-.42-1.107-.779-1.707-.884-.314-.045-.629-.074-.928-.074-.54 0-.958.089-1.272.149-.211.043-.391.074-.54.074-.374 0-.523-.224-.583-.42-.061-.192-.09-.389-.135-.567-.046-.181-.105-.494-.166-.57-1.918-.222-2.95-.642-3.189-1.226-.031-.063-.052-.15-.055-.225-.015-.243.165-.465.42-.509 3.264-.54 4.73-3.879 4.791-4.02l.016-.029c.18-.345.224-.645.119-.869-.195-.434-.884-.658-1.332-.809-.121-.029-.24-.074-.346-.119-1.107-.435-1.257-.93-1.197-1.273.09-.479.674-.793 1.168-.793.146 0 .27.029.383.074.42.194.789.3 1.104.3.234 0 .384-.06.465-.105l-.046-.569c-.098-1.626-.225-3.651.307-4.837C7.392 1.077 10.739.807 11.727.807l.419-.015h.06z",
+      "facebook": "M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z",
+      "pinterest": "M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.39 18.592.026 11.985.026L12.017 0z",
+      "whatsapp": "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z",
+      "youtube": "M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z",
+      "linkedin": "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z",
+      "soundcloud": "M23.999 14.165c-.052 1.796-1.612 3.169-3.4 3.169h-8.18a.68.68 0 0 1-.675-.683V7.862a.747.747 0 0 1 .452-.724s.75-.513 2.333-.513a5.364 5.364 0 0 1 2.763.755 5.433 5.433 0 0 1 2.57 3.54c.282-.08.574-.121.868-.12.884 0 1.73.358 2.347.992s.948 1.49.922 2.373ZM10.721 8.421c.247 2.98.427 5.697 0 8.672a.264.264 0 0 1-.53 0c-.395-2.946-.22-5.718 0-8.672a.264.264 0 0 1 .53 0ZM9.072 9.448c.285 2.659.37 4.986-.006 7.655a.277.277 0 0 1-.55 0c-.331-2.63-.256-5.02 0-7.655a.277.277 0 0 1 .556 0Zm-1.663-.257c.27 2.726.39 5.171 0 7.904a.266.266 0 0 1-.532 0c-.38-2.69-.257-5.21 0-7.904a.266.266 0 0 1 .532 0Zm-1.647.77a26.108 26.108 0 0 1-.008 7.147.272.272 0 0 1-.542 0 27.955 27.955 0 0 1 0-7.147.275.275 0 0 1 .55 0Zm-1.67 1.769c.421 1.865.228 3.5-.029 5.388a.257.257 0 0 1-.514 0c-.21-1.858-.398-3.549 0-5.389a.272.272 0 0 1 .543 0Zm-1.655-.273c.388 1.897.26 3.508-.01 5.412-.026.28-.514.283-.54 0-.244-1.878-.347-3.54-.01-5.412a.283.283 0 0 1 .56 0Zm-1.668.911c.4 1.268.257 2.292-.026 3.572a.257.257 0 0 1-.514 0c-.241-1.262-.354-2.312-.023-3.572a.283.283 0 0 1 .563 0Z"
+  };
+  var BRAND = { instagram:"url(#igGrad)", youtube:"#FF0000", facebook:"#0866FF", snapchat:"#FFFC00",
+                telegram:"#26A5E4", linkedin:"#0A66C2", x:"#000000", threads:"#000000",
+                spotify:"#1ED760", pinterest:"#E60023", soundcloud:"#FF5500" };
+  var SOC_NAME = { instagram:"Instagram", youtube:"YouTube", facebook:"Facebook", snapchat:"Snapchat",
+                   telegram:"Telegram", linkedin:"LinkedIn", x:"X", threads:"Threads",
+                   spotify:"Spotify", pinterest:"Pinterest", soundcloud:"SoundCloud" };
+  /* Copper: brand colour on a white disc. Snapchat's ghost is white with a
+     black outline, so the disc behind it turns yellow instead. */
+  function brandIc(k) {
+    return k === "snapchat"
+      ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + SI[k] + '" fill="#fff" stroke="#000" stroke-width="1.1" stroke-linejoin="round"/></svg>'
+      : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + SI[k] + '" fill="' + BRAND[k] + '"/></svg>';
+  }
+  /* Bronze: the same mark, white */
+  function monoIc(k) { return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + SI[k] + '" fill="#fff"/></svg>'; }
+  var ACT = {
+    call : '<path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/>',
+    wa   : '<path fill="currentColor" d="' + SI.whatsapp + '"/>',
+    email: '<path fill="currentColor" d="M20 4H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5z"/>'
+  };
+  var ACT_LABEL = { call:"Call", wa:"WhatsApp", email:"Email" };
+  var WIDE = window.matchMedia ? window.matchMedia("(min-width:640px)") : { matches:false };
+
+  /* the small line under a name: @handle, or the address without https:// */
+  function subOf(v) {
+    v = String(v).trim();
+    if (v.charAt(0) === "@") return v;
+    var bare = v.replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/+$/, "");
+    /* a full address: drop the domain, keep the path — facebook.com/garry → /garry */
+    var m = bare.match(/^[^/]+\.[a-z]{2,}(\/.*)?$/i);
+    if (m) return m[1] || bare;
+    /* a bare username, typed as-is — show it as-is (it used to come out as "/") */
+    return bare;
+  }
+  /* Bronze on a wide screen sits the handle beside the mark, so it gets a
+     hard cap of 15 characters (Garry, 2026-10-03); the full handle shows on
+     hover. Everywhere else CSS cuts it to the room the row has. */
+  function handleTag(s, max) {
+    if (!max || s.length <= max) return "<small>" + esc(s) + "</small>";
+    return '<small data-full="1" title="' + esc(s) + '">' + esc(s.slice(0, max)) + "…</small>";
+  }
+  /* a handle CSS had to cut gets a title, so hovering shows all of it */
+  function markCut() {
+    Array.prototype.forEach.call($("list").querySelectorAll(".pill small, .tile small"), function (s) {
+      if (s.dataset.full) return;
+      if (s.scrollWidth > s.clientWidth + 1) s.title = s.textContent;
+      else s.removeAttribute("title");
+    });
+  }
+
+  /* Order still decides the sequence of everything left in the list; the
+     look only lifts call / WhatsApp / email into the round buttons under the
+     bio and Save contact into the corner chip, as the design has them. */
+  function renderLook(look) {
+    var acts = P.order.filter(function (k) { return ACT[k] && href(k); });
+    var html = acts.length ? '<nav class="acts">' + acts.map(function (k) {
+      var h = href(k);
+      return '<a href="' + esc(h) + '"' + (k === "wa" ? ' target="_blank" rel="noopener"' : "") +
+             ' aria-label="' + ACT_LABEL[k] + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + ACT[k] + "</svg></a>";
+    }).join("") + "</nav>" : "";
+
+    html += P.order.map(function (k) {
+      if (ACT[k] || k === "vcard") return "";
+      if (k === "socials") {
+        var s = liveSocials();
+        if (!s.length) return "";
+        return '<div class="sgrid">' + s.map(function (x) {
+          var u = esc(SOCIAL_URL[x](P.links[x])), sub = subOf(P.links[x]);
+          return look === "pill"
+            ? '<a class="pill" href="' + u + '" target="_blank" rel="noopener"><span class="disc disc--fill">' +
+              fillIc(x) + '</span><span class="txt"><b>' + SOC_NAME[x] + "</b><small>" + esc(sub) + "</small></span></a>"
+            : '<a class="tile" href="' + u + '" target="_blank" rel="noopener" aria-label="' + SOC_NAME[x] + '">' + monoIc(x) +
+              '<span class="tx"><b>' + SOC_NAME[x] + "</b>" + handleTag(sub, WIDE.matches ? 15 : 0) + "</span></a>";
+        }).join("") + "</div>";
+      }
+      var h = href(k); if (!h) return "";
+      var c = custom(k);
+      var label = LABEL[k] || (c ? c.title : "");
+      var sub = c ? c.url.replace(/^https?:\/\//, "") : P.links[k];
+      var ico = '<svg class="ro" viewBox="0 0 20 20" aria-hidden="true">' + (ROWIC[LABEL[k] ? k : "custom"] || ROWIC.custom) + "</svg>";
+      var share = '<button class="rowshare" type="button" data-u="' + esc(h) + '" data-l="' + esc(label) +
+                  '" aria-label="Share ' + esc(label) + '">' + SHARE_ICON + "</button>";
+      return look === "pill"
+        ? '<div class="pill"><a class="disc" href="' + esc(h) + '" target="_blank" rel="noopener" aria-hidden="true" tabindex="-1">' + ico +
+          '</a><a class="txt" href="' + esc(h) + '" target="_blank" rel="noopener"><b>' + esc(label) +
+          "</b><small>" + esc(sub) + "</small></a>" + share + "</div>"
+        : '<div class="tile tile--row"><a href="' + esc(h) + '" target="_blank" rel="noopener">' + ico +
+          '<span class="tx"><b>' + esc(label) + "</b><small>" + esc(sub) + "</small></span></a>" + share + "</div>";
+    }).join("");
+    return html;
+  }
+
+  function applyTheme(t) {
+    var pg = document.querySelector(".pg");
+    pg.dataset.theme = t;
+    if (LOOK[t]) pg.dataset.look = LOOK[t]; else delete pg.dataset.look;
+    layoutDeck(LOOK[t] === "deck");
+  }
+
+  /* Leaf (2d) draws the top of the page as its own white card — share,
+     photo, name, link, bio, the three buttons and Add Contact — with the
+     socials and links outside it on the green. The markup is shared by every
+     theme, so for Leaf those elements are moved into a .card4 wrapper, and
+     moved back out for any other theme. Ids stay, so render() is unchanged. */
+  function layoutDeck(on) {
+    var card = document.querySelector(".pg .card"), w = $("card4");
+    if (on && !w) {
+      w = document.createElement("div");
+      w.className = "card4"; w.id = "card4";
+      card.insertBefore(w, $("shareBtn"));
+      ["shareBtn", "avatar", "name", "handle", "bio", "sxSlot"].forEach(function (id) { w.appendChild($(id)); });
+      var top = document.createElement("div");
+      top.className = "deckTop"; top.id = "deckTop";
+      w.appendChild(top);
+    } else if (!on && w) {
+      ["shareBtn", "avatar", "name", "handle", "bio", "sxSlot"].forEach(function (id) { card.insertBefore($(id), w); });
+      card.insertBefore($("addBtn"), $("avatar"));
+      card.removeChild(w);
+    }
+  }
+
+  /* ══ 3c. LEAF — the deck as a wheel ═════════════════════════════════
+     (Garry, 2026-10-05: "like picking a year on an iPhone".) One float,
+     DK.pos, is the deck's position: card i sits at t = i - pos round the
+     ring. t = 0 is up front; cards already seen (t < 0) stack peeking above;
+     the next one (t = 1) waits below, unseen. Thumb or wheel UP rolls pos
+     forward — the front card rises into the stack and the next rises from
+     below. On release a flick carries on and settles on the nearest card.
+     The deck is rebuilt on every render (the preview re-renders per
+     keystroke), so DK keeps the position and the handlers are wired once. */
+  var DK = { pos: 0, anim: null, shown: -1, n: 0, m: null, keys: [], grow: null };
+  /* Where card i sits. Four or more: the wheel above — seen cards stacked
+     above, the next one waiting below. Two or three (Garry, 2026-10-08):
+     every other card peeks above the front one, so each is visible — 2 shows
+     one peek, 3 shows two — and rolling swaps them: the front rises into the
+     stack while the card at the back of it drops down to the front. */
+  /* Returns [t, fade]. The motion is the date picker's (Garry, 2026-10-08):
+     scroll UP and the card below rises to the front while the front one
+     climbs into the stack; scroll DOWN and the front card drops away below
+     while the card peeking behind it comes forward.
+     Four or more: only the next card waits below (unseen), all others are
+     above, so two always peek. Two or three: there is no spare card to keep
+     below, so the next one is the deepest peek — on its way to the front it
+     fades out at the top of the stack and rises in from below, which keeps
+     the same direction of travel. fade multiplies its opacity. */
+  function deckDepth(i, n) {
+    if (n <= 1) { return [0, 1]; }
+    if (n <= 3) {
+      var u = (((DK.pos - i) % n) + n) % n;
+      if (u <= n - 1) { return [-u, 1]; }
+      var v = u - (n - 1);
+      return v < .5 ? [-(n - 1) - v, 1 - 2 * v] : [2 * (1 - v), 1];
+    }
+    var t = (((i - DK.pos) % n) + n) % n;
+    return [t > 1 ? t - n : t, 1];
+  }
+  function deckCards() { return Array.prototype.slice.call($("list").querySelectorAll(".dk")); }
+  function mixHex(a, b, k) {
+    var x = parseInt(a.slice(1), 16), y = parseInt(b.slice(1), 16);
+    function ch(s) { return Math.round(((x >> s) & 255) + ((((y >> s) & 255) - ((x >> s) & 255)) * k)); }
+    return "rgb(" + ch(16) + "," + ch(8) + "," + ch(0) + ")";
+  }
+  function deckPaint() {
+    var cards = deckCards(), n = cards.length, deck = $("list").querySelector(".deck");
+    if (!n || !deck) { return; }
+    var cs = getComputedStyle(deck);
+    var pk1 = (cs.getPropertyValue("--pk1") || "#E8EFD8").trim(), pk2 = (cs.getPropertyValue("--pk2") || "#C2D693").trim();
+    var small = deck.clientWidth < 480;
+    var Y1 = small ? 34 : 46, Y2 = small ? 62 : 84, YB = small ? 40 : 54;
+    cards.forEach(function (c, i) {
+      var dp = deckDepth(i, n), t = dp[0];
+      /* a card just added rises out from behind the front one */
+      if (DK.grow && DK.grow.i === i) { t = t * DK.grow.k; }
+      var y, s, o = 1, bg = "#FFFFFF", a = Math.abs(t);
+      if (t >= 0) { var k = Math.min(t, 1); y = YB * k; s = 1 - .14 * k; o = 1 - k; }
+      else if (a <= 1) { y = -Y1 * a; s = 1 - .08 * a; bg = mixHex("#FFFFFF", pk1, a); }
+      else if (a <= 2) { y = -Y1 - (Y2 - Y1) * (a - 1); s = .92 - .10 * (a - 1); bg = mixHex(pk1, pk2, a - 1); }
+      else { y = -Y2; s = .82; bg = pk2; o = Math.max(0, 1 - (a - 2)); }
+      c.style.transform = "translateY(" + y.toFixed(2) + "px) scale(" + s.toFixed(4) + ")";
+      /* a card coming or going fades (blur was tried and dropped, 2026-10-08) */
+      c.style.opacity = (o * dp[1]).toFixed(3);
+      c.style.backgroundColor = bg;
+      c.style.setProperty("--c", Math.max(0, 1 - a * 2).toFixed(3));
+      c.style.zIndex = String(Math.round(t >= 0 ? 100 - t * 20 : 85 - a * 20));
+      c.style.pointerEvents = a < .5 ? "auto" : "none";
+      c.tabIndex = a < .5 ? 0 : -1;
+    });
+    var at = ((Math.round(DK.pos) % n) + n) % n, dots = $("list").querySelectorAll(".strip button");
+    Array.prototype.forEach.call(dots, function (b, i) { b.setAttribute("aria-current", String(i === at)); });
+    if (at !== DK.shown) {
+      DK.shown = at;
+      var on = dots[at], row = on && on.parentNode;
+      if (row && row.scrollWidth > row.clientWidth) {
+        row.scrollTo({ left: on.offsetLeft - row.clientWidth / 2 + on.offsetWidth / 2, behavior: "smooth" });
+      }
+    }
+  }
+  function deckStop() { if (DK.anim) { cancelAnimationFrame(DK.anim); DK.anim = null; } }
+  /* ease to a whole card — easeOutCubic, longer for longer trips */
+  function deckGlide(to) {
+    deckStop();
+    var from = DK.pos, d = to - from;
+    if (Math.abs(d) < .001) { DK.pos = to; deckPaint(); return; }
+    var dur = Math.min(700, 320 + Math.abs(d) * 120), t0 = performance.now();
+    (function step(now) {
+      var k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      DK.pos = from + d * e; deckPaint();
+      DK.anim = k < 1 ? requestAnimationFrame(step) : null;
+    })(t0);
+    /* frames pause in a hidden tab — land on the card anyway */
+    clearTimeout(DK.land);
+    DK.land = setTimeout(function () { if (DK.anim) { deckStop(); DK.pos = to; deckPaint(); } }, dur + 60);
+  }
+  function wireDeck() {
+    var y0 = null, p0 = 0, moved = false, lastY = 0, lastT = 0, vel = 0, deck = null, settle = null;
+    function stepPx() { return (deck ? deck.clientHeight : 216) * .62; }
+    document.addEventListener("pointerdown", function (e) {
+      deck = e.target.closest && e.target.closest(".deck"); if (!deck) { return; }
+      if (deckCards().length < 2) { deck = null; return; }   /* one card: nothing to roll */
+      deckStop(); y0 = lastY = e.clientY; p0 = DK.pos; lastT = performance.now(); vel = 0; moved = false;
+      deck.classList.add("dragging");
+    });
+    window.addEventListener("pointermove", function (e) {
+      if (y0 === null) { return; }
+      var now = performance.now(), dy = e.clientY - y0;
+      if (Math.abs(dy) > 5) { moved = true; }
+      vel = .8 * ((e.clientY - lastY) / Math.max(1, now - lastT)) + .2 * vel;
+      lastY = e.clientY; lastT = now;
+      DK.pos = p0 - dy / stepPx(); deckPaint();
+    });
+    function release() {
+      if (y0 === null) { return; }
+      y0 = null; if (deck) { deck.classList.remove("dragging"); }
+      if (performance.now() - lastT > 90) { vel = 0; }   /* held still: no flick */
+      deckGlide(Math.round(DK.pos - (vel * 180) / stepPx()));
+    }
+    window.addEventListener("pointerup", release);
+    window.addEventListener("pointercancel", release);
+    /* a drag must not also open the profile */
+    document.addEventListener("click", function (e) {
+      if (moved && e.target.closest && e.target.closest(".deck")) { e.preventDefault(); moved = false; }
+    }, true);
+    $("list").addEventListener("click", function (e) {
+      var b = e.target.closest(".strip button"); if (!b) { return; }
+      var i = +b.dataset.i, n = deckCards().length;
+      deckGlide(i + n * Math.round((DK.pos - i) / n));
+    });
+    /* wheel / trackpad over the deck rolls it; anywhere else scrolls the page */
+    document.addEventListener("wheel", function (e) {
+      if (!e.target.closest || !e.target.closest(".deck")) { return; }
+      if (deckCards().length < 2) { return; }   /* one card: let the page scroll */
+      e.preventDefault(); deckStop();
+      var d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      if (e.deltaMode === 1) { d *= 32; }
+      DK.pos += d / 160; deckPaint();
+      clearTimeout(settle);
+      settle = setTimeout(function () { deckGlide(Math.round(DK.pos)); }, 120);
+    }, { passive: false });
+    document.addEventListener("keydown", function (e) {
+      if (!e.target.closest || !e.target.closest(".deck")) { return; }
+      if (deckCards().length < 2) { return; }
+      if (e.key === "ArrowDown" || e.key === "ArrowRight") { e.preventDefault(); deckGlide(Math.round(DK.pos) + 1); }
+      if (e.key === "ArrowUp" || e.key === "ArrowLeft") { e.preventDefault(); deckGlide(Math.round(DK.pos) - 1); }
+    });
+    window.addEventListener("resize", deckPaint);
+  }
+
+  /* Leaf's page: the three buttons and Add Contact go in the top card, the
+     deck, its strip and the link rows below it on the green. */
+  function renderDeck() {
+    var acts = P.order.filter(function (k) { return ACT[k] && href(k); });
+    var top = acts.length ? '<nav class="acts">' + acts.map(function (k) {
+      return '<a href="' + esc(href(k)) + '"' + (k === "wa" ? ' target="_blank" rel="noopener"' : "") +
+             ' aria-label="' + ACT_LABEL[k] + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + ACT[k] + "</svg></a>";
+    }).join("") + "</nav>" : "";
+    if (P.order.indexOf("vcard") > -1) {
+      top += '<button class="add4" type="button" id="add4">Add Contact</button>';
+    }
+    $("deckTop").innerHTML = top;
+    var a4 = $("add4"); if (a4) { a4.addEventListener("click", saveContact); }
+
+    var html = "";
+    P.order.forEach(function (k) {
+      if (ACT[k] || k === "vcard") { return; }
+      if (k === "socials") {
+        var s = liveSocials();
+        if (!s.length) { return; }
+        html += '<div class="deck" tabindex="0" aria-roledescription="carousel" aria-label="Social profiles">' + s.map(function (x, i) {
+          return '<a class="dk" data-i="' + i + '" href="' + esc(SOCIAL_URL[x](P.links[x])) + '" target="_blank" rel="noopener" draggable="false">' +
+                 /* Snapchat's ghost in its own yellow, outlined */
+                 brandIc(x).replace('fill="#fff" stroke="#000"', 'fill="#FFFC00" stroke="#000"') +
+                 '<span class="tx4"><b>' + SOC_NAME[x] + "</b><small>" + esc(subOf(P.links[x])) + "</small></span></a>";
+        }).join("") + "</div>" +
+        /* on the black strip every mark is white */
+        '<div class="strip" role="tablist" aria-label="Choose a social profile">' + s.map(function (x, i) {
+          return '<button type="button" data-i="' + i + '" aria-label="' + SOC_NAME[x] + '">' + monoIc(x) + "</button>";
+        }).join("") + "</div>";
+        return;
+      }
+      var h = href(k); if (!h) { return; }
+      var c = custom(k), label = LABEL[k] || (c ? c.title : "");
+      var sub = c ? c.url.replace(/^https?:\/\//, "") : P.links[k];
+      var ico = '<svg class="ro" viewBox="0 0 20 20" aria-hidden="true">' + (ROWIC[LABEL[k] ? k : "custom"] || ROWIC.custom) + "</svg>";
+      html += '<div class="lrow"><a href="' + esc(h) + '" target="_blank" rel="noopener">' + ico +
+        '<span class="tx4"><b>' + esc(label) + "</b><small>" + esc(sub) + "</small></span></a>" +
+        '<button class="rowshare" type="button" data-u="' + esc(h) + '" data-l="' + esc(label) + '" aria-label="Share ' + esc(label) + '">' + SHARE_ICON + "</button></div>";
+    });
+    /* consecutive link rows sit in one grid so they share the gap */
+    html = html.replace(/((?:<div class="lrow">[\s\S]*?<\/button><\/div>)+)/g, '<div class="links4">$1</div>');
+    $("list").innerHTML = html;
+    deckSettle();
+    deckPaint();
+  }
+
+  /* The gap above the deck is the room its peeking cards need: none for one
+     card, one peek for two, two for three or more. When a social is added or
+     removed the front card eases down (or up) to its new place, and a new
+     card rises out from behind it (Garry, 2026-10-08). */
+  function deckSettle() {
+    var deck = $("list").querySelector(".deck");
+    if (!deck) { DK.n = 0; DK.keys = []; return; }
+    var keys = liveSocials(), n = keys.length;
+    var small = deck.clientWidth < 480;
+    var m = (small ? [0, 36, 70, 96] : [0, 48, 94, 132])[Math.min(n, 3)];
+    deck.dataset.n = n;
+    if (DK.n && n !== DK.n && DK.m !== null) {
+      deck.style.marginTop = DK.m + "px";
+      void deck.offsetHeight;
+      deck.style.transition = "margin-top .6s cubic-bezier(.22,.8,.24,1)";
+    }
+    deck.style.marginTop = m + "px";
+    if (DK.n && n > DK.n) {
+      var added = keys.filter(function (k) { return DK.keys.indexOf(k) < 0; })[0];
+      var gi = keys.indexOf(added);
+      if (gi > -1) {
+        var t0 = performance.now(), g = { i: gi, k: 0 };
+        DK.grow = g;
+        (function step(now) {
+          if (DK.grow !== g) { return; }   /* finished by the fallback, or a newer one started */
+          var k = Math.min(1, (now - t0) / 600);
+          g.k = 1 - Math.pow(1 - k, 3);
+          deckPaint();
+          if (k < 1) { requestAnimationFrame(step); } else { DK.grow = null; deckPaint(); }
+        })(t0);
+        /* frames pause in a hidden tab — make sure the card still lands */
+        setTimeout(function () { if (DK.grow === g) { DK.grow = null; deckPaint(); } }, 700);
+      }
+    }
+    DK.n = n; DK.m = m; DK.keys = keys.slice();
+  }
+
+
+  /* ══ 3d. SOFT and PHOTO — the whole page, written into #list ══════════
+     Both lay out everything themselves (CSS 2e hides the shared top
+     elements). Their buttons say what they do with data-act; one handler,
+     wired once in wireSheets(), runs them. */
+  function svgAct(k) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + ACT[k] + "</svg>"; }
+  var SHARE_GLYPH = '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 12.6V3.4m0 0L7.1 6.3M10 3.4l2.9 2.9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 11v5.1c0 .6.5 1.1 1.1 1.1h7.8c.6 0 1.1-.5 1.1-1.1V11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+  var CP_GLYPH = '<svg class="cp" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="5.4" y="5.4" width="8.2" height="8.2" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M10.6 5.4V4.4a2 2 0 0 0-2-2H4.4a2 2 0 0 0-2 2v4.2a2 2 0 0 0 2 2h1" stroke="currentColor" stroke-width="1.5"/></svg><svg class="tick" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.4 6.5 12 13 4.6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var FACE_SVG = '<svg viewBox="0 0 96 96" aria-hidden="true"><rect width="96" height="96" fill="#E7E9EE"/><circle cx="48" cy="38" r="16" fill="#B3B8C2"/><path d="M16 96c4-19 17-28 32-28s28 9 32 28z" fill="#B3B8C2"/></svg>';
+  function hasPhoto() { return P.photo && !/^data:image\/svg/.test(P.photo); }
+  function handleBtn() {
+    return '<button class="handle" type="button" data-act="copy" aria-label="Copy this page\'s link"><span>codemarca.com/' + esc(P.handle) + "</span>" + CP_GLYPH + "</button>";
+  }
+  function shareBtn() { return '<button class="share" type="button" data-act="share" aria-label="Share this page">' + SHARE_GLYPH + "</button>"; }
+  /* Soft: the same filled discs as Light (Garry, 2026-10-07) */
+  function appIc(k) { return fillIc(k); }
+  /* ── A social as a filled disc: the brand's colour behind a white mark
+     (Garry, 2026-10-07). Light, Pill and Soft all use it. Marks that are
+     already a circle (Facebook, Telegram, Spotify, Pinterest) are drawn as
+     they are. YouTube is a white play on red, LinkedIn a white "in" on
+     blue: their own marks are a box, and a box inside a disc looks wrong.
+     X and Threads sit on a near-black disc (class dsc) so the dark theme can
+     lift it. ── */
+  var FILL_NATIVE = { facebook:1, telegram:1, spotify:1, pinterest:1 };
+  var FILL_GLYPH = {
+    youtube : '<path d="M9.7 7.6 16.6 12l-6.9 4.4z" fill="#fff"/>',
+    linkedin: '<rect x="6.3" y="9.9" width="2.6" height="7.9" rx=".4" fill="#fff"/><circle cx="7.6" cy="7.1" r="1.55" fill="#fff"/><path d="M10.9 17.8V9.9h2.5V11c.42-.72 1.24-1.3 2.44-1.3 2 0 3.06 1.24 3.06 3.5v4.6h-2.6v-4.2c0-1.1-.42-1.76-1.4-1.76-1 0-1.5.68-1.5 1.76v4.2z" fill="#fff"/>'
+  };
+  function fillIc(k) {
+    if (FILL_NATIVE[k]) {
+      return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11.4" fill="#fff"/><path d="' + SI[k] + '" fill="' + BRAND[k] + '"/></svg>';
+    }
+    var disc = k === "x" || k === "threads" ? "#111214" : k === "snapchat" ? "#FFFC00" : BRAND[k];
+    var glyph = FILL_GLYPH[k] ||
+      (k === "snapchat"
+        ? '<path d="' + SI[k] + '" fill="#fff" stroke="#000" stroke-width="1.3" stroke-linejoin="round" transform="translate(5.4 5.4) scale(.55)"/>'
+        : '<path d="' + SI[k] + '" fill="#fff" transform="translate(6 6) scale(.5)"/>');
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="dsc" cx="12" cy="12" r="12" fill="' + disc + '"/>' + glyph + "</svg>";
+  }
+  function circIc(k) { return fillIc(k); }
+  function prettyTel(v) {
+    var d = String(v).replace(/[^0-9]/g, "").slice(-10);
+    return d.length === 10 ? "+91 " + d.slice(0, 5) + " " + d.slice(5) : String(v);
+  }
+  /* the link rows, in the owner's order, grouped into one card per run */
+  function linkRows(itemCls, txCls) {
+    var out = "";
+    P.order.forEach(function (k) {
+      if (ACT[k] || k === "vcard" || k === "socials") { out += "|"; return; }
+      var h = href(k); if (!h) { return; }
+      var c = custom(k), label = LABEL[k] || (c ? c.title : "");
+      var sub = c ? c.url.replace(/^https?:\/\//, "") : P.links[k];
+      var ico = '<svg class="ro" viewBox="0 0 20 20" aria-hidden="true">' + (ROWIC[LABEL[k] ? k : "custom"] || ROWIC.custom) + "</svg>";
+      out += '<div class="' + itemCls + '"><a href="' + esc(h) + '" target="_blank" rel="noopener">' + ico +
+             '<span class="' + txCls + '"><b>' + esc(label) + "</b><small>" + esc(sub) + "</small></span></a>" +
+             '<button class="rowshare" type="button" data-u="' + esc(h) + '" data-l="' + esc(label) + '" aria-label="Share ' + esc(label) + '">' + SHARE_ICON + "</button></div>";
+    });
+    return out;
+  }
+  function wrapRuns(rows, cls, label) {
+    return rows.split("|").filter(Boolean).map(function (run) {
+      return '<section class="' + cls + '" aria-label="' + label + '">' + run + "</section>";
+    }).join("");
+  }
+
+  function renderSoft() {
+    var soc = liveSocials();
+    var tel = href("call"), wa = href("wa"), mail = href("email");
+    var WA = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#25D366"/><path d="' + SI.whatsapp + '" fill="#fff" transform="translate(5 5) scale(.583)"/></svg>';
+    var DL = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.5v11m0 0-4.2-4.2M12 14.5l4.2-4.2M4.5 15.5v3.2c0 .7.6 1.3 1.3 1.3h12.4c.7 0 1.3-.6 1.3-1.3v-3.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    var label = tel && wa ? "Call / WhatsApp" : tel ? "Call" : "WhatsApp";
+    var pill = (tel || wa) ? '<div class="cw3">' +
+        (wa ? '<a class="wa3" href="' + esc(wa) + '" target="_blank" rel="noopener" aria-label="WhatsApp">' + WA + "</a>" : "") +
+        (tel ? '<a class="tel3" href="' + esc(tel) + '" aria-label="Call">' + svgAct("call") + "</a>" : "") +
+        '<a class="num3" href="' + esc(tel || wa) + '"' + (tel ? "" : ' target="_blank" rel="noopener"') + "><b>" + label + "</b><small>" + esc(prettyTel(P.phone || P.wa)) + "</small></a></div>" : "";
+    var em = mail ? '<a class="em3" href="' + esc(mail) + '" aria-label="Email">' + svgAct("email") + "</a>" : "";
+    var html = '<div class="top3">' + shareBtn() + "</div>" +
+      '<div class="c3">' +
+        (P.name ? '<h1 class="name">' + esc(P.name) + "</h1>" : "") + handleBtn() +
+        '<figure class="ph3" style="margin:28px 0 0">' + (hasPhoto() ? '<img src="' + esc(P.photo) + '" alt="">' : FACE_SVG) + "</figure>" +
+        (P.bio ? '<p class="bio">' + esc(P.bio) + "</p>" : "") +
+        (window.CMSocial ? CMSocial.html(P) : "") +
+        (pill || em ? '<div class="ct3">' + pill + em + "</div>" : "") +
+      "</div>";
+    if (P.order.indexOf("vcard") > -1) { html += '<button class="save3" type="button" data-act="save">' + DL + "Save Contact</button>"; }
+    var rows = linkRows("it3", "tx3"), socAt = P.order.indexOf("socials");
+    var socHtml = soc.length ? '<nav class="soc3" aria-label="Social profiles">' + soc.map(function (k) {
+      return '<a href="' + esc(SOCIAL_URL[k](P.links[k])) + '" target="_blank" rel="noopener" aria-label="' + SOC_NAME[k] + '" title="' + SOC_NAME[k] + '">' + appIc(k) + "</a>";
+    }).join("") + "</nav>" : "";
+    /* socials and link runs keep the owner's order */
+    var parts = [];
+    P.order.forEach(function (k) { if (k === "socials") { parts.push("S"); } else if (!ACT[k] && k !== "vcard" && href(k)) { parts.push("L"); } });
+    var runs = rows.split("|").filter(Boolean), ri = 0, lastL = false;
+    parts.forEach(function (x) {
+      if (x === "S") { html += socHtml; lastL = false; }
+      else if (!lastL) { if (runs[ri]) { html += '<section class="lk3" aria-label="Links">' + runs[ri] + "</section>"; } ri++; lastL = true; }
+    });
+    return html;
+  }
+
+  function renderPhoto() {
+    var soc = liveSocials();
+    var acts = P.order.filter(function (k) { return ACT[k] && href(k); });
+    var html = '<div class="card5">' +
+      '<div class="photo5">' + (hasPhoto() ? '<img src="' + esc(P.photo) + '" alt="">' :
+        '<span class="face5"><svg viewBox="0 0 96 80" aria-hidden="true"><circle cx="48" cy="30" r="18" fill="currentColor"/><path d="M10 80c4-21 19-31 38-31s34 10 38 31z" fill="currentColor"/></svg></span>') +
+        shareBtn() + "</div>" +
+      '<div class="body5">' + (P.name ? '<h1 class="name">' + esc(P.name) + "</h1>" : "") + handleBtn() +
+        (P.bio ? '<p class="bio">' + esc(P.bio) + "</p>" : "") +
+        (window.CMSocial ? CMSocial.html(P) : "") +
+        ((acts.length || P.order.indexOf("vcard") > -1) ? '<div class="row5"><nav class="acts">' + acts.map(function (k) {
+          return '<a href="' + esc(href(k)) + '"' + (k === "wa" ? ' target="_blank" rel="noopener"' : "") + ' aria-label="' + ACT_LABEL[k] + '">' + svgAct(k) + "</a>";
+        }).join("") + "</nav>" + (P.order.indexOf("vcard") > -1 ? '<button class="add5" type="button" data-act="save">Add Contact</button>' : "") + "</div>" : "") +
+      "</div></div>";
+    var socHtml = soc.length ? '<section class="grp" aria-label="Social profiles">' + soc.map(function (k) {
+      return '<div class="it"><a href="' + esc(SOCIAL_URL[k](P.links[k])) + '" target="_blank" rel="noopener">' +
+             brandIc(k).replace('fill="#fff" stroke="#000"', 'fill="#FFFC00" stroke="#000"') +
+             '<span class="tx5"><b>' + SOC_NAME[k] + "</b><small>" + esc(subOf(P.links[k])) + "</small></span></a></div>";
+    }).join("") + "</section>" : "";
+    var runs = linkRows("it", "tx5").split("|").filter(Boolean), ri = 0, lastL = false;
+    P.order.forEach(function (k) {
+      if (k === "socials") { html += socHtml; lastL = false; }
+      else if (!ACT[k] && k !== "vcard" && href(k)) {
+        if (!lastL) { if (runs[ri]) { html += '<section class="grp" aria-label="Links">' + runs[ri] + "</section>"; } ri++; lastL = true; }
+      }
+    });
+    return html;
+  }
+  /* one handler for both: share the page, copy the link, save the contact */
+  function wireLookActs() {
+    $("list").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-act]"); if (!b) { return; }
+      var act = b.dataset.act;
+      if (act === "share") { $("shareBtn").click(); }
+      else if (act === "save") { saveContact(); }
+      else if (act === "copy") {
+        copy("https://codemarca.com/" + P.handle).then(function () {
+          b.dataset.copied = "true";
+          setTimeout(function () { b.dataset.copied = "false"; }, 1500);
+        });
+      }
+    });
+  }
+
+  /* ══ 4a. MODE BANNER — Travel / Lost (2h) ═══════════════════════════
+     Drawn above the card on every theme. A number shows masked until it
+     is tapped; the tap turns the button into a green Call. No sign-up in
+     the way — the finder is doing the owner a favour. */
+  var MODE_IC = {
+    travel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>',
+    lost:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.2"/><path d="M12 16.4v.01"/></svg>',
+    call:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 3.5h3l1.5 4-2 1.5a12 12 0 0 0 6 6L16.5 13l4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2Z"/></svg>'
+  };
+  var MODE_ITEM = { phone:"phone", laptop:"laptop", bag:"bag", bottle:"bottle", keys:"set of keys" };
+  var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  function niceDate(v) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || "");
+    return m ? (+m[3]) + " " + MONTHS[+m[2] - 1] : (v || "");
+  }
+  function maskNum(v) {
+    var d = String(v || "").replace(/\D/g, "").slice(-10);
+    return d.length < 6 ? "" : d.slice(0, 2) + "xxx xx" + d.slice(-3);
+  }
+  function plainNum(v) {
+    var d = String(v || "").replace(/\D/g, "").slice(-10);
+    return d.length === 10 ? d.slice(0, 5) + " " + d.slice(5) : String(v || "");
+  }
+  var modeOpen = false;
+  function renderMode() {
+    var el = $("mode"), m = P.mode;
+    if (!m || !m.people || !m.people.length) { el.hidden = true; el.innerHTML = ""; return; }
+    var travel = m.kind !== "lost";
+    var item = MODE_ITEM[m.item];
+    var top = travel
+      ? { k: "Travel mode", when: m.until ? "till " + niceDate(m.until) : "",
+          t: "Found this somewhere?",
+          s: "Please call someone I’m travelling with. They can reach me quickly." }
+      : { k: item ? "Lost " + item : "Lost item", when: m.since ? "since " + niceDate(m.since) : "",
+          t: item ? "This " + item + " is lost." : "This is lost.",
+          s: "If you have it, please call one of these people. Thank you for helping it get back." };
+    el.dataset.kind = travel ? "travel" : "lost";
+    el.setAttribute("aria-label", top.k);
+    /* folded by default (Garry, 2026-10-13): one line says what this is,
+       a tap opens the note and the people to call */
+    var chev = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    el.innerHTML =
+      '<button class="mode__head" type="button" data-mtog aria-expanded="' + modeOpen + '" aria-controls="modeMore">' +
+        '<span class="mode__top"><span class="mode__ic">' + MODE_IC[travel ? "travel" : "lost"] + "</span>" +
+          "<span>" + esc(top.k) + "</span>" +
+          (top.when ? '<span class="mode__when">' + esc(top.when) + "</span>" : "") + "</span>" +
+        '<span class="mode__row"><span class="mode__t">' + esc(top.t) + "</span>" +
+          '<span class="mode__cta">' + (modeOpen ? "Hide" : "Who to call") + chev + "</span></span>" +
+      "</button>" +
+      '<div class="mode__more" id="modeMore"><div class="mode__in"><div class="mode__body">' +
+        '<p class="mode__s">' + esc(top.s) + "</p>" +
+        (m.note ? '<p class="mode__note">' + esc(m.note) + "</p>" : "") +
+        '<ul class="mode__ppl">' + m.people.slice(0, 2).map(function (p, i) {
+          return '<li class="mode__p">' +
+            '<span class="mode__av" aria-hidden="true">' + esc((p.name || "?").charAt(0).toUpperCase()) + "</span>" +
+            '<span class="mode__who"><b>' + esc(p.name) + "</b>" +
+              (p.rel ? "<small>" + esc(p.rel) + "</small>" : "") +
+              '<small class="mode__num" data-num="' + i + '">' + esc(maskNum(p.phone)) + "</small></span>" +
+            '<button class="mode__go" type="button" data-reveal="' + i + '" aria-label="Show ' + esc(p.name) + '’s number"' + (modeOpen ? "" : ' tabindex="-1"') + ">Show number</button>" +
+          "</li>";
+        }).join("") + "</ul>" +
+      "</div></div></div>";
+    if (modeOpen) { el.dataset.open = ""; } else { delete el.dataset.open; }
+    el.hidden = false;
+  }
+  $("mode").addEventListener("click", function (e) {
+    if (e.target.closest("[data-mtog]")) {
+      modeOpen = !modeOpen;
+      var el = $("mode"), h = el.querySelector("[data-mtog]");
+      if (modeOpen) { el.dataset.open = ""; } else { delete el.dataset.open; }
+      h.setAttribute("aria-expanded", String(modeOpen));
+      h.querySelector(".mode__cta").firstChild.textContent = modeOpen ? "Hide" : "Who to call";
+      Array.prototype.forEach.call(el.querySelectorAll("[data-reveal]"), function (x) {
+        if (modeOpen) { x.removeAttribute("tabindex"); } else { x.setAttribute("tabindex", "-1"); }
+      });
+      return;
+    }
+    var b = e.target.closest("[data-reveal]");
+    if (!b || !P.mode) { return; }
+    var i = +b.getAttribute("data-reveal"), p = P.mode.people[i];
+    var d = String(p.phone || "").replace(/\D/g, "");
+    $("mode").querySelector('[data-num="' + i + '"]').textContent = plainNum(p.phone);
+    var a = document.createElement("a");
+    a.className = "mode__go mode__go--call";
+    a.href = "tel:" + (d.length === 10 ? "+91" + d : "+" + d);
+    a.innerHTML = MODE_IC.call + "Call";
+    a.setAttribute("aria-label", "Call " + p.name);
+    b.replaceWith(a);
+    a.focus();
+  });
+
+  /* the review switcher's two demo modes — same shape as Home sends */
+  var DEMO_MODE = {
+    travel: { kind: "travel", until: "2026-10-20", note: "Group trip with Wanderlust Treks, bus HP 01 4521.",
+              people: [ { name: "Rahul", rel: "Travel buddy", phone: "98140 22310" },
+                        { name: "Simran", rel: "Trip host", phone: "98722 41907" } ] },
+    lost:   { kind: "lost", since: "2026-10-14", item: "phone", note: "Lost near the Manikaran bus stand. Small reward, thank you!",
+              people: [ { name: "Rahul", rel: "Travel buddy", phone: "98140 22310" },
+                        { name: "Simran", rel: "Trip host", phone: "98722 41907" } ] }
+  };
+
+  /* ══ 4. RENDER ═══════════════════════════════════════════════════════
+     Straight down the order array. No sorting, no promoting, no special
+     case for the first item — order alone is the hierarchy. */
+  function render() {
+    renderMode();
+    var lk = document.querySelector(".pg").dataset.look;
+    $("sxSlot").innerHTML = (lk === "soft" || lk === "photo" || !window.CMSocial) ? "" : CMSocial.html(P);
+    /* The glass looks draw a silhouette when there is no photo. The demo
+       state's stand-in portrait (an inline violet SVG) counts as no photo —
+       a real upload is never an inline SVG. */
+    var lookNow = document.querySelector(".pg").dataset.look;
+    var noPhoto = !P.photo || (lookNow && /^data:image\/svg/.test(P.photo));
+    $("avatar").innerHTML = lookNow && noPhoto
+      ? '<span class="ph"><svg viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="38" r="16" fill="currentColor" fill-opacity=".92"/>' +
+        '<path d="M16 96c4-19 17-28 32-28s28 9 32 28z" fill="currentColor" fill-opacity=".92"/></svg></span>'
+      : P.photo
+      ? '<img src="' + esc(P.photo) + '" width="88" height="88" alt="">'
+      /* the flat themes: a light cool-grey silhouette, not the initial on violet */
+      : '<svg class="face" viewBox="0 0 96 96" aria-hidden="true"><rect width="96" height="96" fill="#E7E9EE"/><circle cx="48" cy="38" r="16" fill="#B3B8C2"/><path d="M16 96c4-19 17-28 32-28s28 9 32 28z" fill="#B3B8C2"/></svg>';
+    $("name").textContent = P.name;
+    $("handleTxt").textContent = "codemarca.com/" + P.handle;
+    $("bio").textContent = P.bio;
+    $("bio").hidden = !P.bio;
+    document.title = P.name + " — Codemarca";
+
+    var look = document.querySelector(".pg").dataset.look;
+    $("addBtn").hidden = !(look && P.order.indexOf("vcard") > -1);
+    if (look === "deck") {
+      $("addBtn").hidden = true;
+      renderDeck();
+      return;
+    }
+    if (look === "soft" || look === "photo") {
+      $("list").innerHTML = look === "soft" ? renderSoft() : renderPhoto();
+      return;
+    }
+    if (look) {
+      $("list").innerHTML = renderLook(look) || (document.querySelector(".pg").dataset.bare === "1"
+        ? '<p class="bare">This page is still being set up.</p>' : "");
+      markCut();
+      return;
+    }
+
+    /* Call, WhatsApp, Email and Save contact always lead, whatever order the
+       payload carries — the editor no longer lets them move (2026-10-05) */
+    var LEAD = ["call", "wa", "email", "vcard"];
+    var ord = LEAD.filter(function (k) { return P.order.indexOf(k) > -1; })
+                  .concat(P.order.filter(function (k) { return LEAD.indexOf(k) < 0; }));
+    var html = ord.map(function (k) {
+      if (k === "socials") {
+        var s = liveSocials();
+        if (!s.length) return "";
+        return '<div class="socials">' + s.map(function (x) {
+          return '<a href="' + esc(SOCIAL_URL[x](P.links[x])) + '" target="_blank" rel="noopener" aria-label="' +
+                 /* every mark on the same round disc, so the row reads as one even line —
+                    official shapes (Simple Icons), not the old hand-drawn glyphs */
+                 esc(x) + '">' + circIc(x) + "</a>";
+        }).join("") + "</div>";
+      }
+      var h = href(k); if (!h) return "";
+      var c = custom(k);
+      var label = LABEL[k] || (c ? c.title : "");
+      var isLocal = (k === "call" || k === "wa" || k === "email" || k === "vcard");
+      var tag = k === "vcard" ? "button" : "a";
+      var attrs = k === "vcard"
+        ? ' type="button" id="vcardBtn"'
+        : ' href="' + esc(h) + '"' + (isLocal ? "" : ' target="_blank" rel="noopener"');
+      var row = "<" + tag + ' class="btn' + (k === "vcard" ? " btn--save" : "") + '" data-k="' + esc(LABEL[k] ? k : "custom") + '"' + attrs + ">" +
+                rowIc(LABEL[k] ? k : "custom") +
+                "<span>" + esc(label) + "</span></" + tag + ">";
+
+      /* Only rows that point at a real web address get one. tel: and mailto:
+         are not links a person can pass on — Facebook and X reject them
+         outright — and Save contact has no address at all, it builds a file. */
+      if (!/^https?:/i.test(h)) return row;
+      return '<div class="row">' + row +
+             '<button class="rowshare" type="button" data-u="' + esc(h) +
+             '" data-l="' + esc(label) + '" aria-label="Share ' + esc(label) + '">' +
+             SHARE_ICON + "</button></div>";
+    }).join("");
+
+    $("list").innerHTML = html || (document.querySelector(".pg").dataset.bare === "1"
+      ? '<p class="bare">This page is still being set up.</p>'
+      : "");
+    var vb = $("vcardBtn"); if (vb) vb.addEventListener("click", saveContact);
+  }
+
+  /* ══ 5. SAVE CONTACT ═════════════════════════════════════════════════
+     The one thing Linktree cannot do: one tap and the owner is in the
+     scanner's phonebook. Built here rather than fetched, so it works with
+     whatever the page was already given. */
+  function saveContact() {
+    var lines = ["BEGIN:VCARD", "VERSION:3.0", "FN:" + P.name, "N:;" + P.name + ";;;"];
+    if (P.phone) lines.push("TEL;TYPE=CELL:" + tel(P.phone));
+    if (P.wa && P.wa !== P.phone) lines.push("TEL;TYPE=WORK:" + tel(P.wa));
+    if (P.email) lines.push("EMAIL;TYPE=INTERNET:" + P.email);
+    if (P.links.website) lines.push("URL:" + http(P.links.website));
+    lines.push("URL:https://codemarca.com/" + P.handle);
+    if (P.bio) lines.push("NOTE:" + P.bio.replace(/[\n,;]/g, " "));
+    lines.push("END:VCARD");
+
+    var blob = new Blob([lines.join("\r\n")], { type: "text/vcard;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = P.handle + ".vcf";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  }
+
+  /* ══ 6. SCAN COUNT ═══════════════════════════════════════════════════
+     Recorded from day one even though the dashboard only shows it in
+     phase 2 — this data cannot be backfilled later. Fire and forget, and
+     never let it block the paint. */
+  function recordScan() {
+    var body = JSON.stringify({ handle: P.handle, at: Date.now(), ref: document.referrer || null });
+    if (navigator.sendBeacon) { /* navigator.sendBeacon("/api/scan", body); */ }
+  }
+
+  /* ══ 6b. SHARE, COPY AND THE SHEETS ══════════════════════════════════
+     Custom sheet rather than only navigator.share, for one reason: the
+     native sheet cannot carry the "get your own code" block, and that block
+     is why sharing is worth building at all. Native share is offered as one
+     extra tile where the browser has it, since on a phone it reaches apps we
+     cannot link to directly. */
+  function pageUrl() { return "https://codemarca.com/" + P.handle; }
+  function bare(u) { return u.replace(/^https?:\/\//i, "").replace(/\/$/, ""); }
+
+  var SHARE_ICON = '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true">' +
+    '<path d="M10 12.6V3.4m0 0L7.1 6.3M10 3.4l2.9 2.9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<path d="M5 11v5.1c0 .6.5 1.1 1.1 1.1h7.8c.6 0 1.1-.5 1.1-1.1V11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+
+  /* whatever the sheet is currently pointed at — the page, or one row */
+  var shared = { url: "", display: "" };
+
+  var SHARE = [
+    { k:"whatsapp", n:"WhatsApp", c:"#25D366",
+      g:'<path d="M6.2 18 7.3 14.6a6.7 6.7 0 1 1 2.5 2.4z" fill="none" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.9 9.4c.35 1.7 1.7 3 3.4 3.4l.7-1.1 1.6.75-.25 1.4c-2.8.4-6-2.8-5.6-5.6l1.4-.25.75 1.6z" fill="#fff"/>',
+      u:function (v) { return "https://wa.me/?text=" + encodeURIComponent(v); } },
+    { k:"x", n:"X", c:"#101215",
+      g:'<path d="M6 5.4h3.3l3 4.1 3.5-4.1h2.9l-5 5.8 5.4 7.4h-3.3l-3.3-4.5-3.8 4.5H5.8l5.3-6.2z" fill="#fff"/>',
+      u:function (v) { return "https://x.com/intent/tweet?url=" + encodeURIComponent(v); } },
+    { k:"facebook", n:"Facebook", c:"#1877F2",
+      g:'<path d="M13.4 20v-7.1h2.4l.36-2.78H13.4V8.34c0-.8.23-1.35 1.39-1.35h1.48V4.5a19.7 19.7 0 0 0-2.16-.11c-2.13 0-3.59 1.3-3.59 3.69v2.04H8.1v2.78h2.42V20z" fill="#fff"/>',
+      u:function (v) { return "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(v); } },
+    { k:"telegram", n:"Telegram", c:"#229ED9",
+      g:'<path d="M19.2 6.2 5.5 11.5c-.7.28-.7.78.02.98l3.44 1.07 7.98-5.03c.38-.23.72-.11.44.14l-6.46 5.84-.25 3.5c.29 0 .42-.13.58-.29l1.4-1.35 2.9 2.14c.53.3.92.14 1.05-.5l1.9-8.94c.19-.86-.31-1.25-.9-1.02z" fill="#fff"/>',
+      u:function (v) { return "https://t.me/share/url?url=" + encodeURIComponent(v); } },
+    { k:"email", n:"Email", c:"#5B5D68",
+      g:'<rect x="5" y="7.4" width="14" height="9.2" rx="2" fill="none" stroke="#fff" stroke-width="1.6"/><path d="m5.8 8.6 6.2 4.3 6.2-4.3" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>',
+      u:function (v) { return "mailto:?subject=" + encodeURIComponent(P.name + " on Codemarca") + "&body=" + encodeURIComponent(v); } }
+  ];
+
+  function paintTargets() {
+    var html = SHARE.map(function (t) {
+      return '<a href="' + esc(t.u(shared.url)) + '" target="_blank" rel="noopener">' +
+             '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="' + t.c + '"/>' +
+             t.g + "</svg><span>" + esc(t.n) + "</span></a>";
+    }).join("");
+    if (navigator.share) {
+      html += '<button type="button" id="nativeShare">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#6E27E6"/>' +
+        '<circle cx="8.4" cy="12" r="1.6" fill="#fff"/><circle cx="15.6" cy="12" r="1.6" fill="#fff"/><circle cx="12" cy="12" r="1.6" fill="#fff"/></svg>' +
+        "<span>More</span></button>";
+    }
+    $("targets").innerHTML = html;
+    var nb = $("nativeShare");
+    if (nb) nb.addEventListener("click", function () {
+      navigator.share({ title: P.name + " on Codemarca", url: shared.url }).catch(function () {});
+    });
+  }
+
+  /* clipboard, with the old fallback — this page runs on whatever phone
+     scanned it, not on a browser we picked */
+  function copy(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text).catch(legacy);
+    }
+    return Promise.resolve(legacy());
+    function legacy() {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.cssText = "position:fixed;top:-1000px;opacity:0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+  }
+
+  var flash = null;
+
+  /* Opening the sheet copies the link straight away — the write has to happen
+     inside the click itself, since Safari ties clipboard access to the gesture
+     and would refuse it a second later from a timer. The spinner sits on top
+     of that: one second of loading, then "Link copied", then back to "Copy"
+     two seconds later. Pressing Copy by hand runs the same thing. */
+  var SPIN = '<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>';
+  var TICK = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.4 6.5 12 13 4.6" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var copySeq = null;
+
+  function runCopy() {
+    var b = $("shareCopy");
+    copy(shared.url);
+    clearTimeout(copySeq);
+
+    b.dataset.state = "busy";
+    b.innerHTML = SPIN;
+    b.setAttribute("aria-label", "Copying link");
+
+    copySeq = setTimeout(function () {
+      b.dataset.state = "done";
+      b.innerHTML = TICK + "<span>Link copied</span>";
+      b.setAttribute("aria-label", "Link copied");
+      copySeq = setTimeout(function () {
+        b.dataset.state = "";
+        b.textContent = "Copy";
+        b.setAttribute("aria-label", "Copy link");
+      }, 2000);
+    }, 1000);
+  }
+
+  function openShare(url, title, display) {
+    shared.url = url;
+    shared.display = display;
+    $("shareUrl").textContent = display;
+    $("shareTitle").textContent = title;
+    paintTargets();
+    openSheet("shareSheet");
+    runCopy();
+  }
+
+  function openSheet(id) {
+    $(id).hidden = false;
+    document.body.style.overflow = "hidden";
+    if (id === "claimSheet") setTimeout(function () { $("claimInput").focus(); }, 60);
+  }
+  function closeSheets() {
+    clearTimeout(copySeq);
+    $("shareSheet").hidden = true;
+    $("claimSheet").hidden = true;
+    document.body.style.overflow = "";
+  }
+
+  function wireSheets() {
+    wireDeck();
+    wireLookActs();
+    $("addBtn").addEventListener("click", saveContact);
+    window.addEventListener("resize", function () { if (document.querySelector(".pg").dataset.look) markCut(); });
+    if (WIDE.addEventListener) WIDE.addEventListener("change", function () { if (document.querySelector(".pg").dataset.look) render(); });
+    if (document.fonts) document.fonts.ready.then(function () { if (document.querySelector(".pg").dataset.look) markCut(); });
+
+    $("shareBtn").addEventListener("click", function () {
+      openShare(pageUrl(), "Share " + (P.name.split(" ")[0] || "this page"),
+                "codemarca.com/" + P.handle);
+    });
+
+    $("list").addEventListener("click", function (e) {
+      var b = e.target.closest(".rowshare"); if (!b) return;
+      e.preventDefault();
+      openShare(b.dataset.u, "Share " + b.dataset.l, bare(b.dataset.u));
+    });
+
+    $("handle").addEventListener("click", function () {
+      var b = this;
+      copy(pageUrl()).then(function () {
+        b.dataset.copied = "true";
+        clearTimeout(flash);
+        flash = setTimeout(function () { b.dataset.copied = "false"; }, 1500);
+      });
+    });
+
+    $("shareCopy").addEventListener("click", function () {
+      if (this.dataset.state === "busy") return;
+      runCopy();
+    });
+
+    /* the brand button opens the claim sheet — it must not navigate away */
+    $("brandBtn").addEventListener("click", function () { openSheet("claimSheet"); });
+    $("promoBtn").addEventListener("click", function () { closeSheets(); openSheet("claimSheet"); });
+
+    $("claimGo").addEventListener("click", function () {
+      var v = $("claimInput").value.toLowerCase().replace(/[^a-z0-9._-]/g, "").slice(0, 24);
+      location.href = "signup.html?next=build" + (v ? "&handle=" + encodeURIComponent(v) : "");
+    });
+    $("claimInput").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); $("claimGo").click(); }
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll("[data-close]"), function (el) {
+      el.addEventListener("click", closeSheets);
+    });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeSheets(); });
+  }
+
+  /* ══ 7. THE EMPTY CODE ═══════════════════════════════════════════════
+     Finder squares and the alignment block are drawn exactly; the data area
+     is noise, since there is no data. The CSS blurs only the data group. */
+  function drawEmpty(seedStr) {
+    var N = 29, i, x, y, seed = 2166136261;
+    for (i = 0; i < seedStr.length; i++) { seed ^= seedStr.charCodeAt(i); seed = (seed * 16777619) >>> 0; }
+    function rnd() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+    function rect(x, y) { return '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>'; }
+    function reserved(px, py) {
+      return (px < 8 && py < 8) || (px > N - 9 && py < 8) || (px < 8 && py > N - 9) ||
+             (px >= N - 9 && px <= N - 5 && py >= N - 9 && py <= N - 5);
+    }
+
+    var data = "", fix = "";
+    for (y = 0; y < N; y++) for (x = 0; x < N; x++) {
+      if (!reserved(x, y) && rnd() > .52) data += rect(x, y);
+    }
+    [[0, 0], [N - 7, 0], [0, N - 7]].forEach(function (o) {
+      for (y = 0; y < 7; y++) for (x = 0; x < 7; x++) {
+        var edge = (x === 0 || x === 6 || y === 0 || y === 6);
+        var core = (x >= 2 && x <= 4 && y >= 2 && y <= 4);
+        if (edge || core) fix += rect(o[0] + x, o[1] + y);
+      }
+    });
+    for (y = 0; y < 5; y++) for (x = 0; x < 5; x++) {
+      var e = (x === 0 || x === 4 || y === 0 || y === 4);
+      if (e || (x === 2 && y === 2)) fix += rect(N - 9 + x, N - 9 + y);
+    }
+
+    $("ghost").innerHTML = '<g class="ghost__data" fill="#101215">' + data + "</g>" +
+                           '<g class="ghost__fix" fill="#101215">' + fix + "</g>";
+  }
+
+  /* ══ 8. BOOT ═════════════════════════════════════════════════════════ */
+  var pg = document.querySelector(".pg");
+  var q  = new URLSearchParams(location.search);
+
+  // Auto-detect handle from URL path (e.g. /ghhghjjh, /ghhghjjh/, or ghhghjjh.html)
+  try {
+    var rawPath = location.pathname.split("/").filter(Boolean);
+    var seg = rawPath[rawPath.length - 1] || "";
+    if (seg && !seg.includes(".") && seg !== "profile" && seg !== "v3_devoff") {
+      P.handle = seg.toLowerCase().replace(/[^a-z0-9._-]/g, "");
+    } else if (seg && seg.endsWith(".html") && seg !== "profile.html" && seg !== "index.html") {
+      P.handle = seg.replace(/\.html$/, "").toLowerCase().replace(/[^a-z0-9._-]/g, "");
+    }
+  } catch(e) {}
+
+  if (window.__DEFAULT_HANDLE__) P.handle = window.__DEFAULT_HANDLE__.toLowerCase().replace(/[^a-z0-9._-]/g, "");
+  if (q.get("handle")) P.handle = q.get("handle").toLowerCase().replace(/[^a-z0-9._-]/g, "");
+  if (q.get("theme"))  P.theme  = q.get("theme");
+  if (q.get("view"))   pg.dataset.view = q.get("view");
+
+  /* Overlay saved profile from localStorage if in preview, owner view, or matching handle */
+  try {
+    var storedAcc = JSON.parse(window.localStorage.getItem("cm.account.custom") || "{}");
+    var sp = storedAcc.profile || null;
+    var storedHandle = window.localStorage.getItem("cm.username") || (sp && sp.handle) || "";
+    var isPreviewOrOwner = q.get("chrome") === "0" || q.get("view") === "owner" || q.get("preview") === "1";
+    var handleMatches = storedHandle && P.handle && storedHandle.toLowerCase() === P.handle.toLowerCase();
+    if (isPreviewOrOwner || handleMatches || !P.handle || P.handle === "garry" || P.handle === "gurdeep") {
+      if (storedHandle) P.handle = storedHandle;
+      var savedName = window.localStorage.getItem("cm.name") || (sp && sp.name);
+      if (savedName) P.name = savedName;
+      var savedBio = window.localStorage.getItem("cm.bio");
+      if (savedBio !== null) P.bio = savedBio;
+      else if (sp && sp.bio !== undefined) P.bio = sp.bio;
+
+      var savedPhoto = window.localStorage.getItem("cm.photo") || (sp && sp.photo);
+      if (savedPhoto) P.photo = savedPhoto;
+
+      var savedTheme = q.get("theme") || window.localStorage.getItem("cm.theme") || (sp && sp.theme);
+      if (savedTheme) P.theme = savedTheme;
+
+      if (sp && sp.phone) P.phone = sp.phone;
+      if (sp && sp.wa) P.wa = sp.wa;
+      if (sp && sp.email) P.email = sp.email;
+      if (sp && sp.links) {
+        var cl = {};
+        for (var lk in sp.links) {
+          var item = sp.links[lk];
+          if (typeof item === "string") cl[lk] = item;
+          else if (item && item.v && item.on !== false) cl[lk] = item.v;
+        }
+        if (Object.keys(cl).length) P.links = cl;
+      }
+      if (sp && sp.customs && sp.customs.length) P.customs = sp.customs;
+      if (sp && sp.order && sp.order.length) P.order = sp.order;
+      if (sp && sp.socialOrder && sp.socialOrder.length) P.socialOrder = sp.socialOrder;
+    }
+  } catch(e) {}
+
+  /* Fetch live profile from Supabase DB */
+  if (P.handle && P.handle !== "gurdeep" && P.handle !== "garry") {
+    fetch("https://inzigrmttewawjjkggbd.supabase.co/rest/v1/profiles?username=eq." + encodeURIComponent(P.handle) + "&select=*", {
+      headers: {
+        "apikey": "sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg",
+        "Authorization": "Bearer sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg"
+      }
+    }).then(function (r) { return r.json(); }).then(function (rows) {
+      if (rows && rows[0]) {
+        var row = rows[0];
+        if (row.display_name) P.name = row.display_name;
+        if (row.bio !== undefined && row.bio !== null) P.bio = row.bio;
+        if (row.avatar_url) P.photo = row.avatar_url;
+        if (row.theme && !q.get("theme")) P.theme = row.theme;
+        if (row.phone) P.phone = row.phone;
+        if (row.whatsapp) P.wa = row.whatsapp;
+        if (row.email) P.email = row.email;
+        applyTheme(P.theme);
+        render();
+
+        if (row.id) {
+          fetch("https://inzigrmttewawjjkggbd.supabase.co/rest/v1/links?profile_id=eq." + encodeURIComponent(row.id) + "&is_visible=eq.true&select=*", {
+            headers: {
+              "apikey": "sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg",
+              "Authorization": "Bearer sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg"
+            }
+          }).then(function (lr) { return lr.json(); }).then(function (linkRows) {
+            if (linkRows && linkRows.length) {
+              var newLinks = {};
+              var newCustoms = [];
+              linkRows.forEach(function (l) {
+                if (l.icon === "custom" || !l.icon) {
+                  newCustoms.push({ id: l.id, title: l.title || "Link", url: l.url });
+                } else {
+                  newLinks[l.icon] = l.url;
+                }
+              });
+              if (Object.keys(newLinks).length) P.links = newLinks;
+              if (newCustoms.length) P.customs = newCustoms;
+              render();
+            }
+          }).catch(function () {});
+        }
+      } else if (!handleMatches) {
+        P.name = P.handle;
+        P.bio = "Welcome to my Codemarca page.";
+        applyTheme(P.theme);
+        render();
+      }
+    }).catch(function () {});
+  }
+  /* ?mode=travel|lost — the review demos; ?mode={json} — Home's "See what a
+     scan shows", carrying the mode exactly as the owner just set it */
+  if (q.get("mode")) {
+    if (DEMO_MODE[q.get("mode")]) { P.mode = DEMO_MODE[q.get("mode")]; }
+    else { try { P.mode = JSON.parse(q.get("mode")); } catch (err) { P.mode = null; } }
+  }
+
+  /* ?bare=1 — the page a Google sign-up produces before anyone edits it:
+     a name, a handle, and nothing else. This is what the code of a claimed
+     gift sticker actually opens, and the dashboard previews it with this
+     flag. Without it the preview showed the full demo page while the
+     profile tab said "no page yet" — two screens contradicting each other
+     (Garry, 2026-09-28). */
+  if (q.get("bare") === "1") {
+    if (q.get("name")) { P.name = q.get("name").slice(0, 40); }
+    P.bio = ""; P.photo = null;
+    P.phone = ""; P.wa = ""; P.email = "";
+    P.links = {}; P.customs = []; P.socialOrder = [];
+    P.order = [];
+    P.social.followers = 0; P.social.following = 0;
+    pg.dataset.bare = "1";
+  }
+
+  /* ?chrome=0 — the page as the dashboard embeds it in a preview. It is
+     the OWNER looking at their own page, so three things come off: the
+     review switcher, the "This is your page / Edit" bar (they are already
+     in the dashboard), and anything that sells Codemarca to a stranger.
+     Never show the owner "Get your own Codemarca" — Garry, repeatedly. */
+  if (q.get("chrome") === "0") {
+    /* hidden, not removed — the review script still fills these in below
+       and would trip over a missing node */
+    [".rev", ".bar", "#brandBtn"].forEach(function (sel) {
+      var el = document.querySelector(sel);
+      if (el) { el.hidden = true; }
+    });
+  }
+
+  /* A preview frame starts EMPTY, not on the demo page: the editor fills it
+     a moment later, and until then it must show only what the person has
+     typed — nothing (Garry, 2026-10-03). */
+  if (q.get("preview") === "1") {
+    P.name = ""; P.bio = ""; P.photo = null;
+    P.phone = ""; P.wa = ""; P.email = "";
+    P.links = {}; P.customs = []; P.socialOrder = []; P.order = [];
+  }
+
+  applyTheme(P.theme);
+  render();
+  if (window.CMSocial) { CMSocial.wire(P, render); }
+
+  /* ?preview=1 — the dashboard's live preview (Garry + Gurdeep, 2026-09-30).
+     The Profile tab posts its UNSAVED state here on every change, so the
+     phone beside the editor shows the page before it is saved. Same origin
+     only; the payload is the same shape as P. */
+  if (q.get("preview") === "1") {
+    window.addEventListener("message", function (e) {
+      if ((e.origin !== location.origin && location.protocol !== "file:") || !e.data || e.data.type !== "cm-preview") { return; }
+      var d = e.data.page, k;
+      for (k in d) { if (Object.prototype.hasOwnProperty.call(d, k)) { P[k] = d[k]; } }
+      applyTheme(P.theme);
+      delete pg.dataset.bare;
+      render();
+    });
+    /* opened from disk (file://) every page is its own opaque origin and a
+       same-origin target never arrives — so "*" there, same-origin on a host */
+    if (window.parent !== window) {
+      try { window.parent.postMessage({ type: "cm-preview-ready" }, (location.protocol === "file:" ? "*" : location.origin)); } catch (err) {}
+    }
+  }
+
+  /* an unclaimed code has no owner yet, so it must not carry one in the
+     tab title either — on the real site the payload simply does not exist */
+  if (q.get("code")) $("code").textContent = q.get("code").toUpperCase();
+  drawEmpty($("code").textContent);
+  wireSheets();
+  if (pg.dataset.view === "unclaimed") document.title = "Codemarca";
+  else recordScan();
+
+  /* Review tool — delete this block and the .rev markup before launch. */
+  var THEMES = ["light", "glass-bronze", "leaf", "leaf-blue", "leaf-orange", "leaf-violet",
+                "glass-copper", "soft", "soft-dark", "photo", "photo-dark", "light-dark"];
+  $("revTheme").innerHTML = THEMES.map(function (t) {
+    return '<button class="rev__sw" type="button" data-t="' + t + '" aria-pressed="' +
+           (t === P.theme) + '" aria-label="' + t + ' theme"></button>';
+  }).join("");
+  $("revTheme").addEventListener("click", function (e) {
+    var b = e.target.closest(".rev__sw"); if (!b) return;
+    P.theme = b.dataset.t;
+    applyTheme(P.theme);
+    render();
+    Array.prototype.forEach.call($("revTheme").children, function (x) {
+      x.setAttribute("aria-pressed", String(x === b));
+    });
+  });
+  Array.prototype.forEach.call($("revView").children, function (x) {
+    x.setAttribute("aria-pressed", String(x.dataset.v === pg.dataset.view));
+  });
+  Array.prototype.forEach.call($("revMode").children, function (x) {
+    x.setAttribute("aria-pressed", String(x.dataset.m === (P.mode ? P.mode.kind : "")));
+  });
+  $("revMode").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-m]"); if (!b) return;
+    P.mode = b.dataset.m ? DEMO_MODE[b.dataset.m] : null;
+    renderMode();
+    Array.prototype.forEach.call($("revMode").children, function (x) {
+      x.setAttribute("aria-pressed", String(x === b));
+    });
+  });
+  $("revView").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-v]"); if (!b) return;
+    pg.dataset.view = b.dataset.v;
+    Array.prototype.forEach.call($("revView").children, function (x) {
+      x.setAttribute("aria-pressed", String(x === b));
+    });
+  });
+})();
+</script>

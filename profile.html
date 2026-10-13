@@ -2515,6 +2515,19 @@ input:-webkit-autofill:active{
   /* ══ 8. BOOT ═════════════════════════════════════════════════════════ */
   var pg = document.querySelector(".pg");
   var q  = new URLSearchParams(location.search);
+
+  // Auto-detect handle from URL path (e.g. /ghhghjjh, /ghhghjjh/, or ghhghjjh.html)
+  try {
+    var rawPath = location.pathname.split("/").filter(Boolean);
+    var seg = rawPath[rawPath.length - 1] || "";
+    if (seg && !seg.includes(".") && seg !== "profile" && seg !== "v3_devoff") {
+      P.handle = seg.toLowerCase().replace(/[^a-z0-9._-]/g, "");
+    } else if (seg && seg.endsWith(".html") && seg !== "profile.html" && seg !== "index.html") {
+      P.handle = seg.replace(/\.html$/, "").toLowerCase().replace(/[^a-z0-9._-]/g, "");
+    }
+  } catch(e) {}
+
+  if (window.__DEFAULT_HANDLE__) P.handle = window.__DEFAULT_HANDLE__.toLowerCase().replace(/[^a-z0-9._-]/g, "");
   if (q.get("handle")) P.handle = q.get("handle").toLowerCase().replace(/[^a-z0-9._-]/g, "");
   if (q.get("theme"))  P.theme  = q.get("theme");
   if (q.get("view"))   pg.dataset.view = q.get("view");
@@ -2575,6 +2588,35 @@ input:-webkit-autofill:active{
         if (row.phone) P.phone = row.phone;
         if (row.whatsapp) P.wa = row.whatsapp;
         if (row.email) P.email = row.email;
+        applyTheme(P.theme);
+        render();
+
+        if (row.id) {
+          fetch("https://inzigrmttewawjjkggbd.supabase.co/rest/v1/links?profile_id=eq." + encodeURIComponent(row.id) + "&is_visible=eq.true&select=*", {
+            headers: {
+              "apikey": "sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg",
+              "Authorization": "Bearer sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg"
+            }
+          }).then(function (lr) { return lr.json(); }).then(function (linkRows) {
+            if (linkRows && linkRows.length) {
+              var newLinks = {};
+              var newCustoms = [];
+              linkRows.forEach(function (l) {
+                if (l.icon === "custom" || !l.icon) {
+                  newCustoms.push({ id: l.id, title: l.title || "Link", url: l.url });
+                } else {
+                  newLinks[l.icon] = l.url;
+                }
+              });
+              if (Object.keys(newLinks).length) P.links = newLinks;
+              if (newCustoms.length) P.customs = newCustoms;
+              render();
+            }
+          }).catch(function () {});
+        }
+      } else if (!handleMatches) {
+        P.name = P.handle;
+        P.bio = "Welcome to my Codemarca page.";
         applyTheme(P.theme);
         render();
       }
