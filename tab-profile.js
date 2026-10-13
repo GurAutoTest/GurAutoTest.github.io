@@ -802,7 +802,6 @@
       if (e.target === body && card.hasAttribute("data-open")) { card.setAttribute("data-settled", ""); }
     });
   })();
-  $("meMark").innerHTML = CM.mark();
   /* the same sheet a visitor gets from the share icon on profile.html */
   $("meShare").addEventListener("click", function () {
     CM.shareSheet({ title: "Share your page", url: liveUrl(), name: SAVED.name });

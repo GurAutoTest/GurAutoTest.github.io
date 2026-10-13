@@ -139,8 +139,7 @@
 
       <!-- ME CARD: for page-live and active -->
       <section class="card me" data-flow="page-live active">
-        <span class="me__mark" data-mark></span>
-
+        
         <div class="me__top">
           <span class="me__av" data-fill="user.initial">U</span>
           <span class="me__who">
@@ -368,10 +367,7 @@
     });
   });
 
-  Array.prototype.forEach.call(document.querySelectorAll("[data-mark]"), function (el) {
-    el.innerHTML = CM.mark();
-  });
-
+  
   var owner = document.querySelector("[data-owner-view]");
   if (owner && a.profile) {
     owner.href = CM.ROOT + "profile.html?view=owner&handle=" +
