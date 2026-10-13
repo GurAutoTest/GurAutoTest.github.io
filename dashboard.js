@@ -628,8 +628,54 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     CM.foldCards();
     CM.fold();
     mountDemo(a);
+    hookRealtimeInbox(a);
     return a;
   };
+
+  function hookRealtimeInbox(a) {
+    if (!window.CMChat) {
+      var sc = document.createElement("script");
+      sc.src = (CM.ROOT || "") + "cm-chat.js";
+      document.head.appendChild(sc);
+    }
+    var check = setInterval(function () {
+      if (window.CMChat) {
+        clearInterval(check);
+        var ownerHandle = (a.profile && a.profile.handle) || window.localStorage.getItem("cm.username") || "";
+        if (!ownerHandle) return;
+        ownerHandle = ownerHandle.toLowerCase().trim();
+        window.CMChat.joinChannel("owner_" + ownerHandle);
+
+        window.CMChat.getOwnerRooms(ownerHandle).then(function (rooms) {
+          if (!rooms) return;
+          var unread = rooms.filter(function (r) { return r.is_request && r.status === "pending"; }).length;
+          if (unread > 0) {
+            updateChatBells(unread);
+          }
+        });
+
+        window.CMChat.on("NEW_REQUEST", function (ev, payload) {
+          var bells = document.querySelectorAll(".top__bell.bell:not([data-bell]) .bell__n, .dbar__bell.bell:not([data-bell]) .bell__n");
+          var cur = 0;
+          bells.forEach(function (b) { var n = parseInt(b.textContent, 10); if (!isNaN(n)) cur = Math.max(cur, n); });
+          cur++;
+          updateChatBells(cur);
+          if (window.CMChat.playNotificationSound) window.CMChat.playNotificationSound();
+          if (CM.toast) CM.toast("New message request from " + (payload.name || "visitor").split(" ")[0]);
+        });
+      }
+    }, 100);
+    setTimeout(function () { clearInterval(check); }, 5000);
+  }
+
+  function updateChatBells(count) {
+    var bells = document.querySelectorAll(".top__bell.bell:not([data-bell]) .bell__n, .dbar__bell.bell:not([data-bell]) .bell__n");
+    bells.forEach(function (b) {
+      b.textContent = count;
+      b.hidden = count <= 0;
+      if (b.classList) b.classList.toggle("hidden", count <= 0);
+    });
+  }
 
   /* ══ 4b. LONG NOTES FOLD ON A PHONE ═════════════════════════════════════
      Garry, 2026-09-24: the Orders tab reads fine on a desktop and is too

@@ -140,6 +140,8 @@ button.sx__c:hover{text-decoration:underline; text-underline-offset:3px}
 .cx__msg{align-self:flex-end; max-width:82%; margin-top:8px; display:flex; flex-direction:column; align-items:flex-end; gap:4px}
 .cx__msg p{margin:0; padding:10px 14px; border-radius:18px 18px 6px 18px; background:#101215; color:#fff; font-size:.9375rem; line-height:1.4; white-space:pre-wrap; overflow-wrap:anywhere}
 .cx__msg small{font-size:.75rem; color:#8C8E9C; letter-spacing:.14px}
+.cx__msg--them{align-self:flex-start; align-items:flex-start}
+.cx__msg--them p{border-radius:18px 18px 18px 6px; background:#fff; color:#101215; box-shadow:inset 0 0 0 1px rgba(16,18,21,.1)}
 .cx__foot{display:flex; flex-direction:column; gap:10px; padding:12px 16px calc(14px + env(safe-area-inset-bottom)); box-shadow:inset 0 1px 0 rgba(16,18,21,.08)}
 .cx__use{display:flex; align-items:center; gap:10px; font-size:.75rem; color:#8C8E9C; letter-spacing:.14px}
 .cx__use-t{font-weight:700; color:#5B5D68}

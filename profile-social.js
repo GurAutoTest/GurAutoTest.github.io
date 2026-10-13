@@ -233,8 +233,47 @@
   function spend(n) { store("cm.usage", { day: today(), used: Math.min(LIMIT, used() + n) }); }
   var LINK = /(https?:\/\/|www\.)|\b[a-z0-9-]+\.(com|in|net|org|io|co|app|me|ly|xyz|link)\b/i;
 
+  var activeRoomId = null;
+  var realtimeBound = false;
+
+  function bindRealtime() {
+    if (!window.CMChat || realtimeBound) { return; }
+    realtimeBound = true;
+    window.CMChat.on("*", function (ev, payload) {
+      if (!chatEl) { return; }
+      if (ev === "NEW_REPLY") {
+        if (!activeRoomId || payload.roomId === activeRoomId || !payload.roomId) {
+          var body = chatEl.querySelector("[data-body]");
+          if (body) {
+            body.insertAdjacentHTML("beforeend",
+              '<div class="cx__msg cx__msg--them"><p>' + esc(payload.text) + "</p><small>" + esc(payload.when || "Just now") + " · " + esc(first()) + "</small></div>");
+            body.scrollTop = body.scrollHeight;
+          }
+          if (window.CMChat.playNotificationSound) { window.CMChat.playNotificationSound(); }
+        }
+      } else if (ev === "REQUEST_ACCEPTED") {
+        if (!activeRoomId || payload.roomId === activeRoomId || !payload.roomId) {
+          var foot = chatEl.querySelector("[data-foot]");
+          if (foot) {
+            var lock = foot.querySelector(".cx__lock");
+            if (lock) { lock.innerHTML = '<span style="color:#17914F;font-weight:700;">✓ ' + esc(first()) + ' accepted your request! You can chat now.</span>'; }
+            var openBtn = foot.querySelector(".cx__open");
+            if (openBtn) { openBtn.remove(); }
+            // enable follow-up composer
+            setTimeout(function () { composer(); }, 800);
+          }
+        }
+      }
+    });
+  }
+
   function chat() {
     closeChat();
+    bindRealtime();
+    activeRoomId = store("cm.room." + P.handle);
+    if (activeRoomId && window.CMChat) {
+      window.CMChat.joinChannel("room_" + activeRoomId);
+    }
     var sent = store("cm.req." + P.handle);
     chatEl = document.createElement("div");
     chatEl.className = "cx";
@@ -258,7 +297,34 @@
     chatEl.addEventListener("click", function (e) { if (e.target.closest("[data-cxclose]")) { closeChat(); } });
     document.querySelector(".pg").appendChild(chatEl);
     document.body.style.overflow = "hidden";
-    if (sent) { showSent(sent); } else { composer(); }
+
+    if (sent) {
+      showSent(sent);
+      // Fetch live history from DB if room exists
+      if (activeRoomId && window.CMChat) {
+        window.CMChat.getRoomMessages(activeRoomId).then(function (msgs) {
+          if (!chatEl || !msgs || !msgs.length) return;
+          var body = chatEl.querySelector("[data-body]");
+          if (!body) return;
+          // Clear previous messages and show all
+          var sysP = body.querySelectorAll(".cx__sys");
+          body.innerHTML = "";
+          sysP.forEach(function (s) { body.appendChild(s); });
+          msgs.forEach(function (m) {
+            if (m.sender_type === "owner") {
+              body.insertAdjacentHTML("beforeend",
+                '<div class="cx__msg cx__msg--them"><p>' + esc(m.content) + '</p><small>' + esc(first()) + '</small></div>');
+            } else {
+              body.insertAdjacentHTML("beforeend",
+                '<div class="cx__msg"><p>' + esc(m.content) + '</p><small>Request sent</small></div>');
+            }
+          });
+          body.scrollTop = body.scrollHeight;
+        });
+      }
+    } else {
+      composer();
+    }
   }
   function closeChat() {
     if (!chatEl) { return; }
@@ -309,6 +375,31 @@
       var msg = { text: v, when: "Just now" };
       store("cm.req." + P.handle, msg);
       showSent(msg);
+
+      // Persist to Supabase and send Realtime broadcast
+      if (window.CMChat) {
+        var vis = window.CMChat.getVisitorProfile();
+        window.CMChat.getOrCreateRoom(P.handle, vis, v).then(function (room) {
+          if (room) {
+            activeRoomId = room.id;
+            store("cm.room." + P.handle, room.id);
+            window.CMChat.joinChannel("room_" + room.id);
+            window.CMChat.postMessage(room.id, "visitor", vis.id, vis.name, v);
+            window.CMChat.broadcast("owner_" + (P.handle || "").toLowerCase().trim(), "NEW_REQUEST", {
+              roomId: room.id,
+              visitorId: vis.id,
+              name: vis.name,
+              handle: vis.handle,
+              photo: vis.photo,
+              bio: vis.bio,
+              socials: vis.socials,
+              text: v,
+              when: "Just now",
+              source: "sticker"
+            });
+          }
+        });
+      }
     });
     setTimeout(function () { ta.focus(); }, 30);
   }

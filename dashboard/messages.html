@@ -6,15 +6,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="../../dashboard.css">
-<link rel="stylesheet" href="../../social.css">
+<link rel="stylesheet" href="../dashboard.css">
+<link rel="stylesheet" href="../social.css">
 
 <!-- ==========================================================================
      CODEMARCA — MESSAGES (Phase-1, Garry 2026-10-13)
      Quick chat's inbox. Requests from people who scanned the sticker or
      opened the link; chats once a request is accepted; the Quick chat
      switch; today's 500 characters; who can see the follower counts.
-     Everything is drawn by CM.mountMessages in ../../social.js from this
+     Everything is drawn by CM.mountMessages in ../social.js from this
      folder's state.js — the markup below is the same in all four folders.
      A folder with no page (1-empty, 3-pack-coming) gets the "make your
      page first" card: nobody can scan to message, and real pages only.
@@ -35,8 +35,9 @@
 </div>
 
 <script src="state.js"></script>
-<script src="../../dashboard.js"></script>
-<script src="../../social.js"></script>
+<script src="../cm-chat.js"></script>
+<script src="../dashboard.js"></script>
+<script src="../social.js"></script>
 <script>
   CM.mountMessages(CM.shell({ page: "messages", title: "Messages" }));
 </script>
