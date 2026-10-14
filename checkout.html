@@ -1033,6 +1033,9 @@ input:-webkit-autofill:active{
           </div>
         </div>
 
+          </div>
+        </div>
+
         <div class="done__acts">
           <!-- a gift: both ways on, side by side — the dashboard is the one
                in black (Garry, 2026-10-11) -->
@@ -1581,6 +1584,31 @@ input:-webkit-autofill:active{
         : (first ? "Nice one, " + first + " — we'll" : "We'll") +
           " ping you on WhatsApp before it lands. Look out for a small flat envelope.";
       celebrate();
+
+      /* Auto-redirect when built=1 so user seamlessly arrives at dashboard if they don't click manually */
+      if (ck.dataset.built === "1") {
+        var cd = 4;
+        var statusEl = $("doneStatus");
+        var autoTimer = setInterval(function () {
+          cd--;
+          if (cd <= 0) {
+            clearInterval(autoTimer);
+            $("toDash").click();
+          } else if (statusEl) {
+            var s = $("cdSec");
+            if (s) s.textContent = cd + "s";
+            else statusEl.textContent = "Taking you to your dashboard in " + cd + "s…";
+          }
+        }, 1000);
+        if (statusEl) {
+          statusEl.innerHTML = 'Taking you to your dashboard in <b id="cdSec">4s</b>…';
+        }
+        $("toDash").addEventListener("click", function () { clearInterval(autoTimer); }, { once: true });
+        $("toInvoice").addEventListener("click", function () {
+          clearInterval(autoTimer);
+          if (statusEl) statusEl.textContent = "";
+        }, { once: true });
+      }
     }
     Array.prototype.forEach.call(document.querySelectorAll(".preview button"), function (b) {
       b.setAttribute("aria-pressed", String(b.dataset.go === String(n)));
