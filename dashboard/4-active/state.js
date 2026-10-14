@@ -493,8 +493,8 @@ var SOCIAL = {
   people: {
     followers: [
       { name: "Simran Kaur",  handle: "simran" }, { name: "Arjun Mehta", handle: "arjun" },
-      { name: "Neha Sharma",  handle: "neha"   }, { name: "Rohit Bansal", handle: "rohit" },
-      { name: "Karan Dhillon", handle: "karan" }, { name: "Aisha Khan",  handle: "aisha" }
+      { name: "Rohit Bansal", handle: "rohit" },  { name: "Karan Dhillon", handle: "karan" },
+      { name: "Aisha Khan",  handle: "aisha" }
     ],
     following: [
       { name: "Gurdeep Singh", handle: "gurdeep" }, { name: "Rhea Malhotra", handle: "rhea" },
@@ -511,6 +511,19 @@ var SOCIAL = {
       text: "Hi! A friend shared your page. Do you take freelance packaging work? Happy to share details." }
   ],
   chats: [
+    {
+      id: "c_codemarca",
+      name: "Codemarca",
+      handle: "codemarca",
+      when: "Just now",
+      unread: true,
+      left: "Pinned",
+      isOfficial: true,
+      msgs: [
+        { me: false, text: "Welcome to Quick Chat on Codemarca! 👋" },
+        { me: false, text: "Here is how messaging works on your profile:\n\n• From Stickers & Link: Anyone who scans your physical sticker or visits your link can send you a message.\n• Requests First: New messages from visitors land in 'Requests' first. They cannot message you again until you tap Accept (or Ignore/Block).\n• 500 Chars/Day: You and visitors share a 500-character daily budget across chats (resets at midnight) to keep conversations fast and spam-free.\n• Privacy: Seen messages automatically disappear after 24 hours to keep your inbox clutter-free.\n• Control: You can turn Quick Chat on or off anytime using the switch above.\n\nEnjoy connecting!" }
+      ]
+    },
     { id: "c1", name: "Simran Kaur", handle: "simran", when: "1h ago", unread: true, left: "22h",
       msgs: [ { me: false, text: "Thanks for accepting! The sticker on your car is genius btw 😄" },
               { me: true,  text: "Haha thanks! Took two minutes to set up." },

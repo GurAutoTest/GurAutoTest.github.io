@@ -30,7 +30,14 @@
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
     });
   };
-  function av(name) { return '<span class="sav" aria-hidden="true">' + esc((name || "?").charAt(0).toUpperCase()) + "</span>"; }
+  function av(name) {
+    if (name === "Codemarca") {
+      return '<span class="sav sav--cm" aria-hidden="true" style="background:#0F0E13;color:#fff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">' +
+        '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><circle cx="7" cy="7" r="3.5"/><circle cx="17" cy="7" r="3.5"/><circle cx="7" cy="17" r="3.5"/><circle cx="17" cy="17" r="3.5" fill="#8B5CF6"/></svg>' +
+      '</span>';
+    }
+    return '<span class="sav" aria-hidden="true">' + esc((name || "?").charAt(0).toUpperCase()) + "</span>";
+  }
   function fmt(n) { return n >= 10000 ? (n / 1000).toFixed(1).replace(/\.0$/, "") + "k" : String(n); }
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   function pageUrl(h) { return CM.ROOT + "profile.html?handle=" + encodeURIComponent(h); }
@@ -178,10 +185,11 @@
       if (!S.chats.length) { return empty("No chats yet", "Accept a request and the chat moves here."); }
       return S.chats.map(function (c) {
         var last = c.msgs[c.msgs.length - 1];
+        var isOff = c.name === "Codemarca" || c.isOfficial;
         return '<button class="mrq" type="button" data-open="c:' + c.id + '"' + (c.unread ? " data-unread" : "") + ">" + av(c.name) +
-          '<span class="mrq__txt"><span class="mrq__top"><b>' + esc(c.name) + "</b><small>" + esc(c.when) + "</small></span>" +
+          '<span class="mrq__txt"><span class="mrq__top"><b>' + esc(c.name) + (isOff ? ' <span style="font-size:10px;background:var(--brand-violet-tint,#EDE9FE);color:var(--brand-violet,#6366F1);padding:1px 6px;border-radius:10px;font-weight:700;margin-left:4px">Official</span>' : "") + "</b><small>" + esc(c.when) + "</small></span>" +
             '<span class="mrq__p">' + (last.me ? "You: " : "") + esc(last.text) + "</span>" +
-            '<span class="mrq__gone">Disappears in ' + esc(c.left) + "</span></span></button>";
+            '<span class="mrq__gone">' + (isOff ? "Welcome guide" : "Disappears in " + esc(c.left)) + "</span></span></button>";
       }).join("");
     }
 
@@ -272,13 +280,14 @@
 
     function drawThread(kind, it) {
       var req = kind === "request";
+      var isOff = it.name === "Codemarca" || it.isOfficial;
       th.innerHTML =
         '<div class="mth__scrim" data-thclose></div>' +
         '<section class="mth__box">' +
           '<header class="mth__head">' +
             '<button class="mth__back" type="button" data-thclose aria-label="Back">' + CM.icon("back") + "</button>" +
             av(it.name) +
-            '<span class="mth__who"><b>' + esc(it.name) + '</b><a href="' + pageUrl(it.handle) + '" target="_blank" rel="noopener">codemarca.com/' + esc(it.handle) + "</a></span>" +
+            '<span class="mth__who"><b>' + esc(it.name) + (isOff ? ' <span style="font-size:10px;background:var(--brand-violet-tint,#EDE9FE);color:var(--brand-violet,#6366F1);padding:1px 6px;border-radius:10px;font-weight:700;margin-left:4px">Official</span>' : "") + '</b><a href="' + (isOff ? "https://codemarca.com" : pageUrl(it.handle)) + '" target="_blank" rel="noopener">' + (isOff ? "codemarca.com" : "codemarca.com/" + esc(it.handle)) + "</a></span>" +
             (req ? "" : '<button class="mth__more" type="button" data-act="more" aria-label="More">' + CM.icon("more") + "</button>") +
           "</header>" +
           '<div class="mth__body">' +
@@ -289,10 +298,10 @@
                   '<a class="btn btn--ghost btn--sm" href="' + pageUrl(it.handle) + '" target="_blank" rel="noopener">View their page</a>' +
                 "</div>" +
                 '<p class="mth__sys">' + (it.source === "sticker" ? "Scanned your sticker" : "Opened your link") + " · " + esc(it.when) + "</p>" +
-                '<div class="mb mb--them"><p>' + esc(it.text) + "</p></div>"
-              : '<p class="mth__sys">Seen messages disappear 24 hours after they’re seen.</p>' +
-                (it.msgs || []).map(function (m) { return '<div class="mb mb--' + (m.me ? "me" : "them") + '"><p>' + esc(m.text) + "</p></div>"; }).join("") +
-                '<p class="mth__sys mth__sys--soft">This chat disappears in ' + esc(it.left || "24h") + "</p>") +
+                '<div class="mb mb--them"><p>' + esc(it.text).replace(/\n/g, "<br>") + "</p></div>"
+              : '<p class="mth__sys">' + (isOff ? "Official Quick Chat guide by Codemarca" : "Seen messages disappear 24 hours after they’re seen.") + '</p>' +
+                (it.msgs || []).map(function (m) { return '<div class="mb mb--' + (m.me ? "me" : "them") + '"><p>' + esc(m.text).replace(/\n/g, "<br>") + "</p></div>"; }).join("") +
+                '<p class="mth__sys mth__sys--soft">' + (isOff ? "Official welcome guide · Codemarca" : "This chat disappears in " + esc(it.left || "24h")) + "</p>") +
           "</div>" +
           '<footer class="mth__foot">' +
             (req
