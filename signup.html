@@ -570,15 +570,61 @@ input:-webkit-autofill:active{
       localStorage.removeItem("cm.pending_handle");
     } catch (e) {}
 
-    // Check if user already has an existing profile in Supabase
+    // ══ ALWAYS SAVE ALL GOOGLE DATA TO DATABASE (profiles table) ══
     var existingUsername = "";
+    var profileId = null;
     try {
-      var pr = await sbClient.from("profiles").select("*").eq("email", email).maybeSingle();
-      if (pr && pr.data && pr.data.username) {
-        existingUsername = pr.data.username;
-        localStorage.setItem("cm.username", existingUsername);
+      if (sbClient) {
+        // 1. Check if user already exists in DB by email or user_id
+        var pr = await sbClient.from("profiles")
+          .select("*")
+          .or("email.eq." + email + ",user_id.eq." + user.id)
+          .maybeSingle();
+
+        if (pr && pr.data) {
+          profileId = pr.data.id;
+          existingUsername = pr.data.username || "";
+          if (existingUsername) localStorage.setItem("cm.username", existingUsername);
+
+          // Update profile in DB with latest Google name, email, avatar and user_id
+          await sbClient.from("profiles").update({
+            display_name: name,
+            email: email,
+            avatar_url: photo || pr.data.avatar_url || "",
+            user_id: user.id,
+            updated_at: new Date().toISOString()
+          }).eq("id", profileId);
+        } else {
+          // 2. New user: determine handle from chosen handle, name, or email
+          var rawHandle = destHandle || clean(name.toLowerCase().replace(/[^a-z0-9]/g, "")) || clean(email.split("@")[0]);
+          if (!rawHandle || rawHandle.length < 3) rawHandle = "user" + Math.floor(1000 + Math.random() * 9000);
+
+          // Verify username uniqueness
+          var uCheck = await sbClient.from("profiles").select("id").eq("username", rawHandle).maybeSingle();
+          if (uCheck && uCheck.data) {
+            rawHandle = rawHandle + Math.floor(10 + Math.random() * 90);
+          }
+          existingUsername = rawHandle;
+          localStorage.setItem("cm.username", rawHandle);
+
+          // Insert fresh profile record into database with all Google data
+          await sbClient.from("profiles").insert({
+            user_id: user.id,
+            username: rawHandle,
+            display_name: name,
+            email: email,
+            avatar_url: photo || "",
+            theme: "light",
+            is_live: true,
+            onboarding_done: false,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        }
       }
-    } catch (e) {}
+    } catch (dbErr) {
+      console.warn("Database profile sync error:", dbErr);
+    }
 
     setTimeout(function () {
       if (destFlow === "login") {
