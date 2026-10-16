@@ -549,6 +549,7 @@ input:-webkit-autofill:active{
       localStorage.setItem("cm.name", name);
       localStorage.setItem("cm.email", email);
       if (photo) localStorage.setItem("cm.photo", photo);
+      localStorage.setItem("cm.google_meta", JSON.stringify(meta));
       localStorage.setItem("cm.auth", JSON.stringify({
         id: user.id,
         name: name,
@@ -587,13 +588,17 @@ input:-webkit-autofill:active{
           if (existingUsername) localStorage.setItem("cm.username", existingUsername);
 
           // Update profile in DB with latest Google name, email, avatar and user_id
-          await sbClient.from("profiles").update({
+          var updatePayload = {
             display_name: name,
             email: email,
             avatar_url: photo || pr.data.avatar_url || "",
             user_id: user.id,
             updated_at: new Date().toISOString()
-          }).eq("id", profileId);
+          };
+          if ("raw_metadata" in pr.data) {
+            updatePayload.raw_metadata = meta;
+          }
+          await sbClient.from("profiles").update(updatePayload).eq("id", profileId);
         } else {
           // 2. New user: determine handle from chosen handle, name, or email
           var rawHandle = destHandle || clean(name.toLowerCase().replace(/[^a-z0-9]/g, "")) || clean(email.split("@")[0]);
@@ -608,7 +613,7 @@ input:-webkit-autofill:active{
           localStorage.setItem("cm.username", rawHandle);
 
           // Insert fresh profile record into database with all Google data
-          await sbClient.from("profiles").insert({
+          var insertPayload = {
             user_id: user.id,
             username: rawHandle,
             display_name: name,
@@ -619,7 +624,13 @@ input:-webkit-autofill:active{
             onboarding_done: false,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
-          });
+          };
+          try {
+            await sbClient.from("profiles").insert(Object.assign({}, insertPayload, { raw_metadata: meta }));
+          } catch (insErr) {
+            // If raw_metadata column is not yet present, insert standard payload
+            await sbClient.from("profiles").insert(insertPayload);
+          }
         }
       }
     } catch (dbErr) {
