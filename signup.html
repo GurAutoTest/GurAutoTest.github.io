@@ -513,14 +513,45 @@ input:-webkit-autofill:active{
 
   // Check existing session or OAuth return callback
   async function initAuth() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var isLogout = urlParams.get("logout") === "true" || urlParams.get("logout") === "1";
+
+    if (isLogout) {
+      if (sbClient) {
+        try { await sbClient.auth.signOut(); } catch (e) {}
+      }
+      try {
+        var keysToRemove = [];
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (k && (k.indexOf("sb-") === 0 || k.indexOf("cm.") === 0 || k.indexOf("cm_") === 0)) {
+            keysToRemove.push(k);
+          }
+        }
+        keysToRemove.forEach(function (k) { localStorage.removeItem(k); });
+        sessionStorage.clear();
+      } catch (e) {}
+
+      if (googleBtn) googleBtn.dataset.busy = "false";
+      say("ok", "You have been logged out successfully. Sign in below anytime.");
+      return;
+    }
+
     if (!sbClient) return;
+
     try {
+      var hasOAuthHash = window.location.hash.indexOf("access_token=") > -1;
+      var hasLocalAuth = !!localStorage.getItem("cm.auth");
+
       var res = await sbClient.auth.getSession();
       var session = res && res.data ? res.data.session : null;
-      if (session && session.user) {
+
+      // Only auto sign in if returning from Google OAuth or user has active local auth
+      if (session && session.user && (hasOAuthHash || hasLocalAuth)) {
         handleUserSignedIn(session.user);
         return;
       }
+
       sbClient.auth.onAuthStateChange(function (evt, s) {
         if (evt === "SIGNED_IN" && s && s.user) {
           handleUserSignedIn(s.user);

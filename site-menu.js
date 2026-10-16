@@ -45,7 +45,8 @@
   } catch(e) {}
 
   var loginBtnHtml = userEmail
-    ? '<a class="btn btn--ghost" href="dashboard/2-page-live/home.html">Dashboard (' + userName + ')</a>'
+    ? '<a class="btn btn--ghost" href="dashboard/2-page-live/home.html">Dashboard (' + userName + ')</a>' +
+      '<button class="btn btn--ghost" id="siteMenuLogout" type="button" style="color:#ef4444;border-color:rgba(239,68,68,0.35);margin-top:6px">Log out</button>'
     : '<a class="btn btn--ghost" href="signup.html?mode=login">Login</a>';
 
   menu.innerHTML =
@@ -62,6 +63,24 @@
       "</div>" +
     "</div>";
   nav.insertAdjacentElement("afterend", menu);
+
+  var smLogout = menu.querySelector("#siteMenuLogout");
+  if (smLogout) {
+    smLogout.addEventListener("click", function () {
+      try {
+        var keysToRemove = [];
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (k && (k.indexOf("sb-") === 0 || k.indexOf("cm.") === 0 || k.indexOf("cm_") === 0)) {
+            keysToRemove.push(k);
+          }
+        }
+        keysToRemove.forEach(function (k) { localStorage.removeItem(k); });
+        sessionStorage.clear();
+      } catch (e) {}
+      location.href = "signup.html?logout=true";
+    });
+  }
 
   // Update header nav Login link if user is signed in
   var topLogin = nav && nav.querySelector(".nav__login");

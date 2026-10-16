@@ -615,8 +615,21 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
               '<span class="more__s">' + n.sub + "</span></span>" +
             '<span class="more__go">' + CM.icon("chev") + "</span>" +
           "</a>";
-        }).join("") + "</div>"
+        }).join("") +
+        '<button class="more__row" type="button" id="cmMoreLogout" style="width:100%;text-align:left;background:none;border:none;cursor:pointer;font:inherit;color:#ef4444;border-top:1px solid rgba(255,255,255,0.08);padding:14px 16px;display:flex;align-items:center;gap:12px">' +
+          '<span class="more__ic" style="color:#ef4444">' + CM.icon("out") + "</span>" +
+          '<span class="more__txt" style="flex:1"><span class="more__l" style="color:#ef4444;font-weight:700">Log out</span>' +
+            '<span class="more__s" style="opacity:0.7">Sign out from this device</span></span>' +
+          '<span class="more__go" style="color:#ef4444">' + CM.icon("chev") + "</span>" +
+        '</button>' +
+        "</div>"
       });
+      var btnOut = document.getElementById("cmMoreLogout");
+      if (btnOut) {
+        btnOut.addEventListener("click", function () {
+          if (CM.logout) CM.logout();
+        });
+      }
     });
 
     /* Deferred by a tick on purpose: not every home calls CM.draw, and the
@@ -2022,6 +2035,33 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     clearTimeout(b._cmT);
     b._cmT = setTimeout(function () { b.removeAttribute("data-copied"); b.setAttribute("data-tip", "Copy"); }, 1400);
   });
+
+  /* ══ UNIVERSAL LOG OUT ════════════════════════════════════════════════ */
+  CM.logout = async function () {
+    try {
+      if (window.supabase && typeof window.supabase.createClient === "function") {
+        var sc = window.supabase.createClient("https://inzigrmttewawjjkggbd.supabase.co", "sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg");
+        await sc.auth.signOut();
+      }
+    } catch (e) {
+      console.warn("Supabase signOut error:", e);
+    }
+
+    try {
+      var keysToRemove = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && (k.indexOf("sb-") === 0 || k.indexOf("cm.") === 0 || k.indexOf("cm_") === 0)) {
+          keysToRemove.push(k);
+        }
+      }
+      keysToRemove.forEach(function (k) { localStorage.removeItem(k); });
+      sessionStorage.clear();
+    } catch (e) {}
+
+    var root = (typeof CM !== "undefined" && CM.ROOT) ? CM.ROOT : "../../";
+    window.location.href = root + "signup.html?logout=true";
+  };
 
   window.CM = CM;
 

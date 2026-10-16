@@ -52,24 +52,34 @@
   });
 
   /* ══ 4. LOG OUT ══════════════════════════════════════════════════════ */
-  Array.prototype.forEach.call(document.querySelectorAll('a[href*="signup.html?mode=login"]'), function (btn) {
-    if (btn.textContent.toLowerCase().indexOf("log out") > -1) {
-      btn.addEventListener("click", function (e) {
+  Array.prototype.forEach.call(document.querySelectorAll('a[href*="signup.html"], button[data-action="logout"], .btn-logout, a.btn'), function (btn) {
+    if (btn.textContent.toLowerCase().indexOf("log out") > -1 || btn.getAttribute("data-action") === "logout") {
+      btn.addEventListener("click", async function (e) {
         e.preventDefault();
-        try {
-          if (window.supabase && window.supabase.createClient) {
-            var sc = window.supabase.createClient("https://inzigrmttewawjjkggbd.supabase.co", "sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg");
-            sc.auth.signOut();
-          }
-          localStorage.removeItem("cm.name");
-          localStorage.removeItem("cm.email");
-          localStorage.removeItem("cm.photo");
-          localStorage.removeItem("cm.auth");
-          localStorage.removeItem("cm_user");
-          localStorage.removeItem("cm.username");
-          localStorage.removeItem("cm.account.custom");
-        } catch (err) {}
-        location.href = btn.getAttribute("href") || "../../signup.html?mode=login";
+        btn.style.pointerEvents = "none";
+        btn.innerHTML = (window.CM ? CM.icon("out") : "") + " Logging out…";
+        if (window.CM && typeof CM.logout === "function") {
+          await CM.logout();
+        } else {
+          try {
+            if (window.supabase && typeof window.supabase.createClient === "function") {
+              var sc = window.supabase.createClient("https://inzigrmttewawjjkggbd.supabase.co", "sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg");
+              await sc.auth.signOut();
+            }
+          } catch (err) {}
+          try {
+            var keysToRemove = [];
+            for (var i = 0; i < localStorage.length; i++) {
+              var k = localStorage.key(i);
+              if (k && (k.indexOf("sb-") === 0 || k.indexOf("cm.") === 0 || k.indexOf("cm_") === 0)) {
+                keysToRemove.push(k);
+              }
+            }
+            keysToRemove.forEach(function (k) { localStorage.removeItem(k); });
+            sessionStorage.clear();
+          } catch (err) {}
+          location.href = (window.CM && CM.ROOT ? CM.ROOT : "../../") + "signup.html?logout=true";
+        }
       });
     }
   });
