@@ -6,6 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 /* ==========================================================================
@@ -193,6 +194,8 @@ img,svg{display:block; max-width:100%}
   color:var(--ink-mid); text-align:left;
 }
 .status[data-state="bad"]{background:#FCEFEE; color:var(--bad)}
+.status[data-state="ok"]{background:#E7F6ED; color:#0C7A41}
+.status a{text-decoration:underline; font-weight:var(--fw-bold)}
 
 /* ── 6. THE IMAGE PANEL — no copy of any kind ──────────────────────────── */
 .auth__aside{background:var(--ground); padding:var(--s-6); display:flex}   /* white, so only the photo shows (Garry, 2026-09-30) */
@@ -493,15 +496,115 @@ input:-webkit-autofill:active{
     if (e.key === "Escape" && getHandle()) { input.value = getHandle(); edit.hidden = true; changeBtn.hidden = false; hideNote(); }
   });
 
-  function say(state, text) { status.hidden = false; status.dataset.state = state; status.textContent = text; }
+  function say(state, text) { status.hidden = false; status.dataset.state = state; status.innerHTML = text; }
+  function esc(s) { return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
 
-  /* The handle is re-checked here, on submit, rather than held by a timed
-     reservation — decided 2026-09-04. Whoever signs in first gets it. */
-  /* what the real Google sign-in hands back; ?name= overrides it so the
-     screen can be reviewed as somebody else */
-  var GOOGLE_NAME = new URLSearchParams(location.search).get("name") || "Garry Singh";
+  /* ══ GOOGLE AUTH CONFIGURATION ══════════════════════════════════════ */
+  var SUPABASE_URL = "https://inzigrmttewawjjkggbd.supabase.co";
+  var SUPABASE_ANON = "sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg";
+  var sbClient = null;
+  try {
+    if (window.supabase && typeof window.supabase.createClient === "function") {
+      sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+    }
+  } catch (e) {
+    console.warn("Supabase init error:", e);
+  }
 
-  googleBtn.addEventListener("click", function () {
+  // Check existing session or OAuth return callback
+  async function initAuth() {
+    if (!sbClient) return;
+    try {
+      var res = await sbClient.auth.getSession();
+      var session = res && res.data ? res.data.session : null;
+      if (session && session.user) {
+        handleUserSignedIn(session.user);
+        return;
+      }
+      sbClient.auth.onAuthStateChange(function (evt, s) {
+        if (evt === "SIGNED_IN" && s && s.user) {
+          handleUserSignedIn(s.user);
+        }
+      });
+    } catch(err) {
+      console.warn("Auth check error:", err);
+    }
+  }
+  initAuth();
+
+  var isRedirecting = false;
+  async function handleUserSignedIn(user) {
+    if (isRedirecting) return;
+    isRedirecting = true;
+
+    var meta = user.user_metadata || {};
+    var name = meta.full_name || meta.name || (user.email ? user.email.split("@")[0] : "User");
+    var email = user.email || "";
+    var photo = meta.avatar_url || meta.picture || "";
+
+    say("ok", "Signed in as <b>" + esc(name) + "</b> (" + esc(email) + "). Setting up your Codemarca…");
+    googleBtn.dataset.busy = "true";
+
+    try {
+      localStorage.setItem("cm.name", name);
+      localStorage.setItem("cm.email", email);
+      if (photo) localStorage.setItem("cm.photo", photo);
+      localStorage.setItem("cm.auth", JSON.stringify({
+        id: user.id,
+        name: name,
+        email: email,
+        photo: photo
+      }));
+      localStorage.setItem("cm_user", JSON.stringify({
+        id: user.id,
+        name: name,
+        email: email,
+        photo: photo
+      }));
+    } catch (e) {}
+
+    var destFlow = localStorage.getItem("cm.pending_flow") || body.dataset.flow || "build";
+    var destHandle = localStorage.getItem("cm.pending_handle") || getHandle() || "";
+    try {
+      localStorage.removeItem("cm.pending_flow");
+      localStorage.removeItem("cm.pending_handle");
+    } catch (e) {}
+
+    // Check if user already has an existing profile in Supabase
+    var existingUsername = "";
+    try {
+      var pr = await sbClient.from("profiles").select("*").eq("email", email).maybeSingle();
+      if (pr && pr.data && pr.data.username) {
+        existingUsername = pr.data.username;
+        localStorage.setItem("cm.username", existingUsername);
+      }
+    } catch (e) {}
+
+    setTimeout(function () {
+      if (destFlow === "login") {
+        if (existingUsername) {
+          location.href = "dashboard/2-page-live/home.html";
+          return;
+        }
+        location.href = "dashboard/2-page-live/home.html";
+        return;
+      }
+
+      if (destFlow === "order") {
+        location.href = "select-pack.html?name=" + encodeURIComponent(name) + "&email=" + encodeURIComponent(email);
+        return;
+      }
+
+      // "build" flow
+      var finalHandle = destHandle || existingUsername || clean(name.toLowerCase().replace(/[^a-z0-9]/g, ""));
+      location.href = "onboarding.html?handle=" + encodeURIComponent(finalHandle) +
+        "&name=" + encodeURIComponent(name) +
+        "&email=" + encodeURIComponent(email) +
+        (photo ? "&avatar=" + encodeURIComponent(photo) : "");
+    }, 700);
+  }
+
+  googleBtn.addEventListener("click", async function () {
     if (body.dataset.flow === "build") {
       if (!edit.hidden && !closeEdit()) return;
       var r = check(getHandle());
@@ -513,22 +616,45 @@ input:-webkit-autofill:active{
         return;
       }
     }
+
     status.hidden = true;
     googleBtn.dataset.busy = "true";
+
+    var currentFlow = body.dataset.flow || "build";
+    var currentHandle = getHandle();
+    try {
+      localStorage.setItem("cm.pending_flow", currentFlow);
+      if (currentHandle) localStorage.setItem("cm.pending_handle", currentHandle);
+    } catch(e) {}
+
+    // 1. Supabase OAuth Google Sign-In
+    if (sbClient) {
+      try {
+        var redirectUrl = window.location.origin + window.location.pathname;
+        var authRes = await sbClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: redirectUrl,
+            queryParams: {
+              prompt: 'select_account',
+              access_type: 'offline'
+            }
+          }
+        });
+        if (authRes.error) throw authRes.error;
+        return;
+      } catch (err) {
+        console.warn("Supabase Google Auth error:", err);
+        say("bad", "Google sign-in error: " + (err.message || "Please try again."));
+        googleBtn.dataset.busy = "false";
+        return;
+      }
+    }
+
+    // Fallback if client isn't loaded
+    var GOOGLE_NAME = new URLSearchParams(location.search).get("name") || "Garry Singh";
     setTimeout(function () {
       googleBtn.dataset.busy = "false";
-      /* Google itself is not wired yet; the hop it makes afterwards is.
-         The claim route carries the handle AND the Google account's name
-         into the builder (Garry, 2026-09-23) — sign-in is Google-only, so
-         the name is already known and asking for it again is asking a
-         question we have the answer to. GOOGLE_NAME stands in for what the
-         real sign-in hands back. The pack route
-         goes to select-pack.html, which is the first thing a buyer has to
-         answer — an address form for a pack nobody has chosen yet is a form
-         asking the second question first. No `built` flag on this route:
-         somebody arriving from the website has no page yet. The free pack
-         is always for themselves (2026-09-18) — gifts are ordered later,
-         from the dashboard. */
       if (body.dataset.flow === "build") {
         location.href = "onboarding.html?handle=" + encodeURIComponent(getHandle()) +
           "&name=" + encodeURIComponent(GOOGLE_NAME);
@@ -538,23 +664,7 @@ input:-webkit-autofill:active{
         location.href = "select-pack.html";
         return;
       }
-      /* LOGIN — added 2026-09-16 with the flow folders.
-         In the real build this branches on what the account actually has,
-         and the four folders under dashboard/ are the four answers:
-
-           page + delivered pack   4-active
-           page, no pack           2-page-live
-           pack, no page           3-pack-coming
-           nothing yet             1-empty
-
-         1-empty is also the answer to the other gap Garry found: someone
-         who signs up without picking a lane. That screen leads with "build
-         my page" and keeps "see the pack" underneath, which is the fork
-         the homepage never gave them.
-
-         Here it goes to the finished account, because that is the one worth
-         landing on when reviewing. */
-      location.href = "dashboard/4-active/home.html";
+      location.href = "dashboard/2-page-live/home.html";
     }, 700);
   });
 

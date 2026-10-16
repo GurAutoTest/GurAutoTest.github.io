@@ -37,12 +37,23 @@
       '<span class="menu__n">0' + (i + 1) + "</span>" + l.label + "</a>";
   }).join("");
 
+  var userEmail = "";
+  var userName = "";
+  try {
+    userEmail = localStorage.getItem("cm.email") || "";
+    userName = localStorage.getItem("cm.name") || (userEmail ? userEmail.split("@")[0] : "");
+  } catch(e) {}
+
+  var loginBtnHtml = userEmail
+    ? '<a class="btn btn--ghost" href="dashboard/2-page-live/home.html">Dashboard (' + userName + ')</a>'
+    : '<a class="btn btn--ghost" href="signup.html?mode=login">Login</a>';
+
   menu.innerHTML =
     '<div class="shell shell--wide menu__inner">' +
       '<nav class="menu__links" aria-label="Site">' + links + "</nav>" +
       '<div class="menu__cta" style="--i:' + LINKS.length + '">' +
         '<a class="btn btn--primary" href="signup.html?next=order">Get your pack</a>' +
-        '<a class="btn btn--ghost" href="signup.html?mode=login">Login</a>' +
+        loginBtnHtml +
       "</div>" +
       '<div class="menu__foot" style="--i:' + (LINKS.length + 1) + '">' +
         '<a href="https://wa.me/' + WA + '" target="_blank" rel="noopener">WhatsApp +91 77196 97117</a>' +
@@ -51,6 +62,15 @@
       "</div>" +
     "</div>";
   nav.insertAdjacentElement("afterend", menu);
+
+  // Update header nav Login link if user is signed in
+  var topLogin = nav && nav.querySelector(".nav__login");
+  if (topLogin && userEmail) {
+    topLogin.href = "dashboard/2-page-live/home.html";
+    topLogin.textContent = "Dashboard";
+    topLogin.style.color = "var(--brand-violet)";
+    topLogin.style.fontWeight = "700";
+  }
 
   btn.setAttribute("aria-controls", "siteMenu");
   btn.setAttribute("aria-expanded", "false");

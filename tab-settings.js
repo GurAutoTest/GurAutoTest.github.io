@@ -50,4 +50,27 @@
   Array.prototype.forEach.call(document.querySelectorAll("[data-ic-in]"), function (el) {
     el.outerHTML = CM.icon(el.getAttribute("data-ic-in"));
   });
+
+  /* ══ 4. LOG OUT ══════════════════════════════════════════════════════ */
+  Array.prototype.forEach.call(document.querySelectorAll('a[href*="signup.html?mode=login"]'), function (btn) {
+    if (btn.textContent.toLowerCase().indexOf("log out") > -1) {
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        try {
+          if (window.supabase && window.supabase.createClient) {
+            var sc = window.supabase.createClient("https://inzigrmttewawjjkggbd.supabase.co", "sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg");
+            sc.auth.signOut();
+          }
+          localStorage.removeItem("cm.name");
+          localStorage.removeItem("cm.email");
+          localStorage.removeItem("cm.photo");
+          localStorage.removeItem("cm.auth");
+          localStorage.removeItem("cm_user");
+          localStorage.removeItem("cm.username");
+          localStorage.removeItem("cm.account.custom");
+        } catch (err) {}
+        location.href = btn.getAttribute("href") || "../../signup.html?mode=login";
+      });
+    }
+  });
 })();
