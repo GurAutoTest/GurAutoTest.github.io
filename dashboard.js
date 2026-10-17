@@ -980,7 +980,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var photo = a && a.profile && a.profile.photo;
     Array.prototype.forEach.call(document.querySelectorAll(".me__av, .pm__av"), function (el) {
       if (el.querySelector("img")) { return; }
-      el.innerHTML = photo ? '<img src="' + photo + '" alt="">' : CM.FACE;
+      el.innerHTML = photo ? '<img src="' + photo + '" alt="" referrerpolicy="no-referrer">' : CM.FACE;
     });
   }
 

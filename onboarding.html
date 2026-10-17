@@ -1713,6 +1713,25 @@ body[data-showing]{overflow:hidden}
   if (qE) S.email = qE.trim();
   else if (storedE) S.email = storedE.trim();
 
+  var qPhoto = q.get("photo") || q.get("avatar") || "";
+  var storedPhoto = "";
+  try {
+    storedPhoto = localStorage.getItem("cm.photo") || "";
+    if (!storedPhoto) {
+      var authObj = JSON.parse(localStorage.getItem("cm.auth") || "{}");
+      storedPhoto = authObj.photo || "";
+    }
+    if (!storedPhoto) {
+      var gMeta = JSON.parse(localStorage.getItem("cm.google_meta") || "{}");
+      storedPhoto = gMeta.avatar_url || gMeta.picture || "";
+    }
+    if (!storedPhoto && customAccount && customAccount.profile && customAccount.profile.avatar_url) {
+      storedPhoto = customAccount.profile.avatar_url;
+    }
+  } catch(e) {}
+  if (qPhoto) S.photo = qPhoto;
+  else if (storedPhoto) S.photo = storedPhoto;
+
   /* WHERE "DONE" GOES — added 2026-09-16 with the flow folders.
      Most people arrive here with no pack, so finishing lands them on the
      page-live dashboard and the loud button is still "get your pack".
@@ -1914,7 +1933,7 @@ body[data-showing]{overflow:hidden}
     if (n === 3) {
       $("liveUrl").innerHTML = "<span>codemarca.com/</span><b>" + esc(S.handle) + "</b>";
       $("meName").textContent = S.name.trim() || S.handle;
-      $("meAv").innerHTML = S.photo ? '<img src="' + S.photo + '" alt="">' : esc(initial());
+      $("meAv").innerHTML = S.photo ? '<img src="' + S.photo + '" alt="" referrerpolicy="no-referrer">' : esc(initial());
       $("winUrl").textContent = "codemarca.com/" + S.handle;
       drawQR(S.handle);
       paintDone(); celebrate();   /* every way in gets the burst (Garry, 2026-10-07) */
@@ -2046,7 +2065,7 @@ body[data-showing]{overflow:hidden}
   function paintPhoto() {
     var d = $("photoDisc");
     /* no photo: the light cool-grey silhouette the page itself uses, not a letter on violet */
-    d.innerHTML = S.photo ? '<img src="' + S.photo + '" alt="">' :
+    d.innerHTML = S.photo ? '<img src="' + S.photo + '" alt="" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;border-radius:50%">' :
       '<svg class="face" viewBox="0 0 96 96" aria-hidden="true"><rect width="96" height="96" fill="#E7E9EE"/><circle cx="48" cy="38" r="16" fill="#B3B8C2"/><path d="M16 96c4-19 17-28 32-28s28 9 32 28z" fill="#B3B8C2"/></svg>';
     $("photoClear").hidden = !S.photo;
     $("photoBtn").textContent = S.photo && !S.face ? "Change photo" : "Add photo";
@@ -2642,7 +2661,7 @@ body[data-showing]{overflow:hidden}
   function paintPreview() {
     var h = "";
 
-    h += '<div class="p-photo">' + (S.photo ? '<img src="' + S.photo + '" alt="">' : esc(initial())) + "</div>";
+    h += '<div class="p-photo">' + (S.photo ? '<img src="' + S.photo + '" alt="" referrerpolicy="no-referrer">' : esc(initial())) + "</div>";
     h += S.name.trim()
       ? '<div class="p-name">' + esc(S.name.trim()) + "</div>"
       : '<div class="sk sk--name"></div>';

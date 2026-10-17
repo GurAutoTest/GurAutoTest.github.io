@@ -571,7 +571,8 @@ input:-webkit-autofill:active{
     var meta = user.user_metadata || {};
     var name = meta.full_name || meta.name || (user.email ? user.email.split("@")[0] : "User");
     var email = user.email || "";
-    var photo = meta.avatar_url || meta.picture || "";
+    var idData = (user.identities && user.identities[0] && user.identities[0].identity_data) || {};
+    var photo = meta.avatar_url || meta.picture || idData.avatar_url || idData.picture || "";
 
     say("ok", "Signed in as <b>" + esc(name) + "</b> (" + esc(email) + "). Setting up your Codemarca…");
     googleBtn.dataset.busy = "true";
@@ -626,9 +627,6 @@ input:-webkit-autofill:active{
             user_id: user.id,
             updated_at: new Date().toISOString()
           };
-          if ("raw_metadata" in pr.data) {
-            updatePayload.raw_metadata = meta;
-          }
           await sbClient.from("profiles").update(updatePayload).eq("id", profileId);
         } else {
           // 2. New user: determine handle from chosen handle, name, or email
@@ -656,11 +654,9 @@ input:-webkit-autofill:active{
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           };
-          try {
-            await sbClient.from("profiles").insert(Object.assign({}, insertPayload, { raw_metadata: meta }));
-          } catch (insErr) {
-            // If raw_metadata column is not yet present, insert standard payload
-            await sbClient.from("profiles").insert(insertPayload);
+          var ins1 = await sbClient.from("profiles").insert(insertPayload);
+          if (ins1 && ins1.error) {
+            console.warn("Profiles insert error:", ins1.error);
           }
         }
       }
@@ -688,7 +684,7 @@ input:-webkit-autofill:active{
       location.href = "onboarding.html?handle=" + encodeURIComponent(finalHandle) +
         "&name=" + encodeURIComponent(name) +
         "&email=" + encodeURIComponent(email) +
-        (photo ? "&avatar=" + encodeURIComponent(photo) : "");
+        (photo ? "&photo=" + encodeURIComponent(photo) + "&avatar=" + encodeURIComponent(photo) : "");
     }, 700);
   }
 
