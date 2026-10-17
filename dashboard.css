@@ -701,7 +701,6 @@ textarea.fld__in{height:auto; min-height:96px; padding-block:var(--s-3);
    through in all four account states without a backend. In React the
    state comes from the session — delete this whole block. */
 .demo{
-  display:none !important;
   position:fixed; z-index:50; right:var(--s-4);
   bottom:calc(var(--tabs-h) + var(--s-4) + env(safe-area-inset-bottom));
   display:flex; align-items:center; gap:var(--s-2);
@@ -1498,3 +1497,11 @@ input:-webkit-autofill:active{
 :is(.rf--tee,.rf--dark) .rf__fill, .ref .ref__fill{min-width:10px; background:var(--ok-lift); box-shadow:0 0 14px rgba(74,222,128,.55)}
 /* twice the card's gap above the five designs */
 .rf__designs{margin-top:var(--s-5)}
+
+/* someone else's DP — CM.dp (Quick Chat, followers). Page photo, else the
+   grey person; never a letter (Garry, 2026-10-16) */
+.qdp{flex:none; display:block; width:52px; height:52px; border-radius:50%; overflow:hidden; background:#E7E9EE}
+.qdp img, .qdp svg{width:100%; height:100%; object-fit:cover}
+.qdp--sm{width:40px; height:40px}
+.qdp--xs{width:26px; height:26px}
+.qdp--lg{width:84px; height:84px}

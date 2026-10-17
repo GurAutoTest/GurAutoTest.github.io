@@ -107,6 +107,8 @@ input:-webkit-autofill:active{
 .eye[aria-pressed="false"]{color:var(--ink-faint)}
 
 /* checkbox — "same as phone" */
+.same{display:flex; align-items:center; justify-content:space-between; gap:var(--s-3); min-height:36px}
+.same .eye[hidden]{display:none}
 .chk{display:flex; align-items:center; gap:var(--s-3); cursor:pointer;
   font-size:var(--fs-sm); font-weight:var(--fw-semibold); color:var(--ink-mid)}
 .chk input{position:absolute; opacity:0; width:0; height:0}
@@ -222,7 +224,7 @@ input:-webkit-autofill:active{
 .theme__n{font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-mid)}
 .theme[aria-pressed="true"] .theme__n{color:var(--ok)}
 /* the five, matching profile.html exactly (Dark + Violet retired 2026-10-03; Leaf replaced Cream 2026-10-04) */
-.theme__sw[data-t="light"]   {background:#F2F2F7}
+.theme__sw[data-t="light"]   {background:#FFFFFF; --sk-bt:#F2F2F7; box-shadow:inset 0 0 0 1px rgba(16,18,21,.08)}   /* white ground, grey rows (2026-10-16) */
 .theme__sw[data-t="leaf"]    {background:#A3BF5A; --sk-av:#FFFFFF; --sk-av-edge:0 0 0 1.5px #0A0A0A; --sk-nm:#0A0A0A; --sk-edge:inset 0 0 0 1.5px #0A0A0A; --sk-r:6px}
 .theme__sw[data-t="soft"]    {background:#E8E7E5; --sk-av:#CFCFCB; --sk-nm:#0B0B0C; box-shadow:inset 0 0 0 6px #fff, inset 0 0 0 7px rgba(16,18,21,.08)}
 /* Photo leads with a wide photo, not a round one */
@@ -356,7 +358,9 @@ input:-webkit-autofill:active{
 
 /* desktop: the phone sits beside the editor and follows the scroll */
 @media (min-width:1280px){
-  .pp{display:block; position:sticky; top:var(--s-10); flex:0 0 320px; padding:var(--s-10) var(--gutter) 0 0}
+  .pp{display:block; position:sticky; top:var(--s-10); flex:0 0 432px; padding:var(--s-10) 16px 0 24px}
+  /* the preview column brings its own gap, so the editor gives back its right gutter */
+  .pp-wrap > .view{padding-right:0; min-width:0}   /* 432 = 24 gap + 392 (phone + an arrow each side) + 16: the theme arrows sit outside the phone and clear the editor (2026-10-16) */
 }
 
 /* narrower: a button, and the phone as a sheet over the page */
@@ -454,3 +458,38 @@ body[data-pp-open] .pp-fab{display:none}
 @media (prefers-reduced-motion:reduce){
   .me__body, .me__grid, .me__chev svg{transition:none}
 }
+
+/* theme arrows beside the preview — laptop column only (Garry, 2026-10-16) */
+.pp-arr{
+  display:none; place-items:center; position:absolute; z-index:5; top:50%; transform:translateY(-50%);
+  width:34px; height:34px; padding:0; border:0; border-radius:50%; cursor:pointer;
+  background:var(--ground); color:var(--ink);
+  box-shadow:0 2px 8px rgba(16,18,21,.12), inset 0 0 0 1px var(--line);
+  transition:background var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.pp-arr svg{width:16px; height:16px}
+.pp-arr:hover{background:var(--ink); color:#fff; box-shadow:0 4px 12px rgba(16,18,21,.2)}
+.pp-arr:active{transform:translateY(-50%) scale(.92)}
+.pp-arr--prev{left:-46px}
+.pp-arr--next{right:-46px}
+@media (min-width:1280px) and (hover:hover){
+  .pp:not([data-open="true"]) .pp-arr{display:grid}
+}
+
+/* Follow + Quick chat switches (2026-10-16) — same pair as onboarding */
+.reach{gap:var(--s-3)}
+.reach .item{padding:var(--s-2) 0}
+.reach .item + .item{padding-top:var(--s-4); box-shadow:inset 0 1px 0 var(--line)}
+.reach .item__s{line-height:1.4}
+.reach .item[data-off]{opacity:.45}
+
+/* versions under the Theme line once the arrows are used (2026-10-16) — same dots as the tray's */
+.pp__arsubs{display:flex; justify-content:center; align-items:center; gap:10px; min-height:28px; margin-top:6px}
+.pp__arsubs[hidden]{display:none}
+.pp__arsubs[data-empty]{visibility:hidden}
+.pp__arsubs span{font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-soft); letter-spacing:var(--ls-soft); margin-right:2px}
+.pp__arsubs button{width:22px; height:22px; padding:0; border:0; border-radius:50%; cursor:pointer; background:var(--dot);
+  box-shadow:inset 0 0 0 1px rgba(16,18,21,.14); transition:transform var(--dur-fast) var(--ease)}
+.pp__arsubs button:hover{transform:scale(1.08)}
+.pp__arsubs button[aria-pressed="true"]{box-shadow:inset 0 0 0 1px rgba(16,18,21,.14), 0 0 0 2px var(--ground), 0 0 0 4px var(--ok)}
+.pp__themes[data-open="true"] .pp__arsubs, .pp[data-open="true"] .pp__arsubs{display:none}

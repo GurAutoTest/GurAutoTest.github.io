@@ -145,7 +145,7 @@ img,svg{display:block; max-width:100%}
 .pg[data-look] .addc:active{transform:scale(.97)}
 .pg[data-look] .addc svg{width:13px; height:13px}
 .pg[data-look="pill"] .addc{background:rgba(65,195,0,.78); box-shadow:inset 0 0 0 1px #81C759, 0 0 18px rgba(65,195,0,.45)}
-.pg[data-look="tile"] .addc{background:#000; font-weight:600; box-shadow:inset 0 0 0 1px rgba(199,199,199,.38), 2px 3px 0 rgba(255,255,255,.9)}
+.pg[data-look="tile"] .addc{background:#000; font-weight:600; box-shadow:inset 0 0 0 1px #fff}   /* white border, no white offset shadow (Garry, 2026-10-16) */
 
 /* photo on its ring — a band of light travels round the ring's edge, slow
    and endless. The element rotates (not the gradient), so it stays on the
@@ -787,6 +787,25 @@ img,svg{display:block; max-width:100%}
 .pg[data-theme="light-dark"] .share,
 .pg[data-theme="light-dark"] .brand button{box-shadow:inset 0 0 0 1px #2D2D30}
 
+/* WHITE GROUND + WEB CONTAINER (Garry, 2026-10-16). Light is a white page
+   now, phone and laptop alike, with the rows, share and brand buttons in the
+   iOS grey so they still read. On a laptop the page also sits in one card —
+   a hairline and a soft shadow — as wide as the other themes' cards, so it
+   no longer floats. Positions are unchanged. */
+.pg[data-theme="light"]{--bg:#FFFFFF; --btn:#F2F2F7; --row-hover:#E9E9EE; --row-sh:none}
+.pg[data-theme="light"] .card .sx{--sx-soft:#F2F2F7; --sx-soft-edge:none}   /* beats profile-social.css */
+.pg[data-theme="light"] .handle:hover{background:#F2F2F7}
+@media (min-width:640px){
+  .pg[data-theme^="light"] > .card{
+    flex:none; width:calc(100% - 32px); max-width:540px; margin:48px auto 40px; padding:48px 48px 36px;
+    border-radius:28px; background:#FFFFFF;
+    box-shadow:0 0 0 1px #E5E5EA, 0 24px 60px -28px rgba(16,18,21,.18);
+  }
+  .pg[data-theme^="light"] .share{top:20px; right:20px}
+  /* the same container in black */
+  .pg[data-theme="light-dark"] > .card{background:#0B0B0C; box-shadow:0 0 0 1px #2C2C2E, 0 24px 60px -28px rgba(0,0,0,.8)}
+}
+
 /* ── 2h. MODE BANNER — Travel / Lost (Phase-1, Garry 2026-10-13) ─────────
    The owner switched a mode on from Home, so the top of the page belongs to
    whoever has found their phone or bag. Like the sheets, the banner is
@@ -1262,6 +1281,9 @@ img,svg{display:block; max-width:100%}
 .rev__sw[data-t="photo-dark"]{background:#0E1014; box-shadow:inset 0 0 0 6px #191C22}
 .rev__sw[data-t="glass-copper"]{background:url("assets/profile-bg/pv1hd.jpg") 30% 50% / cover no-repeat, #150E0B}
 .rev__sw[data-t="glass-bronze"]{background:url("assets/profile-bg/pv3hd.jpg") 45% 50% / cover no-repeat, #7A5440}
+    radial-gradient(96% 44% at 16% -6%,  rgba(178,132,255,.95), transparent 62%),
+    radial-gradient(90% 42% at 28% 106%, rgba(226,114,226,.82),transparent 62%),
+    #0A0616}
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{transition-duration:.001ms !important}
@@ -1423,9 +1445,11 @@ input:-webkit-autofill:active{
     <button type="button" data-vw="blocked" aria-pressed="false">Blocked</button>
   </div>
   <div class="rev__row rev__row--sx" id="revOwner">
+    <button type="button" data-ow="follow" aria-pressed="false">Follow off</button>
     <button type="button" data-ow="chat" aria-pressed="false">Chat off</button>
     <button type="button" data-ow="counts" aria-pressed="false">Counts hidden</button>
     <button type="button" data-ow="zero" aria-pressed="false">0 followers</button>
+    <button type="button" data-ow="reset">Reset chat</button>
   </div>
   <div class="rev__row" id="revMode">
     <button type="button" data-m="" aria-pressed="true">No mode</button>
@@ -1435,7 +1459,6 @@ input:-webkit-autofill:active{
   <div class="rev__row" id="revTheme"></div>
 </div>
 
-<script src="cm-chat.js"></script>
 <script src="profile-social.js"></script>
 <script>
 (function () {
@@ -1481,7 +1504,7 @@ input:-webkit-autofill:active{
     /* Follow + Quick chat (profile-social.js). The owner's three switches
        are chat (Message button), showCounts and showList. No feed. */
     social : {
-      followers: 128, following: 96, showCounts: true, showList: true, chat: true,
+      followers: 128, following: 96, showCounts: true, showList: true, follow: true, chat: true,
       people: {
         followers: [ { name: "Simran Kaur", handle: "simran" }, { name: "Arjun Mehta", handle: "arjun" },
                      { name: "Neha Sharma", handle: "neha" }, { name: "Rohit Bansal", handle: "rohit" },
@@ -2183,6 +2206,9 @@ input:-webkit-autofill:active{
      Straight down the order array. No sorting, no promoting, no special
      case for the first item — order alone is the hierarchy. */
   function render() {
+    /* Save contact only when there is something to save: a phone, WhatsApp
+       or email on the page. A field the owner hid is absent from P. */
+    if (!(P.phone || P.wa || P.email)) { P.order = P.order.filter(function (k) { return k !== "vcard"; }); }
     renderMode();
     var lk = document.querySelector(".pg").dataset.look;
     $("sxSlot").innerHTML = (lk === "soft" || lk === "photo" || !window.CMSocial) ? "" : CMSocial.html(P);
@@ -2512,113 +2538,9 @@ input:-webkit-autofill:active{
   /* ══ 8. BOOT ═════════════════════════════════════════════════════════ */
   var pg = document.querySelector(".pg");
   var q  = new URLSearchParams(location.search);
-
-  // Auto-detect handle from URL path (e.g. /ghhghjjh, /ghhghjjh/, or ghhghjjh.html)
-  try {
-    var rawPath = location.pathname.split("/").filter(Boolean);
-    var seg = rawPath[rawPath.length - 1] || "";
-    if (seg && !seg.includes(".") && seg !== "profile" && seg !== "v3_devoff") {
-      P.handle = seg.toLowerCase().replace(/[^a-z0-9._-]/g, "");
-    } else if (seg && seg.endsWith(".html") && seg !== "profile.html" && seg !== "index.html") {
-      P.handle = seg.replace(/\.html$/, "").toLowerCase().replace(/[^a-z0-9._-]/g, "");
-    }
-  } catch(e) {}
-
-  if (window.__DEFAULT_HANDLE__) P.handle = window.__DEFAULT_HANDLE__.toLowerCase().replace(/[^a-z0-9._-]/g, "");
   if (q.get("handle")) P.handle = q.get("handle").toLowerCase().replace(/[^a-z0-9._-]/g, "");
   if (q.get("theme"))  P.theme  = q.get("theme");
   if (q.get("view"))   pg.dataset.view = q.get("view");
-
-  /* Overlay saved profile from localStorage if in preview, owner view, or matching handle */
-  try {
-    var storedAcc = JSON.parse(window.localStorage.getItem("cm.account.custom") || "{}");
-    var sp = storedAcc.profile || null;
-    var storedHandle = window.localStorage.getItem("cm.username") || (sp && sp.handle) || "";
-    var isPreviewOrOwner = q.get("chrome") === "0" || q.get("view") === "owner" || q.get("preview") === "1";
-    var handleMatches = storedHandle && P.handle && storedHandle.toLowerCase() === P.handle.toLowerCase();
-    if (isPreviewOrOwner || handleMatches || !P.handle || P.handle === "garry" || P.handle === "gurdeep") {
-      if (storedHandle) P.handle = storedHandle;
-      var savedName = window.localStorage.getItem("cm.name") || (sp && sp.name);
-      if (savedName) P.name = savedName;
-      var savedBio = window.localStorage.getItem("cm.bio");
-      if (savedBio !== null) P.bio = savedBio;
-      else if (sp && sp.bio !== undefined) P.bio = sp.bio;
-
-      var savedPhoto = window.localStorage.getItem("cm.photo") || (sp && sp.photo);
-      if (savedPhoto) P.photo = savedPhoto;
-
-      var savedTheme = q.get("theme") || window.localStorage.getItem("cm.theme") || (sp && sp.theme);
-      if (savedTheme) P.theme = savedTheme;
-
-      if (sp && sp.phone) P.phone = sp.phone;
-      if (sp && sp.wa) P.wa = sp.wa;
-      if (sp && sp.email) P.email = sp.email;
-      if (sp && sp.links) {
-        var cl = {};
-        for (var lk in sp.links) {
-          var item = sp.links[lk];
-          if (typeof item === "string") cl[lk] = item;
-          else if (item && item.v && item.on !== false) cl[lk] = item.v;
-        }
-        if (Object.keys(cl).length) P.links = cl;
-      }
-      if (sp && sp.customs && sp.customs.length) P.customs = sp.customs;
-      if (sp && sp.order && sp.order.length) P.order = sp.order;
-      if (sp && sp.socialOrder && sp.socialOrder.length) P.socialOrder = sp.socialOrder;
-    }
-  } catch(e) {}
-
-  /* Fetch live profile from Supabase DB */
-  if (P.handle && P.handle !== "gurdeep" && P.handle !== "garry") {
-    fetch("https://inzigrmttewawjjkggbd.supabase.co/rest/v1/profiles?username=eq." + encodeURIComponent(P.handle) + "&select=*", {
-      headers: {
-        "apikey": "sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg",
-        "Authorization": "Bearer sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg"
-      }
-    }).then(function (r) { return r.json(); }).then(function (rows) {
-      if (rows && rows[0]) {
-        var row = rows[0];
-        if (row.display_name) P.name = row.display_name;
-        if (row.bio !== undefined && row.bio !== null) P.bio = row.bio;
-        if (row.avatar_url) P.photo = row.avatar_url;
-        if (row.theme && !q.get("theme")) P.theme = row.theme;
-        if (row.phone) P.phone = row.phone;
-        if (row.whatsapp) P.wa = row.whatsapp;
-        if (row.email) P.email = row.email;
-        applyTheme(P.theme);
-        render();
-
-        if (row.id) {
-          fetch("https://inzigrmttewawjjkggbd.supabase.co/rest/v1/links?profile_id=eq." + encodeURIComponent(row.id) + "&is_visible=eq.true&select=*", {
-            headers: {
-              "apikey": "sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg",
-              "Authorization": "Bearer sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg"
-            }
-          }).then(function (lr) { return lr.json(); }).then(function (linkRows) {
-            if (linkRows && linkRows.length) {
-              var newLinks = {};
-              var newCustoms = [];
-              linkRows.forEach(function (l) {
-                if (l.icon === "custom" || !l.icon) {
-                  newCustoms.push({ id: l.id, title: l.title || "Link", url: l.url });
-                } else {
-                  newLinks[l.icon] = l.url;
-                }
-              });
-              if (Object.keys(newLinks).length) P.links = newLinks;
-              if (newCustoms.length) P.customs = newCustoms;
-              render();
-            }
-          }).catch(function () {});
-        }
-      } else if (!handleMatches) {
-        P.name = P.handle;
-        P.bio = "Welcome to my Codemarca page.";
-        applyTheme(P.theme);
-        render();
-      }
-    }).catch(function () {});
-  }
   /* ?mode=travel|lost — the review demos; ?mode={json} — Home's "See what a
      scan shows", carrying the mode exactly as the owner just set it */
   if (q.get("mode")) {

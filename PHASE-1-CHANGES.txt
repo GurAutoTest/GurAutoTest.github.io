@@ -1,36 +1,58 @@
-CODEMARCA — PHASE-1 v1 (2026-10-13)
-Everything below is new in this handoff. Open with a local server, hard refresh (Cmd+Shift+R).
+CODEMARCA — PHASE-1 v2 (2026-10-17)
+What changed since v4-phase-1-v1 (2026-10-13). Where this file and the v1 notes disagree, this file wins.
+Open with a local server, hard refresh (Cmd+Shift+R).
 
-1. TRAVEL + LOST MODE
-   modes.js, modes.css          Home "Modes" card (2-page-live, 4-active): two switches, a sheet
-                                form (up to 2 people, note, Travel end date / Lost item). One mode at
-                                a time, Lost replaces Travel. Saved as a.modes.
-   profile.html                 Banner above the page (CSS 2h, renderMode, ?mode=travel|lost|{json}).
-                                Folded by default ("Who to call"); numbers masked until tapped, then
-                                a green Call. Calling needs no sign-up.
-   Try: dashboard/4-active/home.html?state=travel   ?state=lost    profile.html?mode=lost
+1. QUICK CHAT — OWNER INBOX, REDESIGNED            quick-chat.js, quick-chat.css (NEW)
+   "Messages" is now "Quick Chat" everywhere (sidebar, phone chat icon, Home row, titles).
+   File is still dashboard/*/messages.html so links don't break. The old inbox code left social.js/.css.
+   Laptop   one card, two panes: chat list left, open chat right (first chat opens by itself).
+   Phone    list fills the tab; a chat slides in full screen over the bars; phone back closes it.
+   List     On/Off · "320 left today" pill -> settings sheet (Quick Chat switch, today's usage, rules);
+            search; circles row — Scan first, then everyone who wrote; Chats · Requests tabs.
+   Chat     grouped bubbles with tails, time under every bubble, ✓ Sent / ✓✓ Seen, typing dots,
+            "disappears in Xh" timer in the header, 500-char meter + composer (Enter sends,
+            Shift+Enter new line). Requests: their card on top, Block · Ignore · Accept at the bottom.
+   ⋯ menu   View their page, CLEAR CHAT (new — my side only, confirm first; their side keeps its own
+            24h clock), Block, Report.
+   SCAN     Scan circle / "Scan a sticker" -> camera screen (DEMO for now, no real camera yet) or type
+            codemarca.com/<name> -> their card -> Quick Chat opens a new chat with the opener chip
+            "Hi <name>, I saw your sticker at…". It reaches them as a request; after 2 messages:
+            "Sent. You can send more once <name> replies."
+   REVIEW   an "Inbox" picker beside the account picker (this page only, delete with .demo):
+            account / no messages / Quick Chat off / first message / busy / all read, old / 500 used.
+            Also by URL: messages.html?inbox=busy
+   NOTE     after you send, the other side "types" and replies once — REVIEW ONLY, remove in the build.
 
-2. FOLLOW + QUICK CHAT (public page)
-   profile-social.js/.css       Followers · following + Follow + Message under the bio, in every theme.
-                                Message: Google sign-in -> own page must be filled (min 1 social) ->
-                                consent (18+, repeats every 14 days) -> chat request.
-                                Rules: first message is a request, text only, no links; 500 characters
-                                a DAY per person across all chats (owner replies too); usage bar always
-                                visible; seen messages disappear after 24h. Owner switches: chat on/off,
-                                hide counts, hide lists. Blocked = no buttons. Follow = list only, no feed.
-   Review panel rows on profile.html: Guest / New account / Full page / Blocked, Chat off / Counts hidden / 0 followers.
+2. YOUR PEOPLE — followers · following (owner)      social.js, social.css
+   CM.people(): tabs with counts, search, Follow back / Following toggle (moves the count),
+   ⋯ Remove follower / Block (they aren't told), NEW tag, "and N more" (API pages the rest).
+   Phone = full screen slide-in, laptop = centred panel.
+   Opens from: Home "Your page" card (Followers / Following) AND Profile tab "How people connect
+   with you" -> top row (3 faces + counts + See all).
+   state.js people entries now carry face, you (I follow them back), since, fresh.
 
-3. OWNER SIDE: MESSAGES + VIEWS
-   social.js/.css               Home "Your page" card: views last 7 days (owner-only, sticker vs link),
-                                followers, following (lists in a sheet), row into Messages.
-   dashboard/*/messages.html    Quick chat switch, usage bar, Requests · Chats, thread with
-                                Accept / Ignore / Block / Report (reasons + "tell us more", keeps a copy,
-                                can block too), switches for counts/lists. 1-empty + 3-pack-coming show
-                                "Messages open once your page is live".
-   dashboard.js/.css            Messages in sidebar; phone = chat icon beside the bell, unread badge (CM.unread).
-   dashboard/*/state.js         a.social data. 4-active busy, 2-page-live?state=fresh = 0 followers + chat off.
-                                4-active new states: 8 Travel mode on, 9 Lost mode on.
+3. DPs EVERYWHERE                                   dashboard.js CM.dp + .qdp in dashboard.css
+   Someone else's DP = their page photo, else the grey person. Never a letter.
+   In the demo `face` is a PhotoKit key standing in for a photo (photo-kit.js is now loaded on
+   messages.html and home.html).
 
-4. WEBSITE
-   homepage.html#more           "More than a sticker": Travel mode 4-frame story (placeholders for now),
-                                4 feature cards, bulk line for group trips -> contact.html#bulk.
+4. QUICK CHAT — PUBLIC SIDE (profile.html)          profile-social.js, profile-social.css
+   Button label "Quick Chat" (round bubble icon). Guest -> Google sign-in (18+ in the legal line) ->
+   consent ("I understand", every 14 days, no age checkbox) -> chat.
+   No page yet? They get 2 messages (never told the number), then "Finish your page to keep
+   chatting"; replies after the lock show blurred. Dark sticky bar after their first message ->
+   "Build my page" -> onboarding.html?next=chat&to=<handle>&with=<first> -> done screen
+   "Your chat with X is unlocked · Back to chat" -> profile.html?handle=x&chat=open.
+   Header = page DP + name + one-line URL, red ✕. Unread replies = red count on the button.
+
+5. ONBOARDING + PROFILE TAB                          onboarding.html, tab-profile.js/.css, profile.html
+   "How people connect with you": Follow button + Quick chat switches (onboarding step 1, ON by
+   default); Profile tab adds Show follower counts + Let people open the lists (Save/Discard aware).
+   Theme picks have NO confirm any more (onboarding + Profile tab; My QR full screen still has it).
+   Theme arrows ‹ › beside the preview on laptops + version dots after an arrow is used.
+   Light theme: white ground, 540px card from 640px wide.
+   Save contact shows only with a name + one VISIBLE contact. Publish needs one of phone / WhatsApp /
+   email / any link — socials-only pages publish fine.
+
+Not in this folder (same as v1): _parked, READMEs, assets/flows, flows.html, profile-themes.html
+(theme bench), me-card-options.html, assets/profile-bgs, assets/profile-bg 1–4.

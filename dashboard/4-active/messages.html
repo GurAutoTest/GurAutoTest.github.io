@@ -1,43 +1,41 @@
-<title>Messages · Codemarca</title>
+<title>Quick Chat · Codemarca</title>
 <link rel="icon" type="image/png" href="../../favicon.png">
 <link rel="apple-touch-icon" href="../../favicon.png">
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../../dashboard.css">
 <link rel="stylesheet" href="../../social.css">
+<link rel="stylesheet" href="../../quick-chat.css">
 
 <!-- ==========================================================================
-     CODEMARCA — MESSAGES (Phase-1, Garry 2026-10-13)
-     Quick chat's inbox. Requests from people who scanned the sticker or
-     opened the link; chats once a request is accepted; the Quick chat
-     switch; today's 500 characters; who can see the follower counts.
-     Everything is drawn by CM.mountMessages in ../../social.js from this
+     CODEMARCA — QUICK CHAT (Phase-1; redesigned as a chat app 2026-10-17)
+     The file keeps its old name, messages.html, so every link still lands.
+     Laptop: one card, chat list left, the open chat right. Phone: the list
+     fills the tab, a chat slides in full screen over the bars.
+     Scan (first circle in the list) opens the camera screen — find a
+     Codemarca sticker or type codemarca.com/<name>, then Quick Chat.
+     Everything is drawn by CM.mountMessages in ../../quick-chat.js from this
      folder's state.js — the markup below is the same in all four folders.
      A folder with no page (1-empty, 3-pack-coming) gets the "make your
-     page first" card: nobody can scan to message, and real pages only.
+     page first" screen: nobody can scan to message, and real pages only.
      On a phone it opens from the chat icon beside the bell.
      ========================================================================== -->
 
 <div class="app">
   <div class="app__main">
-    <main class="view">
-      <header class="head">
-        <h1>Messages</h1>
-        <p>From people who scanned your sticker or opened your link.</p>
-      </header>
-
-      <div class="stack" data-messages></div>
+    <main class="view view--chat">
+      <div data-messages></div>
     </main>
   </div>
 </div>
 
 <script src="state.js"></script>
-<script src="../../cm-chat.js"></script>
 <script src="../../dashboard.js"></script>
-<script src="../../social.js"></script>
+<script src="../../photo-kit.js"></script>
+<script src="../../quick-chat.js"></script>
 <script>
-  CM.mountMessages(CM.shell({ page: "messages", title: "Messages" }));
+  CM.mountMessages(CM.shell({ page: "messages", title: "Quick Chat" }));
 </script>

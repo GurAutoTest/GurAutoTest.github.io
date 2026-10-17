@@ -219,15 +219,7 @@
         onPick: function (id) {
           asking = false;
           if (!id) { return; }
-          if (id === "yes") {
-            P.theme = cur;
-            if (CM.saveProfile) {
-              CM.saveProfile({ theme: cur });
-            } else {
-              try { window.localStorage.setItem("cm.theme", cur); } catch (e) {}
-            }
-            CM.toast("Theme updated");
-          }
+          if (id === "yes") { P.theme = cur; CM.toast("Theme updated"); }
           else { show(saved); }
           done();
         }

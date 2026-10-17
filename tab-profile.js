@@ -58,13 +58,6 @@
     if (SUBS[base]) { lastSub[base] = t; }
     S.theme = t;
     paintTheme();
-    try { window.localStorage.setItem("cm.theme", t); } catch (e) {}
-    try {
-      var ca = JSON.parse(window.localStorage.getItem("cm.account.custom") || "{}");
-      ca.profile = ca.profile || {};
-      ca.profile.theme = t;
-      window.localStorage.setItem("cm.account.custom", JSON.stringify(ca));
-    } catch (e) {}
     dirty();
   }
   var themes = document.querySelectorAll(".theme");
@@ -115,10 +108,10 @@
   /* Socials: the official marks (Simple Icons, CC0), drawn as onboarding
      and profile.html's fillIc draw them (2026-10-11). */
   var GLYPH = {
-    instagram : '<path fill="#fff" transform="translate(6 6) scale(.5)" d="M7.0301.084c-1.2768.0602-2.149.264-2.9096.5602-.7868.307-1.4542.72-2.1192 1.384-.664.665-1.077 1.332-1.384 2.119-.296.761-.5 1.633-.56 2.91-.06 1.287-.074 1.7-.074 4.943s.014 3.656.074 4.943c.06 1.277.264 2.149.56 2.91.307.787.72 1.454 1.384 2.119.665.664 1.332 1.077 2.119 1.384.761.296 1.633.5 2.91.56 1.287.06 1.7.074 4.943.074s3.656-.014 4.943-.074c1.277-.06 2.149-.264 2.91-.56.787-.307 1.454-.72 2.119-1.384.664-.665 1.077-1.332 1.384-2.119.296-.761.5-1.633.56-2.91.06-1.287.074-1.7.074-4.943s-.014-3.656-.074-4.943c-.06-1.277-.264-2.149-.56-2.91-.307-.787-.72-1.454-1.384-2.119-.665-.664-1.332-1.077-2.119-1.384-.761-.296-1.633-.5-2.91-.56-1.287-.06-1.7-.074-4.943-.074s-3.656.014-4.943.074zm.24 2.162c1.265-.058 1.644-.07 4.73-.07 3.085 0 3.464.012 4.73.07 1.17.054 1.805.249 2.227.413.56.218.96.477 1.38.897.42.42.679.82.897 1.38.164.422.36 1.057.413 2.227.058 1.266.07 1.645.07 4.73s-.012 3.465-.07 4.73c-.054 1.17-.249 1.806-.413 2.228-.218.56-.477.96-.897 1.38-.42.42-.82.679-1.38.897-.422.164-1.057.36-2.227.413-1.266.058-1.645.07-4.73.07s-3.465-.012-4.73-.07c-1.17-.054-1.806-.249-2.228-.413-.56-.218-.96-.477-1.38-.897-.42-.42-.679-.82-.897-1.38-.164-.422-.36-1.057-.413-2.227-.058-1.266-.07-1.645-.07-4.73s.012-3.465.07-4.73c.054-1.17.249-1.806.413-2.228.218-.56.477-.96.897-1.38.42-.42.82-.679 1.38-.897.422-.164 1.057-.36 2.227-.413zm8.93 1.942a1.44 1.44 0 1 0 1.44 1.44 1.44 1.44 0 0 0-1.44-1.44zm-4.2 1.643a6.17 6.17 0 1 0 6.17 6.17 6.17 6.17 0 0 0-6.17-6.17zm0 2.16a4.01 4.01 0 1 1-4.01 4.01 4.01 4.01 0 0 1 4.01-4.01z"/>',
+    instagram : '<path fill="#fff" transform="translate(6 6) scale(.5)" d="M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077"/>',
     youtube   : '<path d="M9.7 7.6 16.6 12l-6.9 4.4z" fill="#fff"/>',
-    facebook  : '<circle cx="12" cy="12" r="12" fill="#fff"/><path fill="#0866FF" d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 1.09.043 1.611.104v3.298h-1.644c-1.547 0-2.091.956-2.091 2.378v1.778h3.813l-.619 3.667h-3.194v7.98z"/>',
-    snapchat  : '<path fill="#fff" stroke="#000" stroke-width="1.3" stroke-linejoin="round" transform="translate(6 6) scale(.5)" d="M12.065 0C8.156 0 5.48 2.87 5.48 5.922c0 .94.314 1.83.393 2.146-.393.235-1.02.705-1.02 1.647 0 .55.393.942.864.942.235 0 .47-.079.706-.157.078.627.47 1.803 1.647 2.352-.392.314-.941.706-1.568.784-.393.079-.706.393-.706.785 0 .47.47.784.863.784.47 0 .94-.078 1.411-.235.392.705 1.02 1.254 1.882 1.49-.627.548-1.568.862-2.51.862-.313 0-.627.235-.627.549 0 .392.314.627.706.627.784 0 1.568-.157 2.274-.392.628.627 1.49 1.02 2.51 1.02 1.02 0 1.882-.393 2.51-1.02.705.235 1.49.392 2.274.392.392 0 .706-.235.706-.627 0-.314-.314-.55-.628-.55-.94 0-1.882-.313-2.509-.862.862-.236 1.49-.785 1.882-1.49.47.157.94.235 1.411.235.393 0 .863-.314.863-.784 0-.392-.314-.706-.706-.785-.627-.078-1.176-.47-1.568-.784 1.176-.549 1.568-1.725 1.647-2.352.235.078.47.157.705.157.471 0 .863-.392.863-.942 0-.941-.627-1.412-1.02-1.647.079-.314.393-1.206.393-2.146C18.65 2.87 15.973 0 12.065 0z"/>',
+    facebook  : '<circle cx="12" cy="12" r="12" fill="#fff"/><path fill="#0866FF" d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z"/>',
+    snapchat  : '<path fill="#fff" stroke="#000" stroke-width="1.3" stroke-linejoin="round" transform="translate(5.4 5.4) scale(.55)" d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12 1.033-.301.165-.088.344-.104.464-.104.182 0 .359.029.509.09.45.149.734.479.734.838.015.449-.39.839-1.213 1.168-.089.029-.209.075-.344.119-.45.135-1.139.36-1.333.81-.09.224-.061.524.12.868l.015.015c.06.136 1.526 3.475 4.791 4.014.255.044.435.27.42.509 0 .075-.015.149-.045.225-.24.569-1.273.988-3.146 1.271-.059.091-.12.375-.164.57-.029.179-.074.36-.134.553-.076.271-.27.405-.555.405h-.03c-.135 0-.313-.031-.538-.074-.36-.075-.765-.135-1.273-.135-.3 0-.599.015-.913.074-.6.104-1.123.464-1.723.884-.853.599-1.826 1.288-3.294 1.288-.06 0-.119-.015-.18-.015h-.149c-1.468 0-2.427-.675-3.279-1.288-.599-.42-1.107-.779-1.707-.884-.314-.045-.629-.074-.928-.074-.54 0-.958.089-1.272.149-.211.043-.391.074-.54.074-.374 0-.523-.224-.583-.42-.061-.192-.09-.389-.135-.567-.046-.181-.105-.494-.166-.57-1.918-.222-2.95-.642-3.189-1.226-.031-.063-.052-.15-.055-.225-.015-.243.165-.465.42-.509 3.264-.54 4.73-3.879 4.791-4.02l.016-.029c.18-.345.224-.645.119-.869-.195-.434-.884-.658-1.332-.809-.121-.029-.24-.074-.346-.119-1.107-.435-1.257-.93-1.197-1.273.09-.479.674-.793 1.168-.793.146 0 .27.029.383.074.42.194.789.3 1.104.3.234 0 .384-.06.465-.105l-.046-.569c-.098-1.626-.225-3.651.307-4.837C7.392 1.077 10.739.807 11.727.807l.419-.015h.06z"/>',
     telegram  : '<circle cx="12" cy="12" r="12" fill="#fff"/><path fill="#26A5E4" d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>',
     linkedin  : '<rect x="6.3" y="9.9" width="2.6" height="7.9" rx=".4" fill="#fff"/><circle cx="7.6" cy="7.1" r="1.55" fill="#fff"/><path d="M10.9 17.8V9.9h2.5V11c.42-.72 1.24-1.3 2.44-1.3 2 0 3.06 1.24 3.06 3.5v4.6h-2.6v-4.2c0-1.1-.42-1.76-1.4-1.76-1 0-1.5.68-1.5 1.76v4.2z" fill="#fff"/>',
     x         : '<path fill="#fff" transform="translate(6 6) scale(.5)" d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/>',
@@ -196,9 +189,8 @@
      the rest of the dashboard described two different pages. Now the flow's
      state.js is the only copy, and Discard goes back to it. The defaults
      below only fill gaps in an older saved page. */
-  var savedTheme = window.localStorage.getItem("cm.theme") || (a.profile && a.profile.theme) || "light";
   var SAVED = merge({
-    live:true, theme: savedTheme,
+    live:true, theme:"light",
     photo:null, name:"", handle:"", bio:"",
     phone:"", phoneOn:true,
     waSame:true, wa:"", waOn:true,
@@ -207,7 +199,6 @@
     order:["call","wa","email","vcard","socials","website","directions","review"],
     socialOrder:[]
   }, a.profile || {});
-  SAVED.theme = savedTheme;
 
   function merge(base, extra) {
     var out = JSON.parse(JSON.stringify(base)), k;
@@ -215,9 +206,78 @@
     return out;
   }
 
+  /* Follow button + Quick chat — the same two switches onboarding asks
+     about (Garry, 2026-10-16). Read off the account's social settings. */
+  SAVED.follow = !(a.social && a.social.follow === false);
+  SAVED.chat   = a.social ? !!a.social.chat : true;
+  SAVED.showCounts = !(a.social && a.social.showCounts === false);
+  SAVED.showList   = !(a.social && a.social.showList === false);
+
   var S, cid = 0;
   function load(from) { S = JSON.parse(JSON.stringify(from)); }
   load(SAVED);
+
+  /* the card, built here so all four folders get it without touching their
+     markup; it sits under "Order on your page" */
+  var reachCard = (function () {
+    var order = document.getElementById("orderCard");
+    if (!order) { return null; }
+    var c = document.createElement("section");
+    c.className = "card reach";
+    c.id = "reachCard";
+    c.innerHTML =
+      '<span class="card__title">How people connect with you</span>' +
+      /* your followers · following, opened here as well as from Home (2026-10-17) */
+      (a.social && CM.people ? '<button class="reach__ppl" type="button" data-people></button>' : "") +
+      '<div class="item"><span class="item__txt"><span class="item__t">Follow button</span>' +
+        '<span class="item__s">People who scan you can follow you on Codemarca.</span></span>' +
+        '<label class="sw"><input type="checkbox" data-reach="follow" aria-label="Follow button"><span class="sw__track"></span></label></div>' +
+      '<div class="item"><span class="item__txt"><span class="item__t">Quick chat</span>' +
+        '<span class="item__s">People who scan you can message you inside Codemarca — not on your phone or WhatsApp. You choose who to reply to.</span></span>' +
+        '<label class="sw"><input type="checkbox" data-reach="chat" aria-label="Quick chat"><span class="sw__track"></span></label></div>' +
+      /* moved here from Messages (Garry, 2026-10-16) — they only mean
+         something while the Follow button is on */
+      '<div class="item" data-needs-follow><span class="item__txt"><span class="item__t">Show follower counts</span>' +
+        '<span class="item__s">“128 followers · 96 following” under your bio.</span></span>' +
+        '<label class="sw"><input type="checkbox" data-reach="showCounts" aria-label="Show follower counts"><span class="sw__track"></span></label></div>' +
+      '<div class="item" data-needs-follow><span class="item__txt"><span class="item__t">Let people open the lists</span>' +
+        '<span class="item__s">Tapping the counts shows who follows you and who you follow.</span></span>' +
+        '<label class="sw"><input type="checkbox" data-reach="showList" aria-label="Let people open the lists"><span class="sw__track"></span></label></div>';
+    order.parentNode.insertBefore(c, order.nextSibling);   /* under Order (Garry, 2026-10-16) */
+    function pplPaint() {
+      var b = c.querySelector("[data-people]"); if (!b) { return; }
+      var so = a.social, f = (so.people && so.people.followers) || [];
+      b.innerHTML = (f.length ? '<span class="reach__faces">' + f.slice(0, 3).map(function (p) { return CM.dp(p); }).join("") + "</span>" : "") +
+        '<span class="reach__t"><span><b>' + so.followers + "</b> followers</span><i> · </i><span><b>" + so.following + "</b> following</span></span>" +
+        '<span class="reach__go">See all' + CM.icon("chev") + "</span>";
+    }
+    pplPaint();
+    c.addEventListener("click", function (e) {
+      if (e.target.closest("[data-people]")) { CM.people(a.social, "followers", pplPaint); }
+    });
+    c.addEventListener("change", function (e) {
+      var k = e.target.getAttribute("data-reach"); if (!k) { return; }
+      S[k] = e.target.checked;
+      paintReach();
+      dirty();
+    });
+    return c;
+  })();
+  function paintReach() {
+    if (!reachCard) { return; }
+    reachCard.querySelector('[data-reach="follow"]').checked = S.follow !== false;
+    reachCard.querySelector('[data-reach="chat"]').checked = !!S.chat;
+    reachCard.querySelector('[data-reach="showCounts"]').checked = S.showCounts !== false;
+    reachCard.querySelector('[data-reach="showList"]').checked = S.showList !== false;
+    /* no Follow button = no counts, so their two switches rest */
+    var off = S.follow === false;
+    Array.prototype.forEach.call(reachCard.querySelectorAll("[data-needs-follow]"), function (r) {
+      r.toggleAttribute("data-off", off);
+      r.querySelector("input").disabled = off;
+    });
+    var lst = reachCard.querySelector('[data-reach="showList"]');
+    if (!off) { lst.disabled = S.showCounts === false; lst.closest(".item").toggleAttribute("data-off", S.showCounts === false); }
+  }
 
   /* any change the person made — repaint what depends on it, raise the bar */
   function changed() { paintOrder(); recount(); dirty(); }
@@ -226,7 +286,7 @@
   function initial() { return (S.name.trim()[0] || S.handle[0] || "?").toUpperCase(); }
 
   function paintPhoto() {
-    $("photoDisc").innerHTML = S.photo ? '<img src="' + S.photo + '" alt="">' : CM.FACE;
+    $("photoDisc").innerHTML = S.photo ? '<img src="' + S.photo + '" alt="" referrerpolicy="no-referrer">' : CM.FACE;
     $("photoClear").hidden = !S.photo;
     $("photoBtn").textContent = S.photo && !S.face ? "Change photo" : "Add photo";
   }
@@ -316,13 +376,26 @@
   /* — contact — */
   function digits(v) { return v.replace(/[^0-9]/g, "").slice(0, 10); }
 
+  /* WhatsApp keeps its own eye even when it is the phone number (Garry,
+     2026-10-16) — built here so the four folders' markup stays as it is */
+  (function () {
+    var chk = $("waSame") && $("waSame").closest(".chk");
+    if (!chk || $("waSameEye")) { return; }
+    var row = document.createElement("div");
+    row.className = "same";
+    chk.parentNode.insertBefore(row, chk);
+    row.appendChild(chk);
+    row.insertAdjacentHTML("beforeend", '<button class="eye" type="button" id="waSameEye" aria-pressed="true" aria-label="Hide WhatsApp on your page"></button>');
+  })();
+
   function paintContact() {
     $("phone").value = S.phone;
     $("wa").value    = S.wa;
     $("email").value = S.email;
     $("waSame").checked = S.waSame;
     $("waWrap").hidden  = S.waSame;
-    [["phoneEye","phoneOn","phone"],["waEye","waOn","WhatsApp"],["emailEye","emailOn","email"]]
+    $("waSameEye").hidden = !S.waSame;
+    [["phoneEye","phoneOn","phone"],["waEye","waOn","WhatsApp"],["waSameEye","waOn","WhatsApp"],["emailEye","emailOn","email"]]
       .forEach(function (e) {
         var b = $(e[0]);
         b.innerHTML = EYE;
@@ -331,12 +404,15 @@
       });
   }
 
-  [["phoneEye","phoneOn","phone"],["waEye","waOn","WhatsApp"],["emailEye","emailOn","email"]]
+  [["phoneEye","phoneOn","phone"],["waEye","waOn","WhatsApp"],["waSameEye","waOn","WhatsApp"],["emailEye","emailOn","email"]]
     .forEach(function (e) {
       $(e[0]).addEventListener("click", function () {
         S[e[1]] = !S[e[1]];
-        this.setAttribute("aria-pressed", String(S[e[1]]));
-        this.setAttribute("aria-label", (S[e[1]] ? "Hide " : "Show ") + e[2] + " on your page");
+        /* the two WhatsApp eyes are one switch */
+        (e[1] === "waOn" ? [$("waEye"), $("waSameEye")] : [this]).forEach(function (b) {
+          b.setAttribute("aria-pressed", String(S[e[1]]));
+          b.setAttribute("aria-label", (S[e[1]] ? "Hide " : "Show ") + e[2] + " on your page");
+        });
         changed();
       });
     });
@@ -350,6 +426,7 @@
   $("waSame").addEventListener("change", function () {
     S.waSame = this.checked;
     $("waWrap").hidden = this.checked;
+    $("waSameEye").hidden = !this.checked;
     changed();
   });
 
@@ -490,6 +567,9 @@
        the response on the real page, never CSS-hide it. — */
   function waNumber() { return S.waSame ? S.phone : S.wa; }
   function hasContact() { return !!(S.phone || (!S.waSame && S.wa) || S.email); }
+  /* a contact that is actually on the page — filled AND its eye on. Save
+     contact needs one of these: a hidden number gives the phonebook nothing */
+  function shownContact() { return !!((S.phone && S.phoneOn) || (waNumber() && S.waOn) || (S.email && S.emailOn)); }
   var SOCIAL_KEYS = LINKS.filter(function (l) { return l.kind === "social"; })
                          .map(function (l) { return l.k; });
 
@@ -524,7 +604,7 @@
     if (k === "call")    return !!(S.phone && S.phoneOn);
     if (k === "wa")      return !!(waNumber() && S.waOn);
     if (k === "email")   return !!(S.email && S.emailOn);
-    if (k === "vcard")   return !!(S.name.trim() && hasContact());
+    if (k === "vcard")   return !!(S.name.trim() && shownContact());   /* only a contact people can see (eye on) — 2026-10-16 */
     if (k === "socials") return socials().length > 0;
     if (BY[k])           return !!(S.links[k] && S.links[k].v && S.links[k].on);
     var c = findCustom(k);
@@ -637,7 +717,7 @@
   function paintAll() {
     $("pageLive").checked = S.live;
     paintTheme();
-    paintHandle(); paintBasics(); paintContact(); paintPicks(); paintAdded(); paintCustoms(); paintOrder(); recount();
+    paintHandle(); paintBasics(); paintContact(); paintPicks(); paintAdded(); paintCustoms(); paintOrder(); paintReach(); recount();
   }
   paintAll();
 
@@ -671,57 +751,7 @@
     SAVED = JSON.parse(JSON.stringify(S));
     paintLive();
     clean();
-
-    try {
-      var customAccount = JSON.parse(window.localStorage.getItem("cm.account.custom") || "{}");
-      customAccount.profile = customAccount.profile || {};
-      customAccount.user = customAccount.user || {};
-
-      customAccount.profile.handle = S.handle;
-      customAccount.profile.name = S.name;
-      customAccount.profile.title = S.name || S.handle;
-      customAccount.profile.bio = S.bio;
-      customAccount.profile.photo = S.photo;
-      customAccount.profile.theme = S.theme;
-      customAccount.profile.phone = S.phone;
-      customAccount.profile.phoneOn = S.phoneOn;
-      customAccount.profile.waSame = S.waSame;
-      customAccount.profile.wa = S.wa;
-      customAccount.profile.waOn = S.waOn;
-      customAccount.profile.email = S.email;
-      customAccount.profile.emailOn = S.emailOn;
-      customAccount.profile.links = S.links;
-      customAccount.profile.customs = S.customs;
-      customAccount.profile.order = S.order;
-      customAccount.profile.socialOrder = S.socialOrder;
-      customAccount.profile.live = S.live;
-
-      customAccount.user.name = S.name || S.handle;
-      customAccount.user.email = S.email || (S.handle ? S.handle + "@gmail.com" : "");
-      if (S.phone) customAccount.user.phone = "+91 " + S.phone;
-
-      window.localStorage.setItem("cm.account.custom", JSON.stringify(customAccount));
-      if (S.handle) window.localStorage.setItem("cm.username", S.handle);
-      if (S.name && S.name !== "Garry Singh" && S.name !== "Gurdeep Singh") {
-        window.localStorage.setItem("cm.name", S.name);
-      } else {
-        window.localStorage.removeItem("cm.name");
-      }
-      if (S.phone) window.localStorage.setItem("cm.phone", S.phone);
-      if (S.email) window.localStorage.setItem("cm.email", S.email);
-      if (S.photo) {
-        try { window.localStorage.setItem("cm.photo", S.photo); } catch(e) {}
-      } else {
-        try { window.localStorage.removeItem("cm.photo"); } catch(e) {}
-      }
-      if (S.face) window.localStorage.setItem("cm.face", S.face);
-      if (S.theme) window.localStorage.setItem("cm.theme", S.theme);
-
-      if (CM.saveProfile) {
-        CM.saveProfile(S);
-      }
-    } catch(e) {}
-    CM.toast("Page updated · Synced to DB");
+    CM.toast("Page updated");
     return true;
   }
   function discard() {
@@ -729,33 +759,6 @@
     paintAll();
     clean();
   }
-
-  window.addEventListener("cm-profile-synced", function (e) {
-    var fresh = e.detail;
-    if (!fresh) return;
-    if (!bar.hasAttribute("data-on")) {
-      if (fresh.theme && fresh.theme !== S.theme) {
-        S.theme = fresh.theme;
-        SAVED.theme = fresh.theme;
-        paintTheme();
-      }
-      if (fresh.name && fresh.name !== S.name) {
-        S.name = fresh.name;
-        SAVED.name = fresh.name;
-        paintBasics();
-      }
-      if (fresh.bio !== undefined && fresh.bio !== S.bio) {
-        S.bio = fresh.bio;
-        SAVED.bio = fresh.bio;
-        paintBasics();
-      }
-      if (fresh.photo && fresh.photo !== S.photo) {
-        S.photo = fresh.photo;
-        SAVED.photo = fresh.photo;
-        paintPhoto();
-      }
-    }
-  });
 
   document.getElementById("save").addEventListener("click", save);
   document.getElementById("undo").addEventListener("click", function () {
@@ -881,6 +884,9 @@
     pp.innerHTML =
       '<div class="pp__in">' +
         '<div class="pp__phone" data-device="mobile"><span class="pp__island" aria-hidden="true"></span>' +
+          /* laptop column only: flip through the themes (Garry, 2026-10-16) */
+          '<button class="pp-arr pp-arr--prev" type="button" data-arr="-1" aria-label="Previous theme"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m12 4.5-5.5 5.5 5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+          '<button class="pp-arr pp-arr--next" type="button" data-arr="1" aria-label="Next theme"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m8 4.5 5.5 5.5L8 15.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
           /* Web only, in the column: ⤢ in the browser bar opens it full size */
           '<button class="pp__full" type="button" aria-label="Open full screen">' + FULL + "</button>" +
           '<div class="pp__scr"><iframe title="Your page, as a scan shows it" src="' + src + '"></iframe></div></div>' +
@@ -896,6 +902,8 @@
           '<div class="pp__themes" data-open="false" hidden>' +
             '<button class="pp__tt" type="button" aria-expanded="false"><span class="pp__th">Theme · <b></b></span>' +
               '<span class="pp__chg">Change</span></button>' +
+            /* versions as dots under the line once the arrows are used (2026-10-16) */
+            '<div class="pp__arsubs" role="group" aria-label="Theme version" hidden></div>' +
             '<div class="pp__tray">' +
               '<div class="pp__tray-top"><span class="pp__th">Theme · <b></b></span>' +
                 '<button class="pp__tc" type="button" aria-label="Close themes">' + CM.icon("close") + "</button></div>" +
@@ -937,37 +945,56 @@
         paintMini();
       });
     }
-    /* Picking in the tray only previews (Garry, 2026-10-09). Folding it, or
-       closing the preview, with a different theme showing asks first — yes
-       keeps it for Save, no puts the old one back. Esc / tapping outside
-       the question leaves them where they were. */
-    var trayFrom = null, trayName = "", asking = false;
+    /* No confirmation any more (Garry, 2026-10-16): the last pick is the
+       theme (still saved with Save, like every other edit). Closing the
+       tray — ×, a click outside it, or closing the preview — folds it away. */
+    var trayFrom = null, trayName = "";
     function settle(done) {
-      if (trayFrom === null || S.theme === trayFrom) { trayFrom = null; done(); return; }
-      if (asking) { return; }
-      asking = true;
-      CM.dialog({
-        title: "Switch your page to " + pp.querySelector(".pp__th b").textContent + "?",
-        body: "It\u2019s on " + trayName + " right now. Switching changes it for everyone who scans your code, once you save.",
-        actions: [
-          { id: "yes", label: "Yes, switch", kind: "go" },
-          { id: "no",  label: "Keep " + trayName, kind: "quiet" }
-        ],
-        onPick: function (id) {
-          asking = false;
-          if (!id) { return; }
-          if (id === "no") { chooseTheme(trayFrom, true); paintMini(); }
-          trayFrom = null;
-          pp.querySelector(".pp__themes").dataset.open = "false";
-          pp.querySelector(".pp__tt").setAttribute("aria-expanded", "false");
-          done();
-        }
-      });
+      trayFrom = null;
+      pp.querySelector(".pp__themes").dataset.open = "false";
+      pp.querySelector(".pp__tt").setAttribute("aria-expanded", "false");
+      done();
     }
+    document.addEventListener("click", function (e) {
+      var tb = pp.querySelector(".pp__themes");
+      if (tb.dataset.open !== "true") { return; }
+      if (e.target.closest(".pp__themes") || e.target.closest("[data-arr]")) { return; }
+      settle(function () {});
+    });
+    /* the arrows: next / previous theme in the Theme card's own order,
+       keeping the version last picked in that family */
+    Array.prototype.forEach.call(pp.querySelectorAll("[data-arr]"), function (b) {
+      b.addEventListener("click", function () {
+        var order = Array.prototype.map.call(big, function (x) { return x.dataset.theme; });
+        if (!order.length) { return; }
+        var i = Math.max(0, order.indexOf(themeBase(S.theme)));
+        arSubsOn = true;
+        chooseTheme(order[(i + +b.dataset.arr + order.length) % order.length]);
+        paintMini();
+      });
+    });
+    var arSubsOn = false;
+    function paintArSubs() {
+      var row = pp.querySelector(".pp__arsubs"); if (!row) { return; }
+      row.hidden = !arSubsOn;
+      if (!arSubsOn) { return; }
+      var sub = SUBS[themeBase(S.theme)];
+      row.toggleAttribute("data-empty", !sub);
+      row.innerHTML = sub ? "<span>" + sub.label + "</span>" + sub.list.map(function (x) {
+        return '<button type="button" data-theme="' + x.t + '" aria-label="' + x.n + '" title="' + x.n +
+               '" aria-pressed="' + (x.t === S.theme) + '" style="--dot:' + x.c + '"></button>';
+      }).join("") : "<span>&nbsp;</span>";
+    }
+    pp.querySelector(".pp__arsubs").addEventListener("click", function (e) {
+      var b = e.target.closest("button"); if (!b) { return; }
+      chooseTheme(b.dataset.theme, true);
+      paintMini();
+    });
     var miniFor = null;
     function paintMini() {
       if (!big.length || miniFor === S.theme) { return; }
       miniFor = S.theme;
+      paintArSubs();
       Array.prototype.forEach.call(sws.children, function (b) {
         b.setAttribute("aria-pressed", String(b.dataset.theme === themeBase(S.theme)));
       });
@@ -1060,7 +1087,14 @@
                           .map(function (c) { return { id: c.id, title: c.title, url: c.url }; }),
         theme: S.theme || "light",
         order: S.order.filter(rowLive),
-        socialOrder: (S.socialOrder || []).slice()
+        socialOrder: (S.socialOrder || []).slice(),
+        /* the account's real counts, with the two switches as edited */
+        social: {
+          followers: (a.social && a.social.followers) || 0, following: (a.social && a.social.following) || 0,
+          showCounts: S.showCounts !== false, showList: S.showList !== false,
+          follow: S.follow !== false, chat: !!S.chat,
+          people: (a.social && a.social.people) || { followers: [], following: [] }
+        }
       };
     }
     /* a cheap poll rather than hooks in every handler above: the editor has

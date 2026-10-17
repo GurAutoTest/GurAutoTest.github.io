@@ -54,8 +54,11 @@
     });
 
     /* VIEW PAGE — the owner's own page, in a new tab. Same link a scan
-       opens, so it is the honest preview. */
-    each("[data-view]", function (el) {
+       opens, so it is the honest preview.
+       Links only: the Preview card carries data-view="phone|web" itself, and
+       a bare [data-view] caught the whole card — any click opened full screen
+       and swallowed Edit page (Garry, 2026-10-11). */
+    each("a[data-view]", function (el) {
       el.href = CM.ROOT + "profile.html?view=owner" +
         (slug ? "&handle=" + encodeURIComponent(slug) : "") +
         (a.profile && a.profile.theme ? "&theme=" + encodeURIComponent(a.profile.theme.toLowerCase()) : "");
@@ -89,7 +92,7 @@
       } else {
         pv.hidden = false;
         frame.src = src;
-        each("[data-view]", function (el) { el.href = src; });
+        each("a[data-view]", function (el) { el.href = src; });
 
         function postToFrame() {
           if (!frame || !frame.contentWindow) return;

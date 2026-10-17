@@ -490,47 +490,56 @@ var SOCIAL = {
   chat: true, showCounts: true, showList: true,
   views: { week: 59, total: 412, sticker: 41, link: 18 },
   followers: 128, following: 96,
+  /* the first page of each list — the API pages the rest. `face` stands in
+     for their page photo; `you` = this account follows them back */
   people: {
     followers: [
-      { name: "Simran Kaur",  handle: "simran" }, { name: "Arjun Mehta", handle: "arjun" },
-      { name: "Rohit Bansal", handle: "rohit" },  { name: "Karan Dhillon", handle: "karan" },
-      { name: "Aisha Khan",  handle: "aisha" }
+      { name: "Simran Kaur",   handle: "simran",  face: "p-bun",   you: true,  since: "2d" },
+      { name: "Aman Verma",    handle: "aman.v",  face: "p-tie",   you: false, since: "12m", fresh: true },
+      { name: "Arjun Mehta",   handle: "arjun",   face: "p-beard", you: true,  since: "4d" },
+      { name: "Neha Sharma",   handle: "neha",    face: "p-bob",   you: false, since: "1w" },
+      { name: "Rohit Bansal",  handle: "rohit",   face: "cool",    you: true,  since: "1w" },
+      { name: "Karan Dhillon", handle: "karan",   face: "p-suit",  you: false, since: "2w" },
+      { name: "Aisha Khan",    handle: "aisha",   face: "p-long",  you: true,  since: "3w" },
+      { name: "Tanvi Rao",     handle: "tanvi",   face: "shy",     you: false, since: "1mo" },
+      { name: "Harpreet Gill", handle: "harpreet", you: false, since: "1mo" },
+      { name: "Vikram Joshi",  handle: "vikram",  face: "nerdy",   you: true,  since: "2mo" }
     ],
     following: [
-      { name: "Gurdeep Singh", handle: "gurdeep" }, { name: "Rhea Malhotra", handle: "rhea" },
-      { name: "Nikk Martin",   handle: "nikk"    }, { name: "Dr Rohan",      handle: "drrohan" }
+      { name: "Gurdeep Singh", handle: "gurdeep", face: "p-suit",  you: true },
+      { name: "Simran Kaur",   handle: "simran",  face: "p-bun",   you: true },
+      { name: "Rhea Malhotra", handle: "rhea",    face: "p-long",  you: true },
+      { name: "Arjun Mehta",   handle: "arjun",   face: "p-beard", you: true },
+      { name: "Nikk Martin",   handle: "nikk",    face: "star",    you: true },
+      { name: "Dr Rohan",      handle: "drrohan", face: "p-tie",   you: true },
+      { name: "Rohit Bansal",  handle: "rohit",   face: "cool",    you: true },
+      { name: "Aisha Khan",    handle: "aisha",   face: "p-long",  you: true },
+      { name: "Third Wave Coffee", handle: "thirdwave", face: "happy", you: true },
+      { name: "Vikram Joshi",  handle: "vikram",  face: "nerdy",   you: true }
     ]
   },
   usage: { used: 180, limit: 500 },
   requests: [
-    { id: "r1", name: "Aman Verma", handle: "aman.v", source: "sticker", when: "12 min ago", unread: true,
+    { id: "r1", name: "Aman Verma", handle: "aman.v", face: "p-tie", at: "4:18 pm", source: "sticker", when: "12 min ago", unread: true,
       bio: "Product designer at a fintech. Chai over coffee, always.", socials: ["Instagram", "LinkedIn"],
       text: "Hey Garry! Saw the sticker on your laptop at Third Wave, Koramangala. I’m a product designer too — would love to swap notes sometime." },
-    { id: "r2", name: "Priya Nair", handle: "priyan", source: "link", when: "3h ago", unread: true,
+    { id: "r2", name: "Priya Nair", handle: "priyan", face: "p-long", at: "1:32 pm", source: "link", when: "3h ago", unread: true,
       bio: "Founder, small candle studio in Kochi.", socials: ["Instagram"],
-      text: "Hi! A friend shared your page. Do you take freelance packaging work? Happy to share details." }
+      text: "Hi! A friend shared your page. Do you take freelance packaging work? Happy to share details." },
+    /* signed in with Google, no page of their own yet — two messages, then
+       their chat locks until they build one (Garry, 2026-10-16) */
+    { id: "r3", name: "Kabir Sethi", handle: "kabir.s", at: "11:05 am", source: "sticker", when: "5h ago", unread: true, nopage: true,
+      bio: "", socials: [],
+      text: "Hi", more: ["Saw your sticker on the bike outside Social, Sector 7. Where did you get it?"] }
   ],
   chats: [
-    {
-      id: "c_codemarca",
-      name: "Codemarca",
-      handle: "codemarca",
-      when: "Just now",
-      unread: true,
-      left: "Pinned",
-      isOfficial: true,
-      msgs: [
-        { me: false, text: "Welcome to Quick Chat on Codemarca! 👋" },
-        { me: false, text: "Here is how messaging works on your profile:\n\n• From Stickers & Link: Anyone who scans your physical sticker or visits your link can send you a message.\n• Requests First: New messages from visitors land in 'Requests' first. They cannot message you again until you tap Accept (or Ignore/Block).\n• 500 Chars/Day: You and visitors share a 500-character daily budget across chats (resets at midnight) to keep conversations fast and spam-free.\n• Privacy: Seen messages automatically disappear after 24 hours to keep your inbox clutter-free.\n• Control: You can turn Quick Chat on or off anytime using the switch above.\n\nEnjoy connecting!" }
-      ]
-    },
-    { id: "c1", name: "Simran Kaur", handle: "simran", when: "1h ago", unread: true, left: "22h",
-      msgs: [ { me: false, text: "Thanks for accepting! The sticker on your car is genius btw 😄" },
-              { me: true,  text: "Haha thanks! Took two minutes to set up." },
-              { me: false, text: "Ordering one for my scooty now." } ] },
-    { id: "c2", name: "Arjun Mehta", handle: "arjun", when: "Yesterday", unread: false, left: "6h",
-      msgs: [ { me: false, text: "Met you at the Kasol meetup — scanned your bag. Great chatting!" },
-              { me: true,  text: "Same here, Arjun. Let’s plan the Kheerganga trek." } ] }
+    { id: "c1", name: "Simran Kaur", handle: "simran", face: "p-bun", source: "sticker", when: "1h ago", unread: true, left: "22h",
+      msgs: [ { me: false, at: "2:51 pm", text: "Thanks for accepting! The sticker on your car is genius btw 😄" },
+              { me: true,  at: "2:58 pm", seen: true, text: "Haha thanks! Took two minutes to set up." },
+              { me: false, at: "3:40 pm", text: "Ordering one for my scooty now." } ] },
+    { id: "c2", name: "Arjun Mehta", handle: "arjun", face: "p-beard", source: "sticker", when: "Yesterday", unread: false, left: "6h",
+      msgs: [ { me: false, at: "9:12 pm", text: "Met you at the Kasol meetup — scanned your bag. Great chatting!" },
+              { me: true,  at: "9:20 pm", seen: true, text: "Same here, Arjun. Let’s plan the Kheerganga trek." } ] }
   ]
 };
 Object.keys(window.CM_STATES).forEach(function (k) {

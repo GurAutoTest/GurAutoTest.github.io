@@ -649,7 +649,6 @@ input:-webkit-autofill:active{
 
 /* ── 9. REVIEW TOOL — delete this block, its CSS and its script loop ───── */
 .preview{
-  display:none !important;
   position:fixed; right:var(--s-4); bottom:96px; z-index:50;
   display:flex; align-items:center; gap:var(--s-1); padding:5px; border-radius:var(--r-pill);
   background:var(--ground); box-shadow:var(--shadow-lg), inset 0 0 0 1px var(--line);
@@ -1069,7 +1068,7 @@ input:-webkit-autofill:active{
 </div>
 
 <!-- Review tool only — delete this block, its CSS section and its script loop. -->
-<div class="preview" role="group" aria-label="Jump to step" hidden style="display:none !important">
+<div class="preview" role="group" aria-label="Jump to step">
   <button type="button" data-go="1" aria-pressed="true">Address</button>
   <button type="button" data-go="2" aria-pressed="false">Payment</button>
   <button type="button" data-go="3" aria-pressed="false">Placed</button>
@@ -1077,7 +1076,6 @@ input:-webkit-autofill:active{
 
 <script src="pack.js"></script>
 <script src="lightbox.js"></script>
-<script src="pack-counter.js"></script>
 <script>
 (function () {
   "use strict";
@@ -1584,31 +1582,6 @@ input:-webkit-autofill:active{
         : (first ? "Nice one, " + first + " — we'll" : "We'll") +
           " ping you on WhatsApp before it lands. Look out for a small flat envelope.";
       celebrate();
-
-      /* Auto-redirect when built=1 so user seamlessly arrives at dashboard if they don't click manually */
-      if (ck.dataset.built === "1") {
-        var cd = 4;
-        var statusEl = $("doneStatus");
-        var autoTimer = setInterval(function () {
-          cd--;
-          if (cd <= 0) {
-            clearInterval(autoTimer);
-            $("toDash").click();
-          } else if (statusEl) {
-            var s = $("cdSec");
-            if (s) s.textContent = cd + "s";
-            else statusEl.textContent = "Taking you to your dashboard in " + cd + "s…";
-          }
-        }, 1000);
-        if (statusEl) {
-          statusEl.innerHTML = 'Taking you to your dashboard in <b id="cdSec">4s</b>…';
-        }
-        $("toDash").addEventListener("click", function () { clearInterval(autoTimer); }, { once: true });
-        $("toInvoice").addEventListener("click", function () {
-          clearInterval(autoTimer);
-          if (statusEl) statusEl.textContent = "";
-        }, { once: true });
-      }
     }
     Array.prototype.forEach.call(document.querySelectorAll(".preview button"), function (b) {
       b.setAttribute("aria-pressed", String(b.dataset.go === String(n)));
@@ -1637,16 +1610,6 @@ input:-webkit-autofill:active{
     $("recapTail").textContent = Q.kind === "free"
       ? " \u2014 pack free, delivery only."
       : " \u2014 " + linesText() + " plus delivery.";
-
-    if (Q.kind === "free" && window.CMPacks && typeof window.CMPacks.claimFreePack === "function") {
-      window.CMPacks.claimFreePack({
-        orderId: ORDER_ID,
-        name: f.name.el.value.trim(),
-        phone: f.phone.el.value,
-        email: mail,
-        username: window.localStorage.getItem("cm.username") || ""
-      });
-    }
 
     var method = document.querySelector('input[name="method"]:checked');
     var p = new URLSearchParams({

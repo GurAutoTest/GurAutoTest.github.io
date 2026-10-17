@@ -330,40 +330,36 @@ window.CM_STATES["settled"].notes = [
 /* FOLLOW + QUICK CHAT — Phase-1, Garry 2026-10-13. A page that has just
    gone live: nobody follows yet, no views, and Quick chat starts OFF — the
    owner chooses to let strangers message. "Live a while" has a little. */
-var CODEMARCA_WELCOME_CHAT = {
-  id: "c_codemarca",
-  name: "Codemarca",
-  handle: "codemarca",
-  when: "Just now",
-  unread: true,
-  left: "Pinned",
-  isOfficial: true,
-  msgs: [
-    { me: false, text: "Welcome to Quick Chat on Codemarca! 👋" },
-    { me: false, text: "Here is how messaging works on your profile:\n\n• From Stickers & Link: Anyone who scans your physical sticker or visits your link can send you a message.\n• Requests First: New messages from visitors land in 'Requests' first. They cannot message you again until you tap Accept (or Ignore/Block).\n• 500 Chars/Day: You and visitors share a 500-character daily budget across chats (resets at midnight) to keep conversations fast and spam-free.\n• Privacy: Seen messages automatically disappear after 24 hours to keep your inbox clutter-free.\n• Control: You can turn Quick Chat on or off anytime using the switch above.\n\nEnjoy connecting!" }
-  ]
-};
-
 var SOCIAL_FRESH = {
   chat: false, showCounts: true, showList: true,
   views: { week: 0, total: 0, sticker: 0, link: 0 },
   followers: 0, following: 0, people: { followers: [], following: [] },
-  usage: { used: 0, limit: 500 },
-  requests: [],
-  chats: [ CODEMARCA_WELCOME_CHAT ]
+  usage: { used: 0, limit: 500 }, requests: [], chats: []
 };
 var SOCIAL_SOME = {
   chat: true, showCounts: true, showList: true,
   views: { week: 12, total: 31, sticker: 0, link: 12 },
-  followers: 3, following: 7,
+  followers: 4, following: 7,
   people: {
-    followers: [ { name: "Simran Kaur", handle: "simran" }, { name: "Arjun Mehta", handle: "arjun" },
-                 { name: "Rohit Bansal", handle: "rohit" } ],
-    following: [ { name: "Gurdeep Singh", handle: "gurdeep" }, { name: "Rhea Malhotra", handle: "rhea" } ]
+    followers: [ { name: "Simran Kaur", handle: "simran", face: "p-bun", you: true, since: "1d" },
+                 { name: "Arjun Mehta", handle: "arjun", face: "p-beard", you: false, since: "2d" },
+                 { name: "Neha Sharma", handle: "neha", face: "p-bob", you: false, since: "2h", fresh: true },
+                 { name: "Rohit Bansal", handle: "rohit", face: "cool", you: false, since: "3d" } ],
+    following: [ { name: "Gurdeep Singh", handle: "gurdeep", face: "p-suit", you: true },
+                 { name: "Rhea Malhotra", handle: "rhea", face: "p-long", you: true },
+                 { name: "Simran Kaur", handle: "simran", face: "p-bun", you: true },
+                 { name: "Third Wave Coffee", handle: "thirdwave", face: "happy", you: true },
+                 { name: "Nikk Martin", handle: "nikk", face: "star", you: true },
+                 { name: "Dr Rohan", handle: "drrohan", face: "p-tie", you: true },
+                 { name: "Vikram Joshi", handle: "vikram", face: "nerdy", you: true } ]
   },
   usage: { used: 0, limit: 500 },
-  requests: [],
-  chats: [ CODEMARCA_WELCOME_CHAT ]
+  requests: [
+    { id: "r1", name: "Neha Sharma", handle: "neha", face: "p-bob", at: "3:10 pm", source: "link", when: "2h ago", unread: true,
+      bio: "Photographer, Chandigarh.", socials: ["Instagram"],
+      text: "Hi! Found your page through Simran. Loved the work on your Instagram — open to a collab shoot?" }
+  ],
+  chats: []
 };
 Object.keys(window.CM_STATES).forEach(function (k) {
   if (!window.CM_STATES[k].social) { window.CM_STATES[k].social = k === "fresh" ? SOCIAL_FRESH : SOCIAL_SOME; }

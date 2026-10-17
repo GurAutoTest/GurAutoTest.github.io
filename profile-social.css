@@ -26,11 +26,6 @@ button.sx__c{cursor:pointer}
 button.sx__c:hover{text-decoration:underline; text-underline-offset:3px}
 .sx__c b{font-weight:800; color:var(--sx-ink, inherit)}
 .sx__dot{opacity:.5}
-.sx__new{
-  display:inline-flex; align-items:center; height:26px; padding:0 12px; border-radius:999px;
-  font-size:.75rem; font-weight:700; letter-spacing:.14px;
-  background:var(--sx-soft); color:var(--sx-soft-fg); box-shadow:var(--sx-soft-edge);
-}
 .sx__b{display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%}
 .sx__b:has(> :only-child){grid-template-columns:1fr; max-width:220px; justify-self:center; margin-inline:auto}
 .sx__btn{
@@ -103,8 +98,6 @@ button.sx__c:hover{text-decoration:underline; text-underline-offset:3px}
 .sxs__rules{display:flex; flex-direction:column; gap:8px}
 .sxs__rules li{position:relative; padding-left:22px; font-size:.875rem; line-height:1.45; color:#33353D; letter-spacing:.14px}
 .sxs__rules li::before{content:""; position:absolute; left:4px; top:.55em; width:7px; height:7px; border-radius:50%; background:#17914F}
-.sxs__age{display:flex; align-items:center; gap:10px; width:100%; padding:12px 14px; border-radius:14px; background:#F4F3F7; font-size:.9375rem; font-weight:700; cursor:pointer; text-align:left}
-.sxs__age input{width:20px; height:20px; accent-color:#101215; margin:0}
 
 .sxs--list .sheet__panel{align-items:stretch; text-align:left}
 .sxs--list h2{padding-right:40px}
@@ -140,8 +133,6 @@ button.sx__c:hover{text-decoration:underline; text-underline-offset:3px}
 .cx__msg{align-self:flex-end; max-width:82%; margin-top:8px; display:flex; flex-direction:column; align-items:flex-end; gap:4px}
 .cx__msg p{margin:0; padding:10px 14px; border-radius:18px 18px 6px 18px; background:#101215; color:#fff; font-size:.9375rem; line-height:1.4; white-space:pre-wrap; overflow-wrap:anywhere}
 .cx__msg small{font-size:.75rem; color:#8C8E9C; letter-spacing:.14px}
-.cx__msg--them{align-self:flex-start; align-items:flex-start}
-.cx__msg--them p{border-radius:18px 18px 18px 6px; background:#fff; color:#101215; box-shadow:inset 0 0 0 1px rgba(16,18,21,.1)}
 .cx__foot{display:flex; flex-direction:column; gap:10px; padding:12px 16px calc(14px + env(safe-area-inset-bottom)); box-shadow:inset 0 1px 0 rgba(16,18,21,.08)}
 .cx__use{display:flex; align-items:center; gap:10px; font-size:.75rem; color:#8C8E9C; letter-spacing:.14px}
 .cx__use-t{font-weight:700; color:#5B5D68}
@@ -163,3 +154,144 @@ button.sx__c:hover{text-decoration:underline; text-underline-offset:3px}
 .cx__lock{display:flex; gap:8px; align-items:flex-start; margin:0; font-size:.8125rem; line-height:1.45; color:#5B5D68; letter-spacing:.14px}
 .cx__lock svg{flex:none; width:16px; height:16px; margin-top:1px}
 .cx__open{display:inline-flex; align-items:center; justify-content:center; height:46px; border-radius:14px; background:#101215; color:#fff; font-weight:700; font-size:.9375rem; text-decoration:none}
+
+/* ── 3b. THE CHAT, SMOOTHER (Garry, 2026-10-16) ─────────────────────────
+   Red close, a coloured lock card that grows in, times under every bubble,
+   the owner typing, the opening line as a chip, wider intro notes. */
+.cx__head{gap:12px}
+/* one DP in every sheet and the chat: the page's own photo or grey person */
+.sxs__av, .cx__av{overflow:hidden; background:#E7E9EE}
+.sxs__av svg, .sxs__av img, .cx__av svg, .cx__av img{width:100%; height:100%; object-fit:cover; display:block}
+.cx__x{background:#FDECEA; color:#D93025; transition:background .15s ease, color .15s ease, transform .15s ease}
+.cx__x:hover{background:#D93025; color:#fff}
+.cx__x:active{transform:scale(.94)}
+.sxs .sheet__x{background:#FDECEA; color:#D93025; transition:background .15s ease, color .15s ease}
+.sxs .sheet__x:hover{background:#D93025; color:#fff}
+.cx__body{gap:6px; padding:16px 12px; background:linear-gradient(180deg,#FAFAFB 0%, #F5F4F8 100%); scroll-behavior:smooth}
+
+/* plain small text at the top of the thread — no box (Garry, 2026-10-16) */
+.cx__intro{display:flex; flex-direction:column; align-items:center; gap:2px; margin:2px 8px 12px; text-align:center}
+.cx__intro p{margin:0; font-size:.75rem; line-height:1.45; color:#8C8E9C; letter-spacing:.14px}
+.cx__intro b{color:#5B5D68; font-weight:700}
+/* after the first message: a dark bar under the header asks for a page
+   (Garry's Figma, 2026-10-16). It sticks under the frosted header while the
+   thread scrolls, and grows in the way the lock card does. */
+.cx__nwrap{
+  position:sticky; top:0; z-index:1; margin:0 0 12px;
+  display:grid; grid-template-rows:0fr; opacity:0; transform:translateY(-8px);
+  transition:grid-template-rows .45s cubic-bezier(.2,.8,.2,1), opacity .35s ease .08s, transform .45s cubic-bezier(.2,.8,.2,1);
+}
+.cx__nwrap.is-open{grid-template-rows:1fr; opacity:1; transform:none}
+.cx__nin{overflow:hidden; min-height:0}
+.cx__nbar{
+  display:flex; align-items:center; gap:10px;
+  padding:12px 10px 12px 14px; border-radius:20px;
+  background:#101215; color:#fff; box-shadow:0 10px 28px -14px rgba(16,18,21,.55);
+}
+.cx__nbar p{flex:1; min-width:0; margin:0; overflow-wrap:anywhere; font-size:.8125rem; line-height:1.4; letter-spacing:.14px; color:#fff}
+.cx__nbtn{
+  flex:none; display:inline-flex; align-items:center; justify-content:center; height:38px; padding:0 12px; white-space:nowrap;
+  border-radius:12px; background:#6E27E6; color:#fff; text-decoration:none;
+  font-size:.8125rem; font-weight:700; box-shadow:inset 0 0 0 1.5px #8F5BFF;
+  transition:background .15s ease, transform .15s ease;
+}
+.cx__nbtn:hover{background:#5B1FD0}
+.cx__nbtn:active{transform:scale(.97)}
+@media (min-width:640px){
+  .cx__nbar{gap:16px; padding:14px 14px 14px 20px}
+  .cx__nbar p{font-size:.875rem}
+  .cx__nbtn{height:44px; padding:0 20px; font-size:.875rem}
+}
+
+/* a shine that crosses the button every few seconds */
+.cx__nbtn{position:relative; overflow:hidden; isolation:isolate}
+.cx__nbtn::after{
+  content:""; position:absolute; top:0; bottom:0; left:-60%; width:45%; z-index:-1; pointer-events:none;
+  background:linear-gradient(105deg, transparent 0%, rgba(255,255,255,.08) 30%, rgba(255,255,255,.55) 50%, rgba(255,255,255,.08) 70%, transparent 100%);
+  transform:skewX(-18deg); animation:cxShine 2.8s ease-in-out 1s infinite;
+}
+@keyframes cxShine{0%{left:-60%} 45%,100%{left:130%}}
+@media (prefers-reduced-motion:reduce){ .cx__nwrap{transition:none} .cx__nbtn::after{animation:none; display:none} }
+
+.cx__msg{margin-top:2px; max-width:80%}
+.cx__msg small{font-size:.6875rem; color:#9A9CA8; letter-spacing:.14px; padding:0 4px}
+.cx__msg + .cx__msg--them, .cx__msg--them + .cx__msg:not(.cx__msg--them){margin-top:10px}
+.cx__msg--them{align-self:flex-start; align-items:flex-start}
+.cx__msg--them p{background:#fff; color:#101215; border-radius:18px 18px 18px 6px; box-shadow:0 1px 2px rgba(16,18,21,.06), inset 0 0 0 1px rgba(16,18,21,.06)}
+.cx__msg.is-new{animation:cxIn .32s cubic-bezier(.2,.8,.2,1) both}
+.cx__msg.is-new:not(.cx__msg--them){transform-origin:100% 100%}
+.cx__msg--them.is-new{transform-origin:0 100%}
+@keyframes cxIn{from{opacity:0; transform:translateY(8px) scale(.96)}}
+
+.cx__hb{position:relative}
+.cx__msg--held p{filter:blur(5px); user-select:none; pointer-events:none}
+.cx__held{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:6px;
+  font-size:.8125rem; font-weight:700; color:#101215}
+.cx__held svg{width:14px; height:14px}
+
+.cx__typing{align-self:flex-start; display:inline-flex; gap:4px; padding:12px 14px; margin-top:8px; border-radius:18px 18px 18px 6px;
+  background:#fff; box-shadow:inset 0 0 0 1px rgba(16,18,21,.06); animation:cxIn .25s ease both}
+.cx__typing i{width:6px; height:6px; border-radius:50%; background:#9A9CA8; animation:cxDot 1s ease-in-out infinite}
+.cx__typing i:nth-child(2){animation-delay:.15s}
+.cx__typing i:nth-child(3){animation-delay:.3s}
+@keyframes cxDot{0%,60%,100%{opacity:.35; transform:translateY(0)} 30%{opacity:1; transform:translateY(-3px)}}
+
+.cx__chip{
+  align-self:flex-start; display:inline-flex; align-items:center; gap:8px; max-width:100%;
+  padding:8px 12px; border:0; border-radius:999px; cursor:pointer;
+  background:#F1ECFF; color:#4B2BB0; font:inherit; font-size:.8125rem; font-weight:600; letter-spacing:.14px;
+  text-align:left; animation:cxIn .3s ease both; transition:background .15s ease;
+}
+.cx__chip:hover{background:#E6DDFF}
+.cx__chip kbd{font-family:var(--font-mono); font-size:.6875rem; font-weight:600; padding:2px 6px; border-radius:6px;
+  background:#fff; color:#6E27E6; box-shadow:inset 0 0 0 1px rgba(110,39,230,.25)}
+.cx__chip[hidden]{display:none}
+.cx__in textarea{min-height:46px}
+
+/* the lock card grows in from nothing; the thread glides up with it */
+.cx__gwrap{display:grid; grid-template-rows:0fr; opacity:0; transform:translateY(10px);
+  transition:grid-template-rows .45s cubic-bezier(.2,.8,.2,1), opacity .35s ease .08s, transform .45s cubic-bezier(.2,.8,.2,1)}
+.cx__gwrap.is-open{grid-template-rows:1fr; opacity:1; transform:none}
+.cx__gin{overflow:hidden; min-height:0}
+.cx__gate{
+  display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px;
+  padding:18px 16px 16px; border-radius:18px;
+  background:linear-gradient(135deg,#FFF1E8 0%, #F3EDFF 55%, #E8F3FF 100%);
+  box-shadow:inset 0 0 0 1px rgba(110,39,230,.12);
+}
+.cx__gate-ic{display:grid; place-items:center; width:42px; height:42px; border-radius:50%; margin-bottom:4px; background:#101215; color:#fff}
+.cx__gate-ic svg{width:18px; height:18px}
+.cx__gate b{font-size:1rem; color:#1F1340}
+.cx__gate p{margin:0 0 8px; font-size:.8125rem; line-height:1.45; color:#4A4560; letter-spacing:.14px; max-width:36ch}
+.cx__gate .cx__open{align-self:stretch}
+.cx__open{transition:transform .15s ease, background .15s ease}
+.cx__open:hover{background:#33353D}
+.cx__open:active{transform:scale(.98)}
+.cx__send{transition:background .15s ease, transform .15s ease}
+.cx__send:not(:disabled):active{transform:scale(.92)}
+@media (prefers-reduced-motion:reduce){
+  .cx__msg.is-new, .cx__typing, .cx__chip{animation:none}
+  .cx__gwrap{transition:none}
+}
+
+/* ── 3c. HEADER + BADGE (Garry, 2026-10-16) ───────────────────────────────
+   The header floats over the thread in the homepage nav's frosted glass, so
+   a long chat scrolls visibly behind it. The page link stays one line. */
+.cx__box{position:relative}
+.cx__head{
+  position:absolute; top:0; left:0; right:0; z-index:2;
+  background:rgba(255,255,255,.72);
+  -webkit-backdrop-filter:blur(18px) saturate(180%); backdrop-filter:blur(18px) saturate(180%);
+  box-shadow:inset 0 -1px 0 rgba(16,18,21,.08);
+}
+.cx__body{padding-top:calc(76px + env(safe-area-inset-top))}
+.cx__who{min-width:0}
+.cx__who b, .cx__who small{display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+
+.sx__btn{position:relative}
+.sx__badge{
+  position:absolute; top:-6px; right:-6px; min-width:20px; height:20px; padding:0 6px; border-radius:999px;
+  display:grid; place-items:center; background:#E5372C; color:#fff;
+  font-size:.6875rem; font-weight:800; line-height:1; letter-spacing:0;
+  box-shadow:0 0 0 2px #fff; animation:cxIn .3s ease both;
+}

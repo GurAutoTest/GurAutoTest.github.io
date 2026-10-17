@@ -8,17 +8,23 @@
      2. THE FLOW behind Message and Follow, in Codemarca's sheets (never
         themed — the page is the owner's, the sheets are ours):
 
-          guest ──► Google sign-in ──► follow works straight away
-                                  └──► message: own profile must be filled
-                                       first (photo, name, ONE social at
-                                       least) — real people only
-          filled ──► consent (once, again every 2 weeks, 18+) ──► chat
+          guest ──► Google sign-in (name + photo come from Google, nothing
+                    to fill in) ──► consent (once, again every 2 weeks)
+                    ──► chat
+
+   QUICK CHAT STAYS QUICK — Garry, 2026-10-16
+     · No profile first. Sign in and say hi.
+     · An account with no page of its own gets TWO messages. Nobody tells
+       them the number up front, or the two turn into an essay. After the
+       second one the chat locks: "finish your page to keep chatting —
+       replies reach you once it is live". A reply that lands after the
+       lock shows blurred, so the reason to finish is right there.
+     · Someone whose page is live can keep going once the owner replies.
 
    RULES — Garry, 2026-10-13
      · 500 characters a DAY per person, across every chat, replies included.
        The bar is always on screen.
-     · The first message is a REQUEST: text only, no links, nothing more
-        until the owner accepts.
+     · Text only, no links.
      · Seen messages disappear 24 hours after they are seen.
      · The owner can switch Quick chat off (no Message button), hide the
        counts, hide the follower lists. Blocked people see no buttons.
@@ -60,7 +66,7 @@
   var P, rerender;
 
   var IC = {
-    chat:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-11 6.6L4 19.5l1.4-4.4A7.5 7.5 0 1 1 20 11.5Z"/></svg>',
+    chat:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2.5 21.5Z"/></svg>',
     plus:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
     tick:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
     close: '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
@@ -70,6 +76,16 @@
   };
 
   function first() { return ((P && P.name) || "them").split(" ")[0]; }
+  /* the owner's picture exactly as their page shows it: their photo, or the
+     same grey person the page draws when there is none — never a letter
+     (Garry, 2026-10-16: one DP everywhere). An inline SVG "photo" is the
+     demo stand-in, which the page also treats as no photo. */
+  var FACE = '<svg viewBox="0 0 96 96" aria-hidden="true"><rect width="96" height="96" fill="#E7E9EE"/>' +
+    '<circle cx="48" cy="38" r="16" fill="#B3B8C2"/><path d="M16 96c4-19 17-28 32-28s28 9 32 28z" fill="#B3B8C2"/></svg>';
+  function dp(cls) {
+    var ph = P && P.photo && !/^data:image\/svg/.test(P.photo) ? P.photo : "";
+    return '<span class="' + cls + '" aria-hidden="true">' + (ph ? '<img src="' + esc(ph) + '" alt="" referrerpolicy="no-referrer">' : FACE) + "</span>";
+  }
   function fmt(n) { return n >= 10000 ? (n / 1000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, "") + "k" : String(n); }
 
   /* ══ 1. THE BLOCK ════════════════════════════════════════════════════ */
@@ -78,23 +94,24 @@
     var s = P.social;
     if (!s || !P.name) { return ""; }
     var n = "";
-    if (s.showCounts) {
-      if (!s.followers && !s.following) {
-        n = '<span class="sx__new">New on Codemarca</span>';
-      } else {
-        var tag = s.showList ? "button" : "span";
-        var attr = function (k) { return s.showList ? ' type="button" data-sx="' + k + '"' : ""; };
-        n = "<" + tag + ' class="sx__c"' + attr("followers") + "><b>" + fmt(s.followers + (following ? 1 : 0)) + "</b> followers</" + tag + ">" +
-            '<span class="sx__dot" aria-hidden="true">·</span>' +
-            "<" + tag + ' class="sx__c"' + attr("following") + "><b>" + fmt(s.following) + "</b> following</" + tag + ">";
-      }
+    /* no Follow button, no follower counts either (Garry, 2026-10-16) */
+    if (s.showCounts && s.follow !== false) {
+      /* zero shows as zero (Garry, 2026-10-16 — "New on Codemarca" is gone) */
+      var tag = s.showList ? "button" : "span";
+      var attr = function (k) { return s.showList ? ' type="button" data-sx="' + k + '"' : ""; };
+      n = "<" + tag + ' class="sx__c"' + attr("followers") + "><b>" + fmt(s.followers + (following ? 1 : 0)) + "</b> followers</" + tag + ">" +
+          '<span class="sx__dot" aria-hidden="true">·</span>' +
+          "<" + tag + ' class="sx__c"' + attr("following") + "><b>" + fmt(s.following) + "</b> following</" + tag + ">";
     }
     var b = "";
-    if (V !== "blocked") {
+    if (V !== "blocked" && (s.follow !== false || s.chat)) {
       b = '<div class="sx__b">' +
-        '<button class="sx__btn sx__btn--solid" type="button" data-sx="follow" aria-pressed="' + following + '">' +
-          (following ? IC.tick + "Following" : IC.plus + "Follow") + "</button>" +
-        (s.chat ? '<button class="sx__btn sx__btn--soft" type="button" data-sx="message">' + IC.chat + "Message</button>" : "") +
+        /* the owner can switch the Follow button off (onboarding, Messages) */
+        (s.follow !== false ? '<button class="sx__btn sx__btn--solid" type="button" data-sx="follow" aria-pressed="' + following + '">' +
+          (following ? IC.tick + "Following" : IC.plus + "Follow") + "</button>" : "") +
+        (s.chat ? '<button class="sx__btn sx__btn--soft" type="button" data-sx="message"' +
+          (unread() ? ' aria-label="Quick Chat, ' + unread() + ' new"' : "") + ">" + IC.chat + "Quick Chat" +
+          (unread() ? '<span class="sx__badge" aria-hidden="true">' + unread() + "</span>" : "") + "</button>" : "") +
       "</div>";
     }
     if (!n && !b) { return ""; }
@@ -118,7 +135,7 @@
         '<div class="sheet__grip" aria-hidden="true"></div>' + inner +
       "</div>";
     el.addEventListener("click", function (e) { if (e.target.closest("[data-sxclose]")) { closeSheet(); } });
-    document.querySelector(".pg").appendChild(el);
+    document.body.appendChild(el);
     document.body.style.overflow = "hidden";
     openEl = el;
     var f = el.querySelector("[data-focus]") || el.querySelector(".sheet__x");
@@ -135,43 +152,27 @@
     if (chatEl) { closeChat(); } else { closeSheet(); }
   });
 
-  /* — sign in: one tap, Google only (no OTP on Codemarca, ever) — */
+  /* — sign in: one tap, Google only (no OTP on Codemarca, ever). The name
+       and photo come from the Google account, so there is nothing to fill
+       in before the first message (Garry, 2026-10-16) — */
+  var ME = { name: "Aman Verma", initial: "A" };   /* demo: what Google hands back */
   function gate(want) {
     var el = sheet(
-      '<span class="sxs__av" aria-hidden="true">' + esc(first().charAt(0).toUpperCase()) + "</span>" +
-      "<h2>" + (want === "follow" ? "Follow " : "Message ") + esc(first()) + "</h2>" +
-      "<p>Sign in to follow people and message them on Codemarca. It takes one tap.</p>" +
+      dp("sxs__av") +
+      "<h2>" + (want === "follow" ? "Follow " : "Quick Chat with ") + esc(first()) + "</h2>" +
+      "<p>One tap with Google. We use your Google name and photo, so there is nothing to fill in.</p>" +
       '<button class="sxs__google" type="button" data-focus data-go>' + IC.g + "Continue with Google</button>" +
-      '<p class="sxs__legal">By continuing you agree to the <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>.</p>',
+      '<p class="sxs__legal">By continuing you confirm you’re 18 or older and agree to the <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>.</p>',
       "Sign in");
     el.querySelector("[data-go]").addEventListener("click", function () {
-      /* a fresh sign-up always starts with an empty page */
+      /* a fresh sign-up has a name and a photo, but no page of its own yet */
       setViewer("new");
       closeSheet();
       if (want === "follow") { following = true; rerender(); }
-      else { complete(); }
+      else if (consented()) { chat(); }
+      else { consent(); }
       syncReview();
     });
-  }
-
-  /* — no chat-only accounts: the sender shows who they are first — */
-  function complete() {
-    var rows = [
-      { t: "A photo or a face",          s: "So they know who is saying hi" },
-      { t: "Your name and a short bio",  s: "One line about you is plenty" },
-      { t: "At least one social",        s: "Instagram, LinkedIn, anything real", must: true },
-      { t: "A way to reach you",         s: "Phone, WhatsApp or email — you can hide it" }
-    ];
-    sheet(
-      "<h2>Finish your page first</h2>" +
-      "<p>People reply to people they can see. Before you message " + esc(first()) + ", fill in your own Codemarca page.</p>" +
-      '<ul class="sxs__todo">' + rows.map(function (r) {
-        return '<li><span class="sxs__chk" aria-hidden="true"></span><span><b>' + r.t +
-          (r.must ? ' <em>needed</em>' : "") + "</b><small>" + r.s + "</small></span></li>";
-      }).join("") + "</ul>" +
-      '<a class="promo__go sxs__go" data-focus href="onboarding.html?next=message&amp;to=' + encodeURIComponent(P.handle) + '">Finish my page</a>' +
-      '<p class="sxs__legal">You can follow ' + esc(first()) + " without it.</p>",
-      "Finish your page");
   }
 
   /* — once, and again every two weeks: friendly, not a warning — */
@@ -189,17 +190,18 @@
         "<li>" + esc(first()) + " can accept, ignore, block or report a message.</li>" +
         "<li>Bullying, threats and scams get accounts removed. We keep a copy of reported chats for our team.</li>" +
       "</ul>" +
-      '<label class="sxs__age"><input type="checkbox" data-age> I’m 18 or older</label>' +
-      '<button class="promo__go sxs__go" type="button" data-ok disabled>I understand</button>',
+      /* no age checkbox here (Garry, 2026-10-16): it read like an adult site
+         and proved nothing. Age is a sign-up matter — the Google sheet's
+         legal line says 18+, and a birth year at onboarding can switch
+         Quick chat off for under-18s. */
+      '<button class="promo__go sxs__go" type="button" data-ok data-focus>I understand</button>',
       "Before you say hi");
-    var age = el.querySelector("[data-age]"), ok = el.querySelector("[data-ok]");
-    age.addEventListener("change", function () { ok.disabled = !age.checked; });
+    var ok = el.querySelector("[data-ok]");
     ok.addEventListener("click", function () {
       store("cm.consent", Date.now());
       closeSheet();
       chat();
     });
-    setTimeout(function () { age.focus(); }, 30);
   }
 
   /* — who follows them, who they follow: names only, no feed — */
@@ -221,10 +223,22 @@
   }
 
   /* ══ 3. THE CHAT ═════════════════════════════════════════════════════
-     A request: one message, text only, until the owner accepts. The day's
-     500 characters are shared across every chat this person has, so the
-     bar shows what is left today, not what is left in this box. */
-  var chatEl = null;
+     The day's 500 characters are shared across every chat this person has,
+     so the bar shows what is left today, not what is left in this box.
+
+     TWO MESSAGES, THEN THE PAGE (Garry, 2026-10-16). An account with no page
+     sends two, then the chat locks until they build one. The demo plays the
+     owner's side too: a reply lands after the first message, and one more
+     lands — blurred — after the lock. The thread is kept per page in
+     localStorage (cm.thread.<handle>) so closing and reopening keeps it.
+
+     SMOOTH (Garry, 2026-10-16): Enter sends (Shift+Enter = new line); the
+     opening line is offered as a chip — tap it on a phone, or Tab on a
+     laptop — and stays editable; every message carries its time; only the
+     newest bubble animates in; the owner "types" before a reply; the lock
+     card grows in while the thread glides up with it. */
+  var chatEl = null, shown = 0, wasLocked = false, nudgeOn = false;
+  var FREE_MSGS = 2;
   function today() { return new Date().toISOString().slice(0, 10); }
   function used() {
     var u = store("cm.usage");
@@ -233,48 +247,33 @@
   function spend(n) { store("cm.usage", { day: today(), used: Math.min(LIMIT, used() + n) }); }
   var LINK = /(https?:\/\/|www\.)|\b[a-z0-9-]+\.(com|in|net|org|io|co|app|me|ly|xyz|link)\b/i;
 
-  var activeRoomId = null;
-  var realtimeBound = false;
+  function tKey() { return "cm.thread." + P.handle; }
+  function getT() { return store(tKey()) || { msgs: [] }; }
+  function putT(t) { store(tKey(), t); }
+  function mine(t) { return t.msgs.filter(function (m) { return m.me; }).length; }
+  function replied(t) { return t.msgs.some(function (m) { return !m.me; }); }
+  /* locked = no page of their own and the two messages are spent */
+  function locked(t) { return V === "new" && mine(t) >= FREE_MSGS; }
+  /* waiting = a live page, two sent, and no reply yet (the request rule) */
+  function waiting(t) { return V !== "new" && mine(t) >= FREE_MSGS && !replied(t); }
+  function opener() { return "Hi " + first() + ", I saw your sticker at "; }
 
-  function bindRealtime() {
-    if (!window.CMChat || realtimeBound) { return; }
-    realtimeBound = true;
-    window.CMChat.on("*", function (ev, payload) {
-      if (!chatEl) { return; }
-      if (ev === "NEW_REPLY") {
-        if (!activeRoomId || payload.roomId === activeRoomId || !payload.roomId) {
-          var body = chatEl.querySelector("[data-body]");
-          if (body) {
-            body.insertAdjacentHTML("beforeend",
-              '<div class="cx__msg cx__msg--them"><p>' + esc(payload.text) + "</p><small>" + esc(payload.when || "Just now") + " · " + esc(first()) + "</small></div>");
-            body.scrollTop = body.scrollHeight;
-          }
-          if (window.CMChat.playNotificationSound) { window.CMChat.playNotificationSound(); }
-        }
-      } else if (ev === "REQUEST_ACCEPTED") {
-        if (!activeRoomId || payload.roomId === activeRoomId || !payload.roomId) {
-          var foot = chatEl.querySelector("[data-foot]");
-          if (foot) {
-            var lock = foot.querySelector(".cx__lock");
-            if (lock) { lock.innerHTML = '<span style="color:#17914F;font-weight:700;">✓ ' + esc(first()) + ' accepted your request! You can chat now.</span>'; }
-            var openBtn = foot.querySelector(".cx__open");
-            if (openBtn) { openBtn.remove(); }
-            // enable follow-up composer
-            setTimeout(function () { composer(); }, 800);
-          }
-        }
-      }
-    });
+  /* "Just now", "4:12 pm", "Yesterday, 4:12 pm", "14 Oct, 4:12 pm" */
+  var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  function when(ts) {
+    if (!ts) { return ""; }
+    var d = new Date(ts), now = new Date();
+    if (now - d < 60000) { return "Just now"; }
+    var h = d.getHours(), t = ((h % 12) || 12) + ":" + String(d.getMinutes()).padStart(2, "0") + (h < 12 ? " am" : " pm");
+    var y = new Date(now); y.setDate(now.getDate() - 1);
+    if (d.toDateString() === now.toDateString()) { return t; }
+    if (d.toDateString() === y.toDateString()) { return "Yesterday, " + t; }
+    return d.getDate() + " " + MON[d.getMonth()] + ", " + t;
   }
 
+  var tick = null;
   function chat() {
     closeChat();
-    bindRealtime();
-    activeRoomId = store("cm.room." + P.handle);
-    if (activeRoomId && window.CMChat) {
-      window.CMChat.joinChannel("room_" + activeRoomId);
-    }
-    var sent = store("cm.req." + P.handle);
     chatEl = document.createElement("div");
     chatEl.className = "cx";
     chatEl.setAttribute("role", "dialog");
@@ -284,52 +283,180 @@
       '<div class="cx__scrim" data-cxclose></div>' +
       '<section class="cx__box">' +
         '<header class="cx__head">' +
-          '<span class="cx__av" aria-hidden="true">' + esc(first().charAt(0).toUpperCase()) + "</span>" +
-          '<span class="cx__who"><b>' + esc(P.name) + "</b><small>Message request</small></span>" +
-          '<button class="cx__x" type="button" data-cxclose aria-label="Close">' + IC.close + "</button>" +
+          dp("cx__av") +
+          '<span class="cx__who"><b>' + esc(P.name) + "</b><small>codemarca.com/" + esc(P.handle) + "</small></span>" +
+          '<button class="cx__x" type="button" data-cxclose aria-label="Close chat">' + IC.close + "</button>" +
         "</header>" +
-        '<div class="cx__body" data-body>' +
-          '<p class="cx__sys">Your first message goes as a request. ' + esc(first()) + " sees it and can accept, ignore or block it. Text only — no links or photos.</p>" +
-          '<p class="cx__sys cx__sys--soft">Messages disappear 24 hours after they’re seen.</p>' +
-        "</div>" +
+        '<div class="cx__body" data-body></div>' +
         '<footer class="cx__foot" data-foot></footer>' +
       "</section>";
     chatEl.addEventListener("click", function (e) { if (e.target.closest("[data-cxclose]")) { closeChat(); } });
-    document.querySelector(".pg").appendChild(chatEl);
+    document.body.appendChild(chatEl);
     document.body.style.overflow = "hidden";
-
-    if (sent) {
-      showSent(sent);
-      // Fetch live history from DB if room exists
-      if (activeRoomId && window.CMChat) {
-        window.CMChat.getRoomMessages(activeRoomId).then(function (msgs) {
-          if (!chatEl || !msgs || !msgs.length) return;
-          var body = chatEl.querySelector("[data-body]");
-          if (!body) return;
-          // Clear previous messages and show all
-          var sysP = body.querySelectorAll(".cx__sys");
-          body.innerHTML = "";
-          sysP.forEach(function (s) { body.appendChild(s); });
-          msgs.forEach(function (m) {
-            if (m.sender_type === "owner") {
-              body.insertAdjacentHTML("beforeend",
-                '<div class="cx__msg cx__msg--them"><p>' + esc(m.content) + '</p><small>' + esc(first()) + '</small></div>');
-            } else {
-              body.insertAdjacentHTML("beforeend",
-                '<div class="cx__msg"><p>' + esc(m.content) + '</p><small>Request sent</small></div>');
-            }
-          });
-          body.scrollTop = body.scrollHeight;
-        });
-      }
-    } else {
-      composer();
-    }
+    var t = getT();
+    shown = t.msgs.length;           /* what is already there doesn't animate */
+    wasLocked = locked(t);
+    nudgeOn = V === "new" && mine(t) >= 1 && !wasLocked;
+    draw();
+    /* keep "Just now" honest while the chat is open */
+    tick = setInterval(function () {
+      if (!chatEl) { return; }
+      var tt = getT();
+      Array.prototype.forEach.call(chatEl.querySelectorAll("[data-ts]"), function (el) {
+        var m = tt.msgs[+el.getAttribute("data-ts")]; if (m) { el.textContent = when(m.ts); }
+      });
+    }, 30000);
   }
   function closeChat() {
     if (!chatEl) { return; }
+    clearInterval(tick);
     chatEl.remove(); chatEl = null;
     document.body.style.overflow = "";
+    if (rerender) { rerender(); }   /* clears the badge on Message */
+  }
+  /* replies that came in while the chat was closed — the count on the page's
+     Message button (Garry, 2026-10-16). Signed-in visitors only. */
+  function unread() {
+    if (V === "guest" || V === "blocked" || !P || !P.handle) { return 0; }
+    var t = getT(), seen = t.seen || 0;
+    return t.msgs.slice(seen).filter(function (m) { return !m.me; }).length;
+  }
+
+  function bubble(m, i, lk) {
+    var fresh = i >= shown ? " is-new" : "";
+    var time = '<small data-ts="' + i + '">' + esc(when(m.ts)) + "</small>";
+    if (m.me) { return '<div class="cx__msg' + fresh + '"><p>' + esc(m.text) + "</p>" + time + "</div>"; }
+    /* after the lock, the owner's reply is there but can't be read yet */
+    if (m.held && lk) {
+      return '<div class="cx__msg cx__msg--them cx__msg--held' + fresh + '"><div class="cx__hb"><p aria-hidden="true">' + esc(m.text) + "</p>" +
+        '<span class="cx__held">' + IC.lock + esc(first()) + " replied</span></div>" + time + "</div>";
+    }
+    return '<div class="cx__msg cx__msg--them' + fresh + '"><p>' + esc(m.text) + "</p>" + time + "</div>";
+  }
+
+  /* glide the thread to the bottom — and keep gliding while the footer grows */
+  function follow(ms) {
+    var body = chatEl && chatEl.querySelector("[data-body]");
+    if (!body) { return; }
+    var end = Date.now() + (ms || 0);
+    (function step() {
+      if (!chatEl) { return; }
+      body.scrollTo({ top: body.scrollHeight, behavior: ms ? "auto" : "smooth" });
+      if (Date.now() < end) { requestAnimationFrame(step); }
+    })();
+    if (!ms) { return; }
+    setTimeout(function () { body.scrollTo({ top: body.scrollHeight, behavior: "smooth" }); }, ms);
+  }
+
+  /* The note at the top of the thread. Before anything is sent it says who
+     can do what. Once a pageless sender has sent their first message it
+     turns into the nudge to build a page — if no reply ever comes and they
+     close the chat, they at least leave with a page (Garry, 2026-10-16).
+     After the lock the card at the bottom carries that ask, so the top goes
+     quiet again. */
+  function introHtml(t, lk) {
+    var bar = function (cls) {
+      /* Garry's Figma (2026-10-16): a dark bar, the line on the left, the
+         violet button on the right. One line, never swapped mid-chat; first
+         name only — a long one shrinks the type to stay on two rows. */
+      return '<div class="cx__nwrap ' + cls + '"><div class="cx__nin"><div class="cx__nbar">' +
+        "<p>Finish your Codemarca page so " + esc(first()) + " can see who’s saying hi.</p>" +
+        '<a class="cx__nbtn" href="onboarding.html?next=chat&amp;to=' + encodeURIComponent(P.handle) + '&amp;with=' + encodeURIComponent(first()) + '">Build my page</a>' +
+      "</div></div></div>";
+    };
+    /* before anything is sent: who can do what — and only then. Once the
+       first message is out, that note never comes back (Garry, 2026-10-16). */
+    if (!mine(t)) {
+      nudgeOn = false;
+      return '<div class="cx__intro">' +
+        "<p>" + esc(first()) + " can reply, ignore or block. Text only.</p>" +
+        "<p>Sending as <b>" + esc(ME.name) + "</b> · name and photo from Google. Messages disappear 24 hours after they’re seen.</p>" +
+      "</div>";
+    }
+    if (V === "new" && !lk) {
+      /* grows in the first time; later redraws keep it open */
+      var grow = !nudgeOn;
+      nudgeOn = true;
+      return bar(grow ? "is-growing" : "is-open");
+    }
+    /* the lock card takes over the ask: if the bar was showing, it folds
+       up and away the way it came in, instead of vanishing */
+    if (nudgeOn) {
+      nudgeOn = false;
+      return bar("is-open is-leaving");
+    }
+    return "";
+  }
+
+  /* the nudge line always reads in full on two rows: a long first name
+     shrinks the type a half-pixel at a time, down to 10.5px (Garry) */
+  function fitNudge(body) {
+    var p = body.querySelector(".cx__nbar p");
+    if (!p) { return; }
+    var size = parseFloat(getComputedStyle(p).fontSize);
+    p.style.fontSize = "";
+    size = parseFloat(getComputedStyle(p).fontSize);
+    while (size > 10.5) {
+      var lh = size * 1.4;
+      if (p.scrollHeight <= lh * 2 + 1) { break; }
+      size -= .5;
+      p.style.fontSize = size + "px";
+    }
+  }
+
+  function draw(typing) {
+    if (!chatEl) { return; }
+    var t = getT(), lk = locked(t);
+    /* everything on screen now counts as seen */
+    if (t.seen !== t.msgs.length) { t.seen = t.msgs.length; putT(t); }
+    var body = chatEl.querySelector("[data-body]");
+    body.innerHTML =
+      introHtml(t, lk) +
+      t.msgs.map(function (m, i) { return bubble(m, i, lk); }).join("") +
+      (typing ? '<div class="cx__typing" aria-label="' + esc(first()) + ' is typing"><i></i><i></i><i></i></div>' : "");
+    shown = t.msgs.length;
+    fitNudge(body);
+    var gone = body.querySelector(".cx__nwrap.is-leaving");
+    if (gone) {
+      requestAnimationFrame(function () { requestAnimationFrame(function () {
+        gone.classList.remove("is-open");
+        setTimeout(function () { if (gone.parentNode) { gone.remove(); } }, 520);
+      }); });
+    }
+    var nw = body.querySelector(".cx__nwrap.is-growing");
+    if (nw) {
+      requestAnimationFrame(function () { requestAnimationFrame(function () {
+        nw.classList.remove("is-growing"); nw.classList.add("is-open");
+      }); });
+    }
+
+    var foot = chatEl.querySelector("[data-foot]");
+    if (lk) {
+      var grow = !wasLocked;          /* only the moment it locks gets the animation */
+      wasLocked = true;
+      foot.innerHTML = usageHtml() +
+        '<div class="cx__gwrap' + (grow ? "" : " is-open") + '"><div class="cx__gin"><div class="cx__gate">' +
+          '<span class="cx__gate-ic">' + IC.lock + "</span>" +
+          "<b>Finish your page to keep chatting</b>" +
+          "<p>Your messages reached " + esc(first()) + ". Their replies open here once your own Codemarca page is live — about two minutes.</p>" +
+          '<a class="cx__open" href="onboarding.html?next=chat&amp;to=' + encodeURIComponent(P.handle) + '&amp;with=' + encodeURIComponent(first()) + '">Build my page</a>' +
+        "</div></div></div>";
+      if (grow) {
+        var w = foot.querySelector(".cx__gwrap");
+        requestAnimationFrame(function () { requestAnimationFrame(function () { w.classList.add("is-open"); }); });
+        follow(480);
+      } else { follow(); }
+      return;
+    }
+    wasLocked = false;
+    if (waiting(t)) {
+      foot.innerHTML = usageHtml() +
+        '<p class="cx__lock">' + IC.lock + "Sent. You can send more once " + esc(first()) + " replies. Replies also land in Messages on your dashboard.</p>";
+      follow();
+      return;
+    }
+    composer(t);
+    follow();
   }
 
   function usageHtml() {
@@ -342,75 +469,100 @@
     "</div>";
   }
 
-  function composer() {
+  var draft = "";
+  function composer(t) {
     var foot = chatEl.querySelector("[data-foot]");
     var left = LIMIT - used();
     if (left <= 0) {
       foot.innerHTML = usageHtml() + '<p class="cx__lock">' + IC.lock + "You’ve used today’s 500 characters. More tomorrow.</p>";
       return;
     }
+    var start = !t.msgs.length;
+    var fine = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
     foot.innerHTML = usageHtml() +
-      '<div class="cx__warn" data-warn hidden>Links can’t go in a message request.</div>' +
+      '<div class="cx__warn" data-warn hidden>Links can’t go in a message.</div>' +
+      (start
+        ? '<button class="cx__chip" type="button" data-chip>' + esc(opener()) + "…" +
+            (fine ? '<kbd>Tab</kbd>' : "") + "</button>"
+        : "") +
       '<div class="cx__in">' +
-        '<textarea data-msg rows="2" maxlength="' + left + '" placeholder="Hi ' + esc(first()) + ', I saw your sticker at…" aria-label="Your message"></textarea>' +
-        '<button class="cx__send" type="button" data-send disabled aria-label="Send request">' + IC.send + "</button>" +
+        '<textarea data-msg rows="1" maxlength="' + left + '" placeholder="' +
+          (start ? esc(opener()) + "…" : "Message") + '" aria-label="Your message"></textarea>' +
+        '<button class="cx__send" type="button" data-send disabled aria-label="Send">' + IC.send + "</button>" +
       "</div>";
     var ta = foot.querySelector("[data-msg]"), send = foot.querySelector("[data-send]");
+    var chip = foot.querySelector("[data-chip]");
     var warn = foot.querySelector("[data-warn]"), leftEl = foot.querySelector("[data-left]");
     var bar = foot.querySelector(".cx__bar i"), use = foot.querySelector(".cx__use");
-    ta.addEventListener("input", function () {
+    ta.value = draft;
+
+    function sync() {
       var v = ta.value, l = LIMIT - used() - v.length;
       var bad = LINK.test(v);
+      draft = v;
       warn.hidden = !bad;
       send.disabled = !v.trim() || bad;
       leftEl.textContent = l;
       bar.style.width = Math.max(0, Math.round(l / LIMIT * 100)) + "%";
       use.dataset.low = String(l < 100);
+      if (chip) { chip.hidden = !!v; }
       ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 140) + "px";
+    }
+    /* the opening line goes into the box, cursor at the end, ready to finish */
+    function useOpener() {
+      ta.value = opener(); sync();
+      ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+    }
+    ta.addEventListener("input", sync);
+    ta.addEventListener("keydown", function (e) {
+      if (e.key === "Tab" && !e.shiftKey && start && !ta.value) { e.preventDefault(); useOpener(); return; }
+      if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
+        e.preventDefault();
+        if (!send.disabled) { send.click(); }
+      }
     });
+    if (chip) { chip.addEventListener("click", useOpener); }
     send.addEventListener("click", function () {
       var v = ta.value.trim();
       if (!v || LINK.test(v)) { return; }
       spend(v.length);
-      var msg = { text: v, when: "Just now" };
-      store("cm.req." + P.handle, msg);
-      showSent(msg);
-
-      // Persist to Supabase and send Realtime broadcast
-      if (window.CMChat) {
-        var vis = window.CMChat.getVisitorProfile();
-        window.CMChat.getOrCreateRoom(P.handle, vis, v).then(function (room) {
-          if (room) {
-            activeRoomId = room.id;
-            store("cm.room." + P.handle, room.id);
-            window.CMChat.joinChannel("room_" + room.id);
-            window.CMChat.postMessage(room.id, "visitor", vis.id, vis.name, v);
-            window.CMChat.broadcast("owner_" + (P.handle || "").toLowerCase().trim(), "NEW_REQUEST", {
-              roomId: room.id,
-              visitorId: vis.id,
-              name: vis.name,
-              handle: vis.handle,
-              photo: vis.photo,
-              bio: vis.bio,
-              socials: vis.socials,
-              text: v,
-              when: "Just now",
-              source: "sticker"
-            });
-          }
-        });
-      }
+      draft = "";
+      var tt = getT();
+      tt.msgs.push({ me: true, text: v, ts: Date.now() });
+      putT(tt);
+      draw();
+      demoReply(tt);
+      var nt = chatEl && chatEl.querySelector("[data-msg]"); if (nt) { nt.focus(); }
     });
+    sync();
     setTimeout(function () { ta.focus(); }, 30);
   }
 
-  function showSent(msg) {
-    var body = chatEl.querySelector("[data-body]");
-    body.insertAdjacentHTML("beforeend",
-      '<div class="cx__msg"><p>' + esc(msg.text) + "</p><small>" + esc(msg.when) + " · Request sent</small></div>");
-    chatEl.querySelector("[data-foot]").innerHTML = usageHtml() +
-      '<p class="cx__lock">' + IC.lock + "You can send more once " + esc(first()) + " accepts. Replies land in Messages on your dashboard.</p>" +
-      '<a class="cx__open" href="dashboard/4-active/messages.html">Open my Messages</a>';
+  /* demo only — the owner's side. A reply after the first message; after the
+     lock, one more that stays blurred until the sender's page is live. The
+     owner "types" for a moment first. */
+  function demoReply(t) {
+    var n = mine(t);
+    var text = n === 1 ? "Hey! Thanks for scanning 😊 Who’s this?"
+             : locked(t) ? "Haha nice, which café was it? Tell me more!" : "";
+    if (!text) { return; }
+    var lockNow = locked(t);
+    setTimeout(function () {
+      if (chatEl && !lockNow) { keepDraft(); draw(true); }
+    }, 700);
+    setTimeout(function () {
+      var t2 = getT();
+      t2.msgs.push({ me: false, text: text, held: locked(t2), ts: Date.now() });
+      putT(t2);
+      if (!chatEl) { if (rerender) { rerender(); } return; }   /* closed: it shows as a count */
+      keepDraft();
+      draw();
+    }, n === 1 ? 2600 : 2000);
+  }
+  /* a redraw rebuilds the box, so hold on to what was being typed */
+  function keepDraft() {
+    var ta = chatEl && chatEl.querySelector("[data-msg]");
+    if (ta) { draft = ta.value; }
   }
 
   /* ══ 4. WIRING ═══════════════════════════════════════════════════════ */
@@ -427,7 +579,6 @@
     }
     if (k === "message") {
       if (V === "guest") { gate("message"); }
-      else if (V === "new") { complete(); }
       else if (!consented()) { consent(); }
       else { chat(); }
     }
@@ -442,7 +593,8 @@
     });
     Array.prototype.forEach.call(document.querySelectorAll("#revOwner [data-ow]"), function (x) {
       var s = P.social, k = x.dataset.ow;
-      var on = k === "chat" ? !s.chat : k === "counts" ? !s.showCounts : (!s.followers && !s.following);
+      if (k === "reset") { return; }
+      var on = k === "follow" ? s.follow === false : k === "chat" ? !s.chat : k === "counts" ? !s.showCounts : (!s.followers && !s.following);
       x.setAttribute("aria-pressed", String(on));
     });
   }
@@ -462,7 +614,13 @@
       own.addEventListener("click", function (e) {
         var b = e.target.closest("[data-ow]"); if (!b) { return; }
         var s = P.social, k = b.dataset.ow;
+        if (k === "reset") {
+          try { window.localStorage.removeItem("cm.thread." + P.handle); window.localStorage.removeItem("cm.usage"); window.localStorage.removeItem("cm.consent"); } catch (err) {}
+          setViewer("guest"); following = false; closeChat(); rerender(); syncReview();
+          return;
+        }
         if (k === "chat") { s.chat = !s.chat; }
+        else if (k === "follow") { s.follow = s.follow === false; }
         else if (k === "counts") { s.showCounts = !s.showCounts; }
         else if (k === "zero") {
           if (s.followers || s.following) { ZERO = [s.followers, s.following]; s.followers = 0; s.following = 0; following = false; }
@@ -480,6 +638,14 @@
       P = page; rerender = redraw;
       document.addEventListener("click", onClick);
       wireReview();
+      /* back from onboarding (?chat=open): their page is live now, so the
+         chat opens straight away, unlocked — held replies readable
+         (Garry, 2026-10-16: don't lose them on the success screen) */
+      if (new URLSearchParams(location.search).get("chat") === "open") {
+        setViewer("full");
+        rerender(); syncReview();
+        setTimeout(chat, 250);
+      }
     }
   };
 })();

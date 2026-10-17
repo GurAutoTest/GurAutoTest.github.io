@@ -1,14 +1,12 @@
 <title>Codemarca Onboarding</title>
-<link rel="icon" type="image/png" href="favicon.png">
-<link rel="apple-touch-icon" href="favicon.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="photo-kit.css">
-<script src="qrcode.min.js"></script>
-<script>if(typeof qrcode==="undefined"){document.write('<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"><\/script>');}</script>
 
 <style>
 /* ==========================================================================
@@ -246,6 +244,8 @@ input:-webkit-autofill:active{
 .eye[aria-pressed="false"]{color:var(--ink-faint)}
 
 /* checkbox — "same as phone", on by default */
+.same{display:flex; align-items:center; justify-content:space-between; gap:var(--s-3); min-height:36px}
+.same .eye[hidden]{display:none}
 .chk{display:flex; align-items:center; gap:var(--s-3); cursor:pointer;
   font-size:var(--fs-sm); font-weight:var(--fw-semibold); color:var(--ink-mid)}
 .chk input{position:absolute; opacity:0; width:0; height:0}
@@ -397,10 +397,6 @@ input:-webkit-autofill:active{
   flex:1; display:flex; flex-direction:column; align-items:center; gap:var(--s-5);
   padding:var(--s-6) var(--gutter); overflow:auto;
 }
-.aside__label{
-  font-size:var(--fs-xs); font-weight:var(--fw-bold); color:var(--ink-soft);
-  text-align:center; line-height:1.4;
-}
 .aside__close{display:none; border:0; cursor:pointer; font:inherit; color:var(--ink)}
 .aside__close svg{width:16px; height:16px; flex:none}
 
@@ -482,22 +478,24 @@ input:-webkit-autofill:active{
 .dlg__acts{display:flex; flex-direction:column; gap:var(--s-2); margin-top:var(--s-4)}
 .dlg__acts .btn{width:100%; flex:none}
 .sw{
-  width:32px; height:32px; border:0; cursor:pointer; border-radius:10px;
-  display:grid; place-items:center;
+  position:relative; width:32px; height:32px; padding:0; border:0; cursor:pointer; border-radius:10px;
   box-shadow:inset 0 0 0 1.5px var(--line-strong);
   transition:box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .sw:hover{transform:translateY(-1px)}
-.sw[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--ok), 0 0 0 3px rgba(23,145,79,.18)}   /* chosen theme = green (Garry, 2026-10-03) */
-.sw svg{
-  width:16px; height:16px; opacity:0; transform:scale(.5);
-  transition:opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
-}
-.sw[aria-pressed="true"] svg{opacity:1; transform:none}
-.sw[data-t="light"]{background:#F2F2F7}
+/* the chosen one: a green ring and a green check in the corner — the
+   dashboard's Profile tab tray, to the pixel (Garry, 2026-10-11) */
+.sw[aria-pressed="true"]{box-shadow:inset 0 0 0 1.5px var(--line-strong), 0 0 0 2px var(--ground), 0 0 0 3.5px var(--ok)}
+.sw i{display:none; position:absolute; top:-6px; right:-6px; width:16px; height:16px; border-radius:50%;
+  background:var(--ok); color:#fff; place-items:center; box-shadow:0 0 0 2px var(--ground)}
+.sw i svg{width:10px; height:10px}
+.sw[aria-pressed="true"] i{display:grid}
+.sw[data-t="light"]{background:#FFFFFF; box-shadow:inset 0 0 0 1px rgba(16,18,21,.12)}   /* white ground (2026-10-16) */
 .sw[data-t="leaf"]{background:#A3BF5A}
 .sw[data-t="soft"]{background:#E8E7E5; box-shadow:inset 0 0 0 5px #fff, inset 0 0 0 6px rgba(16,18,21,.1)}
 .sw[data-t="photo"]{background:linear-gradient(#E7E9EE 0 50%, #fff 50%); box-shadow:inset 0 0 0 4px #C4CBD4}
+.sw[data-t="soft"][aria-pressed="true"]{box-shadow:inset 0 0 0 5px #fff, inset 0 0 0 6px rgba(16,18,21,.1), 0 0 0 2px var(--ground), 0 0 0 3.5px var(--ok)}
+.sw[data-t="photo"][aria-pressed="true"]{box-shadow:inset 0 0 0 4px #C4CBD4, 0 0 0 2px var(--ground), 0 0 0 3.5px var(--ok)}
 /* theme versions (Leaf colours, Soft / Photo light-dark), under the strip.
    The row always keeps its height — it used to appear from nothing and jolt
    the preview upwards (Garry, 2026-10-06). */
@@ -526,9 +524,6 @@ input:-webkit-autofill:active{
   .ob:not([data-step="3"]) .pane{flex:none}
   .ob:not([data-step="3"]) .ob__foot{margin-top:0}
   .ob[data-step="3"] .ob__aside{display:none}
-.ob[data-step="3"] .ob__aside:not([data-open="true"]){display:none !important}
-html,body{overflow-x:hidden}
-.ob{overflow-x:hidden}
   /* "View my page" on the done screen — the preview comes back as a full
      overlay, since by then the sticky column has done its job */
   .ob .ob__aside[data-open="true"]{
@@ -576,9 +571,9 @@ html,body{overflow-x:hidden}
   background:var(--p-av-bg); color:var(--p-av-fg); display:grid; place-items:center;
   font-size:1.5rem; font-weight:var(--fw-black); letter-spacing:-.03em}
 .p-photo img{width:100%; height:100%; object-fit:cover}
-.p-name{font-size:1.25rem; font-weight:var(--fw-black); letter-spacing:-.03em; line-height:1.15; overflow-wrap:anywhere; word-break:break-word}
-.p-handle{font-family:var(--font-mono); font-size:.6875rem; color:var(--p-mid); letter-spacing:-.02em; overflow-wrap:anywhere; word-break:break-all}
-.p-bio{font-size:.75rem; color:var(--p-mid); line-height:1.45; max-width:26ch; overflow-wrap:anywhere; word-break:break-word}
+.p-name{font-size:1.25rem; font-weight:var(--fw-black); letter-spacing:-.03em; line-height:1.15}
+.p-handle{font-family:var(--font-mono); font-size:.6875rem; color:var(--p-mid); letter-spacing:-.02em}
+.p-bio{font-size:.75rem; color:var(--p-mid); line-height:1.45; max-width:26ch}
 
 .p-list{width:100%; display:flex; flex-direction:column; gap:8px; margin-top:4px}
 .p-btn{
@@ -1054,7 +1049,6 @@ body[data-showing]{overflow:hidden}
 
 /* ── 12. REVIEW TOOL — delete this block, its CSS and its script loop ──── */
 .preview{
-  display:none !important;
   position:fixed; right:var(--s-4); bottom:96px; z-index:50;
   display:flex; align-items:center; gap:var(--s-1); padding:5px; border-radius:var(--r-pill);
   background:var(--ground); box-shadow:var(--shadow-lg), inset 0 0 0 1px var(--line);
@@ -1084,7 +1078,6 @@ body[data-showing]{overflow:hidden}
 .note,
 .chk,
 .photo__hint,
-.aside__label,
 .scanline,
 .sell__price,
 .todo__s,
@@ -1103,7 +1096,7 @@ body[data-showing]{overflow:hidden}
    as before; Web adds ⤢ in the browser bar to open it full size. */
 .aside__inner{position:relative}
 .pvc{display:contents}
-.aside__label{order:0} .devs{order:1} .phone{order:2} .aside__share{order:3} .thm{order:4}
+.devs{order:1} .phone{order:2} .aside__share{order:3} .thm{order:4}
 .pv-full{display:none}
 .ob__aside:not([data-open="true"]) .phone[data-device="desktop"] .pv-full{
   display:grid; place-items:center; position:absolute; z-index:4; top:4px; right:8px;
@@ -1113,7 +1106,6 @@ body[data-showing]{overflow:hidden}
 .pv-full svg{width:15px; height:15px}
 
 .ob__aside[data-open="true"] .aside__inner{padding:0; gap:0; height:100%; overflow:hidden; justify-content:center; align-items:center}
-.ob__aside[data-open="true"] .aside__label{display:none}
 .ob__aside[data-open="true"] .thm{width:auto; min-height:0}
 /* the line stays put while the tray is open, so the dock / bar never jumps */
 .ob__aside[data-open="true"] .thm[data-open="true"] .thm__tt{display:inline-flex}
@@ -1163,6 +1155,87 @@ body[data-showing]{overflow:hidden}
   .ob__aside[data-open="true"] .thm__tray{top:-2px; bottom:auto; right:0; left:auto}
   .ob__aside[data-open="true"] .phone[data-device="mobile"]{width:auto; height:min(800px, calc(100svh - 56px - 64px)); aspect-ratio:9/19.5}
 }
+
+/* back to the Quick chat they came from (2026-10-16) — the chat's own dark
+   bar and violet button, so it reads as the same thing */
+.back2chat{
+  display:flex; align-items:center; gap:12px; padding:14px 12px 14px 18px; border-radius:20px;
+  background:#101215; color:#fff; text-decoration:none; text-align:left; box-shadow:0 12px 30px -16px rgba(16,18,21,.6);
+}
+.back2chat[hidden]{display:none}
+.back2chat__txt{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px}
+.back2chat__txt b{font-size:.9375rem; font-weight:800}
+.back2chat__txt span{font-size:.8125rem; color:rgba(255,255,255,.7); letter-spacing:.14px}
+.back2chat__go{
+  position:relative; overflow:hidden; isolation:isolate; flex:none;
+  display:inline-flex; align-items:center; height:42px; padding:0 16px; border-radius:12px;
+  background:#6E27E6; box-shadow:inset 0 0 0 1.5px #8F5BFF; font-size:.875rem; font-weight:700; white-space:nowrap;
+}
+.back2chat__go::after{
+  content:""; position:absolute; top:0; bottom:0; left:-60%; width:45%; z-index:-1; pointer-events:none;
+  background:linear-gradient(105deg, transparent 0%, rgba(255,255,255,.08) 30%, rgba(255,255,255,.55) 50%, rgba(255,255,255,.08) 70%, transparent 100%);
+  transform:skewX(-18deg); animation:b2cShine 2.8s ease-in-out 1s infinite;
+}
+@keyframes b2cShine{0%{left:-60%} 45%,100%{left:130%}}
+.back2chat:hover .back2chat__go{background:#5B1FD0}
+@media (prefers-reduced-motion:reduce){ .back2chat__go::after{display:none} }
+
+/* Follow + Quick chat switches on step 2 (2026-10-16) — the dashboard's .sw, renamed .tg because
+   .sw here is already the theme swatch */
+#reachCard{gap:var(--s-3)}
+.opt{display:flex; align-items:center; gap:var(--s-4); padding:var(--s-2) 0}
+.opt + .opt{box-shadow:inset 0 1px 0 var(--line); padding-top:var(--s-4)}
+.opt__txt{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px}
+.opt__t{font-size:var(--fs-sm); font-weight:var(--fw-bold)}
+.opt__s{font-size:var(--fs-xs); color:var(--ink-soft); letter-spacing:.14px; line-height:1.4}
+.tg{position:relative; display:inline-flex; align-items:center; flex-shrink:0; cursor:pointer}
+.tg input{position:absolute; opacity:0; width:0; height:0}
+.tg__track{
+  position:relative; flex:none; width:44px; height:26px; border-radius:999px;
+  background:var(--ground-sunk); box-shadow:inset 0 0 0 1px var(--line);
+  transition:background var(--dur-fast) ease;
+}
+.tg__track::after{
+  content:""; position:absolute; top:3px; left:3px; width:20px; height:20px;
+  border-radius:50%; background:var(--ground); box-shadow:0 1px 3px rgba(16,18,21,.18);
+  transition:transform var(--dur-fast) ease;
+}
+.tg input:checked + .tg__track{background:var(--ok); box-shadow:none}
+.tg input:checked + .tg__track::after{transform:translateX(18px)}
+.tg input:focus-visible + .tg__track{box-shadow:var(--focus-ring)}
+
+/* theme arrows beside the preview — laptops only, column view only (2026-10-16) */
+.pvarr{
+  display:none; place-items:center; position:absolute; z-index:5; top:50%; transform:translateY(-50%);
+  width:34px; height:34px; padding:0; border:0; border-radius:50%; cursor:pointer;
+  background:var(--ground); color:var(--ink);
+  box-shadow:0 2px 8px rgba(16,18,21,.12), inset 0 0 0 1px var(--line);
+  transition:background var(--dur-fast) ease, transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+}
+.pvarr svg{width:16px; height:16px}
+.pvarr:hover{background:var(--ink); color:var(--ink-invert, #fff); box-shadow:0 4px 12px rgba(16,18,21,.2)}
+.pvarr:active{transform:translateY(-50%) scale(.92)}
+.pvarr--prev{left:-42px}
+.pvarr--next{right:-42px}
+/* the browser frame fills the column, so the arrows sit just inside its edges */
+.phone[data-device="desktop"] .pvarr--prev{left:10px}
+.phone[data-device="desktop"] .pvarr--next{right:10px}
+@media (min-width:960px) and (hover:hover){
+  .ob__aside:not([data-open="true"]) .pvarr{display:grid}
+}
+
+/* versions under the Theme line, shown once the arrows are used (2026-10-16) */
+.arsubs{display:flex; justify-content:center; align-items:center; gap:10px; min-height:30px; margin-top:6px}
+.arsubs[hidden]{display:none}
+.arsubs span{font-size:.75rem; font-weight:var(--fw-bold); color:var(--ink-soft); letter-spacing:.14px; margin-right:2px}
+.arsubs button{width:22px; height:22px; padding:0; border:0; border-radius:50%; cursor:pointer; background:var(--dot);
+  box-shadow:inset 0 0 0 1px rgba(16,18,21,.14); transition:transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease}
+.arsubs button:hover{transform:scale(1.08)}
+.arsubs button[aria-pressed="true"]{box-shadow:inset 0 0 0 1px rgba(16,18,21,.14), 0 0 0 2px var(--ground), 0 0 0 4px var(--ok)}
+.arsubs[data-empty]{visibility:hidden}   /* keeps its height on a one-look theme, so nothing jumps */
+.thm[data-open="true"] .arsubs{display:none}
+.ob__aside[data-arsubs]:not([data-open="true"]) .phone:not([data-device="desktop"]){height:clamp(340px,calc(100svh - 266px),568px)}
+.ob__aside[data-open="true"] .arsubs{display:none}
 </style>
 
 <svg class="defs" aria-hidden="true" focusable="false">
@@ -1247,6 +1320,29 @@ body[data-showing]{overflow:hidden}
             <div class="inp inp--area"><textarea id="bio" maxlength="100" rows="2" placeholder="One line about what you do."></textarea></div>
           </div>
         </div>
+
+        <!-- ══ FOLLOW + QUICK CHAT — the owner decides, here, before the page
+             goes out (Garry, 2026-10-16; on step 1 since the same day). Both on by default; afterwards they
+             live in the dashboard's Profile tab. The preview shows the
+             buttons come and go. -->
+        <div class="card" id="reachCard">
+          <h2 class="card__title">How people connect with you</h2>
+          <div class="opt">
+            <span class="opt__txt">
+              <span class="opt__t">Follow button</span>
+              <span class="opt__s">People who scan you can follow you on Codemarca.</span>
+            </span>
+            <label class="tg"><input type="checkbox" id="optFollow" checked aria-label="Follow button"><span class="tg__track"></span></label>
+          </div>
+          <div class="opt">
+            <span class="opt__txt">
+              <span class="opt__t">Quick chat</span>
+              <span class="opt__s">People who scan you can message you inside Codemarca — not on your phone or WhatsApp. You choose who to reply to.</span>
+            </span>
+            <label class="tg"><input type="checkbox" id="optChat" checked aria-label="Quick chat"><span class="tg__track"></span></label>
+          </div>
+          <p class="card__note">You can change both any time from your dashboard.</p>
+        </div>
       </section>
 
       <!-- ══ 2 — CONTACT & LINKS ═══════════════════════════════════════ -->
@@ -1270,11 +1366,17 @@ body[data-showing]{overflow:hidden}
 
           <div class="fld">
             <div class="fld__top"><label class="fld__lbl" for="wa">WhatsApp</label></div>
-            <label class="chk">
-              <input type="checkbox" id="waSame" checked>
-              <span class="chk__box"><svg viewBox="0 0 12 12" fill="none"><path d="M1.8 6.2 4.5 9l5.7-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-              Same as phone
-            </label>
+            <!-- WhatsApp keeps its own eye even when it is the phone number:
+                 plenty of people want WhatsApp on the page but not calls, or
+                 the other way round (Garry, 2026-10-16) -->
+            <div class="same">
+              <label class="chk">
+                <input type="checkbox" id="waSame" checked>
+                <span class="chk__box"><svg viewBox="0 0 12 12" fill="none"><path d="M1.8 6.2 4.5 9l5.7-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                Same as phone
+              </label>
+              <button class="eye" type="button" id="waSameEye" aria-pressed="true" aria-label="Hide WhatsApp on your page"></button>
+            </div>
             <div class="inp" id="waWrap" hidden>
               <span class="inp__pre">+91</span>
               <input id="wa" type="tel" inputmode="numeric" maxlength="10" placeholder="Business number">
@@ -1309,6 +1411,7 @@ body[data-showing]{overflow:hidden}
           <p class="card__note">Every button is the same size — the order is the only hierarchy. Drag, or use the arrows.</p>
           <ul class="order" id="order"></ul>
         </div>
+
       </section>
 
       <!-- ══ 3 — DONE ══════════════════════════════════════════════════ -->
@@ -1316,6 +1419,18 @@ body[data-showing]{overflow:hidden}
         <div class="head">
           <h1 id="h1c">Your page is live</h1>
         </div>
+
+        <!-- ══ BACK TO THE CHAT — only when they came from Quick chat
+             (?next=chat&to=<handle>&with=<first name>). Their page was the
+             price of carrying on, so carrying on is the first thing here
+             (Garry, 2026-10-16). -->
+        <a class="back2chat" id="back2chat" hidden href="profile.html">
+          <span class="back2chat__txt">
+            <b id="b2cT">Your chat is unlocked</b>
+            <span>Pick up where you left off.</span>
+          </span>
+          <span class="back2chat__go">Back to chat</span>
+        </a>
 
         <!-- ══ READY TO SHARE — the 4-active home's .me card, cut down ════
              Who you are, your link and your code. The link IS the share
@@ -1420,9 +1535,12 @@ body[data-showing]{overflow:hidden}
     <!-- ══ PREVIEW — sheet on a phone, sticky column on a desktop ══════ -->
     <aside class="ob__aside" id="aside" aria-label="Preview">
       <div class="aside__inner">
-        <p class="aside__label" id="asideLabel">What a person sees when they scan your code</p>
         <div class="phone" data-theme="light" data-device="mobile" id="phoneFrame">
           <span class="phone__island" aria-hidden="true"></span>
+          <!-- laptop only: flip through the themes one click at a time
+               (Garry, 2026-10-16). The Theme line under the phone is untouched. -->
+          <button class="pvarr pvarr--prev" type="button" data-arr="-1" aria-label="Previous theme"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m12 4.5-5.5 5.5 5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="pvarr pvarr--next" type="button" data-arr="1" aria-label="Next theme"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m8 4.5 5.5 5.5L8 15.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <div class="win" aria-hidden="true"><i></i><i></i><i></i><span class="win__u" id="winUrl">codemarca.com</span></div>
           <div class="phone__scr" id="scr"></div>
           <!-- the glass themes carry their own layout, so they preview as the
@@ -1446,6 +1564,10 @@ body[data-showing]{overflow:hidden}
                in a tray with a × — same as the dashboard's previews (Garry, 2026-10-09) -->
           <div class="thm" id="thm" data-open="false">
             <button class="thm__tt" type="button" id="thmOpen" aria-expanded="false"><span class="thm__th">Theme · <b></b></span><span class="thm__chg">Change</span></button>
+            <!-- after an arrow click: the theme's versions as dots, right under
+                 the line, so Leaf's four colours or a Dark mode are not missed
+                 (Garry, 2026-10-16) -->
+            <div class="arsubs" id="arsubs" role="group" aria-label="Theme version" hidden></div>
             <div class="thm-dim" id="thmDim" hidden></div>
             <div class="thm-tip" id="thmTip" role="dialog" aria-labelledby="thmTipT" hidden>
               <button class="thm-tip__x" type="button" id="thmTipX" aria-label="Dismiss tip"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
@@ -1523,7 +1645,7 @@ body[data-showing]{overflow:hidden}
 </div>
 
 <!-- Review tool only — delete this block, its CSS section and its script loop. -->
-<div class="preview" role="group" aria-label="Jump to step" hidden style="display:none !important">
+<div class="preview" role="group" aria-label="Jump to step">
   <button type="button" data-go="1" aria-pressed="true">About</button>
   <button type="button" data-go="2" aria-pressed="false">Links</button>
   <button type="button" data-go="3" aria-pressed="false">Done</button>
@@ -1546,8 +1668,12 @@ body[data-showing]{overflow:hidden}
 
   /* ══ 1. ICONS ════════════════════════════════════════════════════════
      Brand-coloured discs for the builder and for the socials row on the
-     page — socials keep their own colours in every theme. Swap these
-     simplified glyphs for the official brand marks before launch.
+     page — socials keep their own colours in every theme. The marks are
+     the official ones (Simple Icons, CC0), 2026-10-11 — the hand-drawn
+     stand-ins read off. Drawn exactly as profile.html's fillIc draws the
+     page: Facebook, Telegram, Spotify and Pinterest whole on white, YouTube
+     a white play and LinkedIn a white "in" (a box in a disc looks wrong),
+     the rest white and centred on their brand colour.
      Row icons inside the phone are monochrome on purpose: they take the
      theme's ink, so a theme change never leaves a stray colour behind. */
 
@@ -1558,25 +1684,25 @@ body[data-showing]{overflow:hidden}
     '<path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.96l3 2.33C4.67 5.16 6.66 3.58 9 3.58z"/>';
 
   var GLYPH = {
-    instagram : '<rect x="5" y="5" width="14" height="14" rx="4.2" fill="none" stroke="#fff" stroke-width="1.9"/><circle cx="12" cy="12" r="3.3" fill="none" stroke="#fff" stroke-width="1.9"/><circle cx="16.5" cy="7.6" r="1.15" fill="#fff"/>',
-    youtube   : '<path d="M9.9 8.4 16.2 12l-6.3 3.6z" fill="#fff"/>',
-    facebook  : '<path d="M13.4 20v-7.1h2.4l.36-2.78H13.4V8.34c0-.8.23-1.35 1.39-1.35h1.48V4.5a19.7 19.7 0 0 0-2.16-.11c-2.13 0-3.59 1.3-3.59 3.69v2.04H8.1v2.78h2.42V20z" fill="#fff"/>',
-    snapchat  : '<path d="M12 4.7c2.16 0 3.83 1.68 3.83 3.83 0 .6-.05 1.27-.1 1.77.2.1.5.15.79.05.3-.1.6-.05.74.2.15.3 0 .64-.34.79-.3.15-.99.34-1.19.74-.15.3.15.89.69 1.53.5.6 1.19 1.04 1.83 1.19.25.05.35.25.3.5-.1.44-.99.74-1.83.89-.15.25-.2.6-.3.89-.05.2-.2.3-.44.25-.35-.05-.79-.15-1.34-.05-.5.1-.99.54-1.68.89-.44.2-.94.3-1.39.3s-.94-.1-1.39-.3c-.69-.35-1.19-.79-1.68-.89-.54-.1-.99 0-1.34.05-.25.05-.4-.05-.44-.25-.1-.3-.15-.64-.3-.89-.84-.15-1.73-.45-1.83-.89-.05-.25.05-.45.3-.5.64-.15 1.34-.6 1.83-1.19.54-.64.84-1.24.69-1.53-.2-.4-.89-.6-1.19-.74-.35-.15-.5-.5-.34-.79.15-.25.44-.3.74-.2.3.1.6.05.79-.05-.05-.5-.1-1.17-.1-1.77C8.17 6.38 9.84 4.7 12 4.7z" fill="#101215"/>',
-    telegram  : '<path d="M19.2 6.2 5.5 11.5c-.7.28-.7.78.02.98l3.44 1.07 7.98-5.03c.38-.23.72-.11.44.14l-6.46 5.84-.25 3.5c.29 0 .42-.13.58-.29l1.4-1.35 2.9 2.14c.53.3.92.14 1.05-.5l1.9-8.94c.19-.86-.31-1.25-.9-1.02z" fill="#fff"/>',
-    linkedin  : '<rect x="6" y="9.9" width="2.6" height="8.1" rx=".5" fill="#fff"/><circle cx="7.3" cy="7" r="1.55" fill="#fff"/><path d="M10.7 18v-8.1h2.5v1.1c.42-.72 1.24-1.3 2.44-1.3 2 0 3.06 1.24 3.06 3.5V18h-2.6v-4.2c0-1.1-.42-1.76-1.4-1.76-1 0-1.5.68-1.5 1.76V18z" fill="#fff"/>',
-    x         : '<path d="M6 5.4h3.3l3 4.1 3.5-4.1h2.9l-5 5.8 5.4 7.4h-3.3l-3.3-4.5-3.8 4.5H5.8l5.3-6.2z" fill="#fff"/>',
-    threads   : '<path d="M15.9 11.4c-.13-2-1.36-3.16-3.42-3.16-1.4 0-2.5.5-3.16 1.5l1.2.83c.44-.64 1.08-.93 1.96-.93 1.13 0 1.78.58 1.94 1.72-.5-.1-1.05-.13-1.64-.08-1.98.15-3.22 1.24-3.08 2.82.13 1.4 1.35 2.28 2.93 2.18 1.44-.1 2.42-.85 2.92-2.13.5.5.7 1.14.55 1.83-.3 1.34-1.68 2.18-3.8 2.18-3.03 0-4.66-1.93-4.66-5.55 0-3.62 1.63-5.55 4.66-5.55 2.08 0 3.52.84 4.3 2.48l1.54-.74C16.98 6.5 15.06 5.2 12.2 5.2 7.94 5.2 5.7 7.78 5.7 12.54s2.24 7.34 6.5 7.34c2.97 0 4.95-1.39 5.45-3.47.4-1.73-.4-3.31-1.75-4.02zm-3.27 3.32c-.74.05-1.24-.3-1.29-.84-.05-.6.5-1.04 1.49-1.11.5-.04.99 0 1.44.1-.2 1.09-.85 1.78-1.64 1.85z" fill="#fff"/>',
-    spotify   : '<path d="M7.9 15.4c2.4-.7 4.9-.5 7 .6" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><path d="M7.3 12.5c3-1 6.3-.7 8.9.9" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><path d="M6.8 9.5c3.6-1.2 7.7-.8 10.7 1.1" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/>',
-    pinterest : '<path d="M12.3 5.4c-3.7 0-5.7 2.4-5.7 5 0 1.2.45 2.28 1.44 2.68.16.07.3 0 .35-.18l.14-.55c.05-.18.03-.25-.1-.4-.3-.36-.5-.83-.5-1.5 0-1.9 1.44-3.6 3.78-3.6 2.06 0 3.19 1.25 3.19 2.9 0 2.2-.97 4.05-2.42 4.05-.8 0-1.4-.66-1.2-1.47.23-.97.68-2 .68-2.7 0-.62-.34-1.14-1.03-1.14-.82 0-1.47.84-1.47 1.97 0 .72.24 1.2.24 1.2l-.97 4.1c-.29 1.2-.04 2.7-.02 2.85.01.09.13.11.18.04.08-.1 1.1-1.36 1.45-2.6.1-.36.57-2.2.57-2.2.28.53 1.1.99 1.97.99 2.6 0 4.36-2.37 4.36-5.54 0-2.4-2.03-4.64-5.12-4.64z" fill="#fff"/>',
-    soundcloud: '<rect x="5" y="12.2" width="1.4" height="4.6" rx=".7" fill="#fff"/><rect x="7.4" y="10.8" width="1.4" height="6" rx=".7" fill="#fff"/><rect x="9.8" y="9.7" width="1.4" height="7.1" rx=".7" fill="#fff"/><path d="M12.7 16.8V9.4c.5-.45 1.16-.72 1.9-.72 1.63 0 2.97 1.24 3.15 2.85.95.2 1.65.98 1.65 1.93 0 1.13-.98 2.04-2.15 2.04z" fill="#fff"/>',
+    instagram : '<path fill="#fff" transform="translate(6 6) scale(.5)" d="M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077"/>',
+    youtube   : '<path d="M9.7 7.6 16.6 12l-6.9 4.4z" fill="#fff"/>',
+    facebook  : '<circle cx="12" cy="12" r="12" fill="#fff"/><path fill="#0866FF" d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z"/>',
+    snapchat  : '<path fill="#fff" stroke="#000" stroke-width="1.3" stroke-linejoin="round" transform="translate(5.4 5.4) scale(.55)" d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12 1.033-.301.165-.088.344-.104.464-.104.182 0 .359.029.509.09.45.149.734.479.734.838.015.449-.39.839-1.213 1.168-.089.029-.209.075-.344.119-.45.135-1.139.36-1.333.81-.09.224-.061.524.12.868l.015.015c.06.136 1.526 3.475 4.791 4.014.255.044.435.27.42.509 0 .075-.015.149-.045.225-.24.569-1.273.988-3.146 1.271-.059.091-.12.375-.164.57-.029.179-.074.36-.134.553-.076.271-.27.405-.555.405h-.03c-.135 0-.313-.031-.538-.074-.36-.075-.765-.135-1.273-.135-.3 0-.599.015-.913.074-.6.104-1.123.464-1.723.884-.853.599-1.826 1.288-3.294 1.288-.06 0-.119-.015-.18-.015h-.149c-1.468 0-2.427-.675-3.279-1.288-.599-.42-1.107-.779-1.707-.884-.314-.045-.629-.074-.928-.074-.54 0-.958.089-1.272.149-.211.043-.391.074-.54.074-.374 0-.523-.224-.583-.42-.061-.192-.09-.389-.135-.567-.046-.181-.105-.494-.166-.57-1.918-.222-2.95-.642-3.189-1.226-.031-.063-.052-.15-.055-.225-.015-.243.165-.465.42-.509 3.264-.54 4.73-3.879 4.791-4.02l.016-.029c.18-.345.224-.645.119-.869-.195-.434-.884-.658-1.332-.809-.121-.029-.24-.074-.346-.119-1.107-.435-1.257-.93-1.197-1.273.09-.479.674-.793 1.168-.793.146 0 .27.029.383.074.42.194.789.3 1.104.3.234 0 .384-.06.465-.105l-.046-.569c-.098-1.626-.225-3.651.307-4.837C7.392 1.077 10.739.807 11.727.807l.419-.015h.06z"/>',
+    telegram  : '<circle cx="12" cy="12" r="12" fill="#fff"/><path fill="#26A5E4" d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>',
+    linkedin  : '<rect x="6.3" y="9.9" width="2.6" height="7.9" rx=".4" fill="#fff"/><circle cx="7.6" cy="7.1" r="1.55" fill="#fff"/><path d="M10.9 17.8V9.9h2.5V11c.42-.72 1.24-1.3 2.44-1.3 2 0 3.06 1.24 3.06 3.5v4.6h-2.6v-4.2c0-1.1-.42-1.76-1.4-1.76-1 0-1.5.68-1.5 1.76v4.2z" fill="#fff"/>',
+    x         : '<path fill="#fff" transform="translate(6 6) scale(.5)" d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/>',
+    threads   : '<path fill="#fff" transform="translate(6 6) scale(.5)" d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 0 1 3.02.142c-.126-.742-.375-1.332-.75-1.757-.513-.586-1.308-.883-2.359-.89h-.029c-.844 0-1.992.232-2.721 1.32L7.734 7.847c.98-1.454 2.568-2.256 4.478-2.256h.044c3.194.02 5.097 1.975 5.287 5.388.108.046.216.094.321.142 1.49.7 2.58 1.761 3.154 3.07.797 1.82.871 4.79-1.548 7.158-1.85 1.81-4.094 2.628-7.277 2.65Zm1.003-11.69c-.242 0-.487.007-.739.021-1.836.103-2.98.946-2.916 2.143.067 1.256 1.452 1.839 2.784 1.767 1.224-.065 2.818-.543 3.086-3.71a10.5 10.5 0 0 0-2.215-.221z"/>',
+    spotify   : '<circle cx="12" cy="12" r="12" fill="#fff"/><path fill="#1ED760" d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>',
+    pinterest : '<circle cx="12" cy="12" r="12" fill="#fff"/><path fill="#E60023" d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.39 18.592.026 11.985.026L12.017 0z"/>',
+    soundcloud: '<path fill="#fff" transform="translate(6 6) scale(.5)" d="M23.999 14.165c-.052 1.796-1.612 3.169-3.4 3.169h-8.18a.68.68 0 0 1-.675-.683V7.862a.747.747 0 0 1 .452-.724s.75-.513 2.333-.513a5.364 5.364 0 0 1 2.763.755 5.433 5.433 0 0 1 2.57 3.54c.282-.08.574-.121.868-.12.884 0 1.73.358 2.347.992s.948 1.49.922 2.373ZM10.721 8.421c.247 2.98.427 5.697 0 8.672a.264.264 0 0 1-.53 0c-.395-2.946-.22-5.718 0-8.672a.264.264 0 0 1 .53 0ZM9.072 9.448c.285 2.659.37 4.986-.006 7.655a.277.277 0 0 1-.55 0c-.331-2.63-.256-5.02 0-7.655a.277.277 0 0 1 .556 0Zm-1.663-.257c.27 2.726.39 5.171 0 7.904a.266.266 0 0 1-.532 0c-.38-2.69-.257-5.21 0-7.904a.266.266 0 0 1 .532 0Zm-1.647.77a26.108 26.108 0 0 1-.008 7.147.272.272 0 0 1-.542 0 27.955 27.955 0 0 1 0-7.147.275.275 0 0 1 .55 0Zm-1.67 1.769c.421 1.865.228 3.5-.029 5.388a.257.257 0 0 1-.514 0c-.21-1.858-.398-3.549 0-5.389a.272.272 0 0 1 .543 0Zm-1.655-.273c.388 1.897.26 3.508-.01 5.412-.026.28-.514.283-.54 0-.244-1.878-.347-3.54-.01-5.412a.283.283 0 0 1 .56 0Zm-1.668.911c.4 1.268.257 2.292-.026 3.572a.257.257 0 0 1-.514 0c-.241-1.262-.354-2.312-.023-3.572a.283.283 0 0 1 .563 0Z"/>',
     website   : '<circle cx="12" cy="12" r="6.2" fill="none" stroke="#fff" stroke-width="1.7"/><ellipse cx="12" cy="12" rx="2.6" ry="6.2" fill="none" stroke="#fff" stroke-width="1.7"/><path d="M6.1 10h11.8M6.1 14h11.8" stroke="#fff" stroke-width="1.7"/>',
     directions: '<path d="M12 4.9c-2.65 0-4.8 2.15-4.8 4.8 0 3.55 4.8 9.3 4.8 9.3s4.8-5.75 4.8-9.3c0-2.65-2.15-4.8-4.8-4.8z" fill="#fff"/><circle cx="12" cy="9.6" r="1.85" fill="#EA4335"/>'
   };
 
   var DISC = {
-    instagram:"url(#igGrad)", youtube:"#FF0000", facebook:"#1877F2", snapchat:"#FFFC00",
-    telegram:"#229ED9", linkedin:"#0A66C2", x:"#101215", threads:"#101215",
-    spotify:"#1DB954", pinterest:"#E60023", soundcloud:"#FF5500",
+    instagram:"url(#igGrad)", youtube:"#FF0000", facebook:"#0866FF", snapchat:"#FFFC00",
+    telegram:"#26A5E4", linkedin:"#0A66C2", x:"#111214", threads:"#111214",
+    spotify:"#1ED760", pinterest:"#E60023", soundcloud:"#FF5500",
     website:"#6E27E6", directions:"#EA4335"
   };
 
@@ -1664,7 +1790,8 @@ body[data-showing]{overflow:hidden}
     theme:"light",
     order:["call","wa","email","vcard","socials","website","directions","review"],
     socialOrder:null,          /* filled from SOCIAL_KEYS once LINKS exists */
-    handleOk:true
+    handleOk:true,
+    follow:true, chat:true      /* Follow button, Quick chat (2026-10-16) */
   };
 
   S.socialOrder = SOCIAL_KEYS.slice();
@@ -1677,39 +1804,32 @@ body[data-showing]{overflow:hidden}
      Three routes land here — claim signup, post-order dashboard, first
      scan of a fresh code. All three arrive with a handle. */
   var q = new URLSearchParams(location.search);
-  var customAccount = null;
-  try {
-    var raw = localStorage.getItem("cm.account.custom");
-    if (raw) customAccount = JSON.parse(raw);
-  } catch(e) {}
-
   var qH = q.get("handle");
   var storedH = "";
-  try { storedH = localStorage.getItem("cm.username") || (customAccount && customAccount.profile && customAccount.profile.handle) || ""; } catch(e) {}
+  try { storedH = localStorage.getItem("cm.username") || ""; } catch(e) {}
   if (qH) S.handle = cleanHandle(qH);
   else if (storedH) S.handle = cleanHandle(storedH);
 
   var qN = q.get("name");
   var storedN = "";
   try {
-    storedN = localStorage.getItem("cm.name") || (customAccount && customAccount.user && customAccount.user.name) || (customAccount && customAccount.profile && customAccount.profile.title) || "";
-    if (storedN === "Garry Singh" || storedN === "Garry" || storedN === "Gurdeep Singh" || storedN === "Your Name" || storedN === "User") {
+    storedN = localStorage.getItem("cm.name") || "";
+    if (storedN === "Garry Singh" || storedN === "Garry" || storedN === "Your Name" || storedN === "User") {
       storedN = "";
-      localStorage.removeItem("cm.name");
     }
   } catch(e) {}
-  if (qN && qN !== "Garry Singh" && qN !== "Garry" && qN !== "Gurdeep Singh" && qN !== "Your Name") S.name = qN.slice(0, 40);
+  if (qN && qN !== "Garry Singh" && qN !== "Garry" && qN !== "Your Name") S.name = qN.slice(0, 40);
   else if (storedN) S.name = storedN.slice(0, 40);
 
   var qP = q.get("phone");
   var storedP = "";
-  try { storedP = localStorage.getItem("cm.phone") || (customAccount && customAccount.profile && customAccount.profile.phone) || ""; } catch(e) {}
+  try { storedP = localStorage.getItem("cm.phone") || ""; } catch(e) {}
   if (qP) S.phone = qP.replace(/\D/g, "").slice(0, 10);
   else if (storedP) S.phone = storedP.replace(/\D/g, "").slice(0, 10);
 
   var qE = q.get("email");
   var storedE = "";
-  try { storedE = localStorage.getItem("cm.email") || (customAccount && customAccount.user && customAccount.user.email) || ""; } catch(e) {}
+  try { storedE = localStorage.getItem("cm.email") || ""; } catch(e) {}
   if (qE) S.email = qE.trim();
   else if (storedE) S.email = storedE.trim();
 
@@ -1724,9 +1844,6 @@ body[data-showing]{overflow:hidden}
     if (!storedPhoto) {
       var gMeta = JSON.parse(localStorage.getItem("cm.google_meta") || "{}");
       storedPhoto = gMeta.avatar_url || gMeta.picture || "";
-    }
-    if (!storedPhoto && customAccount && customAccount.profile && customAccount.profile.avatar_url) {
-      storedPhoto = customAccount.profile.avatar_url;
     }
   } catch(e) {}
   if (qPhoto) S.photo = qPhoto;
@@ -1763,6 +1880,15 @@ body[data-showing]{overflow:hidden}
     document.getElementById("sellEye").textContent = landed ? "Your stickers work now" : "Your pack is on the way";
     document.getElementById("sellH").textContent = landed ? "Scan one. It opens this page." : "Here is where people put theirs.";
     document.getElementById("sellPrice").hidden = true;
+  }
+
+  /* came from Quick chat — the done screen leads with the way back */
+  if (q.get("next") === "chat" && q.get("to")) {
+    var b2c = document.getElementById("back2chat");
+    var who = (q.get("with") || "").slice(0, 24);
+    b2c.href = "profile.html?handle=" + encodeURIComponent(q.get("to")) + "&chat=open";
+    if (who) { document.getElementById("b2cT").textContent = "Your chat with " + who + " is unlocked"; }
+    b2c.hidden = false;
   }
 
   function cleanHandle(v) { return String(v).toLowerCase().replace(/[^a-z0-9._-]/g, "").slice(0, 24); }
@@ -1855,10 +1981,12 @@ body[data-showing]{overflow:hidden}
 
   function missing() {
     var out = [];
-    if (!hasContact()) {
+    /* a page with only socials is a choice, not a gap — no nagging for a
+       number (Garry, 2026-10-16). Only a page with nothing at all asks. */
+    if (!hasContact() && !linkCount()) {
       out.push({ k:"contact", must:true, step:2, focus:"phone", ic:"phone",
                  l:"Add a way to reach you",
-                 s:"A phone, WhatsApp or email. Without one, a scan opens just your name." });
+                 s:"A phone, email or any social link. Without one, a scan opens just your name." });
     }
     if (!linkCount()) {
       out.push({ k:"links", step:2, focus:null, ic:"link",
@@ -1943,31 +2071,11 @@ body[data-showing]{overflow:hidden}
       try {
         localStorage.setItem("cm.username", S.handle);
         localStorage.setItem("cm.name", S.name.trim());
-        if (S.phone) localStorage.setItem("cm.phone", S.phone);
-        if (S.email) localStorage.setItem("cm.email", S.email);
-        if (S.tag) localStorage.setItem("cm.tag", S.tag);
-        if (S.bio) localStorage.setItem("cm.bio", S.bio);
-        if (S.theme) localStorage.setItem("cm.theme", S.theme);
-        if (S.themeColor) localStorage.setItem("cm.themeColor", S.themeColor);
         if (S.photo) localStorage.setItem("cm.photo", S.photo);
-        localStorage.setItem("cm.stage", "page-live");
+      } catch(e) {}
 
-        var custom = {};
-        try { custom = JSON.parse(localStorage.getItem("cm.account.custom") || "{}"); } catch(e){}
-        custom.user = custom.user || {};
-        custom.profile = custom.profile || {};
-        custom.profile.brand = custom.profile.brand || {};
-        custom.user.name = S.name.trim();
-        custom.profile.title = S.name.trim();
-        custom.profile.handle = S.handle;
-        if (S.bio) custom.profile.bio = S.bio;
-        if (S.phone) custom.profile.phone = S.phone;
-        if (S.email) custom.user.email = S.email;
-        if (S.photo) custom.profile.photo = S.photo;
-        if (S.theme) custom.profile.brand.theme = S.theme;
-        localStorage.setItem("cm.account.custom", JSON.stringify(custom));
-
-        // ══ SYNC ONBOARDING DETAILS TO SUPABASE DB ══
+      // ══ SYNC ONBOARDING DETAILS TO SUPABASE DB ══
+      try {
         var SUPABASE_URL = "https://inzigrmttewawjjkggbd.supabase.co";
         var SUPABASE_KEY = "sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg";
         var dbPatch = {
@@ -1982,11 +2090,23 @@ body[data-showing]{overflow:hidden}
         };
         if (S.email) dbPatch.email = S.email;
         if (S.photo) dbPatch.avatar_url = S.photo;
+
+        var token = SUPABASE_KEY;
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            var k = localStorage.key(i);
+            if (k && k.indexOf("sb-") === 0 && k.indexOf("-auth-token") > -1) {
+              var parsed = JSON.parse(localStorage.getItem(k) || "{}");
+              if (parsed.access_token) { token = parsed.access_token; break; }
+            }
+          }
+        } catch(e) {}
+
         fetch(SUPABASE_URL + "/rest/v1/profiles?username=eq." + encodeURIComponent(S.handle), {
           method: "PATCH",
           headers: {
             "apikey": SUPABASE_KEY,
-            "Authorization": "Bearer " + SUPABASE_KEY,
+            "Authorization": "Bearer " + token,
             "Content-Type": "application/json"
           },
           body: JSON.stringify(dbPatch)
@@ -2039,10 +2159,15 @@ body[data-showing]{overflow:hidden}
   $("back").addEventListener("click", function () { if (S.step > 1) setStep(S.step - 1); });
 
   /* ══ 6. THE GATE ═════════════════════════════════════════════════════
-     Step 1 needs a name and a free link. Step 2 needs at least one contact
-     — a sticker leading to an empty page is a dead product, and this is
-     the one place friction is correct. */
+     Step 1 needs a name and a free link. Step 2 needs ONE way to reach the
+     person — a phone, WhatsApp, email OR any social / custom link. A sticker
+     leading to an empty page is a dead product, but a page with only an
+     Instagram is not empty: plenty of people won't share a number
+     (Garry, 2026-10-16). */
   function hasContact() { return !!(S.phone || (!S.waSame && S.wa) || S.email); }
+  /* a contact that is actually on the page — filled AND its eye on. Save
+     contact needs one of these: a hidden number gives the phonebook nothing */
+  function shownContact() { return !!((S.phone && S.phoneOn) || (waNumber() && S.waOn) || (S.email && S.emailOn)); }
 
   function refreshGate() {
     var ok = true, why = "";
@@ -2051,8 +2176,8 @@ body[data-showing]{overflow:hidden}
       if (!S.name.trim()) why = "Add your name to continue.";
       else if (!ok) why = "Pick a link that is free to continue.";
     } else if (S.step === 2) {
-      ok = hasContact();
-      if (!ok) why = "Add a phone, WhatsApp or email — a code that leads nowhere is no use.";
+      ok = hasContact() || linkCount() > 0;
+      if (!ok) why = "Add one way to reach you — a phone, email or any social link.";
     }
     $("next").disabled = !ok;
     gate.textContent = ok ? "" : why;
@@ -2091,6 +2216,19 @@ body[data-showing]{overflow:hidden}
 
   $("name").value = S.name;
   $("name").addEventListener("input", function () { S.name = this.value; paintPhoto(); refresh(); });
+
+  /* Step 1 is taller than a laptop window with a bookmarks bar, or one that
+     isn't full screen, and Continue ends up below the fold. Once the name
+     is in and the person clicks away from the fields (not on to another
+     one), slide the column down until Continue is in view (Garry, 2026-10-11). */
+  document.querySelector('[data-pane="1"]').addEventListener("focusout", function (e) {
+    if (S.step !== 1 || !S.name.trim()) { return; }
+    var to = e.relatedTarget;
+    if (to && to.closest && to.closest("input, textarea, select, button, [contenteditable]")) { return; }
+    var go = $("next").getBoundingClientRect();
+    var over = go.bottom + 24 - window.innerHeight;
+    if (over > 0) { window.scrollBy({ top: over, behavior: REDUCE ? "auto" : "smooth" }); }
+  });
 
   $("bio").addEventListener("input", function () {
     S.bio = this.value.slice(0, 100);
@@ -2136,13 +2274,16 @@ body[data-showing]{overflow:hidden}
   function eye(btn, key, label) {
     btn.addEventListener("click", function () {
       S[key] = !S[key];
-      btn.setAttribute("aria-pressed", String(S[key]));
-      btn.setAttribute("aria-label", (S[key] ? "Hide " : "Show ") + label + " on your page");
+      (key === "waOn" ? [$("waEye"), $("waSameEye")] : [btn]).forEach(function (b) {
+        b.setAttribute("aria-pressed", String(S[key]));
+        b.setAttribute("aria-label", (S[key] ? "Hide " : "Show ") + label + " on your page");
+      });
       refresh();
     });
   }
   eye($("phoneEye"), "phoneOn", "phone");
   eye($("waEye"),    "waOn",    "WhatsApp");
+  eye($("waSameEye"), "waOn",   "WhatsApp");
   eye($("emailEye"), "emailOn", "email");
 
   function digits(v) { return v.replace(/[^0-9]/g, "").slice(0, 10); }
@@ -2155,6 +2296,7 @@ body[data-showing]{overflow:hidden}
   $("waSame").addEventListener("change", function () {
     S.waSame = this.checked;
     $("waWrap").hidden = this.checked;
+    $("waSameEye").hidden = !this.checked;
     refresh();
   });
 
@@ -2331,7 +2473,7 @@ body[data-showing]{overflow:hidden}
     if (k === "call")       return !!(S.phone && S.phoneOn);
     if (k === "wa")         return !!(waNumber() && S.waOn);
     if (k === "email")      return !!(S.email && S.emailOn);
-    if (k === "vcard")      return !!(S.name.trim() && hasContact());
+    if (k === "vcard")      return !!(S.name.trim() && shownContact());   /* only a contact people can see (eye on) — 2026-10-16 */
     if (k === "socials")    return socials().length > 0;
     if (BY[k])              return !!(S.links[k] && S.links[k].v && S.links[k].on);
     var c = findCustom(k);
@@ -2459,8 +2601,7 @@ body[data-showing]{overflow:hidden}
      separate screen is the paralysis we are avoiding. */
   $("themes").innerHTML = THEMES.map(function (t) {
     return '<button class="sw" type="button" data-t="' + t.t + '" aria-pressed="' + (t.t === S.theme) + '" aria-label="' + t.n + ' theme">' +
-      '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="#fff"/>' +
-      '<path d="m5.8 10.2 2.7 2.7 5.7-5.7" fill="none" stroke="#101215" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
+      '<i aria-hidden="true"><svg viewBox="0 0 20 20"><path d="m5.2 10.4 3.1 3.1 6.5-6.7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i></button>';
   }).join("");
   /* Some themes come in versions — Leaf in four colours, Soft and Photo in
      light and dark (Garry, 2026-10-05/06). One swatch each in the strip;
@@ -2493,6 +2634,23 @@ body[data-showing]{overflow:hidden}
     }).join("");
     paintLive();
     paintThemeName();
+    paintArSubs();
+  }
+  /* the versions row under the Theme line — on once an arrow is used */
+  var arSubsOn = false;
+  var SUB_LABEL = { leaf: "Colour", light: "Mode", soft: "Mode", photo: "Mode" };
+  function paintArSubs() {
+    var row = $("arsubs"); if (!row) { return; }
+    row.hidden = !arSubsOn;
+    /* the row takes ~36px under the line, so the phone gives them back */
+    $("aside").toggleAttribute("data-arsubs", arSubsOn);
+    if (!arSubsOn) { return; }
+    var base = themeBase(S.theme), list = SUBS[base];
+    row.toggleAttribute("data-empty", !list);
+    row.innerHTML = list ? "<span>" + SUB_LABEL[base] + "</span>" + list.map(function (x) {
+      return '<button type="button" data-t="' + x.t + '" aria-label="' + x.n + '" title="' + x.n +
+             '" aria-pressed="' + (x.t === S.theme) + '" style="--dot:' + x.c + '"></button>';
+    }).join("") : "<span>&nbsp;</span>";
   }
   $("themes").addEventListener("click", function (e) {
     var b = e.target.closest(".sw"); if (!b) return;
@@ -2500,8 +2658,22 @@ body[data-showing]{overflow:hidden}
     /* a swatch keeps whichever version was picked last */
     setTheme(SUBS[base] ? (themeBase(S.theme) === base ? S.theme : (lastSub[base] || base)) : base);
   });
+  $("arsubs").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (b && b.dataset.t) { setTheme(b.dataset.t); }
+  });
   $("subs").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (b && b.dataset.t) { setTheme(b.dataset.t); }
+  });
+  /* the arrows beside the preview: one click, the next theme in the strip's
+     order, keeping whichever version of it was last picked */
+  Array.prototype.forEach.call(document.querySelectorAll("[data-arr]"), function (b) {
+    b.addEventListener("click", function () {
+      var n = THEMES.length, base = themeBase(S.theme), i = 0;
+      THEMES.forEach(function (x, k) { if (x.t === base) { i = k; } });
+      var next = THEMES[(i + +b.dataset.arr + n) % n].t;
+      arSubsOn = true;
+      setTheme(SUBS[next] ? (lastSub[next] || next) : next);
+    });
   });
 
   /* ── the tray, and the question when it closes ─────────────────────
@@ -2522,17 +2694,13 @@ body[data-showing]{overflow:hidden}
     $("thm").dataset.open = String(open);
     $("thmOpen").setAttribute("aria-expanded", String(open));
   }
+  /* No confirmation any more (Garry, 2026-10-16): whatever was picked last
+     is the theme. Closing the tray — ×, a click anywhere outside it, or
+     closing the preview — just folds it away. */
   function settleTheme(done) {
-    if (trayFrom === null || S.theme === trayFrom) { trayFrom = null; thmTray(false); done(); return; }
-    if (dlgDone) { return; }
-    $("dlgT").textContent = "Switch your page to " + themeName(S.theme) + "?";
-    $("dlgB").textContent = "It\u2019s on " + themeName(trayFrom) + " right now. You can change it again any time from your dashboard.";
-    $("dlgNo").textContent = "Keep " + themeName(trayFrom);
-    dlgDone = done;
-    $("dlg").hidden = false;
-    void $("dlg").offsetWidth;
-    $("dlg").setAttribute("data-on", "");
-    $("dlg").querySelector("[data-dlg]").focus();
+    trayFrom = null;
+    thmTray(false);
+    done();
   }
   function dlgAnswer(id) {
     var done = dlgDone; dlgDone = null;
@@ -2583,6 +2751,12 @@ body[data-showing]{overflow:hidden}
   });
   paintThemeName();
   $("thmClose").addEventListener("click", function () { settleTheme(function () {}); });
+  /* a click anywhere outside the tray closes it, keeping the last pick */
+  document.addEventListener("click", function (e) {
+    if ($("thm").dataset.open !== "true") { return; }
+    if (e.target.closest("#thm") || e.target.closest("[data-arr]")) { return; }
+    settleTheme(function () {});
+  });
 
   /* ══ 13b. THE GLASS THEMES — the real page, scaled ═══════════════════
      Copper, Bronze and Blush glass are their own layouts (profile.html 2b,
@@ -2608,7 +2782,10 @@ body[data-showing]{overflow:hidden}
                         .map(function (c) { return { id: c.id, title: c.title, url: c.url }; }),
       theme: S.theme,
       order: S.order.filter(rowLive),
-      socialOrder: (S.socialOrder || []).slice()
+      socialOrder: (S.socialOrder || []).slice(),
+      /* a brand-new page: zero and zero, and the owner's two switches */
+      social: { followers: 0, following: 0, showCounts: true, showList: true,
+                follow: S.follow, chat: S.chat, people: { followers: [], following: [] } }
     };
   }
   function fitLive() {
@@ -2720,9 +2897,6 @@ body[data-showing]{overflow:hidden}
        Mobile / Web, no Share; the done screen has Share already (Garry, 2026-10-10) */
     $("asideShare").hidden = true;
     $("aside").dataset.as = as;
-    /* the visitor preview needs saying what it is; your own page does not */
-    $("asideLabel").hidden = as === "owner";
-    $("asideLabel").textContent = "What a person sees when they scan your code";
     paintPreview();
     $("aside").dataset.open = "true";
     setDevice(isSmall() ? "mobile" : "desktop");
@@ -2794,166 +2968,65 @@ body[data-showing]{overflow:hidden}
     window.scrollTo({ top: top, behavior: REDUCE ? "auto" : "smooth" });
   }
 
-  /* ══ 14. DONE — Codemarca signature styled scannable QR code ═════════
-     - Error Correction Level H (resilient to logo overlay)
-     - 3 Finder pattern eyes with signature purple center dots (#6E27E6)
-     - Smooth rounded data modules in #101215
-     - Center logo: original Codemarca mark on clean rounded white badge
-     - 100% scannable by phone cameras and scanner tools */
+  /* ══ 14. DONE — placeholder code ═════════════════════════════════════
+     Drawn, not encoded: it reads as a QR at review size and is marked as
+     a sample. The real code comes from the backend with the pack. */
   var QRM = null;            /* the live matrix, shared with the JPG export */
-  var QR_CACHE = null;
 
   function drawQR(seedStr) {
-    var handle = (seedStr || S.handle || "code").trim();
-    var target = "https://codemarca.com/" + handle;
-
-    var N = 29;
-    var qr = null;
-
-    if (typeof qrcode === "function") {
-      try {
-        qr = qrcode(0, "H");
-        qr.addData(target);
-        qr.make();
-        N = qr.getModuleCount();
-      } catch (e) {
-        console.warn("QR encoding error:", e);
-      }
-    }
-
-    function isFinder(r, c) {
-      if (r < 7 && c < 7) return true;
-      if (r < 7 && c >= N - 7) return true;
-      if (r >= N - 7 && c < 7) return true;
-      return false;
-    }
-
-    var logoM = Math.max(5, Math.floor(N * 0.22));
-    if (logoM % 2 === 0) logoM += 1;
-    var logoStart = Math.floor((N - logoM) / 2);
-    var logoEnd = logoStart + logoM;
-
-    function isLogo(r, c) {
-      return r >= logoStart && r < logoEnd && c >= logoStart && c < logoEnd;
-    }
+    var N = 29, i, x, y, seed = 2166136261;
+    for (i = 0; i < seedStr.length; i++) { seed ^= seedStr.charCodeAt(i); seed = (seed * 16777619) >>> 0; }
+    function rnd() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
 
     var on = [];
-    for (var y = 0; y < N; y++) {
-      on[y] = [];
-      for (var x = 0; x < N; x++) {
-        if (qr) {
-          on[y][x] = qr.isDark(y, x);
-        } else {
-          on[y][x] = false;
-        }
+    for (y = 0; y < N; y++) { on[y] = []; for (x = 0; x < N; x++) on[y][x] = false; }
+
+    function block(ox, oy) {
+      for (y = 0; y < 7; y++) for (x = 0; x < 7; x++) {
+        var edge = (x === 0 || x === 6 || y === 0 || y === 6);
+        var core = (x >= 2 && x <= 4 && y >= 2 && y <= 4);
+        on[oy + y][ox + x] = edge || core;
       }
     }
-
-    // 1. Data modules (rounded dots)
-    var mods = "";
-    for (var r = 0; r < N; r++) {
-      for (var c = 0; c < N; c++) {
-        if (isFinder(r, c) || isLogo(r, c)) continue;
-        if (on[r][c]) {
-          mods += '<rect x="' + (c + 0.06).toFixed(2) + '" y="' + (r + 0.06).toFixed(2) + '" width="0.88" height="0.88" rx="0.30" fill="#101215"/>';
-        }
-      }
+    function reserved(px, py) {
+      return (px < 8 && py < 8) || (px > N - 9 && py < 8) || (px < 8 && py > N - 9) ||
+             (px >= N - 9 && px <= N - 5 && py >= N - 9 && py <= N - 5);
     }
 
-    // 2. Three signature finder pattern eyes (black rounded frame, white ring, vibrant purple center)
-    function finderSvg(fx, fy) {
-      return '<rect x="' + fx + '" y="' + fy + '" width="7" height="7" rx="1.6" fill="#101215"/>' +
-             '<rect x="' + (fx + 1.4).toFixed(2) + '" y="' + (fy + 1.4).toFixed(2) + '" width="4.2" height="4.2" rx="1" fill="#fff"/>' +
-             '<rect x="' + (fx + 2.4).toFixed(2) + '" y="' + (fy + 2.4).toFixed(2) + '" width="2.2" height="2.2" rx=".6" fill="#6E27E6"/>';
+    for (y = 0; y < N; y++) for (x = 0; x < N; x++) if (!reserved(x, y)) on[y][x] = rnd() > .52;
+    for (x = 8; x < N - 8; x++) { on[6][x] = x % 2 === 0; on[x] && (on[x][6] = x % 2 === 0); }
+    block(0, 0); block(N - 7, 0); block(0, N - 7);
+    for (y = 0; y < 5; y++) for (x = 0; x < 5; x++) {
+      var e = (x === 0 || x === 4 || y === 0 || y === 4);
+      on[N - 9 + y][N - 9 + x] = e || (x === 2 && y === 2);
     }
-    var finders = finderSvg(0, 0) + finderSvg(N - 7, 0) + finderSvg(0, N - 7);
 
-    // 3. Center Codemarca original logo mark on white badge
-    var badgePad = 0.2;
-    var bX = (logoStart - badgePad).toFixed(2);
-    var bY = (logoStart - badgePad).toFixed(2);
-    var bS = (logoM + badgePad * 2).toFixed(2);
-    var mPad = 0.7;
-    var mX = (logoStart - badgePad + mPad).toFixed(2);
-    var mY = (logoStart - badgePad + mPad).toFixed(2);
-    var mS = (logoM + badgePad * 2 - mPad * 2).toFixed(2);
-
-    var logoBadge = '<rect x="' + bX + '" y="' + bY + '" width="' + bS + '" height="' + bS + '" rx="1.3" fill="#fff"/>' +
-      '<svg x="' + mX + '" y="' + mY + '" width="' + mS + '" height="' + mS + '" viewBox="0 0 40 40" fill="#6E27E6">' +
-      '<path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/>' +
-      '<path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/>' +
-      '<path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/>' +
-      '</svg>';
-
-    var qrSvg = $("qr");
-    qrSvg.setAttribute("viewBox", "0 0 " + N + " " + N);
-    qrSvg.setAttribute("aria-label", "Codemarca QR code for codemarca.com/" + handle);
-    qrSvg.innerHTML = '<rect width="' + N + '" height="' + N + '" fill="#fff"/>' + finders + mods + logoBadge;
+    var out = "";
+    for (y = 0; y < N; y++) for (x = 0; x < N; x++) if (on[y][x]) out += '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>';
+    $("qr").innerHTML = '<rect width="29" height="29" fill="#fff"/><g fill="#101215">' + out + "</g>";
     QRM = on;
-    QR_CACHE = { N: N, isFinder: isFinder, isLogo: isLogo, logoStart: logoStart, logoEnd: logoEnd };
   }
 
   /* ══ 14b. SHARE THE LINK, SAVE THE IMAGE ═════════════════════════════
-     Renders the exact signature styled QR (purple eyes + center logo)
-     at high resolution for saving and crisp scanning. */
+     The JPG is painted from the same matrix the SVG uses rather than traced
+     off the SVG itself: serialising an <svg> through an Image is the one
+     path here that can taint the canvas, and toDataURL on a tainted canvas
+     throws. Painting rectangles cannot fail. JPEG carries no alpha, so the
+     quiet zone is filled white — which a scanner wants in any case. */
   function qrJPEG() {
-    var N = (QRM && QRM.length) ? QRM.length : 29;
-    var QUIET = 4, MOD = 28, side = (N + QUIET * 2) * MOD;
+    var N = 29, QUIET = 4, MOD = 28, side = (N + QUIET * 2) * MOD, x, y;
     var c = document.createElement("canvas");
     c.width = c.height = side;
     var g = c.getContext("2d");
     g.fillStyle = "#fff";
     g.fillRect(0, 0, side, side);
-
-    function roundRect(ctx, x, y, w, h, r, fill) {
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.arcTo(x + w, y, x + w, y + h, r);
-      ctx.arcTo(x + w, y + h, x, y + h, r);
-      ctx.arcTo(x, y + h, x, y, r);
-      ctx.arcTo(x, y, x + w, y, r);
-      ctx.closePath();
-      ctx.fillStyle = fill;
-      ctx.fill();
-    }
-
-    if (QRM && QR_CACHE) {
-      // 1. Data modules
-      for (var y = 0; y < N; y++) {
-        for (var x = 0; x < N; x++) {
-          if (QR_CACHE.isFinder(y, x) || QR_CACHE.isLogo(y, x)) continue;
-          if (QRM[y][x]) {
-            roundRect(g, (x + QUIET + 0.06) * MOD, (y + QUIET + 0.06) * MOD, 0.88 * MOD, 0.88 * MOD, 0.30 * MOD, "#101215");
-          }
-        }
+    if (QRM) {
+      g.fillStyle = "#101215";
+      for (y = 0; y < N; y++) for (x = 0; x < N; x++) {
+        if (QRM[y][x]) g.fillRect((x + QUIET) * MOD, (y + QUIET) * MOD, MOD, MOD);
       }
-
-      // 2. Finders
-      function drawFinderCanvas(fx, fy) {
-        var ox = (fx + QUIET) * MOD, oy = (fy + QUIET) * MOD;
-        roundRect(g, ox, oy, 7 * MOD, 7 * MOD, 1.6 * MOD, "#101215");
-        roundRect(g, ox + 1.4 * MOD, oy + 1.4 * MOD, 4.2 * MOD, 4.2 * MOD, 1 * MOD, "#fff");
-        roundRect(g, ox + 2.4 * MOD, oy + 2.4 * MOD, 2.2 * MOD, 2.2 * MOD, 0.6 * MOD, "#6E27E6");
-      }
-      drawFinderCanvas(0, 0);
-      drawFinderCanvas(N - 7, 0);
-      drawFinderCanvas(0, N - 7);
-
-      // 3. Center logo badge
-      var lStart = QR_CACHE.logoStart, lEnd = QR_CACHE.logoEnd, lSize = lEnd - lStart;
-      var bx = (lStart + QUIET - 0.2) * MOD, by = (lStart + QUIET - 0.2) * MOD, bs = (lSize + 0.4) * MOD;
-      roundRect(g, bx, by, bs, bs, 1.3 * MOD, "#fff");
-
-      // Draw Codemarca mark inside badge
-      var mx = bx + 0.7 * MOD, my = by + 0.7 * MOD, ms = bs - 1.4 * MOD;
-      // 4-leaf shape representation inside logo box
-      roundRect(g, mx + ms * 0.1, my + ms * 0.1, ms * 0.38, ms * 0.38, ms * 0.12, "#6E27E6");
-      roundRect(g, mx + ms * 0.52, my + ms * 0.1, ms * 0.38, ms * 0.38, ms * 0.12, "#6E27E6");
-      roundRect(g, mx + ms * 0.1, my + ms * 0.52, ms * 0.38, ms * 0.38, ms * 0.12, "#6E27E6");
-      roundRect(g, mx + ms * 0.52, my + ms * 0.52, ms * 0.38, ms * 0.38, ms * 0.12, "#6E27E6");
     }
-
-    return c.toDataURL("image/png");
+    return c.toDataURL("image/jpeg", .92);
   }
 
   function say(m) { var el = $("doneStatus"); if (el) el.textContent = m; }
@@ -2975,16 +3048,14 @@ body[data-showing]{overflow:hidden}
   $("shareQR").addEventListener("click", shareSheet);
 
   $("dlQR").addEventListener("click", function () {
-    var uname = String(S.handle || window.localStorage.getItem("cm.username") || "code")
-      .replace(/^@/, "").replace(/[^a-z0-9._-]+/gi, "-").toLowerCase();
     var a = document.createElement("a");
     a.href = qrJPEG();
-    a.download = "codemarca-scanner-" + uname + ".png";
+    a.download = "codemarca-" + (S.handle || "code") + "-qr.jpg";
     document.body.appendChild(a);   /* Firefox ignores a click on a detached <a> */
     a.click();
     a.remove();
     flash(this.querySelector("span"), "Saved", this);
-    say("QR code saved as a PNG.");
+    say("QR code saved as a JPG.");
   });
 
   $("copyUrl").addEventListener("click", function () {
@@ -3130,14 +3201,12 @@ body[data-showing]{overflow:hidden}
   showEl.addEventListener("click", function (e) { if (e.target === showEl) closeShow(); });
 
   $("showDl").addEventListener("click", function () {
-    var uname = String(S.handle || window.localStorage.getItem("cm.username") || "code")
-      .replace(/^@/, "").replace(/[^a-z0-9._-]+/gi, "-").toLowerCase();
     var a = document.createElement("a");
     a.href = qrJPEG();
-    a.download = "codemarca-scanner-" + uname + ".png";
+    a.download = "codemarca-" + (S.handle || "code") + "-qr.jpg";
     document.body.appendChild(a); a.click(); a.remove();
     flash(this.querySelector("span"), "Saved", this);
-    say("QR code saved as a PNG.");
+    say("QR code saved as a JPG.");
   });
   $("showCopy").addEventListener("click", function () {
     if (navigator.clipboard) navigator.clipboard.writeText("codemarca.com/" + S.handle);
@@ -3148,13 +3217,10 @@ body[data-showing]{overflow:hidden}
      a desktop gets the link on the clipboard instead */
   $("showShare").addEventListener("click", function () {
     var btn = this, url = "https://codemarca.com/" + S.handle;
-    var uname = String(S.handle || window.localStorage.getItem("cm.username") || "code")
-      .replace(/^@/, "").replace(/[^a-z0-9._-]+/gi, "-").toLowerCase();
-    var fileName = "codemarca-scanner-" + uname + ".png";
     jpegBlob(function (blob) {
       var data = { title: S.name.trim() || "My Codemarca page", url: url };
       if (blob && window.File && navigator.canShare) {
-        var f = new File([blob], fileName, { type: "image/png" });
+        var f = new File([blob], "codemarca-" + (S.handle || "code") + "-qr.jpg", { type: "image/jpeg" });
         if (navigator.canShare({ files: [f] })) data.files = [f];
       }
       if (navigator.share) { navigator.share(data).catch(function () {}); return; }
@@ -3256,6 +3322,8 @@ body[data-showing]{overflow:hidden}
 
   /* ══ 15. ONE REFRESH ═════════════════════════════════════════════════ */
   function refresh() { paintOrder(); paintPreview(); refreshGate(); }
+  $("optFollow").addEventListener("change", function () { S.follow = this.checked; refresh(); });
+  $("optChat").addEventListener("change", function () { S.chat = this.checked; refresh(); });
 
   /* ══ 16. BOOT ════════════════════════════════════════════════════════ */
   paintPhoto(); kit.repaint(); paintGrid(); paintAdded(); paintCustoms();

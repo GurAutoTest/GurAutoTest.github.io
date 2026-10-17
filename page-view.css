@@ -151,7 +151,7 @@
 /* the swatch itself — a flat chip of the theme's ground (the profile tab's
    tiny-page swatch, minus the page, at this size) */
 .pvx__sw .theme__sw{display:block; width:100%; height:100%; border-radius:inherit}
-.pvx__sw .theme__sw[data-t="light"]{background:#F2F2F7}
+.pvx__sw .theme__sw[data-t="light"]{background:#FFFFFF; box-shadow:inset 0 0 0 1px rgba(16,18,21,.12)}
 .pvx__sw .theme__sw[data-t="leaf"]{background:#A3BF5A}
 .pvx__sw .theme__sw[data-t="soft"]{background:#E8E7E5; box-shadow:inset 0 0 0 4px #fff}
 .pvx__sw .theme__sw[data-t="photo"]{background:#E7E9EE}
