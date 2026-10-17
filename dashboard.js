@@ -85,10 +85,55 @@
     var asked = new URLSearchParams(window.location.search).get("state");
     if (asked && STATES[asked]) {
       try { window.localStorage.setItem(KEY, asked); } catch (e) {}
-      return STATES[asked];
+      k = asked;
+    } else {
+      try { k = window.localStorage.getItem(KEY); } catch (e) { k = null; }
     }
-    try { k = window.localStorage.getItem(KEY); } catch (e) { k = null; }
-    return STATES[k] || STATES[firstKey()] || {};
+    var base = STATES[k] || STATES[firstKey()] || {};
+    var acc = JSON.parse(JSON.stringify(base));
+
+    // Merge real logged-in user profile if present in localStorage
+    try {
+      var storedEmail = window.localStorage.getItem("cm.email");
+      var storedName = window.localStorage.getItem("cm.name");
+      var storedHandle = window.localStorage.getItem("cm.username") || window.localStorage.getItem("cm.handle");
+      var storedPhoto = window.localStorage.getItem("cm.photo");
+      if (!storedPhoto) {
+        var authObj = JSON.parse(window.localStorage.getItem("cm.auth") || "{}");
+        storedPhoto = authObj.photo || "";
+      }
+      if (!storedPhoto) {
+        var gMeta = JSON.parse(window.localStorage.getItem("cm.google_meta") || "{}");
+        storedPhoto = gMeta.avatar_url || gMeta.picture || "";
+      }
+
+      if (storedEmail || storedName || storedHandle) {
+        acc.user = acc.user || {};
+        acc.profile = acc.profile || {};
+
+        if (storedName) {
+          acc.user.name = storedName;
+          acc.profile.title = storedName;
+        }
+        if (storedEmail) {
+          acc.user.email = storedEmail;
+        }
+        if (storedHandle) {
+          acc.profile.handle = storedHandle.toLowerCase().trim();
+        } else if (storedEmail) {
+          acc.profile.handle = storedEmail.split("@")[0].toLowerCase().replace(/[^a-z0-9._-]/g, "");
+        }
+        if (acc.code) {
+          acc.code.url = "codemarca.com/" + acc.profile.handle;
+          acc.code.id = acc.profile.handle.slice(0, 8);
+        }
+        if (storedPhoto) {
+          acc.profile.photo = storedPhoto;
+        }
+      }
+    } catch (e) {}
+
+    return acc;
   };
 
   CM.setState = function (k) {
@@ -244,7 +289,7 @@
         }).join("") +
       "</nav>" +
       '<a class="side__me" href="settings.html">' +
-        '<span class="avatar">' + (a.profile && a.profile.photo ? '<img src="' + a.profile.photo + '" alt="">' : CM.FACE) + "</span>" +
+        '<span class="avatar">' + (a.profile && a.profile.photo ? '<img src="' + a.profile.photo + '" alt="" referrerpolicy="no-referrer">' : CM.FACE) + "</span>" +
         '<span class="side__me__txt">' +
           '<span class="side__me__name">' + a.user.name + "</span>" +
           '<span class="side__me__mail">' + a.user.email + "</span>" +
@@ -600,7 +645,7 @@
   function paintAvatar(a) {
     var photo = a && a.profile && a.profile.photo;
     Array.prototype.forEach.call(document.querySelectorAll(".me__av, .pm__av"), function (el) {
-      if (el.querySelector("img")) { return; }
+      el.removeAttribute("data-fill");
       el.innerHTML = photo ? '<img src="' + photo + '" alt="" referrerpolicy="no-referrer">' : CM.FACE;
     });
   }
@@ -1601,6 +1646,9 @@
   /* ══ 8. DEMO SWITCHER — delete for production ═══════════════════════════ */
 
   function mountDemo(a) {
+    try {
+      if (window.localStorage.getItem("cm.email")) { return; }
+    } catch (e) {}
     if (!FLOW.states.length) { return; }
     var d = document.createElement("div");
     d.className = "demo";
