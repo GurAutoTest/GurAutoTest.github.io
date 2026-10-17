@@ -1830,8 +1830,9 @@ body[data-showing]{overflow:hidden}
   var qE = q.get("email");
   var storedE = "";
   try { storedE = localStorage.getItem("cm.email") || ""; } catch(e) {}
-  if (qE) S.email = qE.trim();
-  else if (storedE) S.email = storedE.trim();
+  // Do NOT prematurely display email on Step 1 preview — only show if explicitly set by URL or typed in Step 2
+  if (qE && q.get("show_email") === "1") S.email = qE.trim();
+  else S.email = "";
 
   var qPhoto = q.get("photo") || q.get("avatar") || "";
   var storedPhoto = "";
@@ -2046,6 +2047,98 @@ body[data-showing]{overflow:hidden}
     if (m.focus && $(m.focus)) $(m.focus).focus();
   });
 
+  function saveOnboardingProfile() {
+    try {
+      localStorage.setItem("cm.username", S.handle);
+      localStorage.setItem("cm.name", S.name.trim());
+      localStorage.setItem("cm.bio", S.bio || "");
+      localStorage.setItem("cm.theme", S.theme || "light");
+      localStorage.setItem("cm.phone", S.phone || "");
+      localStorage.setItem("cm.wa", S.wa || "");
+      if (S.email) localStorage.setItem("cm.email", S.email);
+      if (S.photo) localStorage.setItem("cm.photo", S.photo);
+      localStorage.setItem("cm.links", JSON.stringify(S.links || {}));
+      localStorage.setItem("cm.customs", JSON.stringify(S.customs || []));
+      localStorage.setItem("cm.reach", JSON.stringify({ follow: S.follow, chat: S.chat }));
+
+      var customAccount = {
+        user: {
+          name: S.name.trim(),
+          email: S.email || localStorage.getItem("cm.email") || ""
+        },
+        profile: {
+          handle: S.handle,
+          title: S.name.trim(),
+          bio: S.bio || "",
+          photo: S.photo || null,
+          theme: S.theme || "light",
+          phone: S.phone || "",
+          wa: S.wa || "",
+          email: S.email || "",
+          links: S.links || {},
+          customs: S.customs || [],
+          order: S.order || []
+        },
+        social: {
+          follow: S.follow,
+          chat: S.chat
+        }
+      };
+      localStorage.setItem("cm.account.custom", JSON.stringify(customAccount));
+    } catch (e) {}
+
+    // Sync to Supabase database profiles table
+    try {
+      var SUPABASE_URL = "https://inzigrmttewawjjkggbd.supabase.co";
+      var SUPABASE_KEY = "sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg";
+      var dbPatch = {
+        username: S.handle,
+        display_name: S.name.trim(),
+        bio: S.bio || "",
+        phone: S.phone || "",
+        whatsapp: S.wa || "",
+        theme: S.theme || "light",
+        is_live: true,
+        onboarding_done: true,
+        links_order: S.order || [],
+        updated_at: new Date().toISOString()
+      };
+      if (S.email) dbPatch.email = S.email;
+      if (S.photo) dbPatch.avatar_url = S.photo;
+
+      var token = SUPABASE_KEY;
+      try {
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (k && k.indexOf("sb-") === 0 && k.indexOf("-auth-token") > -1) {
+            var parsed = JSON.parse(localStorage.getItem(k) || "{}");
+            if (parsed.access_token) { token = parsed.access_token; break; }
+          }
+        }
+      } catch (e) {}
+
+      fetch(SUPABASE_URL + "/rest/v1/profiles?username=eq." + encodeURIComponent(S.handle), {
+        method: "PATCH",
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json",
+          "Prefer": "return=minimal"
+        },
+        body: JSON.stringify(dbPatch)
+      }).catch(function () {});
+
+      fetch("/api/dashboard/get-values", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: S.handle,
+          profile: dbPatch
+        })
+      }).catch(function () {});
+    } catch (e) {}
+  }
+
   function setStep(n) {
     S.step = n;
     ob.dataset.step = String(n);
@@ -2068,50 +2161,7 @@ body[data-showing]{overflow:hidden}
       paintPlaces();                         /* the row has a width now */
       requestAnimationFrame(paintPlaces);    /* …and again once fonts settle */
 
-      try {
-        localStorage.setItem("cm.username", S.handle);
-        localStorage.setItem("cm.name", S.name.trim());
-        if (S.photo) localStorage.setItem("cm.photo", S.photo);
-      } catch(e) {}
-
-      // ══ SYNC ONBOARDING DETAILS TO SUPABASE DB ══
-      try {
-        var SUPABASE_URL = "https://inzigrmttewawjjkggbd.supabase.co";
-        var SUPABASE_KEY = "sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg";
-        var dbPatch = {
-          display_name: S.name.trim(),
-          bio: S.bio || "",
-          phone: S.phone || "",
-          whatsapp: S.wa || "",
-          theme: S.theme || "light",
-          is_live: true,
-          onboarding_done: true,
-          updated_at: new Date().toISOString()
-        };
-        if (S.email) dbPatch.email = S.email;
-        if (S.photo) dbPatch.avatar_url = S.photo;
-
-        var token = SUPABASE_KEY;
-        try {
-          for (var i = 0; i < localStorage.length; i++) {
-            var k = localStorage.key(i);
-            if (k && k.indexOf("sb-") === 0 && k.indexOf("-auth-token") > -1) {
-              var parsed = JSON.parse(localStorage.getItem(k) || "{}");
-              if (parsed.access_token) { token = parsed.access_token; break; }
-            }
-          }
-        } catch(e) {}
-
-        fetch(SUPABASE_URL + "/rest/v1/profiles?username=eq." + encodeURIComponent(S.handle), {
-          method: "PATCH",
-          headers: {
-            "apikey": SUPABASE_KEY,
-            "Authorization": "Bearer " + token,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(dbPatch)
-        }).catch(function () {});
-      } catch(e) {}
+      saveOnboardingProfile();
     } else {
       closeShow();
       stopCelebrating();
@@ -2230,6 +2280,7 @@ body[data-showing]{overflow:hidden}
     if (over > 0) { window.scrollBy({ top: over, behavior: REDUCE ? "auto" : "smooth" }); }
   });
 
+  if (S.bio) { $("bio").value = S.bio; $("bioCount").textContent = S.bio.length + "/100"; }
   $("bio").addEventListener("input", function () {
     S.bio = this.value.slice(0, 100);
     $("bioCount").textContent = S.bio.length + "/100";
@@ -2287,8 +2338,11 @@ body[data-showing]{overflow:hidden}
   eye($("emailEye"), "emailOn", "email");
 
   function digits(v) { return v.replace(/[^0-9]/g, "").slice(0, 10); }
+  if (S.phone) { $("phone").value = S.phone; }
   $("phone").addEventListener("input", function () { this.value = digits(this.value); S.phone = this.value; refresh(); });
+  if (S.wa) { $("wa").value = S.wa; }
   $("wa").addEventListener("input",    function () { this.value = digits(this.value); S.wa = this.value; refresh(); });
+  if (storedE) { $("email").placeholder = storedE; }
   $("email").addEventListener("input", function () { S.email = this.value.trim(); refresh(); });
 
   /* business WhatsApp numbers are often different — so the box is a
@@ -3321,7 +3375,7 @@ body[data-showing]{overflow:hidden}
   $("viewPage").addEventListener("click", function () { openPreview("owner"); });
 
   /* ══ 15. ONE REFRESH ═════════════════════════════════════════════════ */
-  function refresh() { paintOrder(); paintPreview(); refreshGate(); }
+  function refresh() { paintOrder(); paintPreview(); pushLive(true); refreshGate(); }
   $("optFollow").addEventListener("change", function () { S.follow = this.checked; refresh(); });
   $("optChat").addEventListener("change", function () { S.chat = this.checked; refresh(); });
 

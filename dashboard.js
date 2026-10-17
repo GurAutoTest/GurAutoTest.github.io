@@ -130,10 +130,122 @@
         if (storedPhoto) {
           acc.profile.photo = storedPhoto;
         }
+
+        var storedBio = window.localStorage.getItem("cm.bio");
+        var storedTheme = window.localStorage.getItem("cm.theme");
+        var storedPhone = window.localStorage.getItem("cm.phone");
+        var storedWa = window.localStorage.getItem("cm.wa");
+        var storedCustomsRaw = window.localStorage.getItem("cm.customs");
+        var storedLinksRaw = window.localStorage.getItem("cm.links");
+        var storedReachRaw = window.localStorage.getItem("cm.reach");
+
+        if (storedBio !== null && storedBio !== undefined) acc.profile.bio = storedBio;
+        if (storedTheme) acc.profile.theme = storedTheme;
+        if (storedPhone) acc.profile.phone = storedPhone;
+        if (storedWa) acc.profile.wa = storedWa;
+        if (storedEmail) acc.profile.email = storedEmail;
+        if (storedCustomsRaw) {
+          try { acc.profile.customs = JSON.parse(storedCustomsRaw); } catch(e) {}
+        }
+        if (storedLinksRaw) {
+          try { acc.profile.links = JSON.parse(storedLinksRaw); } catch(e) {}
+        }
+        if (storedReachRaw) {
+          try {
+            var r = JSON.parse(storedReachRaw);
+            acc.social = acc.social || {};
+            if (r.follow !== undefined) acc.social.follow = r.follow;
+            if (r.chat !== undefined) acc.social.chat = r.chat;
+          } catch(e) {}
+        }
+
+        var rawCustom = window.localStorage.getItem("cm.account.custom");
+        if (rawCustom) {
+          try {
+            var ca = JSON.parse(rawCustom);
+            if (ca.profile) {
+              for (var pk in ca.profile) {
+                if (ca.profile[pk] !== undefined) acc.profile[pk] = ca.profile[pk];
+              }
+            }
+            if (ca.social) {
+              acc.social = acc.social || {};
+              for (var sk in ca.social) {
+                if (ca.social[sk] !== undefined) acc.social[sk] = ca.social[sk];
+              }
+            }
+          } catch(e) {}
+        }
       }
     } catch (e) {}
 
     return acc;
+  };
+
+  /* ══ UNIFIED GET-VALUES FETCH & SYNC ═════════════════════════════════ */
+  CM.fetchGetValues = async function (username, onData) {
+    if (!username) return;
+    try {
+      var url = "/api/dashboard/get-values?username=" + encodeURIComponent(username);
+      var data = null;
+      var res = await fetch(url).catch(function () {});
+      if (res && res.ok) {
+        data = await res.json();
+      } else {
+        var sbUrl = "https://inzigrmttewawjjkggbd.supabase.co/rest/v1/profiles?username=eq." + encodeURIComponent(username) + "&select=*";
+        var sbRes = await fetch(sbUrl, {
+          headers: {
+            "apikey": "sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg",
+            "Authorization": "Bearer sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg"
+          }
+        }).catch(function () {});
+        if (sbRes && sbRes.ok) {
+          var arr = await sbRes.json();
+          if (arr && arr[0]) {
+            data = { profile: arr[0] };
+          }
+        }
+      }
+
+      if (data && data.profile) {
+        var p = data.profile;
+        var uName = p.display_name || p.username;
+        if (uName) window.localStorage.setItem("cm.name", uName);
+        if (p.username) window.localStorage.setItem("cm.username", p.username);
+        if (p.bio !== undefined) window.localStorage.setItem("cm.bio", p.bio);
+        if (p.avatar_url) window.localStorage.setItem("cm.photo", p.avatar_url);
+        if (p.theme) window.localStorage.setItem("cm.theme", p.theme);
+        if (p.phone !== undefined) window.localStorage.setItem("cm.phone", p.phone);
+        if (p.whatsapp !== undefined) window.localStorage.setItem("cm.wa", p.whatsapp);
+        if (p.email !== undefined) window.localStorage.setItem("cm.email", p.email);
+
+        Array.prototype.forEach.call(document.querySelectorAll(".me__name, [data-fill='profile.title'], [data-fill='user.name']"), function (el) {
+          el.textContent = uName;
+        });
+        Array.prototype.forEach.call(document.querySelectorAll("[data-fill='profile.handle']"), function (el) {
+          el.textContent = p.username;
+        });
+        Array.prototype.forEach.call(document.querySelectorAll(".me__url b"), function (el) {
+          el.textContent = p.username;
+        });
+        Array.prototype.forEach.call(document.querySelectorAll(".side__me__name"), function (el) {
+          el.textContent = uName;
+        });
+        Array.prototype.forEach.call(document.querySelectorAll(".side__me__mail"), function (el) {
+          el.textContent = p.email || (p.username + "@gmail.com");
+        });
+        if (p.avatar_url) {
+          Array.prototype.forEach.call(document.querySelectorAll(".me__av, .avatar, .pm__av"), function (el) {
+            el.innerHTML = '<img src="' + p.avatar_url + '" alt="" referrerpolicy="no-referrer">';
+          });
+        }
+
+        if (typeof onData === "function") onData(data);
+        window.dispatchEvent(new CustomEvent("cm-profile-synced", { detail: p }));
+      }
+    } catch (e) {
+      console.warn("fetchGetValues error:", e);
+    }
   };
 
   CM.setState = function (k) {
@@ -400,6 +512,16 @@
     CM.foldCards();
     CM.fold();
     mountDemo(a);
+
+    var handleForValues = (a.profile && a.profile.handle) || window.localStorage.getItem("cm.username");
+    if (!handleForValues) {
+      var em = window.localStorage.getItem("cm.email");
+      if (em) handleForValues = em.split("@")[0].toLowerCase().replace(/[^a-z0-9._-]/g, "");
+    }
+    if (handleForValues) {
+      CM.fetchGetValues(handleForValues);
+    }
+
     return a;
   };
 
