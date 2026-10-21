@@ -2769,6 +2769,7 @@ body[data-showing]{overflow:hidden}
   $("dlg").addEventListener("click", function (e) {
     if (e.target === $("dlg")) { dlgAnswer(null); return; }
     var b = e.target.closest("[data-dlg]"); if (b) { dlgAnswer(b.dataset.dlg); }
+  });
   $("thmOpen").addEventListener("click", function () { trayFrom = S.theme; setTheme(S.theme); thmTray(true); });
 
   /* ?theme=<id> — picked on the homepage theme reel ("Use this theme"),
