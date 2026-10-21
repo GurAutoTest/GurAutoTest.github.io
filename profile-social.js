@@ -646,6 +646,18 @@
         rerender(); syncReview();
         setTimeout(chat, 250);
       }
+      /* REVIEW ONLY (flows.html): open one step of Quick Chat straight away.
+         ?qc=signin (guest, Google sheet) · consent · new (signed in, no page)
+         · chat (signed in with a page) */
+      var qc = new URLSearchParams(location.search).get("qc");
+      if (qc) {
+        setViewer(qc === "signin" ? "guest" : qc === "chat" ? "full" : "new");
+        if (qc === "new" || qc === "chat") { store("cm.consent", Date.now()); }
+        rerender(); syncReview();
+        setTimeout(function () {
+          if (qc === "signin") { gate("chat"); } else if (qc === "consent") { consent(); } else { chat(); }
+        }, 250);
+      }
     }
   };
 })();

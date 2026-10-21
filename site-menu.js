@@ -11,6 +11,7 @@
   var LINKS = [
     { href: "homepage.html",        label: "Home" },
     { href: "how-it-works.html",    label: "How it works" },
+    { href: "features.html",        label: "Features" },
     { href: "homepage.html#where",  label: "Where it sticks" },
     { href: "homepage.html#pack",   label: "What's in the pack" },
     { href: "homepage.html#faq",    label: "Questions" },

@@ -193,6 +193,9 @@
         CM.icon("chev", "row__chev") +
       "</a>" +
       '<p class="card__note stats__note">Only you see views. Followers see nothing you do — following just puts you on a list.</p>';
+    /* REVIEW ONLY (flows.html): ?people=followers|following opens the list */
+    var pq = new URLSearchParams(window.location.search).get("people");
+    if (pq && !box._wired) { setTimeout(function () { CM.people(a.social, pq, function () { CM.mountStats(a); }); }, 200); }
     if (!box._wired) {
       box._wired = true;
       box.addEventListener("click", function (e) {

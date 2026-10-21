@@ -1,10 +1,9 @@
 /* ==========================================================================
    CODEMARCA — SITE END (homepage, about, how-it-works, contact)
    Garry, 2026-09-30. Three shared things:
-     1. FOLDS — every main section is at least one screen tall, and on a
-        desktop the page settles on a section when you stop scrolling
-        (proximity snap, so a long FAQ still scrolls normally). Phones get
-        the full-height sections without the snap.
+     1. FOLDS — every main section is at least one screen tall. No snap
+        any more (2026-10-20): the page scrolls freely and smooth-scroll.js
+        eases the wheel, like oreo.com.
      2. GET THE APP — the app launches with the site. A QR on desktop
         (scan it with your phone → the right store), store buttons on a
         phone, where scanning your own screen is impossible.
@@ -22,15 +21,6 @@ html{scroll-padding-top:var(--nav-h,72px)}
   min-height:calc(100svh - var(--nav-h,72px));
   display:flex; flex-direction:column; justify-content:center;
 }
-@media (min-width:880px) and (hover:hover){
-  html{scroll-snap-type:y proximity}
-  .fold{scroll-snap-align:start}
-  /* the first fold is the top of the page — snapping to it would hide the
-     homepage ticker above the nav */
-  main > .fold:first-child{scroll-snap-align:none}
-  /* snapping ends at Get the app — the close and the footer scroll freely */
-}
-@media (prefers-reduced-motion:reduce){ html{scroll-snap-type:none} }
 
 /* ── 2. GET THE APP ────────────────────────────────────────────────────── */
 .se-app{position:relative; padding-block:clamp(3rem,7vw,5rem); overflow:hidden;

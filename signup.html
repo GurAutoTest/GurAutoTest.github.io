@@ -680,11 +680,17 @@ input:-webkit-autofill:active{
       }
 
       // "build" flow
+      var destTheme = "";
+      try {
+        destTheme = localStorage.getItem("cm.pending_theme") || new URLSearchParams(location.search).get("theme") || "";
+        localStorage.removeItem("cm.pending_theme");
+      } catch(e) {}
       var finalHandle = destHandle || existingUsername || clean(name.toLowerCase().replace(/[^a-z0-9]/g, ""));
       location.href = "onboarding.html?handle=" + encodeURIComponent(finalHandle) +
         "&name=" + encodeURIComponent(name) +
         "&email=" + encodeURIComponent(email) +
-        (photo ? "&photo=" + encodeURIComponent(photo) + "&avatar=" + encodeURIComponent(photo) : "");
+        (photo ? "&photo=" + encodeURIComponent(photo) + "&avatar=" + encodeURIComponent(photo) : "") +
+        (destTheme ? "&theme=" + encodeURIComponent(destTheme) : "");
     }, 700);
   }
 
@@ -709,6 +715,8 @@ input:-webkit-autofill:active{
     try {
       localStorage.setItem("cm.pending_flow", currentFlow);
       if (currentHandle) localStorage.setItem("cm.pending_handle", currentHandle);
+      var thmParam = new URLSearchParams(location.search).get("theme");
+      if (thmParam) localStorage.setItem("cm.pending_theme", thmParam);
     } catch(e) {}
 
     // 1. Supabase OAuth Google Sign-In

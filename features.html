@@ -1,0 +1,369 @@
+<title>Codemarca — Features</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Everything a Codemarca sticker does: one page with Call, WhatsApp and Save contact, Quick Chat, Follow, Lost and Travel mode, privacy switches, and one code for life.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="site-menu.css">
+<link rel="stylesheet" href="page.css">
+<link rel="stylesheet" href="fun.css">
+<link rel="stylesheet" href="site-end.css">
+
+<style>
+/* ── FEATURES (draft, Garry 2026-10-19) — page-only styles ─────────────── */
+.fjump{display:flex; flex-wrap:wrap; justify-content:center; gap:var(--s-2); margin-top:var(--s-2)}
+.fjump a{padding:8px 14px; border-radius:999px; background:var(--ground); box-shadow:inset 0 0 0 1px var(--line-strong);
+  font-size:var(--fs-sm); font-weight:var(--fw-bold); color:var(--ink); text-decoration:none; transition:background .15s ease, color .15s ease}
+.fjump a:hover{background:var(--ink); color:#fff}
+.fgrp{scroll-margin-top:72px}
+.fgrp__head{display:flex; flex-direction:column; gap:var(--s-4); max-width:640px; margin-bottom:clamp(var(--s-8),4vw,var(--s-12))}
+.fgrid{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:clamp(var(--s-4),2vw,var(--s-6))}
+.fgrid--4{grid-template-columns:repeat(4, minmax(0,1fr))}   /* four cards stay one row, no orphan */
+@media (max-width:1100px){ .fgrid--4{grid-template-columns:repeat(2, minmax(0,1fr))} }
+@media (max-width:960px){ .fgrid{grid-template-columns:repeat(2, minmax(0,1fr))} }
+@media (max-width:600px){ .fgrid{grid-template-columns:1fr} .fvis{aspect-ratio:16/10} }
+.fcard{position:relative; display:flex; flex-direction:column; gap:var(--s-2); padding:var(--s-4) var(--s-4) var(--s-6);
+  border-radius:var(--r-lg, 20px); background:var(--ground); box-shadow:inset 0 0 0 1px var(--line)}
+.band--soft .fcard{box-shadow:var(--shadow-sm), inset 0 0 0 1px var(--line)}
+.band--dark .fcard{background:rgba(255,255,255,.06); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.fcard h3{margin-top:var(--s-3); font-size:1.1875rem; font-weight:var(--fw-black); letter-spacing:-.02em; line-height:1.25}
+.fcard p{font-size:var(--fs-sm); color:var(--ink-mid); line-height:1.55; letter-spacing:var(--ls-soft)}
+.band--dark .fcard p{color:rgba(255,255,255,.66)}
+/* the picture: real product screens (assets/features/, cropped from the
+   live pages) floating on a soft ground, or a studio photo edge to edge */
+.fvis{position:relative; margin:0; aspect-ratio:4/3; overflow:hidden; border-radius:calc(var(--r-lg, 20px) - 6px);
+  background:var(--ground-soft)}
+.band--soft .fvis{background:var(--ground-sunk)}
+.band--dark .fvis{background:rgba(255,255,255,.07)}
+.fvis img{display:block}
+.fvis--photo img{width:100%; height:100%; object-fit:cover; transition:transform .5s cubic-bezier(.16,1,.3,1)}
+.fcard:hover .fvis--photo img{transform:scale(1.04)}
+.fvis--ui{display:flex; justify-content:center}
+.fvis--ui img{border-radius:12px; box-shadow:0 12px 30px rgba(16,18,21,.12), 0 0 0 1px rgba(16,18,21,.06);
+  transition:transform .5s cubic-bezier(.16,1,.3,1)}
+.fcard:hover .fvis--ui img{transform:translateY(-4px)}
+/* short, wide crops sit in the middle */
+.fvis--fit{align-items:center; padding:6%}
+.fvis--fit img{max-width:100%; max-height:100%; width:auto; height:auto}
+/* tall ones rise from the bottom edge, cut off like a phone peeking up */
+.fvis--peek{align-items:flex-start; padding:7% 10% 0}
+.fvis--peek img{width:100%; height:auto; border-bottom-left-radius:0; border-bottom-right-radius:0}
+.fvis--looks{display:flex; justify-content:center; align-items:flex-start; gap:3%; padding:8% 5% 0}
+.fvis--looks img{width:22%; height:auto; border-radius:10px 10px 0 0; box-shadow:0 10px 24px rgba(16,18,21,.14)}
+.fvis--looks img:nth-child(odd){margin-top:5%}
+.fnew{position:absolute; top:calc(var(--s-4) + 10px); right:calc(var(--s-4) + 10px); padding:3px 9px; border-radius:999px;
+  background:var(--ink); color:#fff; font-size:.6875rem; font-weight:var(--fw-black); letter-spacing:.04em}
+.band--dark .fnew{background:#fff; color:var(--ink)}
+</style>
+
+<!-- ==========================================================================
+     CODEMARCA — FEATURES (draft, Garry 2026-10-19)
+     Every feature, small and big, grouped by the moment it helps — so a
+     reader finds their own situation, not a spec sheet:
+       01 When someone scans you · 02 Keep in touch · 03 When something goes
+       missing · 04 You're in control · 05 The sticker
+     Each card: a picture (.fvis — a crop of the real screen from
+     assets/features/, or a studio photo), a title, one line in the reader's
+     own situation. "New"
+     marks the Phase-1 features. Nav, footer and the closing bands are the
+     same as how-it-works.html (page.css, fun.css, site-end).
+     ========================================================================== -->
+
+<!-- ══ NAV ══════════════════════════════════════════════════════════════ -->
+<header class="nav" id="nav">
+  <div class="shell shell--wide nav__inner">
+    <a class="nav__logo" href="homepage.html" aria-label="Codemarca home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 257 40" fill="none" role="img" aria-label="Codemarca"><g fill="#6E27E6"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></g><g fill="#101215"><path d="M245.956 14.0999H252.172V34.82H245.956V32.8723C244.589 34.447 242.558 35.4002 239.782 35.4002C234.353 35.4002 229.877 30.6345 229.877 24.46C229.877 18.2854 234.353 13.5198 239.782 13.5198C242.558 13.5198 244.589 14.4729 245.956 16.0476V14.0999ZM241.025 29.5157C243.884 29.5157 245.956 27.568 245.956 24.46C245.956 21.352 243.884 19.4043 241.025 19.4043C238.165 19.4043 236.093 21.352 236.093 24.46C236.093 27.568 238.165 29.5157 241.025 29.5157Z"/><path d="M220.695 35.4002C214.396 35.4002 209.713 30.6345 209.713 24.46C209.713 18.2854 214.396 13.5198 220.695 13.5198C224.714 13.5198 228.278 15.6332 230.06 18.8241L224.631 21.9736C223.927 20.5232 222.435 19.6529 220.612 19.6529C217.918 19.6529 215.929 21.6006 215.929 24.46C215.929 27.3193 217.918 29.267 220.612 29.267C222.435 29.267 223.968 28.3968 224.631 26.9464L230.06 30.0544C228.278 33.2867 224.756 35.4002 220.695 35.4002Z"/><path d="M203.477 17.7881C204.306 15.0116 207.083 13.6855 209.693 13.6855V20.7304C207.124 20.316 203.477 21.352 203.477 25.4545V34.82H197.261V14.1H203.477V17.7881Z"/><path d="M187.728 14.0999H193.944V34.82H187.728V32.8723C186.361 34.447 184.33 35.4002 181.554 35.4002C176.125 35.4002 171.649 30.6345 171.649 24.46C171.649 18.2854 176.125 13.5198 181.554 13.5198C184.33 13.5198 186.361 14.4729 187.728 16.0476V14.0999ZM182.797 29.5157C185.656 29.5157 187.728 27.568 187.728 24.46C187.728 21.352 185.656 19.4043 182.797 19.4043C179.937 19.4043 177.865 21.352 177.865 24.46C177.865 27.568 179.937 29.5157 182.797 29.5157Z"/><path d="M161.806 13.5198C166.571 13.5198 169.679 16.9179 169.679 22.0979V34.82H163.463V22.6366C163.463 20.5646 162.469 19.2385 160.479 19.2385C158.407 19.2385 157.247 20.6889 157.247 23.1339V34.82H151.031V22.6366C151.031 20.5646 150.037 19.2385 148.047 19.2385C145.975 19.2385 144.815 20.6889 144.815 23.1339V34.82H138.599V14.0999H144.815V16.0062C145.768 14.5972 147.592 13.5198 150.368 13.5198C152.813 13.5198 154.636 14.5143 155.797 16.2548C156.957 14.5972 158.863 13.5198 161.806 13.5198Z"/><path d="M121.357 26.9464C122.144 29.1013 124.051 29.8472 126.33 29.8472C128.029 29.8472 129.479 29.1841 130.308 28.2725L135.281 31.1318C133.25 33.9497 130.184 35.4002 126.247 35.4002C119.161 35.4002 114.768 30.6345 114.768 24.46C114.768 18.2854 119.244 13.5198 125.791 13.5198C131.841 13.5198 136.317 18.2025 136.317 24.46C136.317 25.3302 136.234 26.159 136.068 26.9464H121.357ZM121.233 22.3051H130.142C129.479 19.9016 127.614 19.0313 125.75 19.0313C123.388 19.0313 121.813 20.1916 121.233 22.3051Z"/><path d="M106.271 5.81201H112.487V34.8201H106.271V32.8724C104.903 34.4471 102.873 35.4002 100.096 35.4002C94.6674 35.4002 90.1919 30.6346 90.1919 24.4601C90.1919 18.2855 94.6674 13.5199 100.096 13.5199C102.873 13.5199 104.903 14.473 106.271 16.0477V5.81201ZM101.339 29.5158C104.199 29.5158 106.271 27.5681 106.271 24.4601C106.271 21.3521 104.199 19.4044 101.339 19.4044C98.4799 19.4044 96.4079 21.3521 96.4079 24.4601C96.4079 27.5681 98.4799 29.5158 101.339 29.5158Z"/><path d="M77.9738 35.4002C71.8821 35.4002 66.9922 30.6345 66.9922 24.46C66.9922 18.2854 71.8821 13.5198 77.9738 13.5198C84.0655 13.5198 88.9554 18.2854 88.9554 24.46C88.9554 30.6345 84.0655 35.4002 77.9738 35.4002ZM77.9738 29.3499C80.6674 29.3499 82.7394 27.4022 82.7394 24.46C82.7394 21.5177 80.6674 19.57 77.9738 19.57C75.2802 19.57 73.2082 21.5177 73.2082 24.46C73.2082 27.4022 75.2802 29.3499 77.9738 29.3499Z"/><path d="M57.8088 35.4002C51.5099 35.4002 46.8271 30.6345 46.8271 24.46C46.8271 18.2854 51.5099 13.5198 57.8088 13.5198C61.8285 13.5198 65.3923 15.6332 67.1742 18.8241L61.7456 21.9736C61.0411 20.5232 59.5493 19.6529 57.7259 19.6529C55.0323 19.6529 53.0432 21.6006 53.0432 24.46C53.0432 27.3193 55.0323 29.267 57.7259 29.267C59.5493 29.267 61.0825 28.3968 61.7456 26.9464L67.1742 30.0544C65.3923 33.2867 61.8699 35.4002 57.8088 35.4002Z"/></g></svg></a>
+    <div class="nav__right">
+      <a class="nav__login" href="signup.html?mode=login">Login</a>
+      <button class="nav__menu" type="button" aria-label="Open menu">
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="fun">
+
+  <!-- ══ HERO ══════════════════════════════════════════════════════════ -->
+  <section class="fhero fold">
+    <div class="shell hero__copy">
+      <span class="kick up">Features</span>
+      <h1 class="big up" style="--d:.08s">Everything one<br>sticker can do.</h1>
+      <p class="lede up" style="--d:.16s">A page people open with their camera, a way to keep in touch, and a plan for the day something goes missing. Here’s all of it, one card at a time.</p>
+      <nav class="fjump up" style="--d:.24s" aria-label="Jump to">
+        <a href="#scan">When someone scans you</a>
+        <a href="#touch">Keep in touch</a>
+        <a href="#lost">When something goes missing</a>
+        <a href="#control">You’re in control</a>
+        <a href="#sticker">The sticker</a>
+      </nav>
+    </div>
+  </section>
+
+  <!-- ══ 1. WHEN SOMEONE SCANS YOU ═════════════════════════════════════ -->
+  <section class="fold band band--soft fgrp" id="scan">
+    <div class="shell">
+      <div class="fgrp__head up">
+        <span class="kick">01 · When someone scans you</span>
+        <h2 class="mid">Scan. Tap. <span class="soft">Saved.</span></h2>
+        <p class="lede">No app, no typing your number twice, no “wait, spell that again”.</p>
+      </div>
+      <div class="fgrid">
+        <article class="fcard up">
+          <figure class="fvis fvis--ui fvis--peek"><img src="assets/features/codemarca-feature-one-page.jpg" alt="A phone showing a full Codemarca page: photo, name, Call, WhatsApp, Instagram." loading="lazy"></figure>
+          <h3>One page, everything on it</h3>
+          <p>Number, WhatsApp, email, socials, your shop’s map — one link instead of five things to spell out.</p>
+        </article>
+        <article class="fcard up" style="--d:.06s">
+          <figure class="fvis fvis--ui fvis--fit"><img src="assets/features/codemarca-feature-call-wa.jpg" alt="A thumb tapping a big Call button; the dialer opens with the number already in." loading="lazy"></figure>
+          <h3>Call or WhatsApp in one tap</h3>
+          <p>Nobody types your number wrong ever again. One tap and they’re calling or chatting.</p>
+        </article>
+        <article class="fcard up" style="--d:.12s">
+          <figure class="fvis fvis--ui fvis--fit"><img src="assets/features/codemarca-feature-save.jpg" alt="The “Save contact” button, then the phone’s new-contact screen already filled in." loading="lazy"></figure>
+          <h3>Saved to contacts in one tap</h3>
+          <p>One tap on Save contact and you’re in their phone — not lost in a gallery of business-card photos.</p>
+        </article>
+        <article class="fcard up">
+          <figure class="fvis fvis--looks" aria-label="Four phones side by side, the same page in Light, Leaf, Copper and Photo."><img src="assets/themes/reel/codemarca-theme-light.jpg" alt="" loading="lazy"><img src="assets/themes/reel/codemarca-theme-leaf-blue.jpg" alt="" loading="lazy"><img src="assets/themes/reel/codemarca-theme-copper.jpg" alt="" loading="lazy"><img src="assets/themes/reel/codemarca-theme-photo-dark.jpg" alt="" loading="lazy"></figure>
+          <h3>Twelve looks</h3>
+          <p>Clean white, bold colour, glass, your own photo. Switch whenever you feel like it.</p>
+        </article>
+        <article class="fcard up" style="--d:.06s">
+          <figure class="fvis fvis--photo"><img src="assets/photos/codemarca-qr-sticker-car-window-scan-parking.jpg" alt="An ordinary phone camera pointed at the sticker, a link bubble popping up." loading="lazy"></figure>
+          <h3>Any camera, no app</h3>
+          <p>Every phone camera reads it. Nothing to download for the person scanning you.</p>
+        </article>
+        <article class="fcard up" style="--d:.12s">
+          <figure class="fvis fvis--ui fvis--peek"><img src="assets/features/codemarca-feature-hide.jpg" alt="The editor with an eye icon switching a phone number off; the preview hides it." loading="lazy"></figure>
+          <h3>Show only what you want</h3>
+          <p>Hide your number on a busy day and keep WhatsApp. One tap per row, no deleting.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 2. KEEP IN TOUCH ══════════════════════════════════════════════ -->
+  <section class="fold band fgrp" id="touch">
+    <div class="shell">
+      <div class="fgrp__head up">
+        <span class="kick">02 · Keep in touch</span>
+        <h2 class="mid">Met someone? <span class="soft">Keep the thread.</span></h2>
+        <p class="lede">Say hi without swapping numbers, and find each other again later.</p>
+      </div>
+      <div class="fgrid fgrid--4">
+        <article class="fcard up">
+          <figure class="fvis fvis--ui fvis--fit"><img src="assets/features/codemarca-feature-chat.jpg" alt="A chat inside Codemarca: “Hi! Saw your sticker at Third Wave…” and a reply." loading="lazy"></figure>
+          <span class="fnew">New</span>
+          <h3>Quick Chat</h3>
+          <p>People who scan you can message you inside Codemarca — not on your phone or WhatsApp. You choose who gets a reply.</p>
+        </article>
+        <article class="fcard up" style="--d:.06s">
+          <figure class="fvis fvis--ui fvis--peek"><img src="assets/features/codemarca-feature-people.jpg" alt="A page with a Follow button, and a “Following” list with three faces." loading="lazy"></figure>
+          <span class="fnew">New</span>
+          <h3>Follow</h3>
+          <p>Liked someone’s sticker? Follow them and their page is one tap away next time. No feed, no noise — just a list.</p>
+        </article>
+        <article class="fcard up" style="--d:.12s">
+          <figure class="fvis fvis--ui fvis--peek"><img src="assets/features/codemarca-feature-scan-found.jpg" alt="The Scan screen in the app finding a sticker on a laptop, then a “Quick Chat” button." loading="lazy"></figure>
+          <span class="fnew">New</span>
+          <h3>Scan to say hi first</h3>
+          <p>Spot a sticker you like? Scan it from your Codemarca and start the chat yourself.</p>
+        </article>
+        <article class="fcard up">
+          <figure class="fvis fvis--ui fvis--peek"><img src="assets/features/codemarca-feature-signin.jpg" alt="A “Continue with Google” sheet over a page, and a small badge that says real page." loading="lazy"></figure>
+          <h3>Real people only</h3>
+          <p>Everyone signs in with Google before they can message, and a full chat needs a page of their own.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 3. WHEN SOMETHING GOES MISSING ════════════════════════════════ -->
+  <section class="fold band band--dark fgrp" id="lost">
+    <div class="shell">
+      <div class="fgrp__head up">
+        <span class="kick">03 · When something goes missing</span>
+        <h2 class="mid">Lost it? <span class="soft">Your sticker still knows who to call.</span></h2>
+        <p class="lede">The page changes the moment you need it to — even from a friend’s phone.</p>
+      </div>
+      <div class="fgrid fgrid--4">
+        <article class="fcard up">
+          <figure class="fvis fvis--photo"><img src="assets/photos/codemarca-qr-sticker-lost-phone-party.jpg" alt="A page with a banner on top: “This phone is lost — please call”, and a green Call button." loading="lazy"></figure>
+          <span class="fnew">New</span>
+          <h3>Lost mode</h3>
+          <p>Phone, bag or keys gone? Switch it on and whoever finds it sees who to call, right at the top.</p>
+        </article>
+        <article class="fcard up" style="--d:.06s">
+          <figure class="fvis fvis--ui fvis--peek"><img src="assets/features/codemarca-feature-travel.jpg" alt="A Travel mode card: two people (“Rahul · travel buddy”), a note, and an end date." loading="lazy"></figure>
+          <span class="fnew">New</span>
+          <h3>Travel mode</h3>
+          <p>Going on a trip? Add up to two people a finder can call and a short note. It switches itself off when you’re back.</p>
+        </article>
+        <article class="fcard up" style="--d:.12s">
+          <figure class="fvis fvis--ui fvis--fit"><img src="assets/features/codemarca-feature-masked.jpg" alt="A number shown as 98xxx xx310, then revealed with a tap and a Call button." loading="lazy"></figure>
+          <h3>Numbers stay hidden till tapped</h3>
+          <p>Contacts on the banner show as 98xxx xx310 until someone taps to call — and calling needs no sign-up.</p>
+        </article>
+        <article class="fcard up">
+          <figure class="fvis fvis--ui fvis--fit"><img src="assets/features/codemarca-feature-modes.jpg" alt="A laptop at a friend’s place, signed in to Codemarca, flipping on Lost mode." loading="lazy"></figure>
+          <h3>Switch it on from any device</h3>
+          <p>Your phone is the thing that’s missing, so sign in from a friend’s phone or a laptop and turn it on there.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 4. YOU'RE IN CONTROL ══════════════════════════════════════════ -->
+  <section class="fold band band--soft fgrp" id="control">
+    <div class="shell">
+      <div class="fgrp__head up">
+        <span class="kick">04 · You’re in control</span>
+        <h2 class="mid">Your page, <span class="soft">your rules.</span></h2>
+        <p class="lede">Every switch is yours, and nothing is shared that you didn’t put there.</p>
+      </div>
+      <div class="fgrid">
+        <article class="fcard up">
+          <figure class="fvis fvis--ui fvis--peek"><img src="assets/features/codemarca-feature-switches.jpg" alt="A settings card with switches: Follow button, Quick Chat, Show follower counts." loading="lazy"></figure>
+          <h3>Switch anything off</h3>
+          <p>Don’t want chats or followers? Turn them off and your page shows only your contacts.</p>
+        </article>
+        <article class="fcard up" style="--d:.06s">
+          <figure class="fvis fvis--ui fvis--fit"><img src="assets/features/codemarca-feature-clear.jpg" alt="A chat with a small timer “disappears in 3h” and a Clear chat option." loading="lazy"></figure>
+          <h3>Chats that clean themselves</h3>
+          <p>Seen messages disappear 24 hours after they’re seen. Want them gone now? Clear the chat.</p>
+        </article>
+        <article class="fcard up" style="--d:.12s">
+          <figure class="fvis fvis--ui fvis--fit"><img src="assets/features/codemarca-feature-limit.jpg" alt="A thin bar under the message box: “320 left today”." loading="lazy"></figure>
+          <h3>500 characters a day</h3>
+          <p>Every chat shares one small daily limit, so people get to the point and spam has nowhere to go.</p>
+        </article>
+        <article class="fcard up">
+          <figure class="fvis fvis--ui fvis--peek"><img src="assets/features/codemarca-feature-report.jpg" alt="A menu with Block and Report, and a note “they won’t be told”." loading="lazy"></figure>
+          <h3>Block and report</h3>
+          <p>Block someone quietly — they’re not told. Report anything off and our team takes a look.</p>
+        </article>
+        <article class="fcard up" style="--d:.06s">
+          <figure class="fvis fvis--ui fvis--peek"><img src="assets/features/codemarca-feature-paused.jpg" alt="A “Page is off” switch, and a phone showing “This page is paused”." loading="lazy"></figure>
+          <h3>Pause your page</h3>
+          <p>Switch the page off any time. Your stickers stay put and come back to life when you switch it on.</p>
+        </article>
+        <article class="fcard up" style="--d:.12s">
+          <figure class="fvis fvis--ui fvis--fit"><img src="assets/features/codemarca-feature-views.jpg" alt="A small stats card: 59 views this week, 41 from the sticker, 18 from the link." loading="lazy"></figure>
+          <h3>Views only you can see</h3>
+          <p>See how many people opened your page, and how many came from the sticker. Nobody else sees it.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 5. THE STICKER ════════════════════════════════════════════════ -->
+  <section class="fold band fgrp" id="sticker">
+    <div class="shell">
+      <div class="fgrp__head up">
+        <span class="kick">05 · The sticker</span>
+        <h2 class="mid">Stuck once. <span class="soft">Works for good.</span></h2>
+        <p class="lede">A small square of vinyl that keeps up with every change you make.</p>
+      </div>
+      <div class="fgrid">
+        <article class="fcard up">
+          <figure class="fvis fvis--photo"><img src="assets/photos/codemarca-qr-sticker-laptop-and-phone-studio.jpg" alt="The same sticker on a laptop, while the page behind it changes number twice." loading="lazy"></figure>
+          <h3>One code for life</h3>
+          <p>New number, new Instagram, new name — edit the page and every sticker you’ve stuck shows the new one.</p>
+        </article>
+        <article class="fcard up" style="--d:.06s">
+          <figure class="fvis fvis--photo"><img src="assets/photos/codemarca-qr-sticker-pack-on-wooden-desk-square.jpg" alt="The free pack card: a 4″ and a 1.5″ sticker, same code on both." loading="lazy"></figure>
+          <h3>Free pack, two sizes</h3>
+          <p>A 4″ for the car or shop and a 1.5″ for your laptop or phone. You only pay delivery. More sizes when you want them.</p>
+        </article>
+        <article class="fcard up" style="--d:.12s">
+          <figure class="fvis fvis--photo"><img src="assets/photos/codemarca-qr-sticker-car-rear-window-night-street.jpg" alt="Rain on a car window with the sticker, still crisp." loading="lazy"></figure>
+          <h3>Rain-proof, sun-proof</h3>
+          <p>UV-laminated vinyl that survives rain, sun and the car wash.</p>
+        </article>
+        <article class="fcard up">
+          <figure class="fvis fvis--photo"><img src="assets/photos/codemarca-qr-sticker-peel-from-pack-square.jpg" alt="A peeled-off sticker, and a fresh one with the same code arriving." loading="lazy"></figure>
+          <h3>Lost a sticker? Same code again</h3>
+          <p>We reprint the same code and you pay only delivery. Everything else you’ve stuck keeps working.</p>
+        </article>
+        <article class="fcard up" style="--d:.06s">
+          <figure class="fvis fvis--photo"><img src="assets/photos/codemarca-qr-sticker-gift-box-studio.jpg" alt="A gift box with a sticker card and a note “for Dad”." loading="lazy"></figure>
+          <h3>Gift a code</h3>
+          <p>Order stickers for someone else. The code becomes theirs the moment they scan it and sign in.</p>
+        </article>
+        <article class="fcard up" style="--d:.12s">
+          <figure class="fvis fvis--photo"><img src="assets/photos/tshirtfreebee.jpg" alt="A black tee with a QR on the chest and a “50 / 50” progress ring." loading="lazy"></figure>
+          <h3>50 friends, free tee</h3>
+          <p>Friends who sign up with your link and finish their page count. Hit 50 and a tee with your own QR is on us.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+
+<div data-site-end></div>
+
+<!-- ══ FOOTER ═══════════════════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="shell shell--wide">
+    <div class="footer__grid">
+      <div>
+        <div class="footer__logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 257 40" fill="none" role="img" aria-label="Codemarca"><g fill="#6E27E6"><path d="M33.1134 20.2323H23.257C21.5532 20.2323 20.1719 18.851 20.1719 17.1473V7.29084C20.1719 5.58706 18.7907 4.20581 17.0869 4.20581H7.2291C5.52529 4.20581 4.14404 5.58706 4.14404 7.29084V17.1479C4.14404 18.8517 5.52529 20.233 7.2291 20.233H17.0855C18.7893 20.233 20.1706 21.6142 20.1706 23.318V33.1744C20.1706 34.8782 21.5518 36.2595 23.2556 36.2595H33.1134C34.8172 36.2595 36.1984 34.8782 36.1984 33.1744V23.3173C36.1984 21.6135 34.8172 20.2323 33.1134 20.2323Z"/><path d="M31.7853 17.9021C35.4337 16.3909 37.1662 12.2083 35.655 8.55988C34.1438 4.9115 29.9612 3.17899 26.3128 4.69019C22.6644 6.20139 20.9319 10.3841 22.4431 14.0324C23.9543 17.6808 28.137 19.4133 31.7853 17.9021Z"/><path d="M11.2943 36.2599C15.2432 36.2599 18.4445 33.0587 18.4445 29.1097C18.4445 25.1607 15.2432 21.9595 11.2943 21.9595C7.34533 21.9595 4.14404 25.1607 4.14404 29.1097C4.14404 33.0587 7.34533 36.2599 11.2943 36.2599Z"/></g><g fill="#101215"><path d="M245.956 14.0999H252.172V34.82H245.956V32.8723C244.589 34.447 242.558 35.4002 239.782 35.4002C234.353 35.4002 229.877 30.6345 229.877 24.46C229.877 18.2854 234.353 13.5198 239.782 13.5198C242.558 13.5198 244.589 14.4729 245.956 16.0476V14.0999ZM241.025 29.5157C243.884 29.5157 245.956 27.568 245.956 24.46C245.956 21.352 243.884 19.4043 241.025 19.4043C238.165 19.4043 236.093 21.352 236.093 24.46C236.093 27.568 238.165 29.5157 241.025 29.5157Z"/><path d="M220.695 35.4002C214.396 35.4002 209.713 30.6345 209.713 24.46C209.713 18.2854 214.396 13.5198 220.695 13.5198C224.714 13.5198 228.278 15.6332 230.06 18.8241L224.631 21.9736C223.927 20.5232 222.435 19.6529 220.612 19.6529C217.918 19.6529 215.929 21.6006 215.929 24.46C215.929 27.3193 217.918 29.267 220.612 29.267C222.435 29.267 223.968 28.3968 224.631 26.9464L230.06 30.0544C228.278 33.2867 224.756 35.4002 220.695 35.4002Z"/><path d="M203.477 17.7881C204.306 15.0116 207.083 13.6855 209.693 13.6855V20.7304C207.124 20.316 203.477 21.352 203.477 25.4545V34.82H197.261V14.1H203.477V17.7881Z"/><path d="M187.728 14.0999H193.944V34.82H187.728V32.8723C186.361 34.447 184.33 35.4002 181.554 35.4002C176.125 35.4002 171.649 30.6345 171.649 24.46C171.649 18.2854 176.125 13.5198 181.554 13.5198C184.33 13.5198 186.361 14.4729 187.728 16.0476V14.0999ZM182.797 29.5157C185.656 29.5157 187.728 27.568 187.728 24.46C187.728 21.352 185.656 19.4043 182.797 19.4043C179.937 19.4043 177.865 21.352 177.865 24.46C177.865 27.568 179.937 29.5157 182.797 29.5157Z"/><path d="M161.806 13.5198C166.571 13.5198 169.679 16.9179 169.679 22.0979V34.82H163.463V22.6366C163.463 20.5646 162.469 19.2385 160.479 19.2385C158.407 19.2385 157.247 20.6889 157.247 23.1339V34.82H151.031V22.6366C151.031 20.5646 150.037 19.2385 148.047 19.2385C145.975 19.2385 144.815 20.6889 144.815 23.1339V34.82H138.599V14.0999H144.815V16.0062C145.768 14.5972 147.592 13.5198 150.368 13.5198C152.813 13.5198 154.636 14.5143 155.797 16.2548C156.957 14.5972 158.863 13.5198 161.806 13.5198Z"/><path d="M121.357 26.9464C122.144 29.1013 124.051 29.8472 126.33 29.8472C128.029 29.8472 129.479 29.1841 130.308 28.2725L135.281 31.1318C133.25 33.9497 130.184 35.4002 126.247 35.4002C119.161 35.4002 114.768 30.6345 114.768 24.46C114.768 18.2854 119.244 13.5198 125.791 13.5198C131.841 13.5198 136.317 18.2025 136.317 24.46C136.317 25.3302 136.234 26.159 136.068 26.9464H121.357ZM121.233 22.3051H130.142C129.479 19.9016 127.614 19.0313 125.75 19.0313C123.388 19.0313 121.813 20.1916 121.233 22.3051Z"/><path d="M106.271 5.81201H112.487V34.8201H106.271V32.8724C104.903 34.4471 102.873 35.4002 100.096 35.4002C94.6674 35.4002 90.1919 30.6346 90.1919 24.4601C90.1919 18.2855 94.6674 13.5199 100.096 13.5199C102.873 13.5199 104.903 14.473 106.271 16.0477V5.81201ZM101.339 29.5158C104.199 29.5158 106.271 27.5681 106.271 24.4601C106.271 21.3521 104.199 19.4044 101.339 19.4044C98.4799 19.4044 96.4079 21.3521 96.4079 24.4601C96.4079 27.5681 98.4799 29.5158 101.339 29.5158Z"/><path d="M77.9738 35.4002C71.8821 35.4002 66.9922 30.6345 66.9922 24.46C66.9922 18.2854 71.8821 13.5198 77.9738 13.5198C84.0655 13.5198 88.9554 18.2854 88.9554 24.46C88.9554 30.6345 84.0655 35.4002 77.9738 35.4002ZM77.9738 29.3499C80.6674 29.3499 82.7394 27.4022 82.7394 24.46C82.7394 21.5177 80.6674 19.57 77.9738 19.57C75.2802 19.57 73.2082 21.5177 73.2082 24.46C73.2082 27.4022 75.2802 29.3499 77.9738 29.3499Z"/><path d="M57.8088 35.4002C51.5099 35.4002 46.8271 30.6345 46.8271 24.46C46.8271 18.2854 51.5099 13.5198 57.8088 13.5198C61.8285 13.5198 65.3923 15.6332 67.1742 18.8241L61.7456 21.9736C61.0411 20.5232 59.5493 19.6529 57.7259 19.6529C55.0323 19.6529 53.0432 21.6006 53.0432 24.46C53.0432 27.3193 55.0323 29.267 57.7259 29.267C59.5493 29.267 61.0825 28.3968 61.7456 26.9464L67.1742 30.0544C65.3923 33.2867 61.8699 35.4002 57.8088 35.4002Z"/></g></svg></div>
+        <p class="footer__tag">One page for everything you are — printed as a QR you can stick anywhere.</p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <div class="footer__links">
+          <a href="how-it-works.html">How it works</a>
+          <a href="features.html">Features</a>
+          <a href="homepage.html#pack">What's in the pack</a>
+          <a href="signup.html?next=order">Get a pack</a>
+          <a href="signup.html?mode=login">Login</a>
+        </div>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <div class="footer__links">
+          <a href="about.html">About</a>
+          <a href="contact.html">Contact</a>
+          <a href="contact.html#bulk">For campuses</a>
+          <a href="contact.html#bulk">Bulk &amp; business</a>
+        </div>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <div class="footer__links">
+          <a href="privacy.html">Privacy policy</a>
+          <a href="terms.html">Terms of use</a>
+          <a href="refund.html">Refund policy</a>
+          <a href="shipping.html">Shipping policy</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer__base">
+      <span>© 2026 Codemarca · hello@codemarca.com</span>
+      <span class="love">Made in India <svg class="heart" viewBox="0 0 24 24" aria-label="love" role="img"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.1 0 3.6 1.1 4.4 2.6h1.8c.8-1.5 2.3-2.6 4.4-2.6 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z"/></svg> stuck all over it</span>
+    </div>
+  </div>
+</footer>
+
+<script src="lightbox.js"></script>
+<script src="fun.js"></script>
+<script src="drag-loop.js"></script>
+<script src="site-end.js"></script>
+<script src="site-menu.js"></script>
+<script src="smooth-scroll.js"></script>
+<script>
+(function () {
+  "use strict";
+  var nav = document.getElementById("nav");
+  function onScroll() { nav.dataset.scrolled = window.scrollY > 8 ? "true" : "false"; }
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+})();
+</script>

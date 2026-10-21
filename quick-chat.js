@@ -833,5 +833,13 @@
     /* ── GO ───────────────────────────────────────────────────────────── */
     if (wide()) { autoOpen(); } else { paintList(); emptyPane(); }
     setTimeout(inboxPicker, 0);
+    /* REVIEW ONLY (flows.html): ?scan=1 opens the scanner, ?scan=found also runs the demo scan */
+    var sq = new URLSearchParams(window.location.search).get("scan");
+    if (sq) {
+      setTimeout(function () {
+        scanner();
+        if (sq === "found") { setTimeout(function () { var d = document.querySelector(".qs [data-demo]"); if (d) { d.click(); } }, 300); }
+      }, 200);
+    }
   };
 })();

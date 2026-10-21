@@ -1,58 +1,45 @@
-CODEMARCA — PHASE-1 v2 (2026-10-17)
-What changed since v4-phase-1-v1 (2026-10-13). Where this file and the v1 notes disagree, this file wins.
+CODEMARCA — PHASE-1 v3 (2026-10-21)
+What changed since v4-phase-1-v2 (2026-10-17). Where this file and the v1/v2 notes disagree, this file wins.
 Open with a local server, hard refresh (Cmd+Shift+R).
 
-1. QUICK CHAT — OWNER INBOX, REDESIGNED            quick-chat.js, quick-chat.css (NEW)
-   "Messages" is now "Quick Chat" everywhere (sidebar, phone chat icon, Home row, titles).
-   File is still dashboard/*/messages.html so links don't break. The old inbox code left social.js/.css.
-   Laptop   one card, two panes: chat list left, open chat right (first chat opens by itself).
-   Phone    list fills the tab; a chat slides in full screen over the bars; phone back closes it.
-   List     On/Off · "320 left today" pill -> settings sheet (Quick Chat switch, today's usage, rules);
-            search; circles row — Scan first, then everyone who wrote; Chats · Requests tabs.
-   Chat     grouped bubbles with tails, time under every bubble, ✓ Sent / ✓✓ Seen, typing dots,
-            "disappears in Xh" timer in the header, 500-char meter + composer (Enter sends,
-            Shift+Enter new line). Requests: their card on top, Block · Ignore · Accept at the bottom.
-   ⋯ menu   View their page, CLEAR CHAT (new — my side only, confirm first; their side keeps its own
-            24h clock), Block, Report.
-   SCAN     Scan circle / "Scan a sticker" -> camera screen (DEMO for now, no real camera yet) or type
-            codemarca.com/<name> -> their card -> Quick Chat opens a new chat with the opener chip
-            "Hi <name>, I saw your sticker at…". It reaches them as a request; after 2 messages:
-            "Sent. You can send more once <name> replies."
-   REVIEW   an "Inbox" picker beside the account picker (this page only, delete with .demo):
-            account / no messages / Quick Chat off / first message / busy / all read, old / 500 used.
-            Also by URL: messages.html?inbox=busy
-   NOTE     after you send, the other side "types" and replies once — REVIEW ONLY, remove in the build.
+1. FEATURES PAGE (NEW)                               features.html, assets/features/
+   26 feature cards in 5 groups, by moment: 01 When someone scans you, 02 Keep in touch,
+   03 When something goes missing (dark band), 04 You're in control, 05 The sticker.
+   Each card = visual + title + one line; black "New" pill on Phase-1 features.
+   Visuals: 17 real-screen crops (assets/features/), studio photos, one four-theme strip.
+   Linked from: site menu (Features, 3rd), every footer's Product list, homepage "See everything it does".
 
-2. YOUR PEOPLE — followers · following (owner)      social.js, social.css
-   CM.people(): tabs with counts, search, Follow back / Following toggle (moves the count),
-   ⋯ Remove follower / Block (they aren't told), NEW tag, "and N more" (API pages the rest).
-   Phone = full screen slide-in, laptop = centred panel.
-   Opens from: Home "Your page" card (Followers / Following) AND Profile tab "How people connect
-   with you" -> top row (3 faces + counts + See all).
-   state.js people entries now carry face, you (I follow them back), since, fresh.
+2. HOMEPAGE THEME REEL (NEW)                          theme-reel.js, theme-reel.css, assets/themes/reel/
+   Right after the fact strip (#themes). 12 cards, every theme + version, full-length page shots.
+   Autoplay; pauses on hover/focus. Mouse drag + flick, 2-finger trackpad, phone swipe.
+   Slim scroll bar under it (drag/click to jump). No hint line.
+   Hover (laptop) = the card scrolls to its end + frosted "Use this theme ↗"
+   -> signup.html?theme=<id> -> onboarding.html?theme=<id> opens on that theme.
+   Hero arc's 6 profile cards use the same shots (no title over the phone); the arc can be dragged /
+   swiped too; the hover pill is laptop-only.
 
-3. DPs EVERYWHERE                                   dashboard.js CM.dp + .qdp in dashboard.css
-   Someone else's DP = their page photo, else the grey person. Never a letter.
-   In the demo `face` is a PhotoKit key standing in for a photo (photo-kit.js is now loaded on
-   messages.html and home.html).
+3. THEME CARRIED THROUGH SIGN-UP                      signup.html, onboarding.html
+   signup.html passes ?theme= on to onboarding; onboarding applies it after the preview is set up.
+   Unknown theme ids are ignored.
 
-4. QUICK CHAT — PUBLIC SIDE (profile.html)          profile-social.js, profile-social.css
-   Button label "Quick Chat" (round bubble icon). Guest -> Google sign-in (18+ in the legal line) ->
-   consent ("I understand", every 14 days, no age checkbox) -> chat.
-   No page yet? They get 2 messages (never told the number), then "Finish your page to keep
-   chatting"; replies after the lock show blurred. Dark sticky bar after their first message ->
-   "Build my page" -> onboarding.html?next=chat&to=<handle>&with=<first> -> done screen
-   "Your chat with X is unlocked · Back to chat" -> profile.html?handle=x&chat=open.
-   Header = page DP + name + one-line URL, red ✕. Unread replies = red count on the button.
+4. PHOTO RIVER                                        drag-loop.js (NEW)
+   "Seen in the wild / Stuck on literally everything." — same title on homepage, how-it-works and about.
+   drag-loop.js wires every .river__row itself: slow drift + mouse drag + thumb swipe + press-and-hold
+   + 2-finger trackpad.
 
-5. ONBOARDING + PROFILE TAB                          onboarding.html, tab-profile.js/.css, profile.html
-   "How people connect with you": Follow button + Quick chat switches (onboarding step 1, ON by
-   default); Profile tab adds Show follower counts + Let people open the lists (Save/Discard aware).
-   Theme picks have NO confirm any more (onboarding + Profile tab; My QR full screen still has it).
-   Theme arrows ‹ › beside the preview on laptops + version dots after an arrow is used.
-   Light theme: white ground, 540px card from 640px wide.
-   Save contact shows only with a name + one VISIBLE contact. Publish needs one of phone / WhatsApp /
-   email / any link — socials-only pages publish fine.
+5. SMOOTH SCROLL, NO SNAP                             smooth-scroll.js (NEW), assets/vendor/lenis.min.js, site-end.css
+   Section snap removed from the website. The 9 marketing pages (homepage, about, how-it-works,
+   features, contact, privacy, terms, refund, shipping) ease the mouse wheel with Lenis 1.3.11
+   (vendored, oreo.com-style). Phones keep native touch scroll. Reduced motion = off.
+   Sections are still at least one screen tall. Do NOT bring page snap back.
 
-Not in this folder (same as v1): _parked, READMEs, assets/flows, flows.html, profile-themes.html
+6. REVIEW LINKS (review only — strip in the build)
+   profile.html?qc=signin | consent | new | chat   opens that Quick Chat step   (profile-social.js)
+   messages.html?scan=1 | scan=found               opens the scanner / demo scan (quick-chat.js)
+   home.html?people=followers | following          opens Your people            (social.js)
+
+Not in this folder (same as v1/v2): _parked, READMEs, assets/flows, flows.html, profile-themes.html
 (theme bench), me-card-options.html, assets/profile-bgs, assets/profile-bg 1–4.
+Comments that still mention those files are notes only — nothing loads them.
+
+Screens: every screen at 393px, full length, sorted by flow, is in v4-screens-393 (separate zip).

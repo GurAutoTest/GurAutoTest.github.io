@@ -2769,8 +2769,16 @@ body[data-showing]{overflow:hidden}
   $("dlg").addEventListener("click", function (e) {
     if (e.target === $("dlg")) { dlgAnswer(null); return; }
     var b = e.target.closest("[data-dlg]"); if (b) { dlgAnswer(b.dataset.dlg); }
-  });
   $("thmOpen").addEventListener("click", function () { trayFrom = S.theme; setTheme(S.theme); thmTray(true); });
+
+  /* ?theme=<id> — picked on the homepage theme reel ("Use this theme"),
+     carried through sign-up (Garry, 2026-10-19). Unknown ids are ignored.
+     Deferred a tick: the live preview below must be set up first. */
+  setTimeout(function () {
+    var want = q.get("theme"), ok = THEMES.some(function (x) { return x.t === want; }) ||
+      Object.keys(SUBS).some(function (b) { return SUBS[b].some(function (x) { return x.t === want; }); });
+    if (want && ok) { setTheme(want); }
+  }, 0);
 
   /* ── the tip over Change ────────────────────────────────────────────
      Laptop column only, on every load (Garry, 2026-10-11 — once per

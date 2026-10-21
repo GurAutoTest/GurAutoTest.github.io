@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="site-menu.css">
 <link rel="stylesheet" href="fun.css">
 <link rel="stylesheet" href="site-end.css">
+<link rel="stylesheet" href="theme-reel.css">
 
 <style>
 /* ==========================================================================
@@ -339,6 +340,9 @@ h1,h2,h3{font-weight:var(--fw-black); text-wrap:balance}
    stops for a hover. No fading anywhere — every card is at full strength. */
 .arc{
   position:relative; height:var(--arc-h,460px);
+  /* grab it with the mouse, or slide it with a thumb (Garry, 2026-10-19);
+     up/down on a phone still scrolls the page */
+  cursor:grab; touch-action:pan-y; user-select:none; -webkit-user-select:none;
   margin-top:clamp(var(--s-10),5vw,var(--s-12)); margin-bottom:var(--s-6);
 }
 .wcard{
@@ -354,6 +358,22 @@ h1,h2,h3{font-weight:var(--fw-black); text-wrap:balance}
 .wcard::after{content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
   box-shadow:inset 0 0 0 1px var(--line-strong)}
 .wcard:hover img{transform:scale(1.04)}
+.arc.is-drag{cursor:grabbing}
+.arc.is-drag .wcard img{transform:none}
+/* the six profile cards wear the theme reel's look (theme-reel.css): a
+   coloured card, the theme's name, the page in a phone window. Hover scrolls
+   the page to its end and raises "Use this theme" (Garry, 2026-10-19). */
+.wcard--theme{background:var(--tc-bg); color:var(--tc-ink); box-shadow:var(--shadow-md)}
+.wcard--theme::after{display:none}
+/* no title over the phone (Garry, 2026-10-19) — the page sits higher instead */
+.wcard--theme .tcard__win{top:9%; width:74%}
+.wcard--theme .tcard__win img{height:auto; object-fit:initial}
+.wcard--theme:hover .tcard__win img{transform:none}
+.wcard--theme.is-peek .tcard__win img{transform:translateY(calc(var(--dy, 0px) * -1)); transition-duration:var(--down, 4s); transition-timing-function:cubic-bezier(.4,0,.25,1)}
+.wcard--theme .tcard__go{height:clamp(38px, 3vw, 46px); font-size:clamp(.8125rem, 1vw, .9375rem)}
+.wcard--theme.is-peek .tcard__go, .wcard--theme:focus-within .tcard__go{opacity:1; transform:none}
+/* phones: no hover, and the hero already ends in Claim — no pill over a small card */
+@media (hover:none){ .wcard--theme .tcard__go{display:none} }
 
 /* QR block — drawn from tokens, stands in for the real generated code */
 .qr{display:grid; grid-template-columns:repeat(9,1fr); gap:1px; width:34px; height:34px; flex-shrink:0}
@@ -706,6 +726,7 @@ input:-webkit-autofill:active{
 .frame__n{font-family:var(--font-mono); font-size:.75rem; font-weight:var(--fw-semibold); color:var(--ink-soft); letter-spacing:.14px}
 .frame__t{font-size:var(--fs-body); font-weight:var(--fw-bold); line-height:1.35}
 .feats{display:grid; gap:var(--s-4); grid-template-columns:1fr}
+.feats__all{align-self:flex-start}   /* → features.html (2026-10-19) */
 @media (min-width:640px){ .feats{grid-template-columns:1fr 1fr} }
 @media (min-width:1024px){ .feats{grid-template-columns:repeat(4, minmax(0,1fr))} }
 .feat{
@@ -798,26 +819,27 @@ input:-webkit-autofill:active{
     </div>
 
     <!-- The arc: 18 cards — two studio product shots, then a real profile page in one
-         of the six themes (assets/themes/), on repeat — moving along a wide curve. Product photos open the lightbox. -->
+         of six themes, drawn like the theme reel below (no title, phone window, hover scrolls
+         the page, "Use this theme"; shots in assets/themes/reel/ — 2026-10-19), on repeat — moving along a wide curve. Product photos open the lightbox. -->
     <div class="arc" id="arc" data-lightbox aria-label="Codemarca stickers on everyday things, and the pages they open">
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-helmet-studio-tall.jpg" alt="Codemarca QR sticker on a black motorcycle helmet" width="1536" height="2752"></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-gift-box-studio-tall.jpg" alt="Codemarca QR sticker on a gift box" width="1536" height="2752"></figure>
-        <figure class="wcard"><img src="assets/themes/codemarca-profile-theme-light.jpg" alt="Gurdeep Singh's Codemarca page in the Light theme" width="600" height="816" loading="lazy"></figure>
+        <figure class="wcard wcard--theme" style="--tc-bg:#DCE8FB; --tc-ink:#14213D; --tc-page:#FFFFFF"><div class="tcard__win"><img src="assets/themes/reel/codemarca-theme-light.jpg" alt="Gurdeep Singh's Codemarca page in the Light theme" width="600" loading="lazy"></div><a class="tcard__go" href="signup.html?theme=light">Use this theme<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 11.5l7-7M5.5 4.5h6v6"/></svg></a></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-laptop-palm-rest-studio-tall.jpg" alt="Codemarca QR sticker on a laptop palm rest" width="1536" height="2752" loading="lazy"></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-wallet-studio-tall.jpg" alt="Codemarca QR sticker on a leather wallet" width="1536" height="2752" loading="lazy"></figure>
-        <figure class="wcard"><img src="assets/themes/codemarca-profile-theme-photo.jpg" alt="Nikk Martin's Codemarca page in the Photo theme" width="600" height="816" loading="lazy"></figure>
+        <figure class="wcard wcard--theme" style="--tc-bg:#F4B9A6; --tc-ink:#4A1A0D; --tc-page:#C4CBD4"><div class="tcard__win"><img src="assets/themes/reel/codemarca-theme-photo.jpg" alt="Nikk Martin's Codemarca page in the Photo theme" width="600" loading="lazy"></div><a class="tcard__go" href="signup.html?theme=photo">Use this theme<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 11.5l7-7M5.5 4.5h6v6"/></svg></a></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-plant-pot-studio-tall.jpg" alt="Codemarca QR sticker on a terracotta plant pot" width="1536" height="2752" loading="lazy"></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-power-bank-studio-tall.jpg" alt="Codemarca QR sticker on a power bank" width="1536" height="2752" loading="lazy"></figure>
-        <figure class="wcard"><img src="assets/themes/codemarca-profile-theme-leaf-orange.jpg" alt="Nancy Wills's Codemarca page in the Leaf theme" width="600" height="816" loading="lazy"></figure>
+        <figure class="wcard wcard--theme" style="--tc-bg:#1F1F22; --tc-ink:#FFFFFF; --tc-page:#FF6A2B"><div class="tcard__win"><img src="assets/themes/reel/codemarca-theme-leaf-orange.jpg" alt="Nancy Wills's Codemarca page in the Leaf theme" width="600" loading="lazy"></div><a class="tcard__go" href="signup.html?theme=leaf-orange">Use this theme<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 11.5l7-7M5.5 4.5h6v6"/></svg></a></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-guitar-studio-tall.jpg" alt="Codemarca QR sticker on an acoustic guitar" width="1536" height="2752" loading="lazy"></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-pet-collar-studio-tall.jpg" alt="Codemarca QR tag on a pet collar" width="1536" height="2752" loading="lazy"></figure>
-        <figure class="wcard"><img src="assets/themes/codemarca-profile-theme-copper.jpg" alt="Garry Gill's Codemarca page in the Copper theme" width="600" height="816" loading="lazy"></figure>
+        <figure class="wcard wcard--theme" style="--tc-bg:#D7A47E; --tc-ink:#2E160A; --tc-page:#1E1410"><div class="tcard__win"><img src="assets/themes/reel/codemarca-theme-copper.jpg" alt="Garry Gill's Codemarca page in the Copper theme" width="600" loading="lazy"></div><a class="tcard__go" href="signup.html?theme=glass-copper">Use this theme<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 11.5l7-7M5.5 4.5h6v6"/></svg></a></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-laptop-and-phone-studio-tall.jpg" alt="Codemarca QR stickers on a laptop and a phone" width="1536" height="2752" loading="lazy"></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-notebook-flatlay-studio-tall.jpg" alt="Codemarca QR sticker on a black notebook" width="1536" height="2752" loading="lazy"></figure>
-        <figure class="wcard"><img src="assets/themes/codemarca-profile-theme-soft.jpg" alt="Rhea Malhotra's Codemarca page in the Soft theme" width="600" height="816" loading="lazy"></figure>
+        <figure class="wcard wcard--theme" style="--tc-bg:#CFE3D6; --tc-ink:#123323; --tc-page:#E8E7E5"><div class="tcard__win"><img src="assets/themes/reel/codemarca-theme-soft.jpg" alt="Rhea Malhotra's Codemarca page in the Soft theme" width="600" loading="lazy"></div><a class="tcard__go" href="signup.html?theme=soft">Use this theme<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 11.5l7-7M5.5 4.5h6v6"/></svg></a></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-bottle-and-stickers-studio-tall.jpg" alt="Codemarca QR sticker on a water bottle" width="1536" height="2752" loading="lazy"></figure>
         <figure class="wcard"><img src="assets/photos/codemarca-qr-sticker-notebook-flatlay-studio-tall-3.jpg" alt="Codemarca QR sticker on a diary cover" width="1536" height="2752"></figure>
-        <figure class="wcard"><img src="assets/themes/codemarca-profile-theme-bronze.jpg" alt="Dr. Rohan Verma's Codemarca page in the Bronze theme" width="600" height="816" loading="lazy"></figure>
+        <figure class="wcard wcard--theme" style="--tc-bg:#E9CFB4; --tc-ink:#3D2512; --tc-page:#2B1A10"><div class="tcard__win"><img src="assets/themes/reel/codemarca-theme-bronze.jpg" alt="Dr. Rohan Verma's Codemarca page in the Bronze theme" width="600" loading="lazy"></div><a class="tcard__go" href="signup.html?theme=glass-bronze">Use this theme<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 11.5l7-7M5.5 4.5h6v6"/></svg></a></figure>
     </div>
 
     <div class="shell stack center gap-4">
@@ -853,6 +875,23 @@ input:-webkit-autofill:active{
         Ships across India
       </span>
     </div>
+  </section>
+
+  <!-- ══ 2b. THEMES — Garry, 2026-10-19 ═════════════════════════════════
+       Every theme as a real page on a strip that keeps moving (after
+       biosites.com's template row). Cards are drawn by theme-reel.js;
+       shots in assets/themes/reel/. Hover = the page scrolls to its end
+       and "Use this theme" rises; drag, swipe or two-finger scroll moves it. -->
+  <section class="reel-sec" id="themes" aria-labelledby="themesH">
+    <div class="shell reel-sec__head rise">
+      <span class="eyebrow">Twelve looks</span>
+      <h2 class="h2 measure" id="themesH">Pick a look. Switch it any time.</h2>
+      <p class="lead measure">Every card is a real Codemarca page. Change the theme later from your phone — the sticker you already stuck keeps working.</p>
+    </div>
+    <div class="reel" data-reel aria-label="Codemarca themes">
+      <div class="reel__track"></div>
+    </div>
+    <div class="reel-bar" data-reel-bar aria-hidden="true"><i></i><i></i></div>
   </section>
 
   <!-- ══ 3. PLACES ══════════════════════════════════════════════════════ -->
@@ -980,6 +1019,8 @@ input:-webkit-autofill:active{
           <p>Liked someone’s sticker? Follow them on Codemarca and find their page again in a tap.</p>
         </article>
       </div>
+
+      <a class="btn btn--ghost feats__all rise" href="features.html">See everything it does</a>
 
       <div class="bulkline rise">
         <span class="stack gap-3"><b>Running group trips?</b>
@@ -1155,6 +1196,7 @@ input:-webkit-autofill:active{
         <h4>Product</h4>
         <div class="footer__links">
           <a href="how-it-works.html">How it works</a>
+          <a href="features.html">Features</a>
           <a href="#pack">What's in the pack</a>
           <a href="signup.html?next=order">Get a pack</a>
           <a href="signup.html?mode=login">Login</a>
@@ -1206,9 +1248,12 @@ input:-webkit-autofill:active{
 </footer>
 
 <script src="site-menu.js"></script>
+<script src="smooth-scroll.js"></script>
 <script src="lightbox.js"></script>
 <script src="fun.js"></script>
+<script src="drag-loop.js"></script>
 <script src="site-end.js"></script>
+<script src="theme-reel.js"></script>
 <script>
 (function () {
   "use strict";
@@ -1256,10 +1301,10 @@ input:-webkit-autofill:active{
       var vw = arc.clientWidth;
       var seen = vw >= 1100 ? 5.5 : vw >= 761 ? 4.2 : 2.4;   /* 5 whole cards on a desktop, the two edge ones cut */
       var step = vw / seen;
-      var gap = vw >= 761 ? 28 : 16;
+      var gap = vw >= 761 ? 28 : 26;   /* phones: wider gap, so tilted neighbours overlap less (Garry, 2026-10-19) */
       G.vw = vw; G.step = step;
       G.cw = Math.min(300, step - gap); G.ch = Math.round(G.cw * 1.36);
-      G.R = Math.max(vw * 1.15, 900);
+      G.R = vw >= 761 ? Math.max(vw * 1.15, 900) : 1250;   /* flatter curve on phones, less tilt */
       var edge = Math.min(vw / 2 + G.cw, G.R * .9);
       G.drop = G.R - Math.sqrt(G.R * G.R - edge * edge);
       arc.style.setProperty("--cw", G.cw + "px");
@@ -1280,12 +1325,66 @@ input:-webkit-autofill:active{
           "translate(" + (x - G.cw / 2).toFixed(1) + "px," + y.toFixed(1) + "px) rotate(" + th.toFixed(4) + "rad)";
       });
     }
+    /* drag: mouse, pen or thumb moves the row; a press alone holds it;
+       let go and a flick glides on, then the slow drift comes back */
+    var drag = null, moved = false, vel = 0, holdTill = 0;
+    arc.addEventListener("dragstart", function (e) { e.preventDefault(); });
+    arc.addEventListener("pointerdown", function (e) {
+      if (e.button !== 0) { return; }
+      drag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, o0: off, lx: e.clientX, lt: performance.now(), on: false };
+      vel = 0; moved = false;
+    });
+    arc.addEventListener("pointermove", function (e) {
+      if (!drag || e.pointerId !== drag.id) { return; }
+      var dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+      if (!drag.on) {
+        if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) { drag = null; return; }   /* scrolling the page */
+        if (Math.abs(dx) < 6) { return; }
+        drag.on = true; moved = true; arc.classList.add("is-drag");
+        try { arc.setPointerCapture(e.pointerId); } catch (err) {}
+        acards.forEach(function (c) { c.classList.remove("is-peek"); });
+      }
+      var now = performance.now();
+      vel = (e.clientX - drag.lx) / Math.max(8, now - drag.lt);   /* px per ms */
+      drag.lx = e.clientX; drag.lt = now;
+      off = drag.o0 + dx; paint();
+    });
+    function endDrag() {
+      if (!drag) { return; }
+      if (!drag.on) { vel = 0; }
+      vel = Math.max(-3, Math.min(3, vel));
+      drag = null; arc.classList.remove("is-drag");
+      holdTill = performance.now() + 1200;
+    }
+    arc.addEventListener("pointerup", endDrag);
+    arc.addEventListener("pointercancel", endDrag);
+    /* a drag is not a tap on a photo (lightbox) or on "Use this theme" */
+    arc.addEventListener("click", function (e) {
+      if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; }
+    }, true);
+
     function tick(t) {
-      if (last && !document.hidden) off += (t - last) * G.speed;
+      var dt = last ? t - last : 0;
+      if (drag) { dt = 0; }
+      else if (Math.abs(vel) > .02) { off += vel * dt; vel *= Math.pow(.004, dt / 1000); }
+      else if (!document.hidden && t > holdTill) { vel = 0; off += dt * G.speed; }
       last = t;
       paint();
       requestAnimationFrame(tick);
     }
+    /* the profile cards: hover scrolls the page inside to its end */
+    acards.forEach(function (card) {
+      if (!card.classList.contains("wcard--theme")) { return; }
+      card.addEventListener("mouseenter", function () {
+        var img = card.querySelector("img"), win = card.querySelector(".tcard__win");
+        var dy = Math.max(0, img.offsetHeight - win.clientHeight);
+        card.style.setProperty("--dy", dy + "px");
+        card.style.setProperty("--down", reduced ? "0s" : Math.max(1.6, dy / 260).toFixed(2) + "s");
+        card.style.setProperty("--back", reduced ? "0s" : Math.max(.6, dy / 900).toFixed(2) + "s");
+        card.classList.add("is-peek");
+      });
+      card.addEventListener("mouseleave", function () { card.classList.remove("is-peek"); });
+    });
     measure();
     off = G.step * 1;   /* open on a centred card */
     paint();
