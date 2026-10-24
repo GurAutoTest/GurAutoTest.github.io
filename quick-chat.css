@@ -50,6 +50,10 @@
 .qx__status .qx__dot{color:var(--ink-faint)}
 .qx__status[data-off]{background:var(--ground-soft)}
 .qx__status[data-off] i{background:var(--ink-faint); animation:none}
+.qx__status[data-low]{background:rgba(245,158,11,.12); color:#b45309}
+.qx__status[data-low] i{background:#f59e0b; box-shadow:none; animation:none}
+.qx__status[data-limit]{background:rgba(229,55,44,.12); color:#dc2626}
+.qx__status[data-limit] i{background:#ef4444; box-shadow:none; animation:none}
 @keyframes qxPulse{
   0%{box-shadow:0 0 0 0 rgba(26,153,90,.45)}
   70%{box-shadow:0 0 0 6px rgba(26,153,90,0)}

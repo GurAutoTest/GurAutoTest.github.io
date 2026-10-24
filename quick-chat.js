@@ -100,6 +100,34 @@
     for (k in o) { x[k] = o[k]; }
     return x;
   }
+  function todayDateKey() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+
+  function getDailyUsed() {
+    try {
+      var savedDate = localStorage.getItem("cm.daily_usage_date");
+      var today = todayDateKey();
+      if (savedDate !== today) {
+        localStorage.setItem("cm.daily_usage_date", today);
+        localStorage.setItem("cm.daily_usage_used", "0");
+        return 0;
+      }
+      var val = localStorage.getItem("cm.daily_usage_used");
+      return val !== null ? Math.max(0, +val) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function saveDailyUsed(used) {
+    try {
+      localStorage.setItem("cm.daily_usage_date", todayDateKey());
+      localStorage.setItem("cm.daily_usage_used", String(used));
+    } catch (e) {}
+  }
+
   function M(me, at, text, seen) { return { me: me, at: at, text: text, seen: !!seen }; }
   function inbox(S) {
     var k = inboxKey();
@@ -116,6 +144,9 @@
           }
         }
       } catch (e) {}
+      if (!S.usage) { S.usage = { limit: 500, used: 0 }; }
+      var dUsed = getDailyUsed();
+      if (dUsed !== null) { S.usage.used = dUsed; }
     }
     else if (k === "empty") { S.chat = true; S.requests = []; S.chats = []; S.usage.used = 0; }
     else if (k === "off") { S.chat = false; S.requests = []; }
@@ -243,10 +274,16 @@
 
     /* ── THE LIST ─────────────────────────────────────────────────────── */
     function statusPaint() {
-      root.querySelector(".qx__status").outerHTML =
-        '<button class="qx__status" type="button" data-settings' + (S.chat ? "" : " data-off") + ">" +
+      var l = left();
+      var el = root.querySelector(".qx__status");
+      if (!el) { return; }
+      var clsAttr = S.chat ? "" : " data-off";
+      if (l <= 0) { clsAttr += " data-limit"; }
+      else if (l < 100) { clsAttr += " data-low"; }
+      el.outerHTML =
+        '<button class="qx__status" type="button" data-settings' + clsAttr + ">" +
           '<i aria-hidden="true"></i>' + (S.chat ? "On" : "Off") + '<span class="qx__dot">·</span>' +
-          "<b>" + left() + "</b>&nbsp;left today" + CM.icon("chev") + "</button>";
+          "<b>" + l + "</b>&nbsp;left today" + CM.icon("chev") + "</button>";
     }
 
     function match(it) {
@@ -435,7 +472,9 @@
       if (it.out && it.pending && it.msgs.length >= 2) {
         return '<p class="qt__wait">' + CM.icon("lock") + "Sent. You can send more once " + esc(first(it.name)) + " replies.</p>";
       }
-      if (left() <= 0) { return '<p class="qt__wait">' + CM.icon("lock") + "You’ve used today’s 500 characters. More at midnight.</p>"; }
+      if (left() <= 0) {
+        return '<p class="qt__wait qt__wait--limit">' + CM.icon("lock") + "<b>You’ve used today’s 500 characters.</b> More at midnight.</p>";
+      }
       var opener = it.out ? "Hi " + first(it.name) + ", I saw your sticker at" : "";
       return meterHtml() +
         (opener && !it.msgs.length ? '<button class="qt__chip" type="button" data-opener>' + esc(opener) + "…</button>" : "") +
@@ -463,11 +502,12 @@
       var nEl = pane.querySelector("[data-left]"), bar = pane.querySelector(".qt__bar i"), use = pane.querySelector(".qt__use");
       var opener = cur.it.out && !cur.it.msgs.length ? "Hi " + first(cur.it.name) + ", I saw your sticker at " : "";
       function sync() {
-        var l = left() - ta.value.length;
-        send.disabled = !ta.value.trim();
-        nEl.textContent = Math.max(0, l);
-        bar.style.width = Math.max(0, Math.round(l / S.usage.limit * 100)) + "%";
-        use.dataset.low = String(l < 100);
+        var typed = ta.value.length;
+        var rem = Math.max(0, left() - typed);
+        send.disabled = !ta.value.trim() || left() <= 0;
+        if (nEl) { nEl.textContent = rem; }
+        if (bar) { bar.style.width = Math.max(0, Math.round(rem / S.usage.limit * 100)) + "%"; }
+        if (use) { use.dataset.low = String(rem < 100); }
         ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 132) + "px";
       }
       ta.addEventListener("input", sync);
@@ -492,6 +532,7 @@
     function sendMsg(v) {
       var it = cur.it;
       S.usage.used = Math.min(S.usage.limit, S.usage.used + v.length);
+      saveDailyUsed(S.usage.used);
       var m = { me: true, text: v, at: now(), seen: false };
       it.msgs.push(m); it.when = "Just now";
       /* newest chat to the top of the list */
