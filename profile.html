@@ -2546,6 +2546,11 @@ input:-webkit-autofill:active{
   if (q.get("mode")) {
     if (DEMO_MODE[q.get("mode")]) { P.mode = DEMO_MODE[q.get("mode")]; }
     else { try { P.mode = JSON.parse(q.get("mode")); } catch (err) { P.mode = null; } }
+  } else {
+    try {
+      var savedMode = localStorage.getItem("cm.mode");
+      if (savedMode) { P.mode = JSON.parse(savedMode); }
+    } catch (err) { P.mode = null; }
   }
 
   /* ?bare=1 — the page a Google sign-up produces before anyone edits it:

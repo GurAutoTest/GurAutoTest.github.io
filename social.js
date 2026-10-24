@@ -123,6 +123,7 @@
       else if (g && g.you !== on) { g.you = on; s.following += on ? 1 : -1; }
       else if (!g && !on) { /* nothing */ }
       if (onChange) { onChange(s); }
+      try { localStorage.setItem("cm.social_state", JSON.stringify(s)); } catch (e) {}
     }
 
     el.addEventListener("click", function (e) {
@@ -154,6 +155,7 @@
               s.followers = Math.max(0, s.followers - 1);
               if (b.getAttribute("data-m") === "block" && who.you) { setFollow(who.handle, false); }
               if (onChange) { onChange(s); }
+              try { localStorage.setItem("cm.social_state", JSON.stringify(s)); } catch (e) {}
               paint(false);
               CM.toast(b.getAttribute("data-m") === "block" ? first + " is blocked" : first + " removed");
             });

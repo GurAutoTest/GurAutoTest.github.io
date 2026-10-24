@@ -103,7 +103,21 @@
   function M(me, at, text, seen) { return { me: me, at: at, text: text, seen: !!seen }; }
   function inbox(S) {
     var k = inboxKey();
-    if (k === "empty") { S.chat = true; S.requests = []; S.chats = []; S.usage.used = 0; }
+    if (k === "account") {
+      try {
+        var saved = localStorage.getItem("cm.social_state");
+        if (saved) {
+          var parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === "object") {
+            if (typeof parsed.chat === "boolean") S.chat = parsed.chat;
+            if (Array.isArray(parsed.requests)) S.requests = parsed.requests;
+            if (Array.isArray(parsed.chats)) S.chats = parsed.chats;
+            if (parsed.usage) S.usage = parsed.usage;
+          }
+        }
+      } catch (e) {}
+    }
+    else if (k === "empty") { S.chat = true; S.requests = []; S.chats = []; S.usage.used = 0; }
     else if (k === "off") { S.chat = false; S.requests = []; }
     else if (k === "first") {
       S.chat = true; S.chats = []; S.usage.used = 0;
@@ -197,6 +211,17 @@
     function all() { return S.requests.concat(S.chats); }
     function find(id) { return all().filter(function (x) { return x.id === id; })[0]; }
     function kindOf(it) { return S.requests.indexOf(it) > -1 ? "request" : "chat"; }
+
+    function persistSocial() {
+      try {
+        localStorage.setItem("cm.social_state", JSON.stringify(S));
+        localStorage.setItem("cm.chat_enabled", JSON.stringify(S.chat));
+        a.social = clone(S);
+        if (typeof CM.save === "function") {
+          CM.save({ social: S });
+        }
+      } catch (e) {}
+    }
 
     /* ── SKELETON — built once, so search keeps focus while lists repaint ── */
     root.innerHTML =
@@ -471,6 +496,7 @@
       it.msgs.push(m); it.when = "Just now";
       /* newest chat to the top of the list */
       S.chats = [it].concat(S.chats.filter(function (x) { return x !== it; }));
+      persistSocial();
       appendMsg();
       var chip = pane.querySelector("[data-opener]"); if (chip) { chip.remove(); }
       var foot = pane.querySelector("[data-foot]");
@@ -507,6 +533,7 @@
       setTimeout(function () {
         mine.msgs.push({ me: false, text: REPLIES[S.chats.indexOf(mine) % REPLIES.length] || REPLIES[0], at: now() });
         mine.when = "Just now";
+        persistSocial();
         if (!cur || cur.it !== mine) { mine.unread = true; paintList(); return; }
         var t = pane.querySelector("[data-typing]"); if (t) { t.hidden = true; }
         appendMsg(); paintList();
@@ -551,6 +578,7 @@
     function drop(it) {
       S.requests = S.requests.filter(function (x) { return x !== it; });
       S.chats = S.chats.filter(function (x) { return x !== it; });
+      persistSocial();
       if (cur && cur.it === it) {
         cur = null;
         if (wide()) { autoOpen(); } else { closeThread(); }
@@ -562,6 +590,7 @@
       var c = { id: "c" + it.id, name: it.name, handle: it.handle, face: it.face, source: it.source, nopage: it.nopage,
                 when: it.when, unread: false, left: "24h", msgs: msgsOf(it) };
       S.chats.unshift(c);
+      persistSocial();
       cur = { kind: "chat", it: c }; tab = "chats";
       var foot = pane.querySelector("[data-foot]");
       if (foot && !reduce) { foot.classList.add("is-going"); }
@@ -575,7 +604,7 @@
       if ((t = e.target.closest("[data-open]"))) { var it = find(t.getAttribute("data-open")); if (it) { open(it); } return; }
       if (e.target.closest("[data-scan]")) { scanner(); return; }
       if (e.target.closest("[data-settings]")) { settings(); return; }
-      if (e.target.closest("[data-turnon]")) { S.chat = true; paintList(); CM.toast("Quick Chat is on"); return; }
+      if (e.target.closest("[data-turnon]")) { S.chat = true; persistSocial(); paintList(); CM.toast("Quick Chat is on"); return; }
       if (e.target.closest("[data-back]")) { closeThread(); return; }
       if (e.target.closest("[data-more]")) { more(cur.it); return; }
       if ((t = e.target.closest("[data-act]"))) {
@@ -612,6 +641,7 @@
           panel.addEventListener("change", function (e) {
             if (!e.target.matches("[data-qc]")) { return; }
             S.chat = e.target.checked;
+            persistSocial();
             panel.querySelector("[data-st]").textContent = "Quick Chat is " + (S.chat ? "on" : "off");
             panel.querySelector(".qset__row").toggleAttribute("data-off", !S.chat);
             paintList();
@@ -652,6 +682,7 @@
         onPick: function (id) {
           if (id !== "clear") { return; }
           it.msgs = []; it.cleared = true; it.left = null;
+          persistSocial();
           if (cur && cur.it === it) {
             var box = pane.querySelector("[data-msgs]");
             if (box && !reduce) {
@@ -766,7 +797,8 @@
         if (mine) { return { existing: mine }; }
         if (h === (a.profile && a.profile.handle)) { return { self: true }; }
         var d = DIRECTORY.filter(function (x) { return x.handle === h; })[0];
-        return d ? { person: d } : { none: h };
+        if (d) return { person: d };
+        return { person: { name: h.charAt(0).toUpperCase() + h.slice(1), handle: h, face: "p-bob", bio: "Codemarca profile @" + h, where: "a sticker" } };
       }
 
       function found(res, via) {
@@ -795,6 +827,7 @@
             var c = { id: "o" + p.handle, name: p.name, handle: p.handle, face: p.face, bio: p.bio,
                       when: "Now", unread: false, out: true, pending: true, via: via, msgs: [] };
             S.chats.unshift(c);
+            persistSocial();
             open(c, "chat");
           });
           box.querySelector("[data-again]").addEventListener("click", reset);

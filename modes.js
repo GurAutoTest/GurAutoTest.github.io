@@ -83,8 +83,38 @@
     if (!box) { return; }
     /* a page that is switched off shows nobody anything — no mode either */
     if (a.profile && a.profile.live === false) { box.hidden = true; return; }
-    var M = a.modes ? clone(a.modes) : blank();
+    var savedModes = null;
+    try {
+      var raw = localStorage.getItem("cm.modes");
+      if (raw) savedModes = JSON.parse(raw);
+    } catch (e) {}
+    var M = savedModes || (a.modes ? clone(a.modes) : blank());
     a.modes = M;
+
+    function persistModes() {
+      try {
+        localStorage.setItem("cm.modes", JSON.stringify(M));
+        var activeMode = null;
+        if (M.lost && M.lost.on) {
+          activeMode = clone(M.lost);
+          activeMode.kind = "lost";
+        } else if (M.travel && M.travel.on) {
+          activeMode = clone(M.travel);
+          activeMode.kind = "travel";
+        }
+        if (activeMode) {
+          localStorage.setItem("cm.mode", JSON.stringify(activeMode));
+        } else {
+          localStorage.removeItem("cm.mode");
+        }
+        a.modes = M;
+        if (typeof CM.save === "function") {
+          CM.save({ modes: M });
+        }
+      } catch (err) {
+        console.error("Failed to persist modes", err);
+      }
+    }
 
     function line(k) {
       var m = M[k];
@@ -137,6 +167,7 @@
         form(k);
       } else {
         M[k].on = false;
+        persistModes();
         paint();
       }
     });
@@ -277,6 +308,7 @@
             M[k] = m;
             /* one at a time — Lost takes over from Travel, and back */
             M[k === "travel" ? "lost" : "travel"].on = false;
+            persistModes();
             close();
             paint();
           });

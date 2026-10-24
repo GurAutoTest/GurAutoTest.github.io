@@ -2,13 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="refresh" content="0; url=home.html">
-  <script>location.replace("home.html");</script>
+  <script>
+    var flow = localStorage.getItem("cm.flow") || "2-page-live";
+    var state = new URLSearchParams(location.search).get("state");
+    var target = flow + "/home.html" + (state ? "?state=" + encodeURIComponent(state) : "");
+    location.replace(target);
+  </script>
+  <meta http-equiv="refresh" content="0; url=2-page-live/home.html">
   <title>Redirecting to dashboard...</title>
-<link rel="icon" type="image/png" href="../favicon.png">
-<link rel="apple-touch-icon" href="../favicon.png">
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../favicon.png">
 </head>
 <body>
-  <p>Redirecting to <a href="home.html">dashboard</a>...</p>
+  <p>Redirecting to <a href="2-page-live/home.html">dashboard</a>...</p>
 </body>
 </html>

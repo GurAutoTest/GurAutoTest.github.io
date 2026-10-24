@@ -189,6 +189,11 @@
      the rest of the dashboard described two different pages. Now the flow's
      state.js is the only copy, and Discard goes back to it. The defaults
      below only fill gaps in an older saved page. */
+  var storedProfile = {};
+  try {
+    var raw = localStorage.getItem("cm.profile_saved");
+    if (raw) storedProfile = JSON.parse(raw);
+  } catch (e) {}
   var SAVED = merge({
     live:true, theme:"light",
     photo:null, name:"", handle:"", bio:"",
@@ -199,6 +204,7 @@
     order:["call","wa","email","vcard","socials","website","directions","review"],
     socialOrder:[]
   }, a.profile || {});
+  SAVED = merge(SAVED, storedProfile);
 
   function merge(base, extra) {
     var out = JSON.parse(JSON.stringify(base)), k;
@@ -749,6 +755,25 @@
       return false;
     }
     SAVED = JSON.parse(JSON.stringify(S));
+    try {
+      localStorage.setItem("cm.profile_saved", JSON.stringify(SAVED));
+      if (SAVED.name) localStorage.setItem("cm.name", SAVED.name);
+      if (SAVED.handle) {
+        localStorage.setItem("cm.username", SAVED.handle);
+        localStorage.setItem("cm.handle", SAVED.handle);
+      }
+      if (SAVED.bio !== undefined) localStorage.setItem("cm.bio", SAVED.bio);
+      if (SAVED.photo) localStorage.setItem("cm.photo", SAVED.photo);
+      if (SAVED.theme) localStorage.setItem("cm.theme", SAVED.theme);
+      if (a.profile) {
+        for (var pk in SAVED) { a.profile[pk] = SAVED[pk]; }
+      }
+      if (typeof CM.save === "function") {
+        CM.save({ profile: SAVED });
+      }
+    } catch (e) {
+      console.error("Error saving profile", e);
+    }
     paintLive();
     clean();
     CM.toast("Page updated");
