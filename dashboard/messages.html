@@ -3,7 +3,11 @@
 <head>
   <meta charset="utf-8">
   <script>
-    var flow = localStorage.getItem("cm.flow") || "2-page-live";
+    var flow = "2-page-live";
+    try {
+      if (localStorage.getItem("cm.flow")) flow = localStorage.getItem("cm.flow");
+      else if (localStorage.getItem("cm.demo.flow") === "active") flow = "4-active";
+    } catch (e) {}
     location.replace(flow + "/messages.html" + location.search);
   </script>
   <meta http-equiv="refresh" content="0; url=2-page-live/messages.html">

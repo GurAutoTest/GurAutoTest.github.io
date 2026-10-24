@@ -189,11 +189,6 @@
      the rest of the dashboard described two different pages. Now the flow's
      state.js is the only copy, and Discard goes back to it. The defaults
      below only fill gaps in an older saved page. */
-  var storedProfile = {};
-  try {
-    var raw = localStorage.getItem("cm.profile_saved");
-    if (raw) storedProfile = JSON.parse(raw);
-  } catch (e) {}
   var SAVED = merge({
     live:true, theme:"light",
     photo:null, name:"", handle:"", bio:"",
@@ -204,7 +199,6 @@
     order:["call","wa","email","vcard","socials","website","directions","review"],
     socialOrder:[]
   }, a.profile || {});
-  SAVED = merge(SAVED, storedProfile);
 
   function merge(base, extra) {
     var out = JSON.parse(JSON.stringify(base)), k;
@@ -218,6 +212,25 @@
   SAVED.chat   = a.social ? !!a.social.chat : true;
   SAVED.showCounts = !(a.social && a.social.showCounts === false);
   SAVED.showList   = !(a.social && a.social.showList === false);
+
+  try {
+    var storedProfile = JSON.parse(localStorage.getItem("cm.profile") || "{}");
+    if (storedProfile && typeof storedProfile === "object") {
+      SAVED = merge(SAVED, storedProfile);
+    }
+    if (localStorage.getItem("cm.name")) SAVED.name = localStorage.getItem("cm.name");
+    var sHandle = localStorage.getItem("cm.username") || localStorage.getItem("cm.handle");
+    if (sHandle) SAVED.handle = sHandle;
+    if (localStorage.getItem("cm.bio") !== null) SAVED.bio = localStorage.getItem("cm.bio");
+    if (localStorage.getItem("cm.photo")) SAVED.photo = localStorage.getItem("cm.photo");
+    if (localStorage.getItem("cm.theme")) SAVED.theme = localStorage.getItem("cm.theme");
+    if (localStorage.getItem("cm.phone") !== null) SAVED.phone = localStorage.getItem("cm.phone");
+    if (localStorage.getItem("cm.wa") !== null) SAVED.wa = localStorage.getItem("cm.wa");
+    if (localStorage.getItem("cm.email") !== null) SAVED.email = localStorage.getItem("cm.email");
+    if (localStorage.getItem("cm.links")) {
+      try { SAVED.links = JSON.parse(localStorage.getItem("cm.links")); } catch (e) {}
+    }
+  } catch (e) {}
 
   var S, cid = 0;
   function load(from) { S = JSON.parse(JSON.stringify(from)); }
@@ -755,25 +768,48 @@
       return false;
     }
     SAVED = JSON.parse(JSON.stringify(S));
+
     try {
-      localStorage.setItem("cm.profile_saved", JSON.stringify(SAVED));
       if (SAVED.name) localStorage.setItem("cm.name", SAVED.name);
       if (SAVED.handle) {
         localStorage.setItem("cm.username", SAVED.handle);
         localStorage.setItem("cm.handle", SAVED.handle);
       }
       if (SAVED.bio !== undefined) localStorage.setItem("cm.bio", SAVED.bio);
-      if (SAVED.photo) localStorage.setItem("cm.photo", SAVED.photo);
+      if (SAVED.photo !== undefined) localStorage.setItem("cm.photo", SAVED.photo || "");
       if (SAVED.theme) localStorage.setItem("cm.theme", SAVED.theme);
-      if (a.profile) {
-        for (var pk in SAVED) { a.profile[pk] = SAVED[pk]; }
-      }
-      if (typeof CM.save === "function") {
-        CM.save({ profile: SAVED });
+      if (SAVED.phone !== undefined) localStorage.setItem("cm.phone", SAVED.phone);
+      if (SAVED.wa !== undefined) localStorage.setItem("cm.wa", SAVED.wa);
+      if (SAVED.email !== undefined) localStorage.setItem("cm.email", SAVED.email);
+      if (SAVED.links) localStorage.setItem("cm.links", JSON.stringify(SAVED.links));
+      localStorage.setItem("cm.profile", JSON.stringify(SAVED));
+
+      var authUser = localStorage.getItem("cm.username") || localStorage.getItem("cm.handle");
+      if (authUser) {
+        var sbUrl = "https://inzigrmttewawjjkggbd.supabase.co/rest/v1/profiles?username=eq." + encodeURIComponent(authUser);
+        fetch(sbUrl, {
+          method: "PATCH",
+          headers: {
+            "apikey": "sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg",
+            "Authorization": "Bearer sb_publishable_t03O5VnqWX8kbRPDSfdprQ_gjJFAUsg",
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify({
+            display_name: SAVED.name,
+            bio: SAVED.bio,
+            avatar_url: SAVED.photo,
+            theme: SAVED.theme,
+            phone: SAVED.phone,
+            whatsapp: SAVED.wa,
+            email: SAVED.email
+          })
+        }).catch(function (e) { console.warn("Supabase profile save error:", e); });
       }
     } catch (e) {
-      console.error("Error saving profile", e);
+      console.warn("localStorage profile save error:", e);
     }
+
     paintLive();
     clean();
     CM.toast("Page updated");

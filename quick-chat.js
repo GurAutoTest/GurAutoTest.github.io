@@ -798,7 +798,7 @@
         if (h === (a.profile && a.profile.handle)) { return { self: true }; }
         var d = DIRECTORY.filter(function (x) { return x.handle === h; })[0];
         if (d) return { person: d };
-        return { person: { name: h.charAt(0).toUpperCase() + h.slice(1), handle: h, face: "p-bob", bio: "Codemarca profile @" + h, where: "a sticker" } };
+        return { person: { name: h.charAt(0).toUpperCase() + h.slice(1), handle: h, face: "p-bob", bio: "Codemarca member", where: "a sticker" } };
       }
 
       function found(res, via) {

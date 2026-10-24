@@ -42,6 +42,19 @@
      moves, so the card that opened it can repaint. */
   CM.people = function (s, tab, onChange) {
     if (!s.people) { s.people = { followers: [], following: [] }; }
+    try {
+      var savedP = JSON.parse(localStorage.getItem("cm.social_people") || "null");
+      if (savedP) {
+        if (Array.isArray(savedP.followers)) s.people.followers = savedP.followers;
+        if (Array.isArray(savedP.following)) s.people.following = savedP.following;
+      }
+      if (localStorage.getItem("cm.social_followers") !== null) {
+        s.followers = +localStorage.getItem("cm.social_followers");
+      }
+      if (localStorage.getItem("cm.social_following") !== null) {
+        s.following = +localStorage.getItem("cm.social_following");
+      }
+    } catch (e) {}
     var P = s.people, q = "";
     tab = tab === "following" ? "following" : "followers";
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -123,7 +136,11 @@
       else if (g && g.you !== on) { g.you = on; s.following += on ? 1 : -1; }
       else if (!g && !on) { /* nothing */ }
       if (onChange) { onChange(s); }
-      try { localStorage.setItem("cm.social_state", JSON.stringify(s)); } catch (e) {}
+      try {
+        localStorage.setItem("cm.social_people", JSON.stringify(P));
+        localStorage.setItem("cm.social_followers", s.followers);
+        localStorage.setItem("cm.social_following", s.following);
+      } catch (e) {}
     }
 
     el.addEventListener("click", function (e) {
@@ -155,7 +172,11 @@
               s.followers = Math.max(0, s.followers - 1);
               if (b.getAttribute("data-m") === "block" && who.you) { setFollow(who.handle, false); }
               if (onChange) { onChange(s); }
-              try { localStorage.setItem("cm.social_state", JSON.stringify(s)); } catch (e) {}
+              try {
+                localStorage.setItem("cm.social_people", JSON.stringify(P));
+                localStorage.setItem("cm.social_followers", s.followers);
+                localStorage.setItem("cm.social_following", s.following);
+              } catch (e) {}
               paint(false);
               CM.toast(b.getAttribute("data-m") === "block" ? first + " is blocked" : first + " removed");
             });
