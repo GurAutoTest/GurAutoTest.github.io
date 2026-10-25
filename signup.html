@@ -274,6 +274,29 @@ body[data-flow="login"] [data-only~="login"]{display:revert}
   *,*::before,*::after{animation-duration:.001ms !important; transition-duration:.001ms !important}
 }
 
+/* ── SUPPORTING TEXT ───────────────────────────────────────────────────
+   Headings and body copy run on negative tracking. The small grey lines
+   under them — subtitles, help, notes, values — do not: at 13–14px the
+   letters need the air back instead. Any new small line on this page
+   belongs in this list. */
+.legal,
+.alt,
+.ph__desc,
+.note{ letter-spacing:var(--ls-soft) }
+
+/* Chrome paints its own pale-blue block behind anything it autofills, which
+   overrides the field's own ground. Parking the transition indefinitely keeps
+   our background and ink; it is the one fix that does not need to know the
+   field's colour. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+  -webkit-text-fill-color:var(--ink);
+  caret-color:var(--ink);
+  transition:background-color 600000s 0s, color 600000s 0s;
+}
+
 .ref-badge{
   display:inline-flex; align-items:center; gap:var(--s-2);
   padding:6px 14px; border-radius:var(--r-pill);

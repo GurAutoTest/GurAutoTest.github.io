@@ -1810,22 +1810,31 @@ body[data-showing]{overflow:hidden}
   if (qH) S.handle = cleanHandle(qH);
   else if (storedH) S.handle = cleanHandle(storedH);
 
+  var isDifferentHandle = !!(qH && storedH && cleanHandle(qH) !== cleanHandle(storedH));
+  var badNames = ["garry singh", "garry", "gurdeep singh", "your name", "user", "codemarca", "admin", "demo"];
+
   var qN = q.get("name");
   var storedN = "";
   try {
     storedN = localStorage.getItem("cm.name") || "";
-    if (storedN === "Garry Singh" || storedN === "Garry" || storedN === "Your Name" || storedN === "User") {
+    if (badNames.indexOf(storedN.trim().toLowerCase()) > -1) {
       storedN = "";
     }
   } catch(e) {}
-  if (qN && qN !== "Garry Singh" && qN !== "Garry" && qN !== "Your Name") S.name = qN.slice(0, 40);
-  else if (storedN) S.name = storedN.slice(0, 40);
+  if (qN && badNames.indexOf(qN.trim().toLowerCase()) < 0) {
+    S.name = qN.slice(0, 40);
+  } else if (storedN && !isDifferentHandle) {
+    S.name = storedN.slice(0, 40);
+  } else {
+    S.name = "";
+  }
 
   var qP = q.get("phone");
   var storedP = "";
   try { storedP = localStorage.getItem("cm.phone") || ""; } catch(e) {}
-  if (qP) S.phone = qP.replace(/\D/g, "").slice(0, 10);
-  else if (storedP) S.phone = storedP.replace(/\D/g, "").slice(0, 10);
+  // Do NOT prematurely display phone / call / WhatsApp on Step 1 preview — only show if explicitly set by URL or typed in Step 2
+  if (qP && q.get("show_phone") === "1") S.phone = qP.replace(/\D/g, "").slice(0, 10);
+  else S.phone = "";
 
   var qE = q.get("email");
   var storedE = "";
@@ -1837,14 +1846,16 @@ body[data-showing]{overflow:hidden}
   var qPhoto = q.get("photo") || q.get("avatar") || "";
   var storedPhoto = "";
   try {
-    storedPhoto = localStorage.getItem("cm.photo") || "";
-    if (!storedPhoto) {
-      var authObj = JSON.parse(localStorage.getItem("cm.auth") || "{}");
-      storedPhoto = authObj.photo || "";
-    }
-    if (!storedPhoto) {
-      var gMeta = JSON.parse(localStorage.getItem("cm.google_meta") || "{}");
-      storedPhoto = gMeta.avatar_url || gMeta.picture || "";
+    if (!isDifferentHandle) {
+      storedPhoto = localStorage.getItem("cm.photo") || "";
+      if (!storedPhoto) {
+        var authObj = JSON.parse(localStorage.getItem("cm.auth") || "{}");
+        storedPhoto = authObj.photo || "";
+      }
+      if (!storedPhoto) {
+        var gMeta = JSON.parse(localStorage.getItem("cm.google_meta") || "{}");
+        storedPhoto = gMeta.avatar_url || gMeta.picture || "";
+      }
     }
   } catch(e) {}
   if (qPhoto) S.photo = qPhoto;
@@ -2371,10 +2382,11 @@ body[data-showing]{overflow:hidden}
 
   function digits(v) { return v.replace(/[^0-9]/g, "").slice(0, 10); }
   if (S.phone) { $("phone").value = S.phone; }
+  else if (storedP && !isDifferentHandle) { $("phone").placeholder = storedP; }
   $("phone").addEventListener("input", function () { this.value = digits(this.value); S.phone = this.value; refresh(); });
   if (S.wa) { $("wa").value = S.wa; }
   $("wa").addEventListener("input",    function () { this.value = digits(this.value); S.wa = this.value; refresh(); });
-  if (storedE) { $("email").placeholder = storedE; }
+  if (storedE && !isDifferentHandle) { $("email").placeholder = storedE; }
   $("email").addEventListener("input", function () { S.email = this.value.trim(); refresh(); });
 
   /* business WhatsApp numbers are often different — so the box is a
