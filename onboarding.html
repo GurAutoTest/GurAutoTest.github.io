@@ -2136,6 +2136,38 @@ body[data-showing]{overflow:hidden}
           profile: dbPatch
         })
       }).catch(function () {});
+
+      // Promote referral from waiting to counted when page goes live
+      var refBy = "";
+      try {
+        refBy = new URLSearchParams(location.search).get("ref") || localStorage.getItem("cm.referred_by") || "";
+      } catch (e) {}
+      if (refBy) {
+        try {
+          var rData = JSON.parse(localStorage.getItem("cm.referrals") || '{"counted":0,"goal":50,"waiting":0,"people":[]}');
+          var found = false;
+          (rData.people || []).forEach(function(p) {
+            if (p.name === S.name.trim() || p.handle === S.handle) {
+              if (!p.done) {
+                p.done = true;
+                rData.counted = (rData.counted || 0) + 1;
+                rData.waiting = Math.max(0, (rData.waiting || 1) - 1);
+                found = true;
+              }
+            }
+          });
+          if (!found) {
+            rData.counted = (rData.counted || 0) + 1;
+            rData.people = rData.people || [];
+            rData.people.unshift({
+              name: S.name.trim() || S.handle,
+              joined: "Today",
+              done: true
+            });
+          }
+          localStorage.setItem("cm.referrals", JSON.stringify(rData));
+        } catch(e) {}
+      }
     } catch (e) {}
   }
 

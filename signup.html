@@ -274,28 +274,14 @@ body[data-flow="login"] [data-only~="login"]{display:revert}
   *,*::before,*::after{animation-duration:.001ms !important; transition-duration:.001ms !important}
 }
 
-/* ── SUPPORTING TEXT ───────────────────────────────────────────────────
-   Headings and body copy run on negative tracking. The small grey lines
-   under them — subtitles, help, notes, values — do not: at 13–14px the
-   letters need the air back instead. Any new small line on this page
-   belongs in this list. */
-.legal,
-.alt,
-.ph__desc,
-.note{ letter-spacing:var(--ls-soft) }
-
-/* Chrome paints its own pale-blue block behind anything it autofills, which
-   overrides the field's own ground. Parking the transition indefinitely keeps
-   our background and ink; it is the one fix that does not need to know the
-   field's colour. */
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active{
-  -webkit-text-fill-color:var(--ink);
-  caret-color:var(--ink);
-  transition:background-color 600000s 0s, color 600000s 0s;
+.ref-badge{
+  display:inline-flex; align-items:center; gap:var(--s-2);
+  padding:6px 14px; border-radius:var(--r-pill);
+  background:var(--brand-violet-tint); color:var(--brand-violet-press);
+  font-size:var(--fs-label); font-weight:var(--fw-bold);
+  margin-bottom:var(--s-4); border:1px solid var(--brand-violet-edge);
 }
+.ref-badge__ic{font-size:14px}
 </style>
 
 
@@ -310,6 +296,11 @@ input:-webkit-autofill:active{
 
     <div class="auth__body">
       <div class="auth__inner">
+
+        <div class="ref-badge" id="refBadge" hidden>
+          <span class="ref-badge__ic">🎁</span>
+          <span>Invited by <b id="refInvitedBy">@user</b> · Join free</span>
+        </div>
 
         <div class="head">
           <h1 class="h1" data-only="build" id="h1Claim">Claim <span class="handle" id="handleOut"></span> today</h1>
@@ -401,6 +392,21 @@ input:-webkit-autofill:active{
   var flow   = params.get("mode") === "login" ? "login"
              : params.get("next") === "order" ? "order" : "build";
   var handle = clean(params.get("handle") || "");
+  var refCode = clean(params.get("ref") || "");
+
+  if (refCode) {
+    try { localStorage.setItem("cm.referred_by", refCode); } catch(e) {}
+  } else {
+    try { refCode = clean(localStorage.getItem("cm.referred_by") || ""); } catch(e) {}
+  }
+  if (refCode) {
+    var refB = document.getElementById("refBadge");
+    var refWho = document.getElementById("refInvitedBy");
+    if (refB && refWho) {
+      refWho.textContent = "@" + refCode;
+      refB.hidden = false;
+    }
+  }
 
   setFlow(flow);
   setHandle(handle);
@@ -658,6 +664,25 @@ input:-webkit-autofill:active{
           if (ins1 && ins1.error) {
             console.warn("Profiles insert error:", ins1.error);
           }
+          // If referred by someone, track referral in local storage
+          var refBy = "";
+          try { refBy = localStorage.getItem("cm.referred_by") || ""; } catch(e) {}
+          if (refBy) {
+            try {
+              var rData = JSON.parse(localStorage.getItem("cm.referrals") || '{"counted":0,"goal":50,"waiting":0,"people":[]}');
+              rData.waiting = (rData.waiting || 0) + 1;
+              rData.people = rData.people || [];
+              var alreadyIn = rData.people.some(function(p){ return p.name === name; });
+              if (!alreadyIn) {
+                rData.people.unshift({
+                  name: name,
+                  joined: "Today",
+                  done: false
+                });
+                localStorage.setItem("cm.referrals", JSON.stringify(rData));
+              }
+            } catch(e) {}
+          }
         }
       }
     } catch (dbErr) {
@@ -686,11 +711,14 @@ input:-webkit-autofill:active{
         localStorage.removeItem("cm.pending_theme");
       } catch(e) {}
       var finalHandle = destHandle || existingUsername || clean(name.toLowerCase().replace(/[^a-z0-9]/g, ""));
+      var refTrack = "";
+      try { refTrack = localStorage.getItem("cm.referred_by") || ""; } catch(e) {}
       location.href = "onboarding.html?handle=" + encodeURIComponent(finalHandle) +
         "&name=" + encodeURIComponent(name) +
         "&email=" + encodeURIComponent(email) +
         (photo ? "&photo=" + encodeURIComponent(photo) + "&avatar=" + encodeURIComponent(photo) : "") +
-        (destTheme ? "&theme=" + encodeURIComponent(destTheme) : "");
+        (destTheme ? "&theme=" + encodeURIComponent(destTheme) : "") +
+        (refTrack ? "&ref=" + encodeURIComponent(refTrack) : "");
     }, 700);
   }
 

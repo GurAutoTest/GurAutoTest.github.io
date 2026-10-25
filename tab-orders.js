@@ -31,7 +31,11 @@
     var p = String(o.placed || "").split(" ");
     return new Date(+p[2] || 0, MON[p[1]] || 0, +p[0] || 1).getTime();
   }
-  var orders = (a.orders || (a.order ? [a.order] : [])).concat(a.gifts || [])
+  var localOrders = [];
+  try { localOrders = JSON.parse(localStorage.getItem("cm.orders") || "[]"); } catch(e){}
+  var baseOrders = a.orders || (a.order ? [a.order] : []);
+  var orders = localOrders.concat(baseOrders).concat(a.gifts || [])
+    .filter(function (o, i, arr) { return arr.findIndex(function(x){ return x.id === o.id; }) === i; })
     .sort(function (x, y) { return when(y) - when(x); });
 
   CM.draw(a, CM.derived(a));

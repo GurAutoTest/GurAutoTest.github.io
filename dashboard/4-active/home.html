@@ -534,9 +534,17 @@ button.tee:hover{background:rgba(255,255,255,.1)}
     });
   }
 
-  var R = a.referrals;
+  var storedRef = null;
+  try {
+    var rawR = localStorage.getItem("cm.referrals");
+    if (rawR) storedRef = JSON.parse(rawR);
+  } catch(e) {}
+  var R = storedRef || a.referrals;
   var pageUrl = "https://" + CM.url(a.profile.handle);
-  var refUrl  = "https://" + R.link;
+  var basePath = window.location.pathname.replace(/\/dashboard\/.*$/, "");
+  var refUrl  = (a.profile && a.profile.handle)
+    ? (window.location.origin + basePath + "/signup.html?ref=" + encodeURIComponent(a.profile.handle))
+    : ("https://" + (R.link || "codemarca.com"));
 
   /* ══ 1. FILL ══════════════════════════════════════════════════════════ */
   var derived = {
@@ -658,9 +666,41 @@ button.tee:hover{background:rgba(255,255,255,.1)}
         document.getElementById("claimed").hidden = false;
         drawTees(false);
         var chosen = DESIGNS.indexOf(d);
-        teesEl.children[chosen].setAttribute("aria-checked", "true");
+        if (chosen >= 0 && teesEl.children[chosen]) {
+          teesEl.children[chosen].setAttribute("aria-checked", "true");
+        }
         document.getElementById("teesHint").textContent = "Your pick";
-        CM.toast("Tee claimed");
+
+        // Save claimed state
+        R.claimed = true;
+        R.tee = {
+          design: d.n,
+          size: pick.size,
+          status: "shipped",
+          eta: "Friday",
+          address: (a.order && a.order.address) || "H.No 214, Sector 22-A, Chandigarh 160022",
+          awb: "SR7719209931"
+        };
+        try {
+          localStorage.setItem("cm.referrals", JSON.stringify(R));
+          var teeOrder = {
+            id: "CM-" + Math.floor(6000 + Math.random() * 999),
+            placed: "Today",
+            status: "shipped",
+            eta: "Friday",
+            courier: "Delhivery",
+            awb: "SR7719209931",
+            items: "Codemarca tee — " + d.n + ", size " + pick.size,
+            goods: 0, ship: 0, total: 0, free: true, forSelf: true, tee: true,
+            address: R.tee.address
+          };
+          var exOrders = [];
+          try { exOrders = JSON.parse(localStorage.getItem("cm.orders") || "[]"); } catch(e){}
+          exOrders.unshift(teeOrder);
+          localStorage.setItem("cm.orders", JSON.stringify(exOrders));
+        } catch(e) {}
+
+        CM.toast("Tee claimed — it ships this week");
       }
     });
   });

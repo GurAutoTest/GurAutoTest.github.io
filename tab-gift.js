@@ -32,8 +32,24 @@
   /* An account that has never had a page has no referrals block at all —
      no handle means no invite link. Fill it in so every part of this
      screen, and CM.referCard, can read the same shape. */
-  var R = a.referrals || { counted: 0, goal: 50, waiting: 0, people: [], link: null, claimed: false };
+  var storedRef = null;
+  try {
+    var raw = localStorage.getItem("cm.referrals");
+    if (raw) storedRef = JSON.parse(raw);
+  } catch (e) {}
+
+  var R = storedRef || a.referrals || { counted: 0, goal: 50, waiting: 0, people: [], link: null, claimed: false };
   a.referrals = R;
+
+  var handle = (a.profile && a.profile.handle) || "";
+  if (handle && !R.link) {
+    R.link = "codemarca.com/r/" + handle;
+  }
+  var basePath = window.location.pathname.replace(/\/dashboard\/.*$/, "");
+  var shareUrl = handle
+    ? (window.location.origin + basePath + "/signup.html?ref=" + encodeURIComponent(handle))
+    : (R.link ? "https://" + R.link : null);
+
   var gifts = (a.gifts || []).slice();
   var people = (R.people || []).slice();
 
@@ -57,7 +73,7 @@
   all("[data-tab]", function (b) {
     b.addEventListener("click", function () { show(b.dataset.tab); });
   });
-  one("[data-ref-n]").textContent  = R.counted || people.length || 0;
+  one("[data-ref-n]").textContent  = R.counted || 0;
   one("[data-gift-n]").textContent = gifts.length;
 
 
@@ -74,7 +90,7 @@
   /* who joined — counted, or still building */
   var pbox = one("[data-people]");
   if (people.length) {
-    pbox.innerHTML = people.map(function (p) {
+    pbox.innerHTML = people.map(function (p, idx) {
       return '<span class="row">' +
         '<span class="row__ic"' + (p.done ? " data-done" : " data-wait") + ">" +
           CM.icon(p.done ? "check" : "user") + "</span>" +
@@ -85,9 +101,21 @@
         "</span>" +
         '<span class="row__end">' + (p.done
           ? '<span class="chip chip--ok">Counted</span>'
-          : '<span class="chip chip--warn">Waiting</span>') + "</span>" +
+          : '<button class="btn btn--ghost btn--sm" type="button" data-nudge="' + idx + '">Nudge</button>') + "</span>" +
       "</span>";
     }).join("");
+
+    pbox.addEventListener("click", function (e) {
+      var nb = e.target.closest("[data-nudge]");
+      if (!nb) return;
+      var idx = parseInt(nb.getAttribute("data-nudge"), 10);
+      var person = people[idx];
+      if (!person) return;
+      var msg = "Hey " + person.name + "! Finish setting up your Codemarca page so it goes live: " + (shareUrl || "https://codemarca.com");
+      window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank");
+      CM.toast("Nudge message ready for " + person.name);
+    });
+
     /* the full count, not the sample list — home reads the same number */
     var waiting = R.waiting != null ? R.waiting : people.filter(function (p) { return !p.done; }).length;
     one("[data-ref-sum]").innerHTML =
@@ -199,6 +227,45 @@
     one("[data-claimed]").hidden = false;
     one("[data-hint]").textContent = "Claimed";
     tees.removeAttribute("data-open");
+    tees.setAttribute("data-locked", "");
+
+    var dObj = CM.TEES.filter(function (x) { return x.k === design; })[0];
+    var designTitle = (dObj && dObj.n) || design || "Pocket";
+
+    R.claimed = true;
+    R.tee = {
+      design: designTitle,
+      size: size || "L",
+      address: addr.value.trim(),
+      status: "shipped",
+      eta: "Friday",
+      awb: "SR7719209931"
+    };
+
+    try {
+      localStorage.setItem("cm.referrals", JSON.stringify(R));
+      var teeOrder = {
+        id: "CM-" + Math.floor(6000 + Math.random() * 999),
+        placed: "Today",
+        status: "shipped",
+        eta: "Friday",
+        courier: "Delhivery",
+        awb: "SR7719209931",
+        items: "Codemarca tee — " + designTitle + ", size " + (size || "L"),
+        goods: 0, ship: 0, total: 0, free: true, forSelf: true, tee: true,
+        address: addr.value.trim()
+      };
+      var exOrders = [];
+      try { exOrders = JSON.parse(localStorage.getItem("cm.orders") || "[]"); } catch(e){}
+      exOrders.unshift(teeOrder);
+      localStorage.setItem("cm.orders", JSON.stringify(exOrders));
+    } catch (err) {}
+
+    var tl = one("[data-claimed]").lastElementChild;
+    if (tl) {
+      tl.textContent = "Your " + R.tee.design + " tee (size " + R.tee.size + ") is on its way — arriving by " + R.tee.eta + ".";
+    }
+
     CM.toast("Tee claimed — it ships this week");
   });
 

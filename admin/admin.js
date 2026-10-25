@@ -257,6 +257,7 @@
       renderFlows();
       renderChatTab();
       renderModesTab();
+      renderReferralsTab();
       toast("Database synced with Supabase");
     } catch (err) {
       console.error("Failed to load DB data:", err);
@@ -487,6 +488,109 @@
     }
   }
 
+  /* ══ 6b. REFERRALS & FREE TEE TAB ═══════════════════════════════════ */
+  function getReferralsState() {
+    var raw = null;
+    try { raw = JSON.parse(localStorage.getItem("cm.referrals") || "null"); } catch(e){}
+    var username = localStorage.getItem("cm.username") || "user";
+    if (!raw) {
+      raw = {
+        counted: 23,
+        goal: 50,
+        waiting: 6,
+        claimed: false,
+        link: "codemarca.com/r/" + username,
+        people: [
+          { name: "Simran K.", joined: "14 Sep", done: true },
+          { name: "Arjun M.", joined: "13 Sep", done: true },
+          { name: "Neha S.", joined: "11 Sep", done: true },
+          { name: "Rohit B.", joined: "10 Sep", done: false },
+          { name: "Karan D.", joined: "8 Sep", done: true }
+        ],
+        tee: null
+      };
+    }
+    return raw;
+  }
+
+  function renderReferralsTab() {
+    var rData = getReferralsState();
+    var username = localStorage.getItem("cm.username") || "user";
+
+    if ($("refStatCounted")) $("refStatCounted").textContent = rData.counted || 0;
+    if ($("refStatWaiting")) $("refStatWaiting").textContent = rData.waiting || 0;
+    if ($("refStatHandle")) $("refStatHandle").textContent = "@" + username;
+    if ($("refStatLink")) $("refStatLink").textContent = rData.link || ("codemarca.com/r/" + username);
+
+    var statusEl = $("refStatTeeStatus");
+    var subEl = $("refStatTeeSub");
+    if (statusEl && subEl) {
+      if (rData.claimed) {
+        statusEl.textContent = "Claimed ✓";
+        statusEl.style.color = "var(--success)";
+        subEl.textContent = (rData.tee ? (rData.tee.design + ", Size " + rData.tee.size) : "Free Black Tee");
+      } else if (rData.counted >= (rData.goal || 50)) {
+        statusEl.textContent = "Unlocked 🎉";
+        statusEl.style.color = "var(--primary)";
+        subEl.textContent = "Ready to claim!";
+      } else {
+        statusEl.textContent = "Locked 🔒";
+        statusEl.style.color = "var(--text-muted)";
+        var left = Math.max(0, (rData.goal || 50) - (rData.counted || 0));
+        subEl.textContent = left + " more to reach 50";
+      }
+    }
+
+    var dispatchBox = $("claimedTeeDispatchBox");
+    if (dispatchBox) {
+      if (rData.claimed && rData.tee) {
+        dispatchBox.innerHTML = '<div style="display:flex; flex-direction:column; gap:12px;">' +
+          '<div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">' +
+            '<div>' +
+              '<span class="badge badge-live">● ' + esc(rData.tee.status === "delivered" ? "Delivered" : "In Transit / Shipped") + '</span>' +
+              '<h3 style="font-size:1.1rem; margin:8px 0 2px;">Codemarca Free Black Tee — ' + esc(rData.tee.design) + '</h3>' +
+              '<p style="font-size:0.82rem; color:var(--text-muted);">Size: <b>' + esc(rData.tee.size) + '</b> · Courier: <b>Delhivery</b> · AWB: <b>' + esc(rData.tee.awb || "SR7719209931") + '</b></p>' +
+            '</div>' +
+            '<div style="display:flex; gap:8px;">' +
+              '<button class="btn-table" type="button" id="markTeeDeliveredBtn">' + (rData.tee.status === "delivered" ? "Mark Shipped" : "Mark Delivered") + '</button>' +
+              '<button class="btn-table" type="button" id="adminResetTeeClaimBtn">Reset Claim</button>' +
+            '</div>' +
+          '</div>' +
+          '<div style="background:var(--surface); border:1px solid var(--border); padding:10px 14px; border-radius:var(--radius-sm); font-size:0.8rem; color:var(--text-muted);">' +
+            '<b>Destination Address:</b> ' + esc(rData.tee.address || "No address provided") +
+          '</div>' +
+        '</div>';
+
+        var delivBtn = $("markTeeDeliveredBtn");
+        if (delivBtn) {
+          delivBtn.addEventListener("click", function () {
+            rData.tee.status = (rData.tee.status === "delivered" ? "shipped" : "delivered");
+            localStorage.setItem("cm.referrals", JSON.stringify(rData));
+            toast("Tee tracking updated to " + rData.tee.status);
+            renderReferralsTab();
+          });
+        }
+
+        var rstBtn = $("adminResetTeeClaimBtn");
+        if (rstBtn) {
+          rstBtn.addEventListener("click", function () {
+            rData.claimed = false;
+            rData.tee = null;
+            localStorage.setItem("cm.referrals", JSON.stringify(rData));
+            toast("Claim reset");
+            renderReferralsTab();
+          });
+        }
+      } else {
+        dispatchBox.innerHTML = '<div style="padding:28px 16px; text-align:center; color:var(--text-muted); font-size:0.85rem;">' +
+          '<div style="font-size:1.6rem; margin-bottom:8px;">👕</div>' +
+          '<b>No Claimed Tee Yet</b>' +
+          '<p style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">When a user reaches 50 referrals and picks their design and size, their claimed merchandise details and address appear here for courier dispatch.</p>' +
+        '</div>';
+      }
+    }
+  }
+
   /* ══ 7. ACTIONS & USER MODAL ══════════════════════════════════════════ */
   function openEditModal(profileId) {
     var p = state.profiles.find(function (x) { return x.id === profileId; });
@@ -578,7 +682,7 @@
 
   /* ══ 8. BOOT & NAVIGATION ═════════════════════════════════════════════ */
   function setupNavigation() {
-    var tabs = ["overview", "users", "flows", "chat", "modes"];
+    var tabs = ["overview", "users", "flows", "chat", "modes", "referrals"];
     tabs.forEach(function (tab) {
       var btn = $("nav-" + tab);
       if (!btn) return;
@@ -590,6 +694,10 @@
           if (p) p.style.display = t === tab ? "flex" : "none";
         });
         state.activeTab = tab;
+        window.scrollTo({ top: 0, behavior: "instant" });
+        if (tab === "referrals") renderReferralsTab();
+        if (tab === "modes") renderModesTab();
+        if (tab === "chat") renderChatTab();
       });
     });
 
@@ -627,6 +735,75 @@
       renderChatTab();
       toast("Quick Chat " + (val ? "enabled globally" : "disabled globally"));
     });
+
+    // Referral Simulator
+    var simGroup = $("refSimGroup");
+    if (simGroup) {
+      simGroup.addEventListener("click", function (e) {
+        var b = e.target.closest("[data-ref-sim]");
+        if (!b) return;
+        var act = b.getAttribute("data-ref-sim");
+        var rData = getReferralsState();
+        var username = localStorage.getItem("cm.username") || "user";
+
+        if (act === "0") {
+          rData.counted = 0;
+          rData.waiting = 0;
+          rData.claimed = false;
+          rData.tee = null;
+          rData.people = [];
+          localStorage.setItem("cm.referrals", JSON.stringify(rData));
+          toast("Referrals reset to 0");
+        } else if (act === "23") {
+          rData.counted = 23;
+          rData.waiting = 6;
+          rData.claimed = false;
+          rData.tee = null;
+          rData.people = [
+            { name: "Simran K.", joined: "14 Sep", done: true },
+            { name: "Arjun M.", joined: "13 Sep", done: true },
+            { name: "Neha S.", joined: "11 Sep", done: true },
+            { name: "Rohit B.", joined: "10 Sep", done: false },
+            { name: "Karan D.", joined: "8 Sep", done: true }
+          ];
+          localStorage.setItem("cm.referrals", JSON.stringify(rData));
+          toast("Referrals set to 23 (in progress)");
+        } else if (act === "49") {
+          rData.counted = 49;
+          rData.waiting = 3;
+          rData.claimed = false;
+          rData.tee = null;
+          localStorage.setItem("cm.referrals", JSON.stringify(rData));
+          toast("Referrals set to 49 — 1 friend away from unlocking Free Tee!");
+        } else if (act === "50") {
+          rData.counted = 50;
+          rData.waiting = 2;
+          rData.claimed = false;
+          rData.tee = null;
+          localStorage.setItem("cm.referrals", JSON.stringify(rData));
+          toast("Milestone 50 Reached! Free Black Tee Unlocked 🎉");
+        } else if (act === "claim") {
+          rData.counted = 50;
+          rData.claimed = true;
+          rData.tee = {
+            design: "Pocket",
+            size: "L",
+            status: "shipped",
+            eta: "Friday",
+            address: "H.No 214, Sector 22-A, Chandigarh 160022",
+            awb: "SR7719209931"
+          };
+          localStorage.setItem("cm.referrals", JSON.stringify(rData));
+          toast("Sample Pocket Tee (Size L) Claimed!");
+        } else if (act === "reset") {
+          rData.claimed = false;
+          rData.tee = null;
+          localStorage.setItem("cm.referrals", JSON.stringify(rData));
+          toast("Tee claim reset");
+        }
+        renderReferralsTab();
+      });
+    }
 
     // Modal listeners
     $("modalCloseBtn").addEventListener("click", closeEditModal);

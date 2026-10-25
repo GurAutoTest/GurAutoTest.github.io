@@ -177,6 +177,22 @@
           } catch(e) {}
         }
       }
+
+      // Persisted referrals merge
+      var rawRef = window.localStorage.getItem("cm.referrals");
+      if (rawRef) {
+        var parsedRef = JSON.parse(rawRef);
+        acc.referrals = acc.referrals || {};
+        for (var rk in parsedRef) {
+          if (parsedRef[rk] !== undefined) acc.referrals[rk] = parsedRef[rk];
+        }
+      }
+
+      // Ensure referral link reflects real user handle
+      if (acc.profile && acc.profile.handle) {
+        acc.referrals = acc.referrals || { goal: 50, counted: 0, waiting: 0, people: [], link: null, claimed: false };
+        acc.referrals.link = "codemarca.com/r/" + acc.profile.handle;
+      }
     } catch (e) {}
 
     return acc;
@@ -713,33 +729,55 @@
        no invite link. Same shape, all zeroes, so the card still paints. */
     var R = a.referrals ||
       (a.referrals = { counted: 0, goal: 50, waiting: 0, people: [], link: null, claimed: false });
-    var refUrl = R.link ? "https://" + R.link : null;
-    var left = Math.max(0, R.goal - R.counted);
-    document.getElementById("rfFill").style.width = Math.min(100, R.counted / R.goal * 100) + "%";
-    document.getElementById("rfBar").setAttribute("aria-valuenow", R.counted);
-    document.getElementById("rfSub").innerHTML = R.counted === 0
-      ? "Your first friend who finishes their page puts you at <b>1</b>."
-      : "<b>" + left + " more</b> to go" +
-        (R.waiting ? " · " + R.waiting + " friends are still building their page" : "");
+    var handle = (a.profile && a.profile.handle) || "";
+    if (handle && !R.link) {
+      R.link = "codemarca.com/r/" + handle;
+    }
 
-    document.getElementById("tees").innerHTML = CM.TEES.map(function (d) {
-      /* picture only — no name, no description (Garry, 2026-09-27). The
-         designs are the kind of thing you point at, not read, and real
-         photographs land here later. The name rides along for the picker. */
-      return '<div class="rf__tee" title="' + d.n + '" aria-label="' + d.n + '">' +
-        '<span class="rf__fig">' + CM.tee(d, pattern, a) +
-          '<span class="rf__side">' + d.side + "</span></span>" +
-      "</div>";
-    }).join("");
+    var basePath = window.location.pathname.replace(/\/dashboard\/.*$/, "");
+    var shareUrl = handle
+      ? (window.location.origin + basePath + "/signup.html?ref=" + encodeURIComponent(handle))
+      : (R.link ? "https://" + R.link : null);
+
+    var left = Math.max(0, R.goal - R.counted);
+    var fillEl = document.getElementById("rfFill");
+    if (fillEl) fillEl.style.width = Math.min(100, R.counted / R.goal * 100) + "%";
+    var barEl = document.getElementById("rfBar");
+    if (barEl) barEl.setAttribute("aria-valuenow", R.counted);
+    var subEl = document.getElementById("rfSub");
+    if (subEl) {
+      subEl.innerHTML = R.counted === 0
+        ? "Your first friend who finishes their page puts you at <b>1</b>."
+        : R.counted >= R.goal
+        ? "<b>Goal reached!</b> You earned a free black tee."
+        : "<b>" + left + " more</b> to go" +
+          (R.waiting ? " · " + R.waiting + " friends are still building their page" : "");
+    }
+
+    var teesEl = document.getElementById("tees");
+    if (teesEl) {
+      teesEl.innerHTML = CM.TEES.map(function (d) {
+        return '<div class="rf__tee" title="' + d.n + '" aria-label="' + d.n + '">' +
+          '<span class="rf__fig">' + CM.tee(d, pattern, a) +
+            '<span class="rf__side">' + d.side + "</span></span>" +
+        "</div>";
+      }).join("");
+    }
 
     /* no link without a page — the card shows the locked row instead */
     if (!R.link) { return; }
-    document.querySelector("[data-copy-ref]").addEventListener("click", function () {
-      CM.copy(refUrl, "Invite link copied");
-    });
-    document.querySelector("[data-share-ref]").addEventListener("click", function () {
-      CM.shareSheet({ title: "Invite friends", url: refUrl, name: a.profile.title });
-    });
+    var copyBtn = document.querySelector("[data-copy-ref]");
+    if (copyBtn) {
+      copyBtn.addEventListener("click", function () {
+        CM.copy(shareUrl, "Invite link copied");
+      });
+    }
+    var shareBtn = document.querySelector("[data-share-ref]");
+    if (shareBtn) {
+      shareBtn.addEventListener("click", function () {
+        CM.shareSheet({ title: "Invite friends", url: shareUrl, name: (a.profile && a.profile.title) || (a.user && a.user.name) || "Codemarca" });
+      });
+    }
   };
 
   /* ══ 6. SMALL HELPERS ═══════════════════════════════════════════════════ */
