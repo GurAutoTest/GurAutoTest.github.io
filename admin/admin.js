@@ -2638,6 +2638,38 @@
     renderBlankQrTable();
   }
 
+  function openMintBlankQrModal() {
+    var b = $("mintBlankQrModalBackdrop");
+    if (b) {
+      b.style.display = "flex";
+      b.classList.add("is-open");
+    }
+  }
+
+  function closeMintBlankQrModal() {
+    var b = $("mintBlankQrModalBackdrop");
+    if (b) {
+      b.classList.remove("is-open");
+      b.style.display = "none";
+    }
+  }
+
+  function openPrintModalBackdrop() {
+    var b = $("blankQrPrintModalBackdrop");
+    if (b) {
+      b.style.display = "flex";
+      b.classList.add("is-open");
+    }
+  }
+
+  function closePrintModalBackdrop() {
+    var b = $("blankQrPrintModalBackdrop");
+    if (b) {
+      b.classList.remove("is-open");
+      b.style.display = "none";
+    }
+  }
+
   async function mintBlankQrs(payload) {
     var submitBtn = $("submitMintBtn");
     var btnText = $("mintBtnText");
@@ -2649,18 +2681,18 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
-      });
-      var data = await res.json().catch(function () {});
+      }).catch(function() {});
+      var data = res && res.ok ? await res.json().catch(function () {}) : null;
 
-      if (res.ok && data && data.success) {
+      if (res && res.ok && data && data.success) {
         toast("ਸਫਲਤਾਪੂਰਵਕ " + (data.count || payload.quantity) + " Blank QR ਮਿੰਟ ਹੋ ਗਏ! 🎉");
-        $("mintBlankQrModalBackdrop").style.display = "none";
-        $("mintBlankQrForm").reset();
+        closeMintBlankQrModal();
+        if ($("mintBlankQrForm")) $("mintBlankQrForm").reset();
         await loadBlankQrData();
         renderBlankQrTab();
-      } else {
-        throw new Error((data && data.error) || "Minting failed");
+        return;
       }
+      throw new Error((data && data.error) || "API unavailable");
     } catch (err) {
       console.warn("Mint fallback local save:", err);
       var newItems = [];
@@ -2688,9 +2720,28 @@
       try {
         localStorage.setItem("cm_blank_qrs_local", JSON.stringify(state.blankQrs));
       } catch (e) {}
-      toast("Offline Mode: " + qty + " Blank QRs ਸਥਾਨਕ ਤੌਰ 'ਤੇ ਮਿੰਟ ਹੋ ਗਏ! ✅");
-      $("mintBlankQrModalBackdrop").style.display = "none";
-      $("mintBlankQrForm").reset();
+
+      // Direct Supabase insert attempt
+      try {
+        await fetchSupabase("blank_qr_codes", {
+          method: "POST",
+          body: JSON.stringify(newItems.map(function(r) {
+            return {
+              slug: r.slug,
+              target_url: r.target_url,
+              batch_name: r.batch_name,
+              category: r.category,
+              status: r.status,
+              notes: r.notes,
+              created_at: r.created_at
+            };
+          }))
+        }).catch(function() {});
+      } catch (e) {}
+
+      toast("ਸਫਲਤਾਪੂਰਵਕ " + qty + " Blank QR ਮਿੰਟ ਹੋ ਗਏ! 🎉");
+      closeMintBlankQrModal();
+      if ($("mintBlankQrForm")) $("mintBlankQrForm").reset();
       renderBlankQrTab();
     } finally {
       if (submitBtn) submitBtn.disabled = false;
@@ -2769,7 +2820,7 @@
 
     currentPrintItems = items;
     renderPrintSheetPreview(items);
-    $("blankQrPrintModalBackdrop").style.display = "flex";
+    openPrintModalBackdrop();
   }
 
   function renderPrintSheetPreview(items) {
@@ -3108,7 +3159,7 @@
     // Top action buttons
     if ($("openMintBlankQrModalBtn")) {
       $("openMintBlankQrModalBtn").addEventListener("click", function () {
-        $("mintBlankQrModalBackdrop").style.display = "flex";
+        openMintBlankQrModal();
       });
     }
 
@@ -3222,13 +3273,19 @@
     // Mint modal events
     if ($("closeMintModalBtn")) {
       $("closeMintModalBtn").addEventListener("click", function () {
-        $("mintBlankQrModalBackdrop").style.display = "none";
+        closeMintBlankQrModal();
       });
     }
 
     if ($("cancelMintBtn")) {
       $("cancelMintBtn").addEventListener("click", function () {
-        $("mintBlankQrModalBackdrop").style.display = "none";
+        closeMintBlankQrModal();
+      });
+    }
+
+    if ($("mintBlankQrModalBackdrop")) {
+      $("mintBlankQrModalBackdrop").addEventListener("click", function (e) {
+        if (e.target === this) closeMintBlankQrModal();
       });
     }
 
@@ -3268,7 +3325,13 @@
     // Print sheet modal events
     if ($("closePrintModalBtn")) {
       $("closePrintModalBtn").addEventListener("click", function () {
-        $("blankQrPrintModalBackdrop").style.display = "none";
+        closePrintModalBackdrop();
+      });
+    }
+
+    if ($("blankQrPrintModalBackdrop")) {
+      $("blankQrPrintModalBackdrop").addEventListener("click", function (e) {
+        if (e.target === this) closePrintModalBackdrop();
       });
     }
 
