@@ -307,12 +307,13 @@
                   <th>Status</th>
                   <th>Theme</th>
                   <th>Contact Links</th>
+                  <th>Saves &amp; Clicks</th>
                   <th>Joined</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="usersTableBody">
-                <tr><td colspan="6" style="text-align:center; padding:32px; color:var(--text-dim);">Connecting to database...</td></tr>
+                <tr><td colspan="7" style="text-align:center; padding:32px; color:var(--text-dim);">Connecting to database...</td></tr>
               </tbody>
             </table>
           </div>
@@ -1221,6 +1222,8 @@
           <div class="p-metric-pill"><span>Views:</span> <b id="pCtrlQuickViews">0</b></div>
           <div class="p-metric-pill"><span>Scans:</span> <b id="pCtrlQuickScans">0</b></div>
           <div class="p-metric-pill"><span>Unique IPs:</span> <b id="pCtrlQuickIps">0</b></div>
+          <div class="p-metric-pill" style="border-color:#10b981; color:#10b981; background:rgba(16,185,129,0.06);"><span>💾 Saves:</span> <b id="pCtrlQuickSaves">0</b></div>
+          <div class="p-metric-pill" style="border-color:#8b5cf6; color:#8b5cf6; background:rgba(139,92,246,0.06);"><span>🔗 Clicks:</span> <b id="pCtrlQuickClicks">0</b></div>
           <a class="btn-table" id="pCtrlPublicLink" href="#" target="_blank" style="margin-left:6px; text-decoration:none;">↗ Public Page</a>
           <button class="btn-icon" type="button" id="modalCloseBtn" aria-label="Close modal">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1234,10 +1237,11 @@
       <!-- Navigation Tabs -->
       <div class="profile-modal-tabs" id="pCtrlTabs">
         <button class="p-tab-btn is-active" type="button" data-ptab="branding">Branding &amp; Profile</button>
+        <button class="p-tab-btn" type="button" data-ptab="manifest">Full Data Manifest</button>
         <button class="p-tab-btn" type="button" data-ptab="links">Links &amp; Socials</button>
         <button class="p-tab-btn" type="button" data-ptab="modes">Modes (Travel / Lost)</button>
         <button class="p-tab-btn" type="button" data-ptab="chat">Quick Chat</button>
-        <button class="p-tab-btn" type="button" data-ptab="analytics">Views &amp; IP Tracker</button>
+        <button class="p-tab-btn" type="button" data-ptab="analytics">Clicks, Saves &amp; Views</button>
         <button class="p-tab-btn" type="button" data-ptab="orders">Orders &amp; Free Tee</button>
         <button class="p-tab-btn" type="button" data-ptab="history">Saved History &amp; Audit</button>
       </div>
@@ -1339,6 +1343,25 @@
             <button class="btn-primary" type="submit" id="modalSaveBtn" style="width:auto; padding:0 24px;">Save Profile Changes</button>
           </div>
         </form>
+      </div>
+
+      <!-- ── TAB 1b: FULL PROFILE DATA MANIFEST ("Sara kush jo v ohh pa rha") ── -->
+      <div class="profile-tab-panel" id="pPanel-manifest">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+          <div>
+            <h4 style="font-size:0.95rem; font-weight:800; display:flex; align-items:center; gap:6px;">
+              <span>📋</span> Complete Profile Data Manifest (ਯੂਜ਼ਰ ਦਾ ਸਾਰਾ ਡਾਟਾ)
+            </h4>
+            <p style="font-size:0.8rem; color:var(--text-muted);">ਸਾਰਾ ਕੁਝ ਜੋ ਵੀ ਯੂਜ਼ਰ ਨੇ ਪ੍ਰੋਫਾਈਲ ਪੇਜ ਵਿੱਚ ਭਰਿਆ ਹੈ — Live Admin Inspector</p>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-table" type="button" id="btnCopyManifestJson">📋 Copy Full JSON</button>
+          </div>
+        </div>
+
+        <div id="pCtrlManifestContainer" style="display:flex; flex-direction:column; gap:12px;">
+          <!-- Populated dynamically via renderManifestTab() in admin.js -->
+        </div>
       </div>
 
       <!-- ── TAB 2: LINKS & SOCIALS ─────────────────────────────────── -->
@@ -1444,12 +1467,12 @@
         </div>
       </div>
 
-      <!-- ── TAB 5: VIEWS & IP TRACKER ──────────────────────────────── -->
+      <!-- ── TAB 5: VIEWS, CLICKS & CONTACT SAVES ────────────────────── -->
       <div class="profile-tab-panel" id="pPanel-analytics">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
           <div>
-            <h4 style="font-size:0.95rem; font-weight:800;">Real-Time Visitor IP Stream for @<span id="pCtrlAnaHandle">user</span></h4>
-            <p style="font-size:0.8rem; color:var(--text-muted);">Registered users vs Guest scans and client IP addresses</p>
+            <h4 style="font-size:0.95rem; font-weight:800;">Real-Time Interactions &amp; Visitor Stream for @<span id="pCtrlAnaHandle">user</span></h4>
+            <p style="font-size:0.8rem; color:var(--text-muted);">ਲਿੰਕ ਕਲਿੱਕਾਂ ਦਾ ਬ੍ਰੇਕਡਾਊਨ, ਕਾਂਟੈਕਟ ਸੇਵ (.vcf) ਗਿਣਤੀ ਅਤੇ ਕਲਾਇੰਟ IP ਲੌਗਸ</p>
           </div>
           <div style="display:flex; gap:8px; align-items:center;">
             <input class="form-input" type="number" id="pCtrlSetViewsInput" placeholder="Views" style="width:80px; height:32px; font-size:0.8rem;">
@@ -1457,41 +1480,111 @@
           </div>
         </div>
 
-        <div class="stats-grid" style="padding:12px 0;">
-          <div class="stat-card" style="padding:12px;">
+        <!-- 6 Stat Cards Grid -->
+        <div class="stats-grid" style="grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); padding:12px 0; gap:10px;">
+          <div class="stat-card" style="padding:10px 12px;">
             <span class="stat-label">Total Visits</span>
             <div class="stat-val" id="pCtrlAnaTotal" style="font-size:20px;">0</div>
           </div>
-          <div class="stat-card" style="padding:12px;">
+          <div class="stat-card" style="padding:10px 12px; border-left:3px solid #10b981;">
+            <span class="stat-label">💾 Phone Saves (.vcf)</span>
+            <div class="stat-val" id="pCtrlAnaSaves" style="font-size:20px; color:#10b981;">0</div>
+          </div>
+          <div class="stat-card" style="padding:10px 12px; border-left:3px solid #8b5cf6;">
+            <span class="stat-label">🔗 Total Link Clicks</span>
+            <div class="stat-val" id="pCtrlAnaClicks" style="font-size:20px; color:#8b5cf6;">0</div>
+          </div>
+          <div class="stat-card" style="padding:10px 12px;">
             <span class="stat-label">Registered Viewers</span>
             <div class="stat-val" id="pCtrlAnaReg" style="font-size:20px; color:#10b981;">0</div>
           </div>
-          <div class="stat-card" style="padding:12px;">
+          <div class="stat-card" style="padding:10px 12px;">
             <span class="stat-label">Guest / Anonymous</span>
             <div class="stat-val" id="pCtrlAnaUnreg" style="font-size:20px; color:#9ca3af;">0</div>
           </div>
-          <div class="stat-card" style="padding:12px;">
+          <div class="stat-card" style="padding:10px 12px;">
             <span class="stat-label">Unique IPs</span>
             <div class="stat-val" id="pCtrlAnaIps" style="font-size:20px; color:#3b82f6;">0</div>
           </div>
         </div>
 
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Viewer Type</th>
-                <th>Identity</th>
-                <th>Client IP &amp; Location</th>
-                <th>Device</th>
-                <th>Source</th>
-                <th>Time</th>
-              </tr>
-            </thead>
-            <tbody id="pCtrlVisitorsTableBody">
-              <tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-dim);">No views recorded yet.</td></tr>
-            </tbody>
-          </table>
+        <!-- 1. Per-Link Clicks Leaderboard Table -->
+        <div style="background:var(--surface-raised); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px; margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div>
+              <b style="font-size:0.88rem; display:flex; align-items:center; gap:6px;">
+                <span>🔗</span> Per-Link Clicks Breakdown ("ਕਿਹੜੇ ਲਿੰਕ ਤੇ ਕਿੰਨੇ ਕਲਿੱਕ ਹੋਏ")
+              </b>
+              <div style="font-size:0.75rem; color:var(--text-muted);">Exact click counts for each social link, custom button, phone call, email, or WhatsApp</div>
+            </div>
+            <span class="badge badge-theme" id="pCtrlClicksCountBadge" style="font-weight:700;">0 Total Clicks</span>
+          </div>
+          <div class="table-wrap" style="max-height:220px; overflow-y:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Link / Action Title</th>
+                  <th>Category</th>
+                  <th>Target URL / Destination</th>
+                  <th>Click Count</th>
+                  <th>Last Clicked</th>
+                </tr>
+              </thead>
+              <tbody id="pCtrlLinkClicksTableBody">
+                <tr><td colspan="5" style="text-align:center; padding:18px; color:var(--text-dim);">ਕੋਈ ਲਿੰਕ ਕਲਿੱਕ ਰਿਕਾਰਡ ਨਹੀਂ ਹੋਇਆ।</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 2. Phone Number Saves (.vcf) Stream Table -->
+        <div style="background:var(--surface-raised); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px; margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div>
+              <b style="font-size:0.88rem; display:flex; align-items:center; gap:6px;">
+                <span>💾</span> Phone Number Saves Stream ("ਕਿੰਨੇ ਨੰਬਰ ਸੇਵ ਹੋਏ")
+              </b>
+              <div style="font-size:0.75rem; color:var(--text-muted);">Visitors who downloaded the .vcf contact card to add user to their phonebook</div>
+            </div>
+            <span class="badge badge-live" id="pCtrlSavesCountBadge" style="font-weight:700;">0 Saves</span>
+          </div>
+          <div class="table-wrap" style="max-height:200px; overflow-y:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Action</th>
+                  <th>Device Type</th>
+                  <th>Client IP &amp; Location</th>
+                  <th>Saved Timestamp</th>
+                </tr>
+              </thead>
+              <tbody id="pCtrlContactSavesTableBody">
+                <tr><td colspan="4" style="text-align:center; padding:18px; color:var(--text-dim);">ਕੋਈ ਨੰਬਰ ਸੇਵ ਰਿਕਾਰਡ ਨਹੀਂ ਹੋਇਆ।</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 3. Visitor IP & Views Stream Table -->
+        <div style="margin-top:4px;">
+          <b style="font-size:0.88rem; display:block; margin-bottom:8px;">👁️ Page Views &amp; Visitor IP Stream</b>
+          <div class="table-wrap" style="max-height:220px; overflow-y:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Viewer Type</th>
+                  <th>Identity</th>
+                  <th>Client IP &amp; Location</th>
+                  <th>Device</th>
+                  <th>Source</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody id="pCtrlVisitorsTableBody">
+                <tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-dim);">No views recorded yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 

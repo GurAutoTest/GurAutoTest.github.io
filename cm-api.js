@@ -192,7 +192,172 @@
       return null;
     },
 
-    // ── 4. GET GLOBAL PLATFORM SUMMARY (For Admin Console) ─────────────────────
+    // ── 4. RECORD LINK CLICK (Custom links, socials, phone, WA, email) ──────
+    recordLinkClick: async function (options) {
+      options = options || {};
+      var username = (options.username || options.profileUsername || "").toLowerCase().trim();
+      var linkTitle = options.linkTitle || options.title || "Link";
+      var linkUrl = options.linkUrl || options.url || "";
+      var linkKey = options.linkKey || options.key || "custom";
+      var isSocial = !!options.isSocial;
+      var linkId = options.linkId || null;
+
+      if (!username && !options.profileId) return null;
+
+      // Update local storage click counter cache
+      try {
+        var storeKey = "cm_link_clicks_" + (username || "anon");
+        var rawClicks = localStorage.getItem(storeKey);
+        var clickMap = rawClicks ? JSON.parse(rawClicks) : {};
+        clickMap[linkTitle] = (clickMap[linkTitle] || 0) + 1;
+        clickMap["_total"] = (clickMap["_total"] || 0) + 1;
+        localStorage.setItem(storeKey, JSON.stringify(clickMap));
+      } catch (e) {}
+
+      // Capture IP and location info
+      var ipInfo = await this.getClientIp();
+
+      var payload = {
+        username: username,
+        profileId: options.profileId || null,
+        linkId: linkId,
+        linkTitle: linkTitle,
+        linkUrl: linkUrl,
+        linkKey: linkKey,
+        isSocial: isSocial,
+        ipAddress: ipInfo.ip,
+        city: ipInfo.city,
+        country: ipInfo.country,
+        userAgent: navigator.userAgent || ""
+      };
+
+      // 1. Try server API route
+      try {
+        var apiRes = await fetch("/api/analytics/click", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          keepalive: true
+        }).catch(function () {});
+
+        if (apiRes && apiRes.ok) {
+          return await apiRes.json();
+        }
+      } catch (e) {}
+
+      // 2. Direct Supabase REST fallback
+      try {
+        var eventPayload = {
+          event_type: "link_click",
+          user_agent: payload.userAgent,
+          ip_hash: payload.ipAddress,
+          city: payload.city || null,
+          country: payload.country || null,
+          referer: JSON.stringify({
+            profile_username: username,
+            link_id: linkId,
+            link_title: linkTitle,
+            link_url: linkUrl,
+            link_key: linkKey,
+            is_social: isSocial,
+            timestamp: new Date().toISOString()
+          })
+        };
+
+        if (options.profileId) eventPayload.profile_id = options.profileId;
+
+        await fetch(SUPABASE_URL + "/rest/v1/analytics_events", {
+          method: "POST",
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization": "Bearer " + SUPABASE_KEY,
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify(eventPayload),
+          keepalive: true
+        }).catch(function () {});
+
+        return { ok: true, fallback: true };
+      } catch (err) {
+        return null;
+      }
+    },
+
+    // ── 5. RECORD CONTACT SAVE (.vcf phonebook download) ───────────────────────
+    recordSaveContact: async function (options) {
+      options = options || {};
+      var username = (options.username || options.profileUsername || "").toLowerCase().trim();
+      if (!username && !options.profileId) return null;
+
+      // Update local storage save counter cache
+      try {
+        var storeKey = "cm_contact_saves_" + (username || "anon");
+        var currSaves = parseInt(localStorage.getItem(storeKey) || "0", 10);
+        localStorage.setItem(storeKey, String(currSaves + 1));
+      } catch (e) {}
+
+      // Capture IP and location info
+      var ipInfo = await this.getClientIp();
+
+      var payload = {
+        username: username,
+        profileId: options.profileId || null,
+        ipAddress: ipInfo.ip,
+        city: ipInfo.city,
+        country: ipInfo.country,
+        userAgent: navigator.userAgent || ""
+      };
+
+      // 1. Try server API route
+      try {
+        var apiRes = await fetch("/api/analytics/contact-save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          keepalive: true
+        }).catch(function () {});
+
+        if (apiRes && apiRes.ok) {
+          return await apiRes.json();
+        }
+      } catch (e) {}
+
+      // 2. Direct Supabase REST fallback
+      try {
+        var eventPayload = {
+          event_type: "save_contact",
+          user_agent: payload.userAgent,
+          ip_hash: payload.ipAddress,
+          city: payload.city || null,
+          country: payload.country || null,
+          referer: JSON.stringify({
+            profile_username: username,
+            timestamp: new Date().toISOString()
+          })
+        };
+
+        if (options.profileId) eventPayload.profile_id = options.profileId;
+
+        await fetch(SUPABASE_URL + "/rest/v1/analytics_events", {
+          method: "POST",
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization": "Bearer " + SUPABASE_KEY,
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify(eventPayload),
+          keepalive: true
+        }).catch(function () {});
+
+        return { ok: true, fallback: true };
+      } catch (err) {
+        return null;
+      }
+    },
+
+    // ── 6. GET GLOBAL PLATFORM SUMMARY (For Admin Console) ─────────────────────
     getGlobalSummary: async function () {
       try {
         var res = await fetch("/api/analytics/summary").catch(function () {});

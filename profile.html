@@ -1459,6 +1459,7 @@ input:-webkit-autofill:active{
   <div class="rev__row" id="revTheme"></div>
 </div>
 
+<script src="cm-api.js"></script>
 <script src="profile-social.js"></script>
 <script>
 (function () {
@@ -2297,6 +2298,15 @@ input:-webkit-autofill:active{
      scanner's phonebook. Built here rather than fetched, so it works with
      whatever the page was already given. */
   function saveContact() {
+    try {
+      if (window.CMApi && P && P.handle) {
+        window.CMApi.recordSaveContact({
+          username: P.handle,
+          profileId: P.id
+        });
+      }
+    } catch (e) {}
+
     var lines = ["BEGIN:VCARD", "VERSION:3.0", "FN:" + P.name, "N:;" + P.name + ";;;"];
     if (P.phone) lines.push("TEL;TYPE=CELL:" + tel(P.phone));
     if (P.wa && P.wa !== P.phone) lines.push("TEL;TYPE=WORK:" + tel(P.wa));
@@ -2321,8 +2331,16 @@ input:-webkit-autofill:active{
      phase 2 — this data cannot be backfilled later. Fire and forget, and
      never let it block the paint. */
   function recordScan() {
-    var body = JSON.stringify({ handle: P.handle, at: Date.now(), ref: document.referrer || null });
-    if (navigator.sendBeacon) { /* navigator.sendBeacon("/api/scan", body); */ }
+    try {
+      var isQr = q.get("source") === "qr" || q.get("scan") === "1" || location.hash.indexOf("scan") > -1;
+      if (window.CMApi && P.handle) {
+        window.CMApi.recordProfileView({
+          username: P.handle,
+          isQrScan: isQr,
+          source: isQr ? "qr_scan" : (q.get("source") || "direct_link")
+        });
+      }
+    } catch (e) {}
   }
 
   /* ══ 6b. SHARE, COPY AND THE SHEETS ══════════════════════════════════
@@ -2463,6 +2481,52 @@ input:-webkit-autofill:active{
       openShare(pageUrl(), "Share " + (P.name.split(" ")[0] || "this page"),
                 "codemarca.com/" + P.handle);
     });
+
+    // ── Universal Link Click & Contact Interaction Tracking ──────────
+    document.addEventListener("click", function (e) {
+      var anchor = e.target.closest("a");
+      if (!anchor) return;
+      var href = anchor.getAttribute("href");
+      if (!href || href === "#" || href.indexOf("javascript:") === 0) return;
+      if (anchor.classList.contains("rowshare") || anchor.closest("#claimSheet") || anchor.closest("#shareSheet")) return;
+
+      var title = "";
+      var isSocial = false;
+      var key = anchor.getAttribute("data-k") || "";
+
+      if (anchor.closest(".socials") || anchor.closest("#sxSlot") || anchor.classList.contains("soc-btn")) {
+        isSocial = true;
+        title = anchor.getAttribute("aria-label") || anchor.getAttribute("data-social") || anchor.title || "Social Link";
+        key = title.toLowerCase();
+      } else if (href.indexOf("tel:") === 0) {
+        title = "Phone Call (" + href.replace("tel:", "") + ")";
+        key = "call";
+      } else if (href.indexOf("wa.me") > -1 || href.indexOf("whatsapp.com") > -1) {
+        title = "WhatsApp Connect";
+        key = "wa";
+      } else if (href.indexOf("mailto:") === 0) {
+        title = "Email (" + href.replace("mailto:", "") + ")";
+        key = "email";
+      } else {
+        var span = anchor.querySelector("span");
+        title = (span ? span.textContent : (anchor.textContent || anchor.getAttribute("aria-label") || href)).trim();
+        if (!title) title = href;
+        if (!key) key = "custom";
+      }
+
+      try {
+        if (window.CMApi && P && P.handle) {
+          window.CMApi.recordLinkClick({
+            username: P.handle,
+            profileId: P.id,
+            linkTitle: title,
+            linkUrl: href,
+            linkKey: key,
+            isSocial: isSocial
+          });
+        }
+      } catch (err) {}
+    }, true);
 
     $("list").addEventListener("click", function (e) {
       var b = e.target.closest(".rowshare"); if (!b) return;

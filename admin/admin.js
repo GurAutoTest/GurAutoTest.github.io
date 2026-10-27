@@ -240,6 +240,20 @@
       var profiles = await fetchSupabase("profiles?select=*&order=created_at.desc");
       state.profiles = profiles || [];
 
+      // Load link click counts to display on users table
+      try {
+        var linksClicks = await fetchSupabase("links?select=profile_id,click_count").catch(function () { return []; });
+        var clicksByProfile = {};
+        (linksClicks || []).forEach(function (l) {
+          if (l.profile_id) {
+            clicksByProfile[l.profile_id] = (clicksByProfile[l.profile_id] || 0) + Number(l.click_count || 0);
+          }
+        });
+        state.profiles.forEach(function (p) {
+          p.total_link_clicks = (clicksByProfile[p.id] || 0);
+        });
+      } catch (err) {}
+
       // 2. Load orders
       var orders = await fetchSupabase("orders?select=*&order=created_at.desc").catch(function () { return []; });
       state.orders = orders || [];
@@ -410,7 +424,7 @@
     });
 
     if (!filtered.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:32px; color:var(--text-dim);">' +
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px; color:var(--text-dim);">' +
         (state.profiles.length === 0 ? "No profiles found in Supabase database." : "No users match your filter criteria.") + '</td></tr>';
       return;
     }
@@ -444,6 +458,10 @@
         '<td>' + liveBadge + '</td>' +
         '<td>' + themeBadge + '</td>' +
         '<td style="font-size:0.78rem; color:var(--text-muted);">' + (contactInfo.join("<br>") || '<span style="color:var(--text-dim)">None</span>') + '</td>' +
+        '<td style="font-size:0.78rem;">' +
+          '<div style="font-weight:700; color:#10b981; display:flex; align-items:center; gap:4px;">💾 <b>' + (p.save_contact_count || 0) + '</b> <span style="font-size:0.7rem; color:var(--text-muted); font-weight:400;">saves</span></div>' +
+          '<div style="font-weight:700; color:#8b5cf6; display:flex; align-items:center; gap:4px; margin-top:2px;">🔗 <b>' + (p.total_link_clicks || 0) + '</b> <span style="font-size:0.7rem; color:var(--text-muted); font-weight:400;">clicks</span></div>' +
+        '</td>' +
         '<td style="font-size:0.78rem; font-family:var(--font-mono);">' + dateStr + '</td>' +
         '<td>' +
           '<div class="action-btns">' +
@@ -728,7 +746,7 @@
     btns.forEach(function(b) {
       b.classList.toggle("is-active", b.getAttribute("data-ptab") === tabName);
     });
-    var panels = ["branding", "links", "modes", "chat", "analytics", "orders", "history"];
+    var panels = ["branding", "manifest", "links", "modes", "chat", "analytics", "orders", "history"];
     panels.forEach(function(pName) {
       var pEl = $("pPanel-" + pName);
       if (pEl) {
@@ -736,6 +754,9 @@
         pEl.style.display = pName === tabName ? "block" : "none";
       }
     });
+    if (tabName === "manifest" && state.currentModalBundle) {
+      renderManifestTab(state.currentModalBundle);
+    }
   }
 
   function renderProfileModalHeader(p, analytics) {
@@ -766,10 +787,14 @@
     var views = (analytics && analytics.totalViews != null) ? analytics.totalViews : (p.view_count || 0);
     var scans = p.scan_count || 0;
     var ips = (analytics && analytics.uniqueIpsCount != null) ? analytics.uniqueIpsCount : 0;
+    var saves = (analytics && analytics.saveContactCount != null) ? analytics.saveContactCount : (p.save_contact_count || 0);
+    var clicks = (analytics && analytics.totalLinkClicks != null) ? analytics.totalLinkClicks : (p.total_link_clicks || 0);
 
     if ($("pCtrlQuickViews")) $("pCtrlQuickViews").textContent = views;
     if ($("pCtrlQuickScans")) $("pCtrlQuickScans").textContent = scans;
     if ($("pCtrlQuickIps")) $("pCtrlQuickIps").textContent = ips;
+    if ($("pCtrlQuickSaves")) $("pCtrlQuickSaves").textContent = saves;
+    if ($("pCtrlQuickClicks")) $("pCtrlQuickClicks").textContent = clicks;
 
     var pubLink = $("pCtrlPublicLink");
     if (pubLink) {
@@ -1059,13 +1084,66 @@
     var reg = (analytics && analytics.registeredViews != null) ? analytics.registeredViews : 0;
     var unreg = (analytics && analytics.unregisteredViews != null) ? analytics.unregisteredViews : 0;
     var ips = (analytics && analytics.uniqueIpsCount != null) ? analytics.uniqueIpsCount : 0;
+    var saves = (analytics && analytics.saveContactCount != null) ? analytics.saveContactCount : (p.save_contact_count || 0);
+    var clicks = (analytics && analytics.totalLinkClicks != null) ? analytics.totalLinkClicks : (p.total_link_clicks || 0);
 
     $("pCtrlAnaTotal").textContent = total;
     $("pCtrlAnaReg").textContent = reg;
     $("pCtrlAnaUnreg").textContent = unreg;
     $("pCtrlAnaIps").textContent = ips;
+    if ($("pCtrlAnaSaves")) $("pCtrlAnaSaves").textContent = saves;
+    if ($("pCtrlAnaClicks")) $("pCtrlAnaClicks").textContent = clicks;
+    if ($("pCtrlClicksCountBadge")) $("pCtrlClicksCountBadge").textContent = clicks + " Total Clicks";
+    if ($("pCtrlSavesCountBadge")) $("pCtrlSavesCountBadge").textContent = saves + " Saves";
     $("pCtrlSetViewsInput").value = total;
 
+    // 1. Render Per-Link Clicks Leaderboard Table ("ਕਿਹੜੇ ਲਿੰਕ ਤੇ ਕਿੰਨੇ ਕਲਿੱਕ ਹੋਏ")
+    var linkClicksBody = $("pCtrlLinkClicksTableBody");
+    if (linkClicksBody) {
+      var leaderboard = (analytics && analytics.linkClicksLeaderboard) || [];
+      if (leaderboard.length === 0) {
+        linkClicksBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:18px; color:var(--text-dim);">' +
+          'ਅਜੇ ਤੱਕ ਕੋਈ ਲਿੰਕ ਕਲਿੱਕ ਰਿਕਾਰਡ ਨਹੀਂ ਹੋਇਆ।' +
+        '</td></tr>';
+      } else {
+        linkClicksBody.innerHTML = leaderboard.map(function(item) {
+          var typeLabel = item.type || "custom";
+          var badgeColor = typeLabel === "social" ? "badge-theme" : (typeLabel === "call" || typeLabel === "wa" ? "badge-live" : "badge-offline");
+          return '<tr>' +
+            '<td><b>' + esc(item.title) + '</b></td>' +
+            '<td><span class="badge ' + badgeColor + '">' + esc(typeLabel) + '</span></td>' +
+            '<td><span style="font-size:0.75rem; color:var(--text-muted); font-family:var(--font-mono); max-width:240px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + esc(item.url) + '">' + esc(item.url || "-") + '</span></td>' +
+            '<td><b style="color:#8b5cf6; font-size:0.95rem;">' + (item.clicks || 0) + '</b></td>' +
+            '<td style="font-size:0.75rem; color:var(--text-dim);">' + (item.lastClicked ? formatTs(item.lastClicked) : "-") + '</td>' +
+          '</tr>';
+        }).join("");
+      }
+    }
+
+    // 2. Render Phone Number Saves (.vcf) Stream Table ("ਕਿੰਨੇ ਨੰਬਰ ਸੇਵ ਹੋਏ")
+    var savesBody = $("pCtrlContactSavesTableBody");
+    if (savesBody) {
+      var savesList = (analytics && analytics.contactSaves) || [];
+      if (savesList.length === 0) {
+        savesBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:18px; color:var(--text-dim);">' +
+          'ਅਜੇ ਤੱਕ ਕੋਈ ਨੰਬਰ ਸੇਵ (.vcf) ਰਿਕਾਰਡ ਨਹੀਂ ਹੋਇਆ।' +
+        '</td></tr>';
+      } else {
+        savesBody.innerHTML = savesList.map(function(s) {
+          var loc = [s.city, s.country].filter(Boolean).join(", ");
+          return '<tr>' +
+            '<td><span class="badge badge-live">💾 Contact Saved (.vcf)</span></td>' +
+            '<td><span style="font-size:0.78rem;">' + esc(s.device_type || "mobile") + '</span></td>' +
+            '<td><code style="font-size:0.75rem; font-family:var(--font-mono);">' + esc(s.ip_address || "127.0.0.1") + '</code>' +
+              (loc ? ' <span style="font-size:0.75rem; color:var(--text-dim);">' + esc(loc) + '</span>' : '') +
+            '</td>' +
+            '<td style="font-size:0.75rem; color:var(--text-dim);">' + formatTs(s.created_at) + '</td>' +
+          '</tr>';
+        }).join("");
+      }
+    }
+
+    // 3. Render Visitor IP Stream
     var tbody = $("pCtrlVisitorsTableBody");
     if (!tbody) return;
     var visitors = (analytics && analytics.recentVisitors) || [];
@@ -1090,6 +1168,172 @@
         '<td style="font-size:0.75rem; color:var(--text-dim);">' + formatTs(v.created_at) + '</td>' +
       '</tr>';
     }).join("");
+  }
+
+  function renderManifestTab(bundle) {
+    var container = $("pCtrlManifestContainer");
+    if (!container) return;
+
+    var m = (bundle && bundle.userInputsManifest) || null;
+    var p = (bundle && bundle.profile) || state.currentModalProfile || {};
+    var links = (bundle && bundle.links) || [];
+
+    if (!m) {
+      m = {
+        identity: {
+          displayName: p.display_name || "",
+          username: p.username || "",
+          bio: p.bio || "",
+          avatarUrl: p.avatar_url || "",
+          isLive: !!p.is_live,
+          isOnboardingDone: !!p.onboarding_completed,
+          createdAt: p.created_at,
+          updatedAt: p.updated_at
+        },
+        contact: {
+          phone: p.phone || "",
+          phoneVisible: p.phone_visible !== false,
+          whatsapp: p.whatsapp || "",
+          whatsappOptIn: p.whatsapp_opt_in !== false,
+          email: p.email || "",
+          website: p.website || ""
+        },
+        appearance: {
+          theme: p.theme || "light",
+          accentColor: p.accent_color || "#6366f1",
+          fontFamily: p.font_family || "Inter",
+          layout: p.layout || "standard"
+        },
+        modes: {
+          travelMode: !!p.travel_mode_enabled,
+          travelBuddyName: p.travel_buddy_name || "",
+          travelBuddyPhone: p.travel_buddy_phone || "",
+          lostMode: !!p.lost_mode_enabled,
+          lostItemNote: p.lost_item_note || "",
+          lostReward: p.lost_item_reward || "",
+          trustedContact: p.emergency_contact || p.emergency_phone || ""
+        },
+        quickChat: {
+          enabled: p.chat_enabled !== false,
+          dailyQuota: p.chat_quota || 500
+        },
+        socials: {
+          instagram: p.instagram || "",
+          twitter: p.twitter || "",
+          linkedin: p.linkedin || "",
+          youtube: p.youtube || "",
+          tiktok: p.tiktok || "",
+          facebook: p.facebook || "",
+          github: p.github || "",
+          telegram: p.telegram || "",
+          discord: p.discord || "",
+          spotify: p.spotify || ""
+        },
+        customLinks: links.map(function(l) {
+          return {
+            id: l.id,
+            title: l.title,
+            url: l.url,
+            clicks: Number(l.click_count || 0),
+            isEnabled: l.is_enabled !== false,
+            orderIndex: l.order_index
+          };
+        })
+      };
+    }
+
+    var identityHtml = '<div style="background:var(--surface-raised); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px;">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">' +
+        '<b style="font-size:0.9rem; color:var(--text-main);">👤 1. Identity &amp; Profile Header Data</b>' +
+        '<span class="badge ' + (m.identity.isLive ? 'badge-live' : 'badge-offline') + '">' + (m.identity.isLive ? '● Live Published' : 'Draft') + '</span>' +
+      '</div>' +
+      '<div class="p-settings-grid" style="grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">' +
+        '<div><label style="font-size:0.75rem; color:var(--text-muted); display:block;">Display Name:</label><b style="font-size:0.9rem;">' + esc(m.identity.displayName || "Not specified") + '</b></div>' +
+        '<div><label style="font-size:0.75rem; color:var(--text-muted); display:block;">Username / Handle:</label><code>@' + esc(m.identity.username || "none") + '</code></div>' +
+        '<div style="grid-column:1 / -1;"><label style="font-size:0.75rem; color:var(--text-muted); display:block;">Bio / Description:</label><p style="margin:4px 0; font-size:0.85rem; background:var(--surface); padding:8px; border-radius:var(--radius-sm); border:1px solid var(--border);">' + esc(m.identity.bio || "(ਖਾਲੀ — ਯੂਜ਼ਰ ਨੇ ਬਾਇਓ ਨਹੀਂ ਲਿਖਿਆ)") + '</p></div>' +
+        '<div><label style="font-size:0.75rem; color:var(--text-muted); display:block;">Avatar Photo URL:</label><span style="font-size:0.75rem; word-break:break-all;">' + (m.identity.avatarUrl ? '<a href="' + esc(m.identity.avatarUrl) + '" target="_blank" style="color:var(--primary);">' + esc(m.identity.avatarUrl) + '</a>' : '<i style="color:var(--text-dim)">No photo uploaded (Default Silhouette)</i>') + '</span></div>' +
+        '<div><label style="font-size:0.75rem; color:var(--text-muted); display:block;">Onboarding Finished:</label><span class="badge ' + (m.identity.isOnboardingDone ? 'badge-live' : 'badge-theme') + '">' + (m.identity.isOnboardingDone ? 'Completed' : 'Pending') + '</span></div>' +
+      '</div>' +
+    '</div>';
+
+    var contactHtml = '<div style="background:var(--surface-raised); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px;">' +
+      '<b style="font-size:0.9rem; color:var(--text-main); display:block; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">📞 2. Contact Credentials &amp; Public Visibility Rules</b>' +
+      '<div class="p-settings-grid" style="grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">' +
+        '<div><label style="font-size:0.75rem; color:var(--text-muted); display:block;">Phone Number:</label>' + (m.contact.phone ? '<b style="font-size:0.88rem;">' + esc(m.contact.phone) + '</b> ' + (m.contact.phoneVisible ? '<span class="badge badge-live">Public</span>' : '<span class="badge badge-offline">Hidden</span>') : '<i style="color:var(--text-dim)">None</i>') + '</div>' +
+        '<div><label style="font-size:0.75rem; color:var(--text-muted); display:block;">WhatsApp Number:</label>' + (m.contact.whatsapp ? '<b style="font-size:0.88rem;">' + esc(m.contact.whatsapp) + '</b> ' + (m.contact.whatsappOptIn ? '<span class="badge badge-live">Connect Enabled</span>' : '<span class="badge badge-offline">Disabled</span>') : '<i style="color:var(--text-dim)">None</i>') + '</div>' +
+        '<div><label style="font-size:0.75rem; color:var(--text-muted); display:block;">Email Address:</label>' + (m.contact.email ? '<b style="font-size:0.88rem;">' + esc(m.contact.email) + '</b>' : '<i style="color:var(--text-dim)">None</i>') + '</div>' +
+        '<div><label style="font-size:0.75rem; color:var(--text-muted); display:block;">Website URL:</label>' + (m.contact.website ? '<a href="' + esc(m.contact.website) + '" target="_blank" style="color:var(--primary); font-size:0.85rem;">' + esc(m.contact.website) + '</a>' : '<i style="color:var(--text-dim)">None</i>') + '</div>' +
+      '</div>' +
+    '</div>';
+
+    var appearanceHtml = '<div style="background:var(--surface-raised); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px;">' +
+      '<b style="font-size:0.9rem; color:var(--text-main); display:block; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">🎨 3. Design &amp; Theme Customization</b>' +
+      '<div class="p-settings-grid" style="grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">' +
+        '<div><label style="font-size:0.75rem; color:var(--text-muted); display:block;">Selected Theme:</label><span class="badge badge-theme" style="font-size:0.85rem; text-transform:capitalize;">' + esc(m.appearance.theme) + '</span></div>' +
+        '<div><label style="font-size:0.75rem; color:var(--text-muted); display:block;">Custom Accent Color:</label><div style="display:flex; align-items:center; gap:6px; margin-top:2px;"><span style="width:18px; height:18px; border-radius:4px; border:1px solid var(--border); background:' + esc(m.appearance.accentColor) + '"></span><code>' + esc(m.appearance.accentColor) + '</code></div></div>' +
+        '<div><label style="font-size:0.75rem; color:var(--text-muted); display:block;">Font Family:</label><span>' + esc(m.appearance.fontFamily) + '</span></div>' +
+      '</div>' +
+    '</div>';
+
+    var modesHtml = '<div style="background:var(--surface-raised); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px;">' +
+      '<b style="font-size:0.9rem; color:var(--text-main); display:block; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">🛡️ 4. Safety &amp; Emergency Configuration</b>' +
+      '<div class="p-settings-grid" style="grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px;">' +
+        '<div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px;">' +
+          '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><b style="font-size:0.85rem;">🛡️ Lost Mode</b><span class="badge ' + (m.modes.lostMode ? 'badge-live' : 'badge-offline') + '">' + (m.modes.lostMode ? 'ACTIVE' : 'OFF') + '</span></div>' +
+          '<div style="font-size:0.78rem; color:var(--text-muted);">Finder Note: <i>' + esc(m.modes.lostItemNote || "No note set") + '</i></div>' +
+          '<div style="font-size:0.78rem; color:var(--text-muted); margin-top:4px;">Trusted Emergency Contact: <b>' + esc(m.modes.trustedContact || "None") + '</b></div>' +
+        '</div>' +
+        '<div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px;">' +
+          '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><b style="font-size:0.85rem;">✈️ Travel Buddy</b><span class="badge ' + (m.modes.travelMode ? 'badge-live' : 'badge-offline') + '">' + (m.modes.travelMode ? 'ACTIVE' : 'OFF') + '</span></div>' +
+          '<div style="font-size:0.78rem; color:var(--text-muted);">Buddy Name: <b>' + esc(m.modes.travelBuddyName || "None") + '</b></div>' +
+          '<div style="font-size:0.78rem; color:var(--text-muted); margin-top:4px;">Buddy Phone: <b>' + esc(m.modes.travelBuddyPhone || "None") + '</b></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+    var socialsList = Object.entries(m.socials).map(function(pair) {
+      var net = pair[0], val = pair[1];
+      if (!val) return null;
+      return '<div style="display:flex; align-items:center; gap:8px; padding:6px 10px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:0.8rem;">' +
+        '<b style="text-transform:capitalize; width:80px;">' + esc(net) + ':</b>' +
+        '<code style="color:var(--primary); word-break:break-all;">' + esc(val) + '</code>' +
+      '</div>';
+    }).filter(Boolean);
+
+    var socialsHtml = '<div style="background:var(--surface-raised); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px;">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">' +
+        '<b style="font-size:0.9rem; color:var(--text-main);">🌐 5. Social Media Handles Entered (' + socialsList.length + ' Configured)</b>' +
+      '</div>' +
+      (socialsList.length ? '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:8px;">' + socialsList.join("") + '</div>' : '<i style="font-size:0.8rem; color:var(--text-dim)">ਕੋਈ ਸੋਸ਼ਲ ਹੈਂਡਲ ਦਰਜ ਨਹੀਂ ਕੀਤਾ ਗਿਆ।</i>') +
+    '</div>';
+
+    var customLinksRows = m.customLinks.map(function(cl, idx) {
+      return '<tr>' +
+        '<td><b>#' + (idx + 1) + '</b></td>' +
+        '<td><b>' + esc(cl.title) + '</b></td>' +
+        '<td><span style="font-size:0.75rem; font-family:var(--font-mono); color:var(--primary); max-width:260px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + esc(cl.url) + '</span></td>' +
+        '<td><b style="color:#8b5cf6;">' + cl.clicks + '</b></td>' +
+        '<td><span class="badge ' + (cl.isEnabled ? 'badge-live' : 'badge-offline') + '">' + (cl.isEnabled ? 'Active' : 'Disabled') + '</span></td>' +
+      '</tr>';
+    }).join("");
+
+    var linksHtml = '<div style="background:var(--surface-raised); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px;">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">' +
+        '<b style="font-size:0.9rem; color:var(--text-main);">🔗 6. Custom Link Buttons Configured (' + m.customLinks.length + ' Links)</b>' +
+      '</div>' +
+      (m.customLinks.length ? '<div class="table-wrap"><table class="data-table"><thead><tr><th>#</th><th>Title</th><th>URL</th><th>Clicks</th><th>Status</th></tr></thead><tbody>' + customLinksRows + '</tbody></table></div>' : '<i style="font-size:0.8rem; color:var(--text-dim)">ਕੋਈ ਕਸਟਮ ਲਿੰਕ ਸ਼ਾਮਲ ਨਹੀਂ ਕੀਤਾ ਗਿਆ।</i>') +
+    '</div>';
+
+    container.innerHTML = identityHtml + contactHtml + appearanceHtml + modesHtml + socialsHtml + linksHtml;
+
+    var copyBtn = $("btnCopyManifestJson");
+    if (copyBtn) {
+      copyBtn.onclick = function() {
+        navigator.clipboard.writeText(JSON.stringify(m, null, 2)).then(function() {
+          toast("ਪ੍ਰੋਫਾਈਲ ਮੈਨੀਫੈਸਟ JSON ਕਲਿੱਪਬੋਰਡ ਤੇ ਕਾਪੀ ਹੋ ਗਿਆ! ✓");
+        });
+      };
+    }
   }
 
   async function handleOverrideViewsForUser() {
@@ -1366,22 +1610,108 @@
       if (res && res.ok) {
         bundle = await res.json();
       }
+
+      if (bundle && bundle.profile) {
+        if (!bundle.analytics) {
+          bundle.analytics = {
+            totalViews: bundle.profile.total_views || bundle.profile.view_count || (bundle.views || []).length,
+            registeredViews: bundle.profile.registered_views || 0,
+            unregisteredViews: bundle.profile.unregistered_views || 0,
+            uniqueIpsCount: bundle.profile.unique_ips || 0,
+            saveContactCount: bundle.saveContactCount || bundle.profile.save_contact_count || (bundle.contactSaves || []).length,
+            totalLinkClicks: bundle.totalLinkClicks || bundle.profile.total_link_clicks || 0,
+            linkClicksLeaderboard: bundle.linkClicksLeaderboard || [],
+            contactSaves: bundle.contactSaves || [],
+            recentVisitors: bundle.views || []
+          };
+        }
+      }
+
       if (!bundle || !bundle.profile) {
         var links = await fetchSupabase("links?profile_id=eq." + encodeURIComponent(profileId) + "&order=order_index.asc").catch(function(){ return []; });
         var orders = await fetchSupabase("orders?profile_id=eq." + encodeURIComponent(profileId) + "&order=created_at.desc").catch(function(){ return []; });
         var views = await fetchSupabase("profile_views?profile_id=eq." + encodeURIComponent(profileId) + "&order=created_at.desc&limit=50").catch(function(){ return []; });
         var uHist = await fetchSupabase("username_history?profile_id=eq." + encodeURIComponent(profileId) + "&order=changed_at.desc").catch(function(){ return []; });
         var aHist = await fetchSupabase("profile_history?profile_id=eq." + encodeURIComponent(profileId) + "&order=created_at.desc").catch(function(){ return []; });
+        var saveEvents = await fetchSupabase("analytics_events?profile_id=eq." + encodeURIComponent(profileId) + "&event_type=eq.save_contact&order=created_at.desc&limit=50").catch(function(){ return []; });
+        var clickEvents = await fetchSupabase("analytics_events?profile_id=eq." + encodeURIComponent(profileId) + "&event_type=eq.link_click&order=created_at.desc&limit=100").catch(function(){ return []; });
+
+        // Aggregate leaderboard
+        var clickMap = {};
+        var totalClicks = 0;
+        links.forEach(function(l) {
+          var c = Number(l.click_count || 0);
+          totalClicks += c;
+          clickMap[l.title || "Link"] = {
+            id: l.id,
+            title: l.title || "Link",
+            url: l.url || "",
+            type: "custom",
+            clicks: c,
+            lastClicked: l.updated_at || l.created_at || ""
+          };
+        });
+
+        (clickEvents || []).forEach(function(ev) {
+          var meta = {};
+          try { if (ev.referer && ev.referer.startsWith("{")) meta = JSON.parse(ev.referer); } catch(e){}
+          var t = (meta.link_title || "Link").trim();
+          if (!clickMap[t]) {
+            clickMap[t] = {
+              title: t,
+              url: meta.link_url || "",
+              type: meta.link_key || (meta.is_social ? "social" : "custom"),
+              clicks: 0,
+              lastClicked: ev.created_at
+            };
+          }
+          if (!meta.link_id) {
+            clickMap[t].clicks++;
+            totalClicks++;
+          }
+          if (ev.created_at && (!clickMap[t].lastClicked || ev.created_at > clickMap[t].lastClicked)) {
+            clickMap[t].lastClicked = ev.created_at;
+          }
+        });
+
+        var leaderboard = Object.values(clickMap).sort(function(a, b) { return b.clicks - a.clicks; });
+        var saveCount = Math.max(Number(p.save_contact_count || 0), (saveEvents || []).length);
 
         bundle = {
           profile: p,
           links: links,
           orders: orders,
+          saveContactCount: saveCount,
+          totalLinkClicks: totalClicks,
+          linkClicksLeaderboard: leaderboard,
+          contactSaves: (saveEvents || []).map(function(ev) {
+            return {
+              id: ev.id,
+              ip_address: ev.ip_hash || "127.0.0.1",
+              device_type: ev.device_type || "mobile",
+              city: ev.city || "",
+              country: ev.country || "",
+              created_at: ev.created_at
+            };
+          }),
           analytics: {
             totalViews: p.view_count || views.length,
             registeredViews: views.filter(function(v){ return v.viewer_type === 'registered'; }).length,
             unregisteredViews: views.filter(function(v){ return v.viewer_type !== 'registered'; }).length,
             uniqueIpsCount: new Set(views.map(function(v){ return v.ip_address; }).filter(Boolean)).size,
+            saveContactCount: saveCount,
+            totalLinkClicks: totalClicks,
+            linkClicksLeaderboard: leaderboard,
+            contactSaves: (saveEvents || []).map(function(ev) {
+              return {
+                id: ev.id,
+                ip_address: ev.ip_hash || "127.0.0.1",
+                device_type: ev.device_type || "mobile",
+                city: ev.city || "",
+                country: ev.country || "",
+                created_at: ev.created_at
+              };
+            }),
             recentVisitors: views
           },
           usernameHistory: uHist,
@@ -1393,6 +1723,7 @@
 
       renderProfileModalHeader(bundle.profile, bundle.analytics);
       populateBrandingTab(bundle.profile);
+      renderManifestTab(bundle);
       renderLinksTab(bundle.links || []);
       populateModesTab(bundle.profile);
       populateChatTab(bundle.profile);
