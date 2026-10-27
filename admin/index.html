@@ -100,6 +100,24 @@
           <span class="nav-count" id="navCountUsers">0</span>
         </button>
 
+        <button class="nav-item" type="button" id="nav-profile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <span>Profile Studio</span>
+          <span class="nav-badge" style="background:var(--primary); color:#fff; font-size:10px; padding:2px 6px; border-radius:10px; font-weight:700;">Live</span>
+        </button>
+
+        <button class="nav-item" type="button" id="nav-analytics">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+            <path d="M22 12A10 10 0 0 0 12 2v10z"/>
+          </svg>
+          <span>Viewers & Analytics</span>
+          <span class="nav-count" id="navCountViews">0</span>
+        </button>
+
         <button class="nav-item" type="button" id="nav-flows">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
@@ -129,6 +147,19 @@
             <line x1="7" y1="7" x2="7.01" y2="7"/>
           </svg>
           <span>Refer & Free Tee</span>
+        </button>
+
+        <button class="nav-item" type="button" id="nav-blankqr">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="18" x="3" y="3" rx="2"/>
+            <path d="M7 7h.01M7 17h.01M17 7h.01M17 17h.01"/>
+            <rect width="4" height="4" x="6" y="6" rx="1"/>
+            <rect width="4" height="4" x="14" y="6" rx="1"/>
+            <rect width="4" height="4" x="6" y="14" rx="1"/>
+            <path d="M14 14h3v3h-3z"/>
+          </svg>
+          <span>Blank QRs &amp; Print</span>
+          <span class="nav-count" id="navCountBlankQr">0</span>
         </button>
       </nav>
 
@@ -229,6 +260,15 @@
               <div class="stat-val" id="statOrders">0</div>
               <span class="stat-sub">Physical orders</span>
             </div>
+
+            <div class="stat-card">
+              <div class="stat-head">
+                <span class="stat-label">Unique IP Visitors</span>
+                <span class="stat-icon" style="background:rgba(59,130,246,0.15); color:var(--accent);">🌐</span>
+              </div>
+              <div class="stat-val" id="statUniqueIps">0</div>
+              <span class="stat-sub" id="statBreakdown">Tracked IPs</span>
+            </div>
           </div>
         </section>
 
@@ -273,6 +313,449 @@
               </thead>
               <tbody id="usersTableBody">
                 <tr><td colspan="6" style="text-align:center; padding:32px; color:var(--text-dim);">Connecting to database...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ══ PANEL: LIVE PROFILE STUDIO ══════════════════════════════════ -->
+        <section class="panel-card" id="panel-profile" style="display:none;">
+          <div class="panel-head">
+            <div class="panel-title-group">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <h2>Live Profile Studio</h2>
+                <span class="badge badge-live" id="stLiveBadge">● LIVE</span>
+              </div>
+              <p>Full-page profile builder with real-time phone preview, contact controls, social links & emergency modes</p>
+            </div>
+
+            <div class="panel-actions" style="flex-wrap:wrap; gap:10px;">
+              <!-- User Switcher Dropdown -->
+              <div style="display:flex; align-items:center; gap:8px;">
+                <label for="studioUserSelect" style="font-size:0.8rem; color:var(--text-muted); font-weight:700;">Selected Profile:</label>
+                <select class="filter-select" id="studioUserSelect" style="min-width:210px; font-weight:700; color:var(--text-main); background:var(--surface-raised);">
+                  <!-- Populated dynamically via admin.js -->
+                </select>
+              </div>
+
+              <a class="btn-table" id="stViewPublicBtn" href="#" target="_blank" style="text-decoration:none;">↗ Public Page</a>
+              <button class="btn-table" type="button" id="stCopyLinkBtn" title="Copy public link">📋 Copy Link</button>
+              <button class="btn-table" type="button" id="stTestDemoBtn">⚡ Demo Flow</button>
+            </div>
+          </div>
+
+          <!-- Studio Main 2-Column Grid -->
+          <div class="studio-layout">
+            <!-- Left Column: Settings Editor -->
+            <div class="studio-settings-col">
+              
+              <!-- ── 1. YOU, LIVE CARD ──────────────────────────────────── -->
+              <div class="studio-card studio-card--me">
+                <div class="st-me-top">
+                  <div class="st-me-av" id="stMeAvDisc">G</div>
+                  <div class="st-me-info">
+                    <span class="st-me-name" id="stMeNameDisplay">Garry Singh</span>
+                    <span class="st-me-live-pill" id="stMeLiveStatus"><i></i>Live</span>
+                  </div>
+                  <button class="st-me-qr-btn" type="button" id="stMeQrBtn" title="Show QR Code">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                  </button>
+                </div>
+                <div class="st-me-row">
+                  <div class="st-me-link-box">
+                    <span>codemarca.com/</span><b id="stMeHandleDisplay">garry</b>
+                  </div>
+                  <button class="btn-table" type="button" id="stShareMeBtn" style="padding:6px 12px; font-size:0.78rem;">Share</button>
+                </div>
+              </div>
+
+              <!-- ── 2. BASICS ───────────────────────────────────────────── -->
+              <div class="studio-card">
+                <div class="studio-card-head">
+                  <h3>Basics</h3>
+                  <span class="card-subtitle">Display identity, public handle and photo</span>
+                </div>
+
+                <!-- Avatar Upload -->
+                <div class="st-photo-row">
+                  <div class="st-avatar-preview" id="stPhotoPreviewDisc">
+                    <span id="stPhotoInitial">G</span>
+                    <img id="stPhotoImg" src="" alt="Avatar" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                  </div>
+                  <div class="st-photo-ctrls">
+                    <div style="display:flex; gap:8px;">
+                      <button class="btn-primary" type="button" id="stPhotoUploadBtn" style="width:auto; height:32px; font-size:0.8rem; padding:0 14px;">Change Photo</button>
+                      <button class="btn-table" type="button" id="stPhotoRemoveBtn" style="height:32px; font-size:0.8rem; color:var(--danger); border-color:var(--danger);">Remove</button>
+                    </div>
+                    <input type="file" id="stPhotoFileInput" accept="image/*" style="display:none;">
+                    <div style="margin-top:6px; width:100%;">
+                      <input class="form-input" type="url" id="stAvatarUrlInput" placeholder="Or enter image URL (https://...)" style="font-size:0.8rem; height:32px;">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group" style="margin-top:14px;">
+                  <label class="form-label" for="stNameInput">Your Name / Title</label>
+                  <input class="form-input" type="text" id="stNameInput" maxlength="40" placeholder="e.g. Gurdeep Singh" required>
+                </div>
+
+                <div class="form-group">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label class="form-label" for="stHandleInput">Username / URL Handle</label>
+                    <span style="font-size:0.72rem; color:var(--text-dim); font-family:var(--font-mono);">codemarca.com/<b id="stHandleSuffix">username</b></span>
+                  </div>
+                  <input class="form-input inp-mono" type="text" id="stHandleInput" maxlength="30" placeholder="e.g. garry" required>
+                  <small style="font-size:0.75rem; color:var(--text-dim); margin-top:3px; display:block;">
+                    Renaming automatically archives previous handles into <span style="color:var(--primary); font-family:var(--font-mono);">username_history</span>.
+                  </small>
+                </div>
+
+                <div class="form-group">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label class="form-label" for="stBioInput">Bio / One-liner</label>
+                    <span class="fld-count" id="stBioCounter">0/100</span>
+                  </div>
+                  <textarea class="form-input" id="stBioInput" maxlength="100" rows="2" style="height:auto; padding:10px;" placeholder="One line about what you do or offer..."></textarea>
+                </div>
+              </div>
+
+              <!-- ── 3. CONTACT ──────────────────────────────────────────── -->
+              <div class="studio-card">
+                <div class="studio-card-head">
+                  <h3>Contact Details</h3>
+                  <span class="card-subtitle">Direct buttons for phonebook vCard, direct calls, and WhatsApp</span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="stPhoneInput">Phone Number</label>
+                  <div class="st-input-eye-group">
+                    <span class="st-pre">+91</span>
+                    <input class="form-input st-fld-main" type="tel" id="stPhoneInput" placeholder="98765 43210" maxlength="15">
+                    <button class="st-eye-btn is-visible" type="button" id="stPhoneEyeBtn" title="Toggle visibility on page">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label class="form-label" for="stWaInput">WhatsApp Number</label>
+                    <label class="form-check" style="margin:0; font-size:0.78rem;">
+                      <input type="checkbox" id="stWaSameAsPhone">
+                      <span>Same as phone</span>
+                    </label>
+                  </div>
+                  <div class="st-input-eye-group">
+                    <span class="st-pre">+91</span>
+                    <input class="form-input st-fld-main" type="tel" id="stWaInput" placeholder="Business / WhatsApp number" maxlength="15">
+                    <button class="st-eye-btn is-visible" type="button" id="stWaEyeBtn" title="Toggle visibility on page">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="stEmailInput">Email Address</label>
+                  <div class="st-input-eye-group">
+                    <input class="form-input st-fld-main" type="email" id="stEmailInput" placeholder="you@example.com">
+                    <button class="st-eye-btn is-visible" type="button" id="stEmailEyeBtn" title="Toggle visibility on page">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <p style="font-size:0.78rem; color:var(--text-dim); margin-top:8px;">💡 "Save Contact" (.vcf) button is automatically included on every live page.</p>
+              </div>
+
+              <!-- ── 4. SOCIALS & CUSTOM LINKS ───────────────────────────── -->
+              <div class="studio-card">
+                <div class="studio-card-head" style="display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <h3>Links &amp; Social Platforms</h3>
+                    <span class="card-subtitle">Tap any platform icon to add it; enter handle or URL</span>
+                  </div>
+                  <span class="badge badge-theme" id="stLinksCountBadge">0 links</span>
+                </div>
+
+                <!-- Platform Picker Grid -->
+                <div class="st-platform-picks" id="stPicksGrid">
+                  <!-- Generated dynamically in admin.js with official brand icons -->
+                </div>
+
+                <!-- Active Links Container -->
+                <div class="st-added-links" id="stAddedLinksBox" style="margin-top:16px;">
+                  <!-- Dynamic rows -->
+                </div>
+
+                <!-- Custom Link Add Box -->
+                <div style="margin-top:16px; padding:14px; background:var(--surface); border:1px dashed var(--border-strong); border-radius:var(--radius-md);">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <b style="font-size:0.85rem;">+ Add Custom Link / Portfolio</b>
+                  </div>
+                  <div class="p-settings-grid">
+                    <input class="form-input" type="text" id="stCustomLinkTitle" placeholder="Title (e.g. My Portfolio / Store)" style="font-size:0.82rem; height:34px;">
+                    <input class="form-input" type="text" id="stCustomLinkUrl" placeholder="URL (https://...)" style="font-size:0.82rem; height:34px;">
+                  </div>
+                  <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+                    <button class="btn-primary" type="button" id="stAddCustomLinkBtn" style="width:auto; height:32px; font-size:0.8rem; padding:0 16px;">Add Custom Link</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── 5. THEMES & STYLING ──────────────────────────────────── -->
+              <div class="studio-card">
+                <div class="studio-card-head">
+                  <h3>Theme &amp; Appearance</h3>
+                  <span class="card-subtitle">Pick visual style and custom accent palette</span>
+                </div>
+
+                <!-- Theme Selection Grid -->
+                <div class="st-themes-grid" id="stThemesGrid">
+                  <button class="st-theme-tile is-active" type="button" data-theme="light">
+                    <span class="st-th-swatch" data-t="light"><i></i><i></i><i></i></span>
+                    <span class="st-th-name">Light</span>
+                  </button>
+                  <button class="st-theme-tile" type="button" data-theme="glass-bronze">
+                    <span class="st-th-swatch" data-t="glass-bronze"><i></i><i></i><i></i></span>
+                    <span class="st-th-name">Bronze Glass</span>
+                  </button>
+                  <button class="st-theme-tile" type="button" data-theme="leaf">
+                    <span class="st-th-swatch" data-t="leaf"><i></i><i></i><i></i></span>
+                    <span class="st-th-name">Leaf</span>
+                  </button>
+                  <button class="st-theme-tile" type="button" data-theme="glass-copper">
+                    <span class="st-th-swatch" data-t="glass-copper"><i></i><i></i><i></i></span>
+                    <span class="st-th-name">Copper Glass</span>
+                  </button>
+                  <button class="st-theme-tile" type="button" data-theme="soft">
+                    <span class="st-th-swatch" data-t="soft"><i></i><i></i><i></i></span>
+                    <span class="st-th-name">Soft</span>
+                  </button>
+                  <button class="st-theme-tile" type="button" data-theme="photo">
+                    <span class="st-th-swatch" data-t="photo"><i></i><i></i><i></i></span>
+                    <span class="st-th-name">Photo</span>
+                  </button>
+                  <button class="st-theme-tile" type="button" data-theme="violet">
+                    <span class="st-th-swatch" data-t="violet"><i></i><i></i><i></i></span>
+                    <span class="st-th-name">Violet</span>
+                  </button>
+                  <button class="st-theme-tile" type="button" data-theme="dark">
+                    <span class="st-th-swatch" data-t="dark"><i></i><i></i><i></i></span>
+                    <span class="st-th-name">Dark</span>
+                  </button>
+                </div>
+
+                <!-- Sub-variants dot row -->
+                <div class="st-theme-sub-row" id="stThemeSubsRow">
+                  <!-- Generated dynamically for leaf/soft/photo colors -->
+                </div>
+
+                <!-- Custom Hex Accent Color -->
+                <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border);">
+                  <label class="form-label">Custom Accent Color</label>
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <input type="color" id="stAccentColorPicker" value="#6366f1" style="width:44px; height:36px; padding:2px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); cursor:pointer;">
+                    <input class="form-input inp-mono" type="text" id="stAccentColorText" value="#6366f1" style="max-width:140px; font-size:0.85rem;">
+                    <div style="display:flex; gap:6px;">
+                      <button class="btn-table" type="button" data-hex="#6366f1" style="width:24px; height:24px; padding:0; border-radius:50%; background:#6366f1;"></button>
+                      <button class="btn-table" type="button" data-hex="#0ea5e9" style="width:24px; height:24px; padding:0; border-radius:50%; background:#0ea5e9;"></button>
+                      <button class="btn-table" type="button" data-hex="#10b981" style="width:24px; height:24px; padding:0; border-radius:50%; background:#10b981;"></button>
+                      <button class="btn-table" type="button" data-hex="#f59e0b" style="width:24px; height:24px; padding:0; border-radius:50%; background:#f59e0b;"></button>
+                      <button class="btn-table" type="button" data-hex="#ec4899" style="width:24px; height:24px; padding:0; border-radius:50%; background:#ec4899;"></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── 6. MODES & EMERGENCY ────────────────────────────────── -->
+              <div class="studio-card">
+                <div class="studio-card-head">
+                  <h3>Safety &amp; Emergency Modes</h3>
+                  <span class="card-subtitle">Active override safety banner on scans</span>
+                </div>
+
+                <div class="p-settings-grid">
+                  <!-- Travel Mode -->
+                  <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                      <div>
+                        <b style="font-size:0.9rem;">✈️ Travel Mode</b>
+                        <div style="font-size:0.75rem; color:var(--text-muted);">Trusted buddy contact banner</div>
+                      </div>
+                      <label class="form-check" style="margin:0;">
+                        <input type="checkbox" id="stTravelModeOn">
+                        <span style="font-weight:700;">ON</span>
+                      </label>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                      <label class="form-label" for="stTravelBuddyPhone" style="font-size:0.78rem;">Buddy Phone</label>
+                      <input class="form-input" type="tel" id="stTravelBuddyPhone" placeholder="+91 98765 00000" style="font-size:0.8rem; height:32px;">
+                    </div>
+                  </div>
+
+                  <!-- Lost Mode -->
+                  <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                      <div>
+                        <b style="font-size:0.9rem;">🚨 Lost Mode</b>
+                        <div style="font-size:0.75rem; color:var(--text-muted);">Urgent finder contact banner</div>
+                      </div>
+                      <label class="form-check" style="margin:0;">
+                        <input type="checkbox" id="stLostModeOn">
+                        <span style="font-weight:700;">ON</span>
+                      </label>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                      <label class="form-label" for="stLostTrustPhone" style="font-size:0.78rem;">Emergency Phone</label>
+                      <input class="form-input" type="tel" id="stLostTrustPhone" placeholder="+91 98765 11111" style="font-size:0.8rem; height:32px;">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── 7. QUICK CHAT & QUOTAS ──────────────────────────────── -->
+              <div class="studio-card">
+                <div class="studio-card-head">
+                  <h3>Quick Chat Quotas</h3>
+                  <span class="card-subtitle">Real-time messaging limits and spam shield</span>
+                </div>
+                <div class="p-settings-grid">
+                  <div class="form-group">
+                    <label class="form-label">Chat Feature Switch</label>
+                    <label class="form-check" style="margin-top:6px;">
+                      <input type="checkbox" id="stChatFeatureOn" checked>
+                      <span>Enable Quick Chat for profile</span>
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="stChatDailyQuota">Daily Quota (Characters)</label>
+                    <input class="form-input" type="number" id="stChatDailyQuota" value="500" min="50" max="5000">
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── 8. VISIBILITY & LIFECYCLE ───────────────────────────── -->
+              <div class="studio-card">
+                <div class="studio-card-head">
+                  <h3>Visibility &amp; Lifecycle</h3>
+                  <span class="card-subtitle">Public accessibility and sticker activation state</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                  <label class="form-check">
+                    <input type="checkbox" id="stPageIsLive" checked>
+                    <div>
+                      <b style="display:block;">Page is live (Public scan opens profile)</b>
+                      <span style="font-size:0.78rem; color:var(--text-muted);">When unchecked, visitors see "This page is paused" message.</span>
+                    </div>
+                  </label>
+                  <label class="form-check">
+                    <input type="checkbox" id="stOnboardingCompleted" checked>
+                    <div>
+                      <b style="display:block;">Onboarding completed</b>
+                      <span style="font-size:0.78rem; color:var(--text-muted);">Skips introductory setup flows and renders live dashboard.</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Right Column: Interactive Sticky Mobile Preview -->
+            <div class="studio-preview-col">
+              <div class="studio-sticky-preview">
+                <div class="preview-device-header">
+                  <div class="preview-view-toggles">
+                    <button class="preview-mode-btn is-active" type="button" data-pmode="visitor">📱 Visitor</button>
+                    <button class="preview-mode-btn" type="button" data-pmode="owner">👑 Owner</button>
+                    <button class="preview-mode-btn" type="button" data-pmode="qr">⚡ QR</button>
+                  </div>
+                  <a class="btn-table" id="previewPopoutBtn" href="#" target="_blank" title="Open in new window" style="padding:4px 8px; font-size:0.75rem;">↗</a>
+                </div>
+
+                <!-- Phone Frame -->
+                <div class="studio-phone-frame" id="studioPhoneMockup" data-mock-theme="light">
+                  <div class="phone-dynamic-island">
+                    <div class="phone-camera-dot"></div>
+                  </div>
+
+                  <!-- Mockup Screen Inner Scroll -->
+                  <div class="phone-screen-content" id="phoneMockupContent">
+                    <!-- Dynamic live preview content -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Floating Save Bar -->
+          <div class="studio-save-bar" id="studioSaveBar">
+            <div class="st-save-bar-info">
+              <span class="st-save-dot"></span>
+              <span id="stSaveBarText">Ready · All changes up to date</span>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button class="btn-table" type="button" id="studioDiscardBtn">Discard</button>
+              <button class="btn-primary" type="button" id="studioSaveAllBtn" style="width:auto; padding:0 24px;">Save to Database &amp; Record History</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ══ PANEL: VIEWERS & ANALYTICS ═════════════════════════════════ -->
+        <section class="panel-card" id="panel-analytics" style="display:none;">
+          <div class="panel-head">
+            <div class="panel-title-group">
+              <h2>Real-time Profile Views & IP Tracker</h2>
+              <p>Live stream of sticker scans, guest visits, registered users, and client IP addresses</p>
+            </div>
+            <div class="panel-actions">
+              <div class="search-box">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" id="analyticsSearchInput" placeholder="Filter by IP, username or name...">
+              </div>
+              <select class="filter-select" id="analyticsTypeFilter">
+                <option value="all">All Viewers</option>
+                <option value="registered">Registered Only</option>
+                <option value="unregistered">Guests Only</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="stats-grid" style="padding:16px 24px; border-bottom:1px solid var(--border);">
+            <div class="stat-card" style="padding:14px 16px;">
+              <span class="stat-label">Total Visits</span>
+              <div class="stat-val" id="analyticsTotalViews" style="font-size:22px;">0</div>
+            </div>
+            <div class="stat-card" style="padding:14px 16px;">
+              <span class="stat-label">Registered Viewers</span>
+              <div class="stat-val" id="analyticsRegViews" style="font-size:22px; color:#10b981;">0</div>
+            </div>
+            <div class="stat-card" style="padding:14px 16px;">
+              <span class="stat-label">Guest / Anonymous</span>
+              <div class="stat-val" id="analyticsUnregViews" style="font-size:22px; color:#9ca3af;">0</div>
+            </div>
+            <div class="stat-card" style="padding:14px 16px;">
+              <span class="stat-label">Unique IPs</span>
+              <div class="stat-val" id="analyticsUniqueIps" style="font-size:22px; color:#3b82f6;">0</div>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Profile Visited</th>
+                  <th>Viewer Type</th>
+                  <th>Viewer Identity</th>
+                  <th>IP Address & Location</th>
+                  <th>Source</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody id="analyticsTableBody">
+                <tr><td colspan="6" style="text-align:center; padding:32px; color:var(--text-dim);">No views recorded yet.</td></tr>
               </tbody>
             </table>
           </div>
@@ -429,73 +912,627 @@
           </div>
         </section>
 
+        <!-- ══ PANEL: BLANK QR CODES & PRINT STUDIO ═════════════════════════ -->
+        <section class="panel-card" id="panel-blankqr" style="display:none;">
+          <div class="panel-head">
+            <div class="panel-title-group">
+              <h2>Blank QR Inventory &amp; Print Studio</h2>
+              <p>Pre-mint blank QR codes for Offline Retail Markets, counter stands, gift vouchers, and events. Multi-select codes and generate print-ready PDF sticker sheets.</p>
+            </div>
+            <div class="panel-actions">
+              <button class="btn-primary" type="button" id="openMintBlankQrModalBtn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                + Mint Blank QRs
+              </button>
+              <button class="btn-ghost-sm" type="button" id="openPrintSheetBtn">
+                🖨️ Print Selected (PDF)
+              </button>
+              <button class="btn-ghost-sm" type="button" id="exportBlankQrCsvBtn">
+                📥 Export CSV
+              </button>
+              <button class="btn-ghost-sm" type="button" id="refreshBlankQrBtn">
+                ↻ Refresh
+              </button>
+            </div>
+          </div>
+
+          <div style="padding:24px; display:flex; flex-direction:column; gap:24px;">
+            <!-- Key Inventory Stats Row -->
+            <div class="stats-row">
+              <div class="stat-card">
+                <div class="stat-head">
+                  <span class="stat-label">Total In Inventory</span>
+                  <span class="stat-icon" style="background:rgba(99,102,241,0.15); color:var(--primary);">📦</span>
+                </div>
+                <div class="stat-val" id="bqrStatTotal">0</div>
+                <span class="stat-sub">Across all categories</span>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-head">
+                  <span class="stat-label">Offline Market (Retail)</span>
+                  <span class="stat-icon" style="background:rgba(59,130,246,0.15); color:#3b82f6;">🏪</span>
+                </div>
+                <div class="stat-val" id="bqrStatOffline">0</div>
+                <span class="stat-sub">Store counter &amp; shelf packs</span>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-head">
+                  <span class="stat-label">Gift Stickers</span>
+                  <span class="stat-icon" style="background:rgba(16,185,129,0.15); color:var(--success);">🎁</span>
+                </div>
+                <div class="stat-val" id="bqrStatGift">0</div>
+                <span class="stat-sub">Buyer purchased gift vouchers</span>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-head">
+                  <span class="stat-label">Claimed &amp; Active</span>
+                  <span class="stat-icon" style="background:rgba(168,85,247,0.15); color:#a855f7;">✨</span>
+                </div>
+                <div class="stat-val" id="bqrStatClaimed">0</div>
+                <span class="stat-sub" id="bqrStatClaimedSub">Linked to user profiles</span>
+              </div>
+
+              <div class="stat-card" style="border-color:var(--primary);">
+                <div class="stat-head">
+                  <span class="stat-label">Selected to Print</span>
+                  <span class="stat-icon" style="background:rgba(245,158,11,0.15); color:var(--warning);">🖨️</span>
+                </div>
+                <div class="stat-val" id="bqrStatSelected" style="color:var(--warning);">0</div>
+                <span class="stat-sub">Ready for sticker sheet</span>
+              </div>
+            </div>
+
+            <!-- Filter & Search Toolbar -->
+            <div class="bqr-toolbar-box">
+              <div class="bqr-toolbar-row">
+                <div class="search-box" style="flex:1; min-width:260px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                  <input type="text" id="bqrSearchInput" placeholder="Search by slug, batch name, notes, or claimed user...">
+                </div>
+
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                  <select class="filter-select" id="bqrCategoryFilter" style="min-width:180px;">
+                    <option value="all">All Categories (Offline &amp; Gift)</option>
+                    <option value="offline_market">🏪 Offline Market (Store / Counter)</option>
+                    <option value="gift">🎁 Gift Stickers (Vouchers)</option>
+                    <option value="promo">🎟️ Promo &amp; Event Swag</option>
+                  </select>
+
+                  <select class="filter-select" id="bqrStatusFilter" style="min-width:160px;">
+                    <option value="all">All Statuses</option>
+                    <option value="unclaimed">⚪ Unclaimed (Blank)</option>
+                    <option value="claimed">🟢 Claimed &amp; Active</option>
+                    <option value="unprinted">⏳ Unprinted (Needs Sheet)</option>
+                    <option value="printed">🖨️ Already Printed</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="bqr-quick-presets">
+                <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">Quick Filters:</span>
+                <button type="button" class="btn-table" id="bqrFilterOfflineOnly">Show Offline Market Only</button>
+                <button type="button" class="btn-table" id="bqrFilterGiftOnly">Show Gift Stickers Only</button>
+                <button type="button" class="btn-table btn-table-primary" id="bqrSelectUnprintedBtn">Select All Unprinted</button>
+                <button type="button" class="btn-table" id="bqrResetFilterBtn">Reset Filters</button>
+              </div>
+            </div>
+
+            <!-- Blank QR Inventory Table -->
+            <div class="table-container" style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden;">
+              <table class="admin-table" id="blankQrTable">
+                <thead>
+                  <tr>
+                    <th style="width:40px; text-align:center;">
+                      <input type="checkbox" id="bqrSelectAll" title="Select / Deselect all visible">
+                    </th>
+                    <th style="width:80px;">QR</th>
+                    <th>Slug &amp; Target Link</th>
+                    <th>Category</th>
+                    <th>Batch &amp; Retail Notes</th>
+                    <th>Print Status</th>
+                    <th>Claim Status</th>
+                    <th>Created</th>
+                    <th style="text-align:right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="blankQrTableBody">
+                  <!-- Populated via admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
       </div>
     </main>
   </div>
 
-  <!-- ══ EDIT USER MODAL ══════════════════════════════════════════════════ -->
-  <div class="admin-modal-backdrop" id="editModalBackdrop">
-    <div class="admin-modal">
-      <div class="modal-header">
-        <h3 class="modal-title">Edit Database Profile</h3>
-        <button class="btn-icon" type="button" id="modalCloseBtn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
+  <!-- ══ FLOATING BATCH ACTION BAR ═══════════════════════════════════════ -->
+  <div class="bqr-floating-bar" id="blankQrFloatingBar" style="display:none;">
+    <div class="bqr-floating-info">
+      <span class="bqr-floating-badge" id="bqrFloatCountBadge">0</span>
+      <span>QR Codes selected</span>
+    </div>
+    <div class="bqr-floating-actions">
+      <button class="btn-primary" type="button" id="bqrFloatPrintBtn">
+        🖨️ Download PDF Print Sheet
+      </button>
+      <button class="btn-ghost-sm" type="button" id="bqrFloatMarkPrintedBtn">
+        🏷️ Mark Printed
+      </button>
+      <button class="btn-ghost-sm" type="button" id="bqrFloatMarkUnprintedBtn">
+        ↩️ Mark Unprinted
+      </button>
+      <button class="btn-ghost-sm" type="button" id="bqrFloatDeleteBtn" style="color:var(--danger); border-color:rgba(239,68,68,0.3);">
+        🗑️ Delete
+      </button>
+      <button class="btn-icon" type="button" id="bqrFloatClearBtn" title="Clear selection">
+        ✕
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ MINT BLANK QR MODAL ═════════════════════════════════════════════ -->
+  <div class="admin-modal-backdrop" id="mintBlankQrModalBackdrop" style="display:none;">
+    <div class="admin-modal" style="max-width:540px;">
+      <div class="profile-ctrl-head">
+        <div class="p-header-user">
+          <div class="stat-icon" style="background:rgba(99,102,241,0.2); color:var(--primary); width:40px; height:40px; border-radius:10px; display:grid; place-items:center; font-size:1.2rem;">
+            ⚡
+          </div>
+          <div class="p-header-details">
+            <h3 style="font-size:1.1rem; margin:0;">Mint Blank QR Codes</h3>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin:0;">Generate offline inventory for physical retail sticker packs or gift cards</p>
+          </div>
+        </div>
+        <button class="btn-icon" type="button" id="closeMintModalBtn" aria-label="Close modal">✕</button>
       </div>
 
-      <form id="editUserForm">
-        <input type="hidden" id="editUid">
-        <div class="modal-body">
-          <div class="form-group">
-            <label class="form-label" for="editName">Display Name</label>
-            <input class="form-input" type="text" id="editName" required>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="editHandle">Username / Handle</label>
-            <input class="form-input" type="text" id="editHandle" disabled style="opacity:0.6; cursor:not-allowed;">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="editBio">Bio</label>
-            <textarea class="form-input" id="editBio" rows="3" style="height:auto; padding:10px;"></textarea>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="editPhone">Phone Number</label>
-            <input class="form-input" type="tel" id="editPhone">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="editTheme">Page Theme</label>
-            <select class="form-input" id="editTheme">
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-              <option value="leaf">Leaf Green</option>
-              <option value="soft">Soft</option>
-              <option value="photo">Photo</option>
-              <option value="violet">Violet</option>
-              <option value="glass">Glass</option>
-            </select>
-          </div>
-
-          <label class="form-check" style="margin-top:6px;">
-            <input type="checkbox" id="editLive">
-            <span>Publish live page (`is_live = true`)</span>
-          </label>
+      <form id="mintBlankQrForm" style="padding:22px; display:flex; flex-direction:column; gap:16px;">
+        <div class="form-group">
+          <label class="form-label">Category / Purpose</label>
+          <select class="form-input" id="mintCategory" required>
+            <option value="offline_market">🏪 Offline Market (Retail counter stands, shelf display, stores)</option>
+            <option value="gift">🎁 Gift Stickers (Vouchers, physical gift envelope packs)</option>
+            <option value="promo">🎟️ Promo &amp; Event Swag (Conferences, meetups, sponsorships)</option>
+          </select>
+          <span style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Whoever buys or receives this sticker can scan it, pick their @handle, and claim instant ownership.</span>
         </div>
 
-        <div class="modal-footer">
-          <button class="btn-table" type="button" id="modalCancelBtn">Cancel</button>
-          <button class="btn-primary" type="submit" id="modalSaveBtn" style="width:auto; padding:0 20px;">Save Changes</button>
+        <div class="form-group">
+          <label class="form-label">Quantity to Mint</label>
+          <div style="display:flex; gap:8px; margin-bottom:8px;" id="mintQtyPresetGroup">
+            <button type="button" class="btn-table" data-qty="5">5</button>
+            <button type="button" class="btn-table btn-table-primary" data-qty="10">10</button>
+            <button type="button" class="btn-table" data-qty="25">25</button>
+            <button type="button" class="btn-table" data-qty="50">50</button>
+            <button type="button" class="btn-table" data-qty="100">100</button>
+          </div>
+          <input type="number" class="form-input" id="mintQuantity" min="1" max="200" value="10" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Slug Prefix</label>
+          <input type="text" class="form-input" id="mintPrefix" value="cm-" placeholder="e.g. cm-, off-, gift-, retail-">
+          <span style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Unique URL will be generated as: <code>https://codemarca.com/scan.html?code=[prefix][random]</code></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Batch Name / Event Tag</label>
+          <input type="text" class="form-input" id="mintBatchName" placeholder="e.g. Chandigarh Sector 17 Retail Display #1" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Location / Printing Notes (Optional)</label>
+          <textarea class="form-input" id="mintNotes" rows="2" placeholder="e.g. 40mm matte vinyl round cut stickers for counter display"></textarea>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:8px;">
+          <button type="button" class="btn-ghost-sm" id="cancelMintBtn">Cancel</button>
+          <button type="submit" class="btn-primary" id="submitMintBtn">
+            <span id="mintBtnText">Mint QR Codes Now</span>
+          </button>
         </div>
       </form>
     </div>
   </div>
 
+  <!-- ══ PDF PRINT SHEET MODAL ═══════════════════════════════════════════ -->
+  <div class="admin-modal-backdrop" id="blankQrPrintModalBackdrop" style="display:none;">
+    <div class="admin-modal admin-modal--print-sheet" style="max-width:960px; max-height:92vh; display:flex; flex-direction:column;">
+      <div class="profile-ctrl-head">
+        <div class="p-header-user">
+          <div class="stat-icon" style="background:rgba(245,158,11,0.2); color:var(--warning); width:40px; height:40px; border-radius:10px; display:grid; place-items:center; font-size:1.2rem;">
+            🖨️
+          </div>
+          <div class="p-header-details">
+            <h3 style="font-size:1.1rem; margin:0;">PDF Sticker Sheet Generator</h3>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin:0;">High-contrast vector QR codes with Codemarca branding ready for physical printing</p>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="btn-primary" type="button" id="bqrTriggerPrintBtn">
+            🖨️ Print to PDF / Printer
+          </button>
+          <button class="btn-icon" type="button" id="closePrintModalBtn" aria-label="Close modal">✕</button>
+        </div>
+      </div>
+
+      <!-- Print Layout Options -->
+      <div class="bqr-print-options-bar">
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <label style="font-size:0.82rem; font-weight:700; color:var(--text-muted);">Sheet Layout:</label>
+          <select class="filter-select" id="bqrPrintLayoutSelect" style="padding:6px 12px; font-size:0.82rem;">
+            <option value="stickers_20">A4 Sheet — 20 Stickers (4 cols × 5 rows, 42mm round)</option>
+            <option value="cards_9">A4 Sheet — 9 Retail Cards (3 cols × 3 rows, Credit Card size)</option>
+            <option value="tags_40">A4 Sheet — 40 Mini Tags (5 cols × 8 rows, 28mm stickers)</option>
+          </select>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; font-size:0.82rem;">
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" id="bqrPrintOptLogo" checked> Include Codemarca Logo
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" id="bqrPrintOptInstructions" checked> Include "Scan to Claim" Instructions
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" id="bqrPrintOptCutLines" checked> Show Cut Guide Lines
+          </label>
+        </div>
+      </div>
+
+      <!-- Printable Area (Rendered in Modal Preview, and printed directly via window.print) -->
+      <div class="bqr-print-preview-scroll" id="bqrPrintScrollContainer">
+        <div class="bqr-print-sheet" id="bqrPrintSheetArea">
+          <!-- Populated dynamically with sticker items -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ USER PROFILE CONTROL CENTER & AUDIT DRAWER ═════════════════════ -->
+  <div class="admin-modal-backdrop" id="editModalBackdrop">
+    <div class="admin-modal admin-modal--profile">
+      <!-- Header -->
+      <div class="profile-ctrl-head">
+        <div class="p-header-user">
+          <div class="p-header-avatar" id="pCtrlAvatarBox">
+            <span id="pCtrlAvatarInitial">?</span>
+            <img id="pCtrlAvatarImg" src="" alt="Avatar" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
+          </div>
+          <div class="p-header-details">
+            <h3 id="pCtrlHeaderName">User Profile <span class="badge badge-live" id="pCtrlLiveBadge">● LIVE</span></h3>
+            <div class="p-header-handle">@<span id="pCtrlHeaderHandle">username</span> · <span id="pCtrlUidDisplay" style="opacity:0.7;">UID: -</span></div>
+          </div>
+        </div>
+
+        <div class="p-quick-metrics">
+          <div class="p-metric-pill"><span>Views:</span> <b id="pCtrlQuickViews">0</b></div>
+          <div class="p-metric-pill"><span>Scans:</span> <b id="pCtrlQuickScans">0</b></div>
+          <div class="p-metric-pill"><span>Unique IPs:</span> <b id="pCtrlQuickIps">0</b></div>
+          <a class="btn-table" id="pCtrlPublicLink" href="#" target="_blank" style="margin-left:6px; text-decoration:none;">↗ Public Page</a>
+          <button class="btn-icon" type="button" id="modalCloseBtn" aria-label="Close modal">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="profile-modal-tabs" id="pCtrlTabs">
+        <button class="p-tab-btn is-active" type="button" data-ptab="branding">Branding &amp; Profile</button>
+        <button class="p-tab-btn" type="button" data-ptab="links">Links &amp; Socials</button>
+        <button class="p-tab-btn" type="button" data-ptab="modes">Modes (Travel / Lost)</button>
+        <button class="p-tab-btn" type="button" data-ptab="chat">Quick Chat</button>
+        <button class="p-tab-btn" type="button" data-ptab="analytics">Views &amp; IP Tracker</button>
+        <button class="p-tab-btn" type="button" data-ptab="orders">Orders &amp; Free Tee</button>
+        <button class="p-tab-btn" type="button" data-ptab="history">Saved History &amp; Audit</button>
+      </div>
+
+      <!-- ── TAB 1: BRANDING & PROFILE ──────────────────────────────── -->
+      <div class="profile-tab-panel is-active" id="pPanel-branding">
+        <form id="editUserForm">
+          <input type="hidden" id="editUid">
+          
+          <div class="p-settings-grid">
+            <div class="form-group">
+              <label class="form-label" for="editName">Display Name</label>
+              <input class="form-input" type="text" id="editName" placeholder="e.g. Garry Singh" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="editHandle">Username / URL Handle</label>
+              <input class="form-input" type="text" id="editHandle" placeholder="e.g. garry" required>
+              <small style="font-size:0.75rem; color:var(--text-dim); margin-top:2px;">Renaming automatically archives previous handles in username history.</small>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editBio">Bio / Profile Description</label>
+            <textarea class="form-input" id="editBio" rows="3" style="height:auto; padding:10px;" placeholder="Tell people what you do..."></textarea>
+          </div>
+
+          <div class="p-settings-grid">
+            <div class="form-group">
+              <label class="form-label" for="editAvatarUrl">Avatar Image URL</label>
+              <input class="form-input" type="url" id="editAvatarUrl" placeholder="https://...">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="editAccentColor">Custom Accent Color</label>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <input type="color" id="editAccentColor" value="#6366f1" style="width:40px; height:36px; padding:2px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface);">
+                <input class="form-input" type="text" id="editAccentColorText" value="#6366f1" style="flex:1;">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Page Theme Selection</label>
+            <div class="theme-swatches" id="themeSwatches">
+              <label class="theme-swatch" data-th="light"><input type="radio" name="pTheme" value="light"> ⚪ Light</label>
+              <label class="theme-swatch" data-th="dark"><input type="radio" name="pTheme" value="dark"> ⚫ Dark</label>
+              <label class="theme-swatch" data-th="violet"><input type="radio" name="pTheme" value="violet"> 🟣 Violet</label>
+              <label class="theme-swatch" data-th="leaf"><input type="radio" name="pTheme" value="leaf"> 🟢 Leaf</label>
+              <label class="theme-swatch" data-th="soft"><input type="radio" name="pTheme" value="soft"> 🟡 Soft</label>
+              <label class="theme-swatch" data-th="photo"><input type="radio" name="pTheme" value="photo"> 📷 Photo</label>
+              <label class="theme-swatch" data-th="glass"><input type="radio" name="pTheme" value="glass"> 🪟 Glass</label>
+            </div>
+          </div>
+
+          <div class="p-settings-grid">
+            <div class="form-group">
+              <label class="form-label" for="editPhone">Phone Number</label>
+              <input class="form-input" type="tel" id="editPhone" placeholder="+91 ...">
+              <label class="form-check" style="margin-top:6px;">
+                <input type="checkbox" id="editPhoneVisible">
+                <span style="font-size:0.8rem;">Show phone publicly on profile</span>
+              </label>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="editWhatsApp">WhatsApp Number</label>
+              <input class="form-input" type="tel" id="editWhatsApp" placeholder="+91 ...">
+              <label class="form-check" style="margin-top:6px;">
+                <input type="checkbox" id="editWhatsAppOptIn">
+                <span style="font-size:0.8rem;">WhatsApp quick connect enabled</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="p-settings-grid">
+            <div class="form-group">
+              <label class="form-label" for="editEmail">Email Address</label>
+              <input class="form-input" type="email" id="editEmail" placeholder="user@example.com">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Visibility &amp; Lifecycle</label>
+              <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+                <label class="form-check">
+                  <input type="checkbox" id="editLive">
+                  <span style="font-weight:700;">Publish live page (`is_live = true`)</span>
+                </label>
+                <label class="form-check">
+                  <input type="checkbox" id="editOnboardingDone">
+                  <span>Mark onboarding as completed</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px; padding-top:16px; border-top:1px solid var(--border);">
+            <button class="btn-table" type="button" id="modalCancelBtn">Cancel</button>
+            <button class="btn-primary" type="submit" id="modalSaveBtn" style="width:auto; padding:0 24px;">Save Profile Changes</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ── TAB 2: LINKS & SOCIALS ─────────────────────────────────── -->
+      <div class="profile-tab-panel" id="pPanel-links">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h4 style="font-size:0.95rem; font-weight:800;">Profile Social &amp; Custom Links</h4>
+            <p style="font-size:0.8rem; color:var(--text-muted);">Manage links displayed on the user's public card</p>
+          </div>
+        </div>
+
+        <div id="pCtrlLinksContainer" style="display:flex; flex-direction:column; gap:10px;">
+          <!-- Loaded dynamically -->
+        </div>
+
+        <div style="background:var(--surface-raised); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; margin-top:10px;">
+          <h5 style="font-size:0.85rem; font-weight:700; margin-bottom:10px;">+ Add New Link for User</h5>
+          <div class="p-settings-grid">
+            <input class="form-input" type="text" id="newLinkTitle" placeholder="Link Title (e.g. Instagram)">
+            <input class="form-input" type="text" id="newLinkUrl" placeholder="URL or Handle (e.g. @username or https://...)">
+          </div>
+          <div style="display:flex; justify-content:flex-end; margin-top:10px;">
+            <button class="btn-primary" type="button" id="btnAddLink" style="width:auto; padding:0 18px; height:34px; font-size:0.8rem;">Add Link</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TAB 3: MODES (TRAVEL & LOST) ───────────────────────────── -->
+      <div class="profile-tab-panel" id="pPanel-modes">
+        <div>
+          <h4 style="font-size:0.95rem; font-weight:800;">Emergency &amp; Active Modes Control</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Override safety modes on behalf of the user</p>
+        </div>
+
+        <div class="p-settings-grid">
+          <!-- Travel Mode Card -->
+          <div style="background:var(--surface-raised); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div>
+                <b style="font-size:0.9rem;">✈️ Travel Mode</b>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Show trusted travel buddy contact</div>
+              </div>
+              <label class="form-check" style="margin:0;">
+                <input type="checkbox" id="pCtrlTravelOn">
+                <span style="font-weight:700;">ON</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="pCtrlTravelBuddy">Travel Buddy Phone Number</label>
+              <input class="form-input" type="tel" id="pCtrlTravelBuddy" placeholder="+91 98765 00000">
+            </div>
+          </div>
+
+          <!-- Lost Mode Card -->
+          <div style="background:var(--surface-raised); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div>
+                <b style="font-size:0.9rem;">🛡️ Lost Mode</b>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Urgent finder contact banner</div>
+              </div>
+              <label class="form-check" style="margin:0;">
+                <input type="checkbox" id="pCtrlLostOn">
+                <span style="font-weight:700;">ON</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="pCtrlLostTrust">Trusted Emergency Phone</label>
+              <input class="form-input" type="tel" id="pCtrlLostTrust" placeholder="+91 98765 11111">
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end;">
+          <button class="btn-primary" type="button" id="btnSaveModes" style="width:auto; padding:0 24px;">Save Modes</button>
+        </div>
+      </div>
+
+      <!-- ── TAB 4: QUICK CHAT ──────────────────────────────────────── -->
+      <div class="profile-tab-panel" id="pPanel-chat">
+        <div>
+          <h4 style="font-size:0.95rem; font-weight:800;">Quick Chat Quotas &amp; Settings</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Control conversation limits, rate limits, and chat switch</p>
+        </div>
+
+        <div class="p-settings-grid">
+          <div class="form-group">
+            <label class="form-label">Chat Feature Switch</label>
+            <label class="form-check" style="margin-top:6px;">
+              <input type="checkbox" id="pCtrlChatEnabled" checked>
+              <span>Quick Chat enabled for this profile</span>
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="pCtrlChatQuota">Daily Character Quota</label>
+            <input class="form-input" type="number" id="pCtrlChatQuota" value="500" min="50" max="5000">
+            <small style="color:var(--text-dim); font-size:0.75rem;">Default is 500 characters / day</small>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end;">
+          <button class="btn-primary" type="button" id="btnSaveChat" style="width:auto; padding:0 24px;">Save Chat Settings</button>
+        </div>
+      </div>
+
+      <!-- ── TAB 5: VIEWS & IP TRACKER ──────────────────────────────── -->
+      <div class="profile-tab-panel" id="pPanel-analytics">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div>
+            <h4 style="font-size:0.95rem; font-weight:800;">Real-Time Visitor IP Stream for @<span id="pCtrlAnaHandle">user</span></h4>
+            <p style="font-size:0.8rem; color:var(--text-muted);">Registered users vs Guest scans and client IP addresses</p>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input class="form-input" type="number" id="pCtrlSetViewsInput" placeholder="Views" style="width:80px; height:32px; font-size:0.8rem;">
+            <button class="btn-table" type="button" id="btnOverrideViews" style="height:32px; font-size:0.8rem;">Set Views</button>
+          </div>
+        </div>
+
+        <div class="stats-grid" style="padding:12px 0;">
+          <div class="stat-card" style="padding:12px;">
+            <span class="stat-label">Total Visits</span>
+            <div class="stat-val" id="pCtrlAnaTotal" style="font-size:20px;">0</div>
+          </div>
+          <div class="stat-card" style="padding:12px;">
+            <span class="stat-label">Registered Viewers</span>
+            <div class="stat-val" id="pCtrlAnaReg" style="font-size:20px; color:#10b981;">0</div>
+          </div>
+          <div class="stat-card" style="padding:12px;">
+            <span class="stat-label">Guest / Anonymous</span>
+            <div class="stat-val" id="pCtrlAnaUnreg" style="font-size:20px; color:#9ca3af;">0</div>
+          </div>
+          <div class="stat-card" style="padding:12px;">
+            <span class="stat-label">Unique IPs</span>
+            <div class="stat-val" id="pCtrlAnaIps" style="font-size:20px; color:#3b82f6;">0</div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Viewer Type</th>
+                <th>Identity</th>
+                <th>Client IP &amp; Location</th>
+                <th>Device</th>
+                <th>Source</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody id="pCtrlVisitorsTableBody">
+              <tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-dim);">No views recorded yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── TAB 6: ORDERS & FREE TEE ───────────────────────────────── -->
+      <div class="profile-tab-panel" id="pPanel-orders">
+        <div>
+          <h4 style="font-size:0.95rem; font-weight:800;">Orders &amp; Physical QR Sticker Packs</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Manage order fulfillment status, courier AWB tracking, and referral tee</p>
+        </div>
+
+        <div id="pCtrlOrdersContainer" style="display:flex; flex-direction:column; gap:12px;">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- ── TAB 7: SAVED HISTORY & AUDIT ───────────────────────────── -->
+      <div class="profile-tab-panel" id="pPanel-history">
+        <div>
+          <h4 style="font-size:0.95rem; font-weight:800;">Saved Profile Change History &amp; Audit Log</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Immutable audit trail of all admin-driven updates and username modifications</p>
+        </div>
+
+        <!-- Username Changes Section -->
+        <div id="pCtrlUsernameHistoryBox" style="background:var(--surface-raised); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px; margin-bottom:12px;">
+          <b style="font-size:0.85rem; display:block; margin-bottom:6px;">Username / Handle Change History</b>
+          <div id="pCtrlUsernameHistoryList" style="font-size:0.8rem; color:var(--text-muted);">
+            No handle changes recorded.
+          </div>
+        </div>
+
+        <!-- Full Audit Timeline -->
+        <div class="audit-timeline" id="pCtrlAuditTimeline">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="../qrcode.min.js"></script>
+  <script src="../cm-api.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>
